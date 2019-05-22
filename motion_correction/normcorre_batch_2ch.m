@@ -300,6 +300,7 @@ for it = 1:iter
             end
             
             M_fin_y = cell(length(xx_us),length(yy_us),length(zz_us)); %zeros(size(Y_temp));
+            M_fin_x = cell(length(xx_us),length(yy_us),length(zz_us)); %zeros(size(Y_temp));
             shifts_temp = zeros(length(xx_s),length(yy_s),length(zz_s),nd); 
             diff_temp = zeros(length(xx_s),length(yy_s),length(zz_s));
             if numel(M_fin_y) > 1      

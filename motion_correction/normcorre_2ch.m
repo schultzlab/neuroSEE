@@ -1,4 +1,4 @@
-function [M_final_y, M_final_x, shifts, template, options, col_shift] = ...
+function [M_final_y, M_final_x, shifts, template, options, col_shift, Y_out, X_out] = ...
                                         normcorre_2ch( Y, X, options, template )
 
 % online motion correction through DFT subpixel registration
@@ -20,7 +20,9 @@ function [M_final_y, M_final_x, shifts, template, options, col_shift] = ...
    %% first determine filetype
 
    % determine whether imaging is 2d or 3d
-   nd = 2 + (options.d3 > 1); %max(length(sizY)-1,2);                    
+   nd = 2 + (options.d3 > 1); %max(length(sizY)-1,2);
+   Y_out.meanframe = mean(Y,3);
+   X_out.meanframe = mean(X,3);
 
    if isa(Y,'char')
        [~,~,ext] = fileparts(Y);
@@ -486,11 +488,11 @@ function [M_final_y, M_final_x, shifts, template, options, col_shift] = ...
            end
            switch lower(options.output_type)
                case 'mat'
-                   if nd == 2; 
+                   if nd == 2 
                        M_final_y(:,:,t) = cast(Mf_y,data_type);
                        M_final_x(:,:,t) = cast(Mf_x,data_type); 
                    end
-                   if nd == 3; 
+                   if nd == 3 
                        M_final_y(:,:,:,t) = cast(Mf_y,data_type); 
                        M_final_x(:,:,:,t) = cast(Mf_x,data_type); %%%
                    end
@@ -509,7 +511,9 @@ function [M_final_y, M_final_x, shifts, template, options, col_shift] = ...
                    if rem_mem == options.mem_batch_size || t == T
                        saveastiff(cast(mem_buffer(:,:,1:rem_mem),data_type),options.tiff_filename,opts_tiff);
                    end                
-           end         
+           end
+           Y_out.meanregframe = mean(M_final_y,3);
+           X_out.meanregframe = mean(M_final_x,3);
 
            if mod(t,bin_width) == 0 && upd_template
                str=[num2str(t), ' out of ', num2str(T), ' frames registered, iteration ', num2str(it), ' out of ', num2str(iter), '..'];
@@ -555,19 +559,19 @@ function [M_final_y, M_final_x, shifts, template, options, col_shift] = ...
            end   
        end
 
-   if it == iter
-       template = cellfun(@(x) x - add_value,template,'un',0);
-       template = cell2mat_ov(template,xx_s,xx_f,yy_s,yy_f,zz_s,zz_f,overlap_pre,sizY);
-   end
-   if memmap
-       M_final_y.shifts = shifts;
-       M_final_y.template = template;
-   end
+       if it == iter
+           template = cellfun(@(x) x - add_value,template,'un',0);
+           template = cell2mat_ov(template,xx_s,xx_f,yy_s,yy_f,zz_s,zz_f,overlap_pre,sizY);
+       end
+       if memmap
+           M_final_y.shifts = shifts;
+           M_final_y.template = template;
+       end
 
-   if make_avi && plot_flag
-       close(vidObj);
-   end
-   maxNumCompThreads('automatic');
-   str = sprintf('\tdone. \n');
-   cprintf( 'Keywords', str );
-end
+       if make_avi && plot_flag
+           close(vidObj);
+       end
+       maxNumCompThreads('automatic');
+       str = sprintf('\tdone. \n');
+       cprintf( 'Keywords', str );
+    end

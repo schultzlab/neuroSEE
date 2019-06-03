@@ -2,14 +2,6 @@ clear; close all;
 tic
 
 %% Basic setup
-test = 0;       % set to 1 if testing, this will use one of smaller files in ../test
-force = 0;      % set to 1 to overwrite saved processed files. This will 
-                %    force pipeline to redo all steps incl. raw to tif
-                %    conversion. If force = 0, processing step is skipped
-                %    if output of said step already exists in individual
-                %    file directory.
-
-% gcp;           % start parallel pool
 addpath(genpath('../behaviour'));
 addpath(genpath('../intervideo_processing'));
 addpath(genpath('../motion_correction'));
@@ -29,14 +21,8 @@ if ~exist(data_locn,'dir')
 end
 
 if test
-    currdir = pwd;
-    if strcmpi(currdir(length(currdir)-8:end),'pipelines')
-        data_locn = [currdir(1:length(currdir)-9) 'test/'];
-    elseif strcmpi(currdir(length(currdir)-5:end),'latest')
-        data_locn = [currdir '/test/'];
-    end
+    data_locn = [data_locn 'Data_forTesting/'];
 end
-
     
 %% Read files
 

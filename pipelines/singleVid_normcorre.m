@@ -29,12 +29,7 @@ if ~exist(data_locn,'dir')
 end
 
 if test
-    currdir = pwd;
-    if strcmpi(currdir(length(currdir)-8:end),'pipelines')
-        data_locn = [currdir(1:length(currdir)-9) 'test/'];
-    elseif strcmpi(currdir(length(currdir)-5:end),'latest')
-        data_locn = [currdir '/test/'];
-    end
+    data_locn = [data_locn 'Data_forTesting/'];
 end
 
     

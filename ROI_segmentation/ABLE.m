@@ -39,7 +39,7 @@ function [tsG, masks, mean_imratio] = ABLE( stack_g, mean_r, file, cellrad, maxc
    mean_g = mean(stack_g,3); 
    corr_g = crossCorr(stack_g(:,:,:)); %1:2:end));
 
-   mean_imratio = mean_g ./ mean_r;  
+   mean_imratio = mean_r;  
    % Set the initial images 
    init_g = medfilt2( corr_g, szsmooth );
    R0     = mean_imratio - min(mean_imratio(:));

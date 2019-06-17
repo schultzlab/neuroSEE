@@ -12,28 +12,8 @@ force = 0;      % set to 1 to overwrite saved processed files. This will
                 %    if output of said step already exists in individual
                 %    file directory.
 
-% gcp;           % start parallel pool
-addpath(genpath('../behaviour'));
-addpath(genpath('../intervideo_processing'));
-addpath(genpath('../motion_correction'));
-addpath(genpath('../PF_mapping'));
-addpath(genpath('../ROI_segmentation'));
-addpath(genpath('../spike_extraction'));
-addpath(genpath('../utilities'));
-addpath(genpath('../pipelines'));
-
-% Data location
-data_locn = '/Volumes/thefarm2/live/CrazyEights/AD_2PCa/';
-if ~exist(data_locn,'dir')
-    data_locn = '/Volumes/RDS/project/thefarm2/live/CrazyEights/AD_2PCa/';
-end
-if ~exist(data_locn,'dir')
-    data_locn = '/rds/general/user/mgo/projects/thefarm2/live/CrazyEights/AD_2PCa/';
-end
-
-if test
-    data_locn = [data_locn 'Data_forTesting/'];
-end
+%% Load module folders and define data directory
+data_locn = load_neuroSEEmodules(test);
 
     
 %% Read files
@@ -106,15 +86,15 @@ end
 %           red.template, meanframe, meanregframe, shift
 %           params.imscale, Nimg_ave
 
-% [imG, imR, mcorr_output, params] = neuroSEE_motionCorrect(imG, imR, data_locn, file, params, force );
-params.nonrigid = NoRMCorreSetParms('d1',size(imG,1),'d2',size(imG,2),'grid_size',[32,32],'mot_uf',4,'bin_width',200,'max_shift',15,'max_dev',3,'us_fac',50,'init_batch',200);
-[imG, imR, shifts, template, options, col_shift] = normcorre_2ch( imG, imR, options);
+[imG, imR, mcorr_output, params] = neuroSEE_motionCorrect(imG, imR, data_locn, file, params, force );
+% params.nonrigid = NoRMCorreSetParms('d1',size(imG,1),'d2',size(imG,2),'grid_size',[32,32],'mot_uf',4,'bin_width',200,'max_shift',15,'max_dev',3,'us_fac',50,'init_batch',200);
+% [imG, imR, shifts, template, options, col_shift] = normcorre_2ch( imG, imR, options);
 
 %% Use ABLE to extract ROIs and raw time series
 % Saved: image with ROIs (fig, pdf), mat with fields {tsG, tsR, masks, mean_imratio, params}
 
-% [tsG, tsR, masks, mean_imratio, params] = neuroSEE_segment( imG, imR, mcorr_output.red.meanregframe, ...
-%                                                             data_locn, file, params, force );
+[tsG, tsR, masks, mean_imratio, params] = neuroSEE_segment( imG, imR, mcorr_output.red.meanregframe, ...
+                                                            data_locn, file, params, force );
 
 %% Run FISSA to extract neuropil-corrected time-series
 

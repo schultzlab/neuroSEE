@@ -9,30 +9,11 @@ force = 0;      % set to 1 to overwrite saved processed files. This will
                 %    if output of said step already exists in individual
                 %    file directory.
 
-% gcp;           % start parallel pool
-addpath(genpath('../behaviour'));
-addpath(genpath('../intervideo_processing'));
-addpath(genpath('../motion_correction'));
-addpath(genpath('../PF_mapping'));
-addpath(genpath('../ROI_segmentation'));
-addpath(genpath('../spike_extraction'));
-addpath(genpath('../utilities'));
-addpath(genpath('../pipelines'));
+                
+%% Load module folders and define data directory
+data_locn = load_neuroSEEmodules(test);
 
-% Data location
-data_locn = '/Volumes/thefarm2/live/CrazyEights/AD_2PCa/';
-if ~exist(data_locn,'dir')
-    data_locn = '/Volumes/RDS/project/thefarm2/live/CrazyEights/AD_2PCa/';
-end
-if ~exist(data_locn,'dir')
-    data_locn = '/rds/general/user/mgo/projects/thefarm2/live/CrazyEights/AD_2PCa/';
-end
 
-if test
-    data_locn = [data_locn 'Data_forTesting/'];
-end
-
-    
 %% Read files
 
 file = '20181015_10_04_26';

@@ -65,10 +65,10 @@ end
 %% Use ABLE to extract ROIs and raw time series
 % Saved: image with ROIs (fig, pdf), mat with fields {tsG, tsR, masks, mean_imratio, params}
 
-[tsG, tsR, masks, mean_imratio, params] = neuroSEE_segment( imG, imR, mean(mean(imR,3)), ...
-                                                            data_locn, file, params, force );
-
-
-t = toc;
-str = sprintf('%s: Processing done in %g hrs', file, round(t/3600,2));
-cprintf(str)
+% [tsG, tsR, masks, mean_imratio, params] = neuroSEE_segment( imG, imR, mean(imR,3), ...
+%                                                             data_locn, file, params, force );
+% 
+% 
+% t = toc;
+% str = sprintf('%s: Processing done in %g hrs', file, round(t/3600,2));
+% cprintf(str)

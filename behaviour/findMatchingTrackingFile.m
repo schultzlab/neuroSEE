@@ -116,7 +116,10 @@ function fname_track = findMatchingTrackingFile(data_locn, file, force)
                 s = zeros(1,numel(matfiles));
                 for i = 1:numel(matfiles)
                     name = matfiles(i).name;
-                    if ~strcmpi(name(end-9:end-4),'output') && ~strcmpi(name(end-10:end-4),'allData')
+                    if ~any([strcmpi(name(end-9:end-4),'output'),...
+                             strcmpi(name(end-10:end-4),'allData'),...
+                             strcmpi(name(end-10:end-4),'refined'),...
+                             strcmpi(name(end-12:end-4),'unrefined')]) 
                         fname_track = matfiles(i).name;
                         s(i) = 1;
                     else 

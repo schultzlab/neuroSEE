@@ -17,7 +17,7 @@ data_locn = load_neuroSEEmodules(test);
 %% Read files
 
 % [files, filesDim, filesFOV] = extractFilenamesFromTxtfile('test.txt');
-files = extractFilenamesFromTxtfile_default('test_default.txt');
+files = extractFilenamesFromTxtfile_default('list_pipeline.txt');
 
 %% Start processing
 

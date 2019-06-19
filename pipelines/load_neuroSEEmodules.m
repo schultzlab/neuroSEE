@@ -3,6 +3,7 @@ function data_locn = load_neuroSEEmodules(test)
 % Add module folders
 addpath(genpath('../behaviour'));
 addpath(genpath('../motion_correction'));
+addpath(genpath('../neuropil_decontamination'));
 addpath(genpath('../PF_mapping'));
 addpath(genpath('../ROI_registration'));
 addpath(genpath('../ROI_segmentation'));

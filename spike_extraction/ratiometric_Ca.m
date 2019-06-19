@@ -32,7 +32,7 @@ function R = ratiometric_Ca( green, red, sm )
    % assuming that this represents the baseline R_ value, when the cell is
    % not activated. Use mode, but since the data is continuous we need to
    % histogram it first. 
-   [bincounts, bins] = hist( R, 1e2 );
+   [bincounts, bins] = hist( R', 1e2 );
    [~, i] = max( bincounts );
    R0     = bins( i );
    R0_    = repmat( R0', [nN 1] );

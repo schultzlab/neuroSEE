@@ -5,10 +5,10 @@
 % User can choose cell and mode of spike extraction (NND vs OASIS) and can
 % tweak parameters for ROIs and spikes.
 
-function GUI_viewROIsSpikes_withModeChoice(mean_R,masks,tsG,R,spikes_nnd,spikes_oasis)
+function GUI_viewROIsSpikes_withModeChoice(mean_imratio,masks,cell_tsG,R,spikes_nnd,spikes_oasis)
     
     %% GUI variables
-    Fmin = min(min(tsG));
+    Fmin = min(min(cell_tsG));
     Fmax= 12000; %max(max(tsG));
     Rmin = min(min(R));
     Rmax = 2; % max(max(R));
@@ -26,7 +26,7 @@ function GUI_viewROIsSpikes_withModeChoice(mean_R,masks,tsG,R,spikes_nnd,spikes_
 
     % Initialise GUI data
     setappdata(hdl_gui,'curr_masks',masks);
-    setappdata(hdl_gui,'curr_tsG',tsG);
+    setappdata(hdl_gui,'curr_tsG',cell_tsG);
     setappdata(hdl_gui,'curr_R',R);
     setappdata(hdl_gui,'ALLspikes_nnd',spikes_nnd);
     setappdata(hdl_gui,'ALLspikes_oasis',spikes_oasis);
@@ -66,7 +66,7 @@ function GUI_viewROIsSpikes_withModeChoice(mean_R,masks,tsG,R,spikes_nnd,spikes_
     end
     maskSNR = zeros(1,Numcells);
     for i = 1:Numcells
-        y = tsG(i,:);
+        y = cell_tsG(i,:);
         maskSNR(i) = GetSn(y,[0.25,0.5],'logmexp');
     end
     setappdata(hdl_gui,'curr_maskArea',maskArea);
@@ -116,7 +116,7 @@ function GUI_viewROIsSpikes_withModeChoice(mean_R,masks,tsG,R,spikes_nnd,spikes_
     % Plot Ca time series for specific cell
     ax_ts = axes('Position',[0.45 0.82 0.52 0.13],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
                 'Visible','off','Units','normalized', 'clipping' , 'off'); 
-    plot(tsG(1,:)); axis([0 7500 Fmin Fmax]);
+    plot(cell_tsG(1,:)); axis([0 7500 Fmin Fmax]);
     axes('Position',[0.45 0.98 0.52 0.05],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
                 'Visible','off','Units','normalized', 'clipping' , 'off'); 
         text(0.4, 0, 'Raw Ca^{2+} time series','Fontsize',12,'Fontweight','bold');
@@ -191,7 +191,7 @@ function GUI_viewROIsSpikes_withModeChoice(mean_R,masks,tsG,R,spikes_nnd,spikes_
         curr_masks = getappdata(hdl_gui,'curr_masks');
         curr_Numcells = getappdata(hdl_gui,'curr_Numcells');
         axes(ax_masks);
-        imagesc(mean_R); axis off; colormap(jet);
+        imagesc(mean_imratio); axis off; colormap(jet);
         hold on
         if get(check_allROI,'Value') == 1
             for j = 1:curr_Numcells
@@ -315,8 +315,8 @@ function GUI_viewROIsSpikes_withModeChoice(mean_R,masks,tsG,R,spikes_nnd,spikes_
             i_snr = 1:Numcells;
         end
         if yn_satThr
-            Fsat = (tsG >= satThr*satValue);
-            i_sat = find(mean(Fsat,ndims(tsG))<satTime);
+            Fsat = (cell_tsG >= satThr*satValue);
+            i_sat = find(mean(Fsat,ndims(cell_tsG))<satTime);
         else
             i_sat = 1:Numcells;
         end
@@ -330,7 +330,7 @@ function GUI_viewROIsSpikes_withModeChoice(mean_R,masks,tsG,R,spikes_nnd,spikes_
         setappdata(hdl_gui,'curr_ind',ind);
         setappdata(hdl_gui,'curr_Numcells',length(ind));
         setappdata(hdl_gui,'curr_masks',masks(:,:,ind));
-        setappdata(hdl_gui,'curr_tsG',tsG(ind,:));
+        setappdata(hdl_gui,'curr_tsG',cell_tsG(ind,:));
         setappdata(hdl_gui,'curr_R',R(ind,:));
         setappdata(hdl_gui,'curr_spikes_nnd',spikes_nnd(ind,:));
         setappdata(hdl_gui,'curr_spikes_oasis',spikes_oasis(ind,:));

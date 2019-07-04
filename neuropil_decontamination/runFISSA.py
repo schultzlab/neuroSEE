@@ -26,9 +26,10 @@ import fissa
 # roizip   = '/Volumes/thefarm2/live/CrazyEights/AD_2PCa/Data/20181016/Processed/20181016_09_49_06/FISSAtest/rois.zip'
 # outdir   = '/Volumes/thefarm2/live/CrazyEights/AD_2PCa/Data/20181016/Processed/20181016_09_49_06/FISSAtest/out'
 
-tifdir = sys.argv[1]
+tiffile = [sys.argv[1]]
 roizip = sys.argv[2]
 outdir = sys.argv[3]
+
 
 
 # generate an experiment object

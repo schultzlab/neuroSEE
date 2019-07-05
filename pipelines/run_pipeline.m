@@ -1,48 +1,121 @@
 clear; close all;
 tic
 
-%% Basic setup
-test = 1;       % set to 1 if testing, this will use one of smaller files in ../test
-default = 0;    % set to 1 to use default parameters
-display = 0;    % set to 1 to display results (all results are saved in 
-                %    individual file directories with summary pdfs regardless)
-force = 0;      % set to 1 to overwrite saved processed files. This will 
-                %    force pipeline to redo all steps incl. raw to tif
-                %    conversion. If force = 0, processing step is skipped
-                %    if output of said step already exists in individual
-                %    file directory.
+%% USER: Set basic settings
+                    % Set to
+test = 0;           % [0,1] 1: debug mode (this will use one of smaller files in test folder)
+default = 1;        % [0,1] 1: default parameters
+force = [0;...      % [0,1] 1: load raw images instead of tif, i.e. force raw to tif conversion of images
+         0;...      % [0,1] 1: redo motion correction even if motion corrected images exist
+         0];        % [0,1] 1: force pipeline to redo all steps after motion correction
+                    %       0, processing step is skipped if output of said
+                    %          step already exists in individual file directory.
+mcorr_method = 1;   % [1,2] 1: CaImAn NoRMCorre method, 2: fft-rigid method (Katie's)
+segment_method = 2; % [1,2] 1: ABLE, 2: CaImAn
+fissa_yn = 1;       % [0,1] 1: implement FISSA, 0: skip step
 
-%% Load module folders and define data directory
-data_locn = load_neuroSEEmodules(test);
 
-    
-%% Read files
+%% USER: Specify file
 
 file = '20181016_10_11_35'; 
-% file = '20181016_09_09_43';
 
-% file = '20190406_20_27_07'; 
 
-%% Set parameters
+%% Load module folders and define data directory
 
-if default
-    params = load('default_params.mat');
+data_locn = load_neuroSEEmodules(test);
+
+
+%% Check if file has been processed. If not, continue processing unless forced to overwrite 
+% existing processed data
+
+fname_allData = [data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_allData.mat'];
+if exist(fname_allData,'file')
+    if ~any(force)
+        str = sprintf( '%s: File has been processed. Skipping processing\n', file );
+        cprintf(str)
+        return
+    else
+        if force(2)>0
+            force(3) = 1; % redoing motion correction step affects all succeeding steps
+        end
+    end
 end
 
+
+%% Load image files
+% force = 1 forces raw images to be loaded
+% force = 0 loads tif files if they exist, but reverts to raw images if tif
+%           files don't exist
+
+[imG,imR] = load_imagefile( data_locn, file, force(1) );
+
+
+%% Set default parameters
+
+if default
+    params = load( 'default_params.mat' );
+end
+
+params.mcorr_method = mcorr_method;
+if mcorr_method == 1
+    fields = {'imscale','Nimg_ave','refChannel','redoT'};
+    params = rmfield(params,fields);
+else
+    params = rmfield(params,'nonrigid');
+end
+
+params.segment_method = segment_method;
+if segment_method == 1
+    
+else
+    fields = {'cellrad','maxcells','satThresh','satTime','areaThresh','noiseThresh'};
+    params = rmfield(params,fields);
+end
+
+params.fissa_yn = fissa_yn;
+
+
+%% USER: Set parameters (if not using default)
+
 if ~default
-    % Specify own parameters
     % motion correction
-        params.imscale = 1;             % image downsampling factor
-        params.Nimg_ave = 14;           % number of images to be averaged for calculating pixel shift (zippering)
-        params.refChannel = 2;
-        params.redoT = 300;
+        % neurosee method
+        if mcorr_method == 2
+            params.imscale = 1;         % image downsampling factor
+            params.Nimg_ave = 14;       % no. of images to be averaged for calculating pixel shift (zippering)
+            params.refChannel = 2;      % channel to be used for calculating image shift (1: red, 2: green)
+            params.redoT = 300;         % no. of frames at start of file to redo motion correction for after 1st iteration
+        end
+        % NoRMCorre
+        if mcorr_method == 1
+            params.nonrigid = NoRMCorreSetParms(...
+                        'd1',size(imG,1),...
+                        'd2',size(imG,2),...
+                        'grid_size',[32,32],...
+                        'overlap_pre',[32,32],...
+                        'overlap_post',[32,32],...
+                        'iter',1,...
+                        'use_parallel',false,...
+                        'max_shift',30,...
+                        'mot_uf',4,...
+                        'bin_width',200,...
+                        'max_dev',3,...
+                        'us_fac',50,...
+                        'init_batch',200);
+        end
     % ROI segmentation
-        params.cellrad = 8;            % expected radius of a cell (pixels)
-        params.maxcells = 200;          % estimated number of cells in FOV
-        params.satThresh = 2900;        % ROI is accepted if its fluorescence is below satThresh
-        params.satTime = 0.3;           %   satTime fraction of the time
-        params.areaThresh = 70;         % min acceptable ROI area (pixels)
-        params.noiseThresh = 490;       % max acceptable ROI noise level
+        % ABLE
+        if segment_method == 1
+            params.cellrad = 8;             % expected radius of a cell (pixels)
+            params.maxcells = 200;          % estimated number of cells in FOV
+            params.satThresh = 2900;        % ROI is accepted if its fluorescence is below satThresh
+            params.satTime = 0.3;           %   satTime fraction of the time
+            params.areaThresh = 70;         % min acceptable ROI area (pixels)
+            params.noiseThresh = 490;       % max acceptable ROI noise level
+        end
+        % CaImAn
+        if segment_method == 2
+        end
     % spike extraction
         params.RsmoothFac = 23;         % smoothing window for R
         params.g = 0.91;                % fluorescence impulse factor (OASIS)
@@ -52,10 +125,10 @@ if ~default
         params.FOV = 490;               % FOV area = FOV x FOV, FOV in um
         params.mode_method = 2;         % 1: ASD, 2: histogram estimation
         params.imrate = 30.9;           % image scanning frame rate
-        params.Nbins = 180;             % number of location bins
+        params.Nbins = 30;             % number of location bins
         params.Nepochs = 1;             % number of epochs for each 4 min video
         params.smoothFac = 5;           % Gaussian smoothing window for histogram estimation
-        params.Vthr = 10;               %s speed threshold (mm/s) Note: David Dupret uses 20 mm/s
+        params.Vthr = 20;               %s speed threshold (mm/s) Note: David Dupret uses 20 mm/s
                                         %                               Neurotar uses 8 mm/s
 end
 
@@ -63,38 +136,25 @@ if test
     params.maxcells = 60;  
 end
 
-%% Check if file has been processed. If not, continue processing unless forced to overwrite 
-% existing processed data
+%% Do motion correction
+% Saved in file folder: 
+% (1) motion corrected tif files 
+% (2) summary fig & pdf, 
+% (3) mat with fields 
+%       green.[ meanframe, meanregframe ]
+%       red.[ meanframe, meanregframe ]
+%       template
+%       shifts
+%       params.nonrigid OR params.[ imscale, Nimg_ave, refChannel, redoT ]
 
-fname_allData = [data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_allData.mat'];
-if exist(fname_allData,'file')
-    if ~force
-        str = sprintf( '%s: File has been processed. Skipping processing\n', file );
-        cprintf(str)
-        return
-    end
-end
+[imG, imR, mcorr_output, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params, force(2) );
 
-%% Load raw and save tif files or load tif files if they exist
-
-[imG,imR] = load_imagefile( data_locn, file, force );
-
-%% Dezipper and do motion correction
-% Saved: tif files, summary fig & pdf, 
-%        mat with fields 
-%           green.template, meanframe, meanregframe, shift
-%           red.template, meanframe, meanregframe, shift
-%           params.imscale, Nimg_ave
-
-[imG, imR, mcorr_output, params] = neuroSEE_motionCorrect(imG, imR, data_locn, file, params, force );
-% params.nonrigid = NoRMCorreSetParms('d1',size(imG,1),'d2',size(imG,2),'grid_size',[32,32],'mot_uf',4,'bin_width',200,'max_shift',15,'max_dev',3,'us_fac',50,'init_batch',200);
-% [imG, imR, shifts, template, options, col_shift] = normcorre_2ch( imG, imR, options);
 
 %% Use ABLE to extract ROIs and raw time series
 % Saved: image with ROIs (fig, pdf), mat with fields {tsG, tsR, masks, mean_imratio, params}
 
-[tsG, tsR, masks, mean_imratio, params] = neuroSEE_segment( imG, imR, mcorr_output.red.meanregframe, ...
-                                                            data_locn, file, params, force );
+% [tsG, tsR, masks, mean_imratio, params] = neuroSEE_segment( imG, imR, mcorr_output.red.meanregframe, ...
+%                                                             data_locn, file, params, force );
 
 %% Run FISSA to extract neuropil-corrected time-series
 

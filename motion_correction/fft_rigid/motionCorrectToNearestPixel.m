@@ -8,7 +8,6 @@
 % INPUTS
 %   stack_g     : matrix of green image stack
 %   stack_r     : matrix of red image stack
-%   filedir     : directory where file is
 %   file        : part of file name of image stacks in the format
 %                   yyyymmdd_HH_MM_SS
 %   Nimg_ave    : number of images to be averaged when correcting for pixel
@@ -33,7 +32,8 @@
 % Written by Katie Davey
 % Edit by Ann: 
 
-function [stack_g, stack_r, output, fh] = motionCorrectToNearestPixel(stack_g, stack_r, file, scale, Nimg_ave, refChannel, redoT)
+function [stack_g, stack_r, out_g, out_r, shifts, template, fh] = motionCorrectToNearestPixel(stack_g, stack_r, file, scale, Nimg_ave, refChannel, redoT, doplot)
+   if nargin<8, doplot = 0; end
    if nargin<7, redoT = 300; end
    if nargin<6, refChannel = 1; end
    if nargin<5, Nimg_ave = 10; end
@@ -41,14 +41,13 @@ function [stack_g, stack_r, output, fh] = motionCorrectToNearestPixel(stack_g, s
 
    tempfn = @(x) mean(x,3); % fn to convert buffer to template with - can try using median or mode (mode is bad!)
    initT  = 200; % use this many frames to make initial buffer with
-   redoT  = 300; % redo the first frames after template has converged
 
    % if memory mapping, the memory mapped variable is in red, & green's empty
    % - make a copy of the memory mapped file in green to call for each channel
    usememmap = ternaryOp( strcmpi( 'memmapfile', class( stack_g ) ), true, false );
    
    % first dezipper images
-   [stack_g, stack_r] = doDezippering( stack_g, stack_r, Nimg_ave );
+   [ stack_g, stack_r ] = doDezippering( stack_g, stack_r, Nimg_ave );
    str = sprintf( '%s: Dezippering done\n', file );
    cprintf( 'Text', str );
 
@@ -62,54 +61,49 @@ function [stack_g, stack_r, output, fh] = motionCorrectToNearestPixel(stack_g, s
    if refChannel == 1 % green
        str = sprintf( '%s: Registering green channel\n', file );
        cprintf( 'Text', str );
-       [stack_g, out_g] = registerChannel( initT, redoT, stack_g, tempfn, scale, usememmap  );
+       [stack_g, out_g, shifts, template] = registerChannel( initT, redoT, stack_g, tempfn, scale, usememmap  );
        str = sprintf( '%s: Registering red channel\n', file );
        cprintf( 'Text', str );
-       [stack_r, out_r] = registerChannel( initT, redoT, stack_r, tempfn, scale, usememmap, out_g.shift );
+       [stack_r, out_r, ~, ~] = registerChannel( initT, redoT, stack_r, tempfn, scale, usememmap, out_g.shift );
    else % refChannel = 2(red)
        str = sprintf( '%s: Registering red channel\n', file );
        cprintf( 'Text', str );
-       [stack_r, out_r] = registerChannel( initT, redoT, stack_r, tempfn, scale, usememmap  );
+       [stack_r, out_r, shifts, template] = registerChannel( initT, redoT, stack_r, tempfn, scale, usememmap  );
        str = sprintf( '%s: Registering green channel\n', file );
        cprintf( 'Text', str );
-       [stack_g, out_g] = registerChannel( initT, redoT, stack_g, tempfn, scale, usememmap, out_r.shift );
+       [stack_g, out_g, ~, ~] = registerChannel( initT, redoT, stack_g, tempfn, scale, usememmap, out_r.shift );
    end
       
    %printTime( toc, 'Running registration took' );
 
-   output.green = out_g; 
-   output.red   = out_r;
-   output.params.imscale = scale;
-   output.params.Nimg_ave = Nimg_ave;
-   output.params.refChannel = refChannel;
-   output.params.redoT = redoT;
-   
-   fh = figure; 
-   subplot(221), 
-     imagesc( out_g.meanframe ); 
-     axis image; colorbar; axis off;
-     title( 'Mean frame for raw green' );
-   subplot(222), 
-     imagesc( out_g.meanregframe ); 
-     axis image; colorbar; axis off; 
-     title( 'Mean frame for corrected green' );
-   subplot(223), 
-     imagesc( out_r.meanframe ); 
-     axis image; colorbar; axis off; 
-     title( 'Mean frame for raw red' );
-   subplot(224), 
-     imagesc( out_r.meanregframe ); 
-     axis image; colorbar; axis off;
-     title( 'Mean frame for corrected red' );
-   axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
-     'Visible','off','Units','normalized', 'clipping' , 'off');
-%      titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17)];
-%      text(0.5, 0.98,titletext);
+   if doplot
+       fh = figure; 
+       subplot(221), 
+         imagesc( out_g.meanframe ); 
+         axis image; colorbar; axis off;
+         title( 'Mean frame for raw green' );
+       subplot(222), 
+         imagesc( out_g.meanregframe ); 
+         axis image; colorbar; axis off; 
+         title( 'Mean frame for corrected green' );
+       subplot(223), 
+         imagesc( out_r.meanframe ); 
+         axis image; colorbar; axis off; 
+         title( 'Mean frame for raw red' );
+       subplot(224), 
+         imagesc( out_r.meanregframe ); 
+         axis image; colorbar; axis off;
+         title( 'Mean frame for corrected red' );
+       axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
+         'Visible','off','Units','normalized', 'clipping' , 'off');
+   else
+       fh = [];
+   end
 end
 
 % register channel by either calculating highest correlation between each
 % frame & the current mean frame, or else by applying given shifts
-function [regch, output] = registerChannel( initT, redoT, channel, tempfn, scale, usememmap, shifts )
+function [regch, output, shifts, template] = registerChannel( initT, redoT, channel, tempfn, scale, usememmap, shifts )
    % to apply green shift to red channel you can input your own shift
    % matrix, which is [dx dy] vectors merged 
    if nargin<7 || isempty(shifts)
@@ -218,12 +212,8 @@ function [regch, output] = registerChannel( initT, redoT, channel, tempfn, scale
 
    end % end for each image frame
    
-   if calcshift
-      output.template  = template; 
-   end
    output.meanframe    = meanframe; 
    output.meanregframe = meanregframe; 
-   output.shift        = shifts; 
 end
 
 function buffer = updateBuffer( initT, ti, buffer, regframe )

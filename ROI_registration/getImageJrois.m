@@ -6,3 +6,8 @@
         globalmasksInd{i} = masks.PixelIdxList{i};
     end
     
+    for i = 1:180
+        masks()
+    end
+    
+    [sRegions] = ROIs2Regions(Coor, [512 512]);

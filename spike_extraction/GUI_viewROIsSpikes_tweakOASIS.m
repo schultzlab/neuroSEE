@@ -125,7 +125,7 @@ function GUI_viewROIsSpikes_tweakOASIS(mean_imratio,masks,cell_tsG,R,spikes)
     plot(R(1,:)); if setAxisLim, axis([0 7500 Rmin Rmax]); end 
     axes('Position',[0.45 0.75 0.52 0.05],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
                 'Visible','off','Units','normalized', 'clipping' , 'off'); 
-        text(0.46, 0, 'deltaR / R','Fontsize',12,'Fontweight','bold');
+        text(0.46, 0, 'Decontaminated df / f','Fontsize',12,'Fontweight','bold');
 
     % Plot spikes for specific cell. 
     ax_spikes = axes('Position',[0.45 0.38 0.52 0.13],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
@@ -136,18 +136,18 @@ function GUI_viewROIsSpikes_tweakOASIS(mean_imratio,masks,cell_tsG,R,spikes)
         text(0.47, 0, 'Spikes','Fontsize',12,'Fontweight','bold');
         
     % Allow user to choose OASIS and to tweak OASIS parameters
-    panel_oasis = uipanel('Parent',hdl_gui,'Units','normalized','Position',[0.83 0.02 0.14 0.13]);
+    panel_oasis = uipanel('Parent',hdl_gui,'Units','normalized','Position',[0.83 0.17 0.14 0.13]);
     text_fluorImpulse = uicontrol('Parent',panel_oasis,'style','text','Units','normalized',...
         'string','Fluor impulse','Enable','on','Fontsize',11); 
         set(text_fluorImpulse,'Position',[0.14 0.41 0.5 0.27]);
     edit_fluorImpulse = uicontrol('Parent',panel_oasis,'style','edit','Units','normalized',...
-        'string','0.91','Enable','on','Callback',@edit_oasis_callback); 
+        'string','0.997','Enable','on','Callback',@edit_oasis_callback); 
         set(edit_fluorImpulse,'Position',[0.68 0.42 0.28 0.28]);
     text_sparsPenalty = uicontrol('Parent',panel_oasis,'style','text','Units','normalized',...
         'string','Sparsity penalty','Enable','on','Fontsize',11); 
         set(text_sparsPenalty,'Position',[0.15 0.06 0.5 0.27]);
     edit_sparsPenalty = uicontrol('Parent',panel_oasis,'style','edit','Units','normalized',...
-        'string','2.4','Enable','on','Callback',@edit_oasis_callback); 
+        'string','120','Enable','on','Callback',@edit_oasis_callback); 
         set(edit_sparsPenalty,'Position',[0.68 0.06 0.28 0.28]);
     
         
@@ -169,7 +169,7 @@ function GUI_viewROIsSpikes_tweakOASIS(mean_imratio,masks,cell_tsG,R,spikes)
         curr_masks = getappdata(hdl_gui,'curr_masks');
         curr_Numcells = getappdata(hdl_gui,'curr_Numcells');
         axes(ax_masks);
-        imagesc(mean_imratio); axis off; colormap(jet);
+        imagesc(mean_imratio); axis off; colormap(gray);
         hold on
         if get(check_allROI,'Value') == 1
             for j = 1:curr_Numcells

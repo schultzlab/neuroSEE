@@ -1,21 +1,27 @@
-function [M_final_y, M_final_x, shifts, template, options, col_shift, Y_out, X_out] = ...
+% Adapted from CaImAn's normcorre.m by Ann Go
+
+function [M_final_y, M_final_x, Y_out, X_out, allshifts, template, options] = ...
                                         normcorre_2ch( Y, X, options, template )
 
 % online motion correction through DFT subpixel registration
 % Based on the dftregistration.m function from Manuel Guizar and Jim Fienup
 
 % INPUTS
-% Y:                Input data, can be already loaded in memory as a 3D
+% Y:                Input data (green channel), can be already loaded in memory as a 3D
 %                   tensor, a memory mapped file, or a pointer to a tiff stack
+% X:                red channel data
 % options:          options structure for motion correction (optional, rigid registration is performed if not provided)
 % template:         provide template (optional)
 
 % OUTPUTS
 % M_final:          motion corrected data
-% shifts:           originally calculated shifts
+% Y_out:            contains meanframe and meanregframe
+% allshifts:        composed of 
+%                       shifts: originally calculated shifts
+%                       col_shift: relative shift due to bi-directional scanning
 % template:         calculated template
 % options:          options structure (if modified)
-% col_shift:        relative shift due to bi-directional scanning
+
 
    %% first determine filetype
 
@@ -276,7 +282,11 @@ function [M_final_y, M_final_x, shifts, template, options, col_shift, Y_out, X_o
    %%
    prevstr = [];
    for it = 1:iter
-       if it < iter; plot_flag = 0; else plot_flag = options.plot_flag; end
+       if it < iter 
+           plot_flag = 0; 
+       else
+           plot_flag = options.plot_flag; 
+       end
        for t = 1:T
            switch filetype
                case 'tif'
@@ -482,7 +492,7 @@ function [M_final_y, M_final_x, shifts, template, options, col_shift, Y_out, X_o
                rem_mem = rem(t,options.mem_batch_size);
                if rem_mem == 0; rem_mem = options.mem_batch_size; end            
                if nd == 2; mem_buffer(:,:,rem_mem) = cast(Mf_y,data_type); end
-               if nd == 3; 
+               if nd == 3 
                    mem_buffer(:,:,:,rem_mem) = cast(Mf_y,data_type); 
                end
            end
@@ -574,4 +584,7 @@ function [M_final_y, M_final_x, shifts, template, options, col_shift, Y_out, X_o
        maxNumCompThreads('automatic');
        str = sprintf('\tdone. \n');
        cprintf( 'Keywords', str );
-    end
+   end
+    
+    allshifts.shifts = shifts;
+    allshifts.col_shift = col_shift;

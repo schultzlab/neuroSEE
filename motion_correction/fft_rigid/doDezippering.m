@@ -1,4 +1,4 @@
-function [stack_g, stack_r] = doDezippering( stack_g, stack_r, Navg )
+function [stack_g, stack_r, shift] = doDezippering( stack_g, stack_r, Navg )
 % Function for generating image stacks corrected for Start Delay (pixel
 % shift) in every second line
 % INPUTS:
@@ -65,7 +65,7 @@ function [stack_g, stack_r] = doDezippering( stack_g, stack_r, Navg )
       end
       
        % calc shift & correct the frames in the mini stack of Navg frames
-      [g, r] = correctFrames( g, r, szX, szY );
+      [g, r, shift] = correctFrames( g, r, szX, szY );
       
       % write corrections to the big stacks
       if usememmap
@@ -78,7 +78,7 @@ function [stack_g, stack_r] = doDezippering( stack_g, stack_r, Navg )
    end
 end
 
-function [ministack_g, ministack_r] = correctFrames( ministack_g, ministack_r, Nrows, Ncols )
+function [ministack_g, ministack_r, shift] = correctFrames( ministack_g, ministack_r, Nrows, Ncols )
    mean_g = mean( ministack_g, 3 ); % calculate the stack average
    % calculate shift and apply it to correct the mini stack
    shift = findBestShift( mean_g );

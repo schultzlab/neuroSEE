@@ -16,7 +16,7 @@
 %   imR       : matrix of red channel image stack
 
 function [ imG, imR ] = load_imagefile( data_locn, file, force, suffix, mcorr_method )
-    if nargin < 5, mcorr_method  = 1;    end
+    if nargin < 5, mcorr_method  = 'normcorre';    end
     if nargin < 4, suffix  = [];    end
     if nargin < 3, force  = 0;    end
     err = 1;
@@ -134,15 +134,15 @@ function [ imG, imR ] = load_imagefile( data_locn, file, force, suffix, mcorr_me
             end
         end
 
-    else % if there's a suffix 'mcorr'
+    else % if there's a suffix '_mcorr'
         % motion corrected tif stacks are in the Processed directory
-        if mcorr_method == 1
-            dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/NoRMCorre/' );
+        if strcmpi(mcorr_method,'normcorre')
+            dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_normcorre/' );
         else
-            dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/fft_rigid/' );
+            dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_fftRigid/' );
         end
-        fname_tif_gr = [ dir_processed file '_green' suffix '.tif' ];
-        fname_tif_red = [ dir_processed file '_red' suffix '.tif' ];
+        fname_tif_gr = [ dir_processed file '_2P_XYT_green' suffix '.tif' ];
+        fname_tif_red = [ dir_processed file '_2P_XYT_red' suffix '.tif' ];
         
         imG = read_file( fname_tif_gr );
         imR = read_file( fname_tif_red );

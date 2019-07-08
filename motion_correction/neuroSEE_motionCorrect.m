@@ -10,8 +10,8 @@
 %   file        : part of file name of image stacks in the format
 %                   yyyymmdd_HH_MM_SS
 %   mcorr_method: motion correction method
-%                   1- CaImAn NoRMCorre method
-%                   2- fft-rigid method (Katie's)
+%                   CaImAn NoRMCorre method OR
+%                   fft-rigid method (Katie's)
 %   params      : parameters for specific motion correction method
 %   force       : if =1, motion correction will be done even though motion
 %                   corrected images already exist
@@ -30,10 +30,15 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
     
     if nargin<7, force = 0;      end
     
-    if mcorr_method == 1
-        filedir = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/NoRMCorre/' );
+    if strcmpi(mcorr_method,'normcorre')
+        filedir = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_normcorre/' );
+        if ~isempty(imG)
+            params.nonrigid = NoRMCorreSetParms(...
+                'd1',size(imG,1),...         
+                'd2',size(imG,2));    
+        end
     else
-        filedir = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/fft_rigid/' );
+        filedir = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_fftRigid/' );
     end
     
     if ~exist( filedir, 'dir' ), mkdir( filedir ); end
@@ -44,16 +49,18 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
         
     % If asked to force overwrite, run motion correction right away
     if force
-        if mcorr_method == 1
-            [ imG, imR, out_g, out_r, shifts, template, ~ ] = normcorre_2ch( imG, imR, params.nonrigid );
+        str = sprintf( '%s: Starting motion correction\n', file );
+        cprintf( 'Text', str );
+        if strcmpi(mcorr_method,'normcorre')
             mcorr_output.params = params.nonrigid;
+            [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params.nonrigid );
         else
-            mcorr_output.imscale = params.imscale;
-            mcorr_output.Nimg_ave = params.Nimg_ave;
-            mcorr_output.refChannel = params.refChannel;
-            mcorr_output.redoT = params.redoT;
-            [ imG, imR, out_g, out_r, shifts, template, ~ ] = motionCorrectToNearestPixel( double(imG), double(imR), file, ...
-                        mcorr_output.imscale, mcorr_output.Nimg_ave, mcorr_output.refChannel, mcorr_output.redoT );
+            mcorr_output.params.imscale = params.imscale;
+            mcorr_output.params.Nimg_ave = params.Nimg_ave;
+            mcorr_output.params.refChannel = params.refChannel;
+            mcorr_output.params.redoT = params.redoT;
+            [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = motionCorrectToNearestPixel( double(imG), double(imR), file, ...
+                        params.imscale, params.Nimg_ave, params.refChannel, params.redoT );
         end
         
         % Save summary figure
@@ -80,13 +87,14 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
             text(0.5, 0.98,titletext);
         fname_fig = [filedir file '_mcorr_summary'];
             savefig( fh, fname_fig );
-            saveas( fh, fname_fig(1:end-4), 'pdf' );
+            saveas( fh, fname_fig, 'pdf' );
         close( fh );
 
         % Save output
         mcorr_output.green = out_g;
         mcorr_output.red = out_r;
         mcorr_output.shifts = shifts;
+        mcorr_output.col_shift = col_shift;
         mcorr_output.template = template;
         save(fname_mat_mcorr,'-struct','mcorr_output');
 
@@ -106,14 +114,18 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
         % If any of motion corrected tif stacks or motion correction output
         % mat doesn't exist, run motion correction
         if any([~yn_gr_mcorr,~yn_red_mcorr,~yn_mat_mcorr])
-            if mcorr_method == 1
-                [ imG, imR, out_g, out_r, shifts, template, ~ ] = normcorre_2ch( imG, imR, params.nonrigid );
+            str = sprintf( '%s: Starting motion correction\n', file );
+            cprintf( 'Text', str );
+            if strcmpi(mcorr_method,'normcorre')
+                mcorr_output.params = params.nonrigid;
+                [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params.nonrigid );
             else
-                imscale = params.imscale;
-                Nimg_ave = params.Nimg_ave;
-                refChannel = params.refChannel;
-                redoT = params.redoT;
-                [ imG, imR, out_g, out_r, shifts, template, ~ ] = motionCorrectToNearestPixel( double(imG), double(imR), file, imscale, Nimg_ave, refChannel, redoT );
+                mcorr_output.params.imscale = params.imscale;
+                mcorr_output.params.Nimg_ave = params.Nimg_ave;
+                mcorr_output.params.refChannel = params.refChannel;
+                mcorr_output.params.redoT = params.redoT;
+                [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = motionCorrectToNearestPixel( double(imG), double(imR), file, ...
+                        params.imscale, params.Nimg_ave, params.refChannel, params.redoT );
             end
             
             % Save summary figure
@@ -138,15 +150,16 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
                 'Visible','off','Units','normalized', 'clipping' , 'off');
                 titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17)];
                 text(0.5, 0.98,titletext);
-            fname_fig = [filedir file '_2P_mcorr_summary'];
+            fname_fig = [filedir file '_mcorr_summary'];
                 savefig( fh, fname_fig );
-                saveas( fh, fname_fig(1:end-4), 'pdf' );
+                saveas( fh, fname_fig, 'pdf' );
             close( fh );
 
             % Save output
             mcorr_output.green = out_g;
             mcorr_output.red = out_r;
             mcorr_output.shifts = shifts;
+            mcorr_output.col_shift = col_shift;
             mcorr_output.template = template;
             save(fname_mat_mcorr,'-struct','mcorr_output');
 
@@ -159,15 +172,28 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
             refreshdisp( str, prevstr );
         else
             % If they do exist, load motion corrected tif stacks
-            [imG, imR] = load_imagefile( data_locn, file, 1, '_mcorr', mcorr_method );
+            [imG, imR] = load_imagefile( data_locn, file, 0, '_mcorr', mcorr_method );
             mcorr_output = load(fname_mat_mcorr);
-            if mcorr_method == 1
-                params.nonrigid = mcorr_output.params.nonrigid; 
+            if strcmpi(mcorr_method,'normcorre')
+                if isfield(mcorr_output,'params') 
+                    params.nonrigid = mcorr_output.params;  % applies to proc data from July 2019
+                end
+                if isfield(mcorr_output,'options')
+                    params.nonrigid = mcorr_output.options; % applies to proc data prior to July 2019 
+                end
             else
                 params.imscale = mcorr_output.params.imscale;
-                params.Nimg_ave = mcorr_output.params.Nimg_ave; 
-                params.refChannel = mcorr_output.params.refChannel; 
-                params.redoT = mcorr_output.params.redoT; 
+                params.Nimg_ave = mcorr_output.params.Nimg_ave;
+                if isfield(mcorr_output.params,'refChannel')
+                    params.refChannel = mcorr_output.params.refChannel; % earlier proc data did not save this parameter, the default was red
+                else
+                    params = rmfield(params,'refChannel');
+                end
+                if isfield(mcorr_output.params,'redoT')
+                    params.redoT = mcorr_output.params.redoT; % earlier proc data did not save this parameter, the default was 400
+                else
+                    params = rmfield(params,'redoT');
+                end
             end
 
             if ~yn_fig_mcorr
@@ -197,7 +223,7 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
                     text(0.5, 0.98,titletext);
                 fname_fig = [filedir file '_mcorr_summary'];
                     savefig( fh, fname_fig );
-                    saveas( fh, fname_fig(1:end-4), 'pdf' );
+                    saveas( fh, fname_fig, 'pdf' );
                 close( fh );
             end
         end

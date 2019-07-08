@@ -33,7 +33,7 @@ outdir = sys.argv[3]
 
 
 # generate an experiment object
-experiment = fissa.Experiment(tifdir, roizip, outdir)
+experiment = fissa.Experiment(tiffile, roizip, outdir)
 # separate neuropil
 experiment.separate(redo_sep=True, redo_prep=True)
 # calculate df/f0

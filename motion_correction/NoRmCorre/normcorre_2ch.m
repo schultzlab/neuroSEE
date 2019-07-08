@@ -1,6 +1,6 @@
 % Adapted from CaImAn's normcorre.m by Ann Go
 
-function [M_final_y, M_final_x, Y_out, X_out, allshifts, template, options] = ...
+function [M_final_y, M_final_x, Y_out, X_out, col_shift, shifts, template, options] = ...
                                         normcorre_2ch( Y, X, options, template )
 
 % online motion correction through DFT subpixel registration
@@ -128,11 +128,11 @@ function [M_final_y, M_final_x, Y_out, X_out, allshifts, template, options] = ..
    options.col_shift = col_shift;
    if col_shift 
        str = sprintf('\tOffset %1.1d pixels due to bidirectional scanning detected. \n', col_shift); 
-       cprintf( 'Keywords', str );
+       cprintf( 'Text', str );
        if strcmpi(options.shifts_method,'fft')
           options.shifts_method = 'cubic';
           str = sprintf('\tCubic shifts will be applied. \n'); 
-          cprintf( 'Keywords', str );
+          cprintf( 'Text', str );
        end
    end
    %% read initial batch and compute template
@@ -157,7 +157,7 @@ function [M_final_y, M_final_x, Y_out, X_out, allshifts, template, options] = ..
 
    if nargin < 4 || isempty(template)
        str = sprintf('\tRegistering the first %i frames just to obtain a good template..',init_batch);
-       cprintf( 'Keywords', str );
+       cprintf( 'Text', str );
 
        template_in = median(Y_temp,nd+1) + add_value;
        fftTemp = fftn(template_in);
@@ -173,7 +173,7 @@ function [M_final_y, M_final_x, Y_out, X_out, allshifts, template, options] = ..
        end
        template_in = template_in + add_value;
        str = sprintf('..done. \n');
-       cprintf( 'Keywords', str );
+       cprintf( 'Text', str );
    else
        template_in = single(template + add_value);
    end
@@ -278,7 +278,7 @@ function [M_final_y, M_final_x, Y_out, X_out, allshifts, template, options] = ..
    end
    cnt_buf = 0;
    str = sprintf('\tTemplate initialization complete.  Now registering all the frames with new template. \n');
-   cprintf( 'Keywords', str );
+   cprintf( 'Text', str );
    %%
    prevstr = [];
    for it = 1:iter
@@ -526,10 +526,9 @@ function [M_final_y, M_final_x, Y_out, X_out, allshifts, template, options] = ..
            X_out.meanregframe = mean(M_final_x,3);
 
            if mod(t,bin_width) == 0 && upd_template
-               str=[num2str(t), ' out of ', num2str(T), ' frames registered, iteration ', num2str(it), ' out of ', num2str(iter), '..'];
-               refreshdisp(str, prevstr, t);
-               prevstr=str; 
-               %fprintf('%i out of %i frames registered, iteration %i out of %i \n',t,T,it,iter)
+               str = sprintf('\t%i of %i frames registered, iteration %i of %i..\n', t, T, it, iter);
+               refreshdisp(str, prevstr);
+               prevstr = str; 
                cnt_buf = cnt_buf + 1;                
                if strcmpi(method{2},'mean')
                    new_temp = cellfun(@(x) nanmean(x,nd+1), buffer, 'UniformOutput',false);
@@ -583,8 +582,6 @@ function [M_final_y, M_final_x, Y_out, X_out, allshifts, template, options] = ..
        end
        maxNumCompThreads('automatic');
        str = sprintf('\tdone. \n');
-       cprintf( 'Keywords', str );
+       cprintf( 'Text', str );
    end
     
-    allshifts.shifts = shifts;
-    allshifts.col_shift = col_shift;

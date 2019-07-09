@@ -29,7 +29,7 @@
 %function [tsG, tsR, masks, mean_imratio] = ABLE( stack_g, mean_r, cellrad, maxcells )
 
 function [tsG, masks, overl_corr] = ABLE( stack_g, mean_r, file, cellrad, maxcells ) % by Ann
-   tic;
+   %tic;
    str = sprintf('%s: Extracting ROIs with ABLE\n', file);
    cprintf(str);
 
@@ -37,11 +37,11 @@ function [tsG, masks, overl_corr] = ABLE( stack_g, mean_r, file, cellrad, maxcel
    szsmooth = [3 3];
    % Compute the summary images, i.e. mean and correlation images
    mean_g = mean(stack_g,3); 
-   tic;
+   %tic;
    corr_g = crossCorr(stack_g(:,:,:)); %1:2:end));
-   elapsed = toc;
-   str = sprintf('MAC -> Cross Corr  for %d*%d image,finished processing in %2.2f minutes. No errors.',dim(1),dim(2),elapsed/60);
-   SendSlackNotification('https://hooks.slack.com/services/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',str, '#general','@manfredi.castelli17', [], [], []);
+   %elapsed = toc; % slack notification for manfredi's account
+   %str = sprintf('MAC -> Cross Corr  for %d*%d image,finished processing in %2.2f minutes. No errors.',dim(1),dim(2),elapsed/60);
+   %SendSlackNotification('https://hooks.slack.com/services/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',str, '#general','@manfredi.castelli17', [], [], []);
    
    mean_imratio = mean_g ./ mean_r;  
    % Set the initial images 
@@ -194,7 +194,7 @@ function [tsG, masks, overl_corr] = ABLE( stack_g, mean_r, file, cellrad, maxcel
 %    % Save masks in a mat file
 %    fname_masks = [filedir file '_2P_segment_output.mat'];
 %    save(fname_masks,'cell_tsG','cell_tsR','masks','mean_imratio');
-    elapsed = toc;
-    str = sprintf('MAC -> ABLE finished processing in %2.2f minutes. No errors.',elapsed/60);
-    SendSlackNotification('https://hooks.slack.com/services/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',str, '#general','@manfredi.castelli17', [], [], []);
+    %elapsed = toc;
+    %str = sprintf('MAC -> ABLE finished processing in %2.2f minutes. No errors.',elapsed/60);
+    %SendSlackNotification('https://hooks.slack.com/services/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',str, '#general','@manfredi.castelli17', [], [], []);
 end 

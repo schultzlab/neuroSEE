@@ -219,7 +219,7 @@ while and(it <= maxIt, any(active))
            x_max                  = min(max(x_loc) + 2, video_dim(2));
            y_min                  = max(min(y_loc) - 2, 1);
            y_max                  = min(max(y_loc) + 2, video_dim(2));
-           if and(x_max > x_min, y_max > y_min)
+           if and(x_max > x_min, y_max > y_min) && and(x_max<size(videoG,1), y_max < size(videoG,2))
               regularisationVelocity(x_min:x_max, y_min:y_max) =...
                 distanceRegularisation(phiUpdate(x_min:x_max, y_min:y_max));
            end

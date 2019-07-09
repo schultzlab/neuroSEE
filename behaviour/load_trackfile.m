@@ -72,8 +72,8 @@ function trackdata = load_trackfile(data_locn,file,fname_track,force)
         tmax = (trackdata.time(end))/60; % min
             titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17) ' (' num2str(round(tmax)) ' min)'];
             title(titletext);
-        savefig(fig,fname_fig);
-        saveas(fig,fname_pdf);
+         savefig(fig,fname_fig);
+         saveas(fig,fname_pdf);
         close(fig);
     end
     

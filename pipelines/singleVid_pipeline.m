@@ -107,14 +107,14 @@ end
 %           params.imscale, Nimg_ave
 
 % [imG, imR, mcorr_output, params] = neuroSEE_motionCorrect(imG, imR, data_locn, file, params, force );
-params.nonrigid = NoRMCorreSetParms('d1',size(imG,1),'d2',size(imG,2),'grid_size',[32,32],'mot_uf',4,'bin_width',200,'max_shift',15,'max_dev',3,'us_fac',50,'init_batch',200);
-[imG, imR, shifts, template, options, col_shift] = normcorre_2ch( imG, imR, options);
+% params.nonrigid = NoRMCorreSetParms('d1',size(imG,1),'d2',size(imG,2),'grid_size',[32,32],'mot_uf',4,'bin_width',200,'max_shift',15,'max_dev',3,'us_fac',50,'init_batch',200);
+% [imG, imR, shifts, template, options, col_shift] = normcorre_2ch( imG, imR, options);
 
 %% Use ABLE to extract ROIs and raw time series
 % Saved: image with ROIs (fig, pdf), mat with fields {tsG, tsR, masks, mean_imratio, params}
 
-% [tsG, tsR, masks, mean_imratio, params] = neuroSEE_segment( imG, imR, mcorr_output.red.meanregframe, ...
-%                                                             data_locn, file, params, force );
+[tsG, tsR, masks, mean_imratio, params] = neuroSEE_segment( imG, imR, mcorr_output.red.meanregframe, ...
+                                                            data_locn, file, params, force );
 
 %% Run FISSA to extract neuropil-corrected time-series
 
@@ -137,7 +137,7 @@ params.nonrigid = NoRMCorreSetParms('d1',size(imG,1),'d2',size(imG,2),'grid_size
 %                               placeMap_smooth, sorted_placeMap, sortIdx, params}
 
 % [occMap, spikeMap, infoMap, placeMap, downData, activeData, placeMap_smooth, sorted_placeMap, normsorted_placeMap, sortIdx,...
-%     params] = neuroSEE_mapPF( spikes, trackdata, data_locn, file, params, force);
+   params] = neuroSEE_mapPF( spikes, trackdata, data_locn, file, params, force);
 
 %% Save output. These are all the variables needed for viewing data with GUI
 

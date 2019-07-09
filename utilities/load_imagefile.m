@@ -27,8 +27,8 @@ function [imG,imR] = load_imagefile(data_locn,file,force,suffix)
         fname_tif_red = [dir_2P file '_2P_XYT_red' suffix '.tif'];
     else
         % but motion corrected tif stacks are in the Processed directory
-        dir_processed = fullfile(data_locn,'Data/',file(1:8),'/Processed/',file,'/');
-            if ~exist(dir_processed,'dir'), mkdir(dir_processed); end
+        dir_processed = fullfile(data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_normcorre/'); %edit by manfredi 
+             if ~exist(dir_processed,'dir'), mkdir(dir_processed); end
         fname_tif_gr = [dir_processed file '_2P_XYT_green' suffix '.tif'];
         fname_tif_red = [dir_processed file '_2P_XYT_red' suffix '.tif'];
     end
@@ -42,7 +42,7 @@ function [imG,imR] = load_imagefile(data_locn,file,force,suffix)
     % If yes: load tif stack/s
     %    no: load raw and create tif stack/s
     % But create tif stacks regardless if force = 1
-
+ 
     if force % load raw and create tif stacks
         if exist(fname_raw,'file')
             options.skipN = 2; %skip every other frame

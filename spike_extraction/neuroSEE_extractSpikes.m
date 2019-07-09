@@ -35,7 +35,7 @@ function [R, spikes, params] = neuroSEE_extractSpikes( tsG, tsR, data_locn, file
         R = ratiometric_Ca( tsG, tsR, params(1).RsmoothFac );
     
         spikes = nndORoasis(R, 2, params(1).g, params(1).lambda); % always use 2 (oasis), 1 is for nnd
-        save(fname_mat,'R','spikes','params');
+%         save(fname_mat,'R','spikes','params');
         
         currstr = sprintf( '%s: Spikes extracted\n', file );
         refreshdisp(currstr,str)
@@ -59,7 +59,7 @@ function [R, spikes, params] = neuroSEE_extractSpikes( tsG, tsR, data_locn, file
             R = ratiometric_Ca( tsG, tsR, params(1).RsmoothFac );
 
             spikes = nndORoasis(R, 2, params(1).g, params(1).lambda); % always use 2 (oasis), 1 is for nnd
-            save(fname_mat,'R','spikes','params');
+%             save(fname_mat,'R','spikes','params');
             
             currstr = sprintf( '%s: Spikes extracted\n', file );
             refreshdisp(currstr,str)

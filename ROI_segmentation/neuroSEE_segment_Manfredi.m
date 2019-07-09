@@ -30,7 +30,8 @@
 %   mean_imratio    : mean ratio image of green and red channels
 
 function [cell_tsG, cell_tsR, masks, mean_imratio, params] = neuroSEE_segment(stack_g, stack_r, mean_r, data_locn, file, params, force)
-    
+
+tic;
     if nargin<7, force = 0;      end
 
     filedir = fullfile(data_locn,'Data/',file(1:8),'/Processed/',file,'/');
@@ -42,7 +43,7 @@ function [cell_tsG, cell_tsR, masks, mean_imratio, params] = neuroSEE_segment(st
         cellrad = params.cellrad;
         maxcells = params.maxcells;
         cell_tsR = zeros(1,size(stack_r,3));
-        [cell_tsG, masks, mean_imratio] = ABLE( stack_g, mean_r, file, cellrad, maxcells );
+        [cell_tsG, masks, mean_imratio] = ABLE_manfredi( stack_g, mean_r, file, cellrad, maxcells );
         
         % [cell_tsG, masks] = refineSegmentation(cell_tsG, masks, params);
         for i = 1:size(masks,3)
@@ -73,28 +74,34 @@ function [cell_tsG, cell_tsR, masks, mean_imratio, params] = neuroSEE_segment(st
             cellrad = params.cellrad;
             maxcells = params.maxcells;
             cell_tsR = zeros(1,size(stack_r,3));
-             [cell_tsG, masks, mean_imratio] = ABLE( stack_g, mean_r, file, cellrad, maxcells ); %
-%             [cell_tsG, masks, mean_imratio] = ABLE_manfredi( stack_g, stack_r, file, cellrad, maxcells );  % edit by Manfredi 
+            save('\Users\mc6017\neuroSEE\08-Jul-2019_video_data.mat');
+             [cell_tsG, masks, mean_imratio] = ABLE_manfredi( stack_g, mean_r, file, cellrad, maxcells ); 
+             
             % [cell_tsG, masks] = refineSegmentation(cell_tsG, masks, params);
             for i = 1:size(masks,3)
                 ind = find(masks(:,:,i));
                 for j = 1:size(stack_r,3)
                     imR_reshaped = reshape(stack_r(:,:,j),size(stack_r,1)*size(stack_r,2),1);
                     cell_tsR(i,j) = mean(imR_reshaped(ind));
+               
                 end
             end
+            
+    
             
             % Save output
             % Plot masks on summary image and save plot
             plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
             fig = plotContoursOnSummaryImage(mean_imratio, masks, plotopts);
-            fname_fig = [filedir file '_2P_ROIs'];
-            savefig(fig,fname_fig);
-            saveas(fig,fname_fig,'pdf');
-            close(fig);
-
+%             fname_fig = [filedir file '_2P_ROIs'];
+%             savefig(fig,fname_fig);
+%             saveas(fig,fname_fig,'pdf');
+%             close(fig);
+     elapsed = toc;
+    str = sprintf('MAC -> Neuro see segment finished processing in %2.2f minutes. No errors.',elapsed/60);
+    SendSlackNotification('https://hooks.slack.com/services/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',str, '#general','@manfredi.castelli17', [], [], []);
             % Save masks in a mat file
-            save(fname_out,'cell_tsG','cell_tsR','masks','mean_imratio','params')
+%             save(fname_out,'cell_tsG','cell_tsR','masks','mean_imratio','params')
         else
             % If it exists, load it 
             segmentOutput = load(fname_out);
@@ -109,8 +116,8 @@ function [cell_tsG, cell_tsR, masks, mean_imratio, params] = neuroSEE_segment(st
             if ~yn_fig
                plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
                fig = plotContoursOnSummaryImage(mean_imratio, masks, plotopts);
-               savefig(fig,fname_fig);
-               saveas(fig,fname_fig,'pdf');
+%                savefig(fig,fname_fig);
+%                saveas(fig,fname_fig,'pdf');
                close(fig);
             end
             str = sprintf('%s: Segmentation output loaded\n',file);

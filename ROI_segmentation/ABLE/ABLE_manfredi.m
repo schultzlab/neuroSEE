@@ -37,17 +37,22 @@ function [tsG, masks, overl_corr] = ABLE( stack_g, mean_r, file, cellrad, maxcel
    szsmooth = [3 3];
    % Compute the summary images, i.e. mean and correlation images
    mean_g = mean(stack_g,3); 
+   tic;
    corr_g = crossCorr(stack_g(:,:,:)); %1:2:end));
-
+   elapsed = toc;
+   str = sprintf('MAC -> Cross Corr  for %d*%d image,finished processing in %2.2f minutes. No errors.',dim(1),dim(2),elapsed/60);
+   SendSlackNotification('https://hooks.slack.com/services/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',str, '#general','@manfredi.castelli17', [], [], []);
+   
    mean_imratio = mean_g ./ mean_r;  
    % Set the initial images 
    init_g = medfilt2( corr_g, szsmooth );
    
    red = mat2gray(mean_r);
+   red = medfilt2(red,[3 3]);
    red = imadjust(red);
+   
    corr = mat2gray(corr_g);
    corr = medfilt2(corr,szsmooth);
-   corr = imclearborder(corr);
    corr = imadjust(corr);
    
    overl_corr = imfuse(red,corr,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
@@ -190,6 +195,6 @@ function [tsG, masks, overl_corr] = ABLE( stack_g, mean_r, file, cellrad, maxcel
 %    fname_masks = [filedir file '_2P_segment_output.mat'];
 %    save(fname_masks,'cell_tsG','cell_tsR','masks','mean_imratio');
     elapsed = toc;
-    str = sprintf('ABLE finished processing in %2.2f minutes. No errors.',elapsed/60);
+    str = sprintf('MAC -> ABLE finished processing in %2.2f minutes. No errors.',elapsed/60);
     SendSlackNotification('https://hooks.slack.com/services/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',str, '#general','@manfredi.castelli17', [], [], []);
 end 

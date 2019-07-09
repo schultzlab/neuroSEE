@@ -40,18 +40,25 @@ img = imadjust(img);
 %         correlated green image has lots of noise around border.
         cut = 140;
         img = imclearborder(img,4);
+        img = medfilt2(img,[3,3]);
         
     end
 
          
-%     img = rgb2gray(img);
-%     img = medfilt2(img);
+ 
+    if tune == 1 || tune ==3
+        
+       se = strel('disk',7);
+       background = imopen(img,se);       
+       I2 = img - background;
+       img = imadjust(I2); 
+    end
     
 % binarizing image with adaptive threshold
     img = imbinarize(img, 'adaptive');
-    img = bwareaopen(img, cut);
+    img = bwareafilt(img,[140 600]);
+    img = imclearborder(img,4);
     img = imfill(img,'holes');
-
 
 % bwdist uses a fast algorithm to compute the true Euclidean distanc
 % transform. it is the distance at each pixel to the nearest nonzero pixel.
@@ -66,11 +73,10 @@ img = imadjust(img);
     segmented_image(Ld2 == 0) = 0;
     
 %     filtering noisy segmented image for well defined boundaries
-    segmented_image = medfilt2(segmented_image,[3,3]);
-    segmented_image = imclearborder(segmented_image,4);
+     segmented_image = medfilt2(segmented_image,[3,3]);
     
      if tune == 3
-        segmented_image = bwareaopen(segmented_image, 130);
+         segmented_image = bwareaopen(segmented_image, 100);
      
      else
          segmented_image = bwareaopen(segmented_image, 70);

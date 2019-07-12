@@ -51,8 +51,12 @@ maxSize = round(pi * radius^2 * 1.8);
 
 [segmentedG, ~,~,~,stats_green] = segment_Manfredi(metric,tune_green);
 
-[centroids,red_Roi_Merged] = merge_Manfredi(stats_red,stats_green);
+[~,red_Roi_Merged] = merge_Manfredi(stats_red,stats_green);
 
+h = figure('Name','Green');imshow(metric);hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
+savefig(h,'DistributionOfCentroids.fig','compact');
+h = figure('Name','Green');imshow(segmentedG);hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
+savefig(h,'Segmented.fig','compact');
 % eliminating roi that merged 
 stats_red(red_Roi_Merged) = [];
 
@@ -76,17 +80,20 @@ end
 
 masks = cat(3,masks,masksG);
 
+%%BInarizing each mask since concatenation as affected morphology o f pixel
+
 for ii  = 1:size(masks,3)
     masks(:,:,ii) = imbinarize(masks(:,:,ii));
+%     masks(:,:,ii) = medfilt2(masks(:,:,ii),[3 3]);
 end
-
-% Remove any that are too large 
-nnzs  = squeeze(sum(sum(masks,1),2));
-masks(:,:,nnzs > maxSize)     = [];
+% % Remove any that are too large 
+% nnzs  = squeeze(sum(sum(masks,1),2));
+% masks(:,:,nnzs > maxSize)     = [];
 % Final ROIs
+
 masks = -1*masks + ~masks;
-
-
+h = figure('Name','Green');imagesc(mean(masks,3));hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
+savefig(h,'masks+centr.fig','compact');
 end
 
 

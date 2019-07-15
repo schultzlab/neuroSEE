@@ -10,6 +10,12 @@ if ~exist( roidir, 'dir' )
    mkdir( roidir );
 end
 
+outdir = [fissadir 'FISSAout/'];
+% if output directory doesn't exist, create it
+if ~exist( outdir, 'dir' )
+   mkdir( outdir );
+end
+
 %% Generate ROI files
 % roi's in masks, with format szx x szy x cell (e.g. 512 x 512 x 101)
 
@@ -35,12 +41,17 @@ zip( roizip, roifiles );
 
 %% Run FISSA
 % Now we need to run fissa using python
-pyfun = [pwd '/runFISSA.py' ' ' tiffile ' ' roizip ' ' fissadir];
-try
+mydir  = pwd;
+ind   = strfind(mydir,'/');
+newdir = mydir(1:ind(end)-1);
+folder = fullfile(newdir(1:ind(end)-1),'/neuropil_decontamination');
+pyfun = [folder '/runFISSA.py' ' ' tiffile ' ' roizip ' ' outdir];
+if exist('/Users/mgo/anaconda3/envs/neuroSEE/','dir')
     python_executable = '/Users/mgo/anaconda3/envs/neuroSEE/bin/python';
-catch
+elseif exist('/home/mgo/anaconda3/envs/neuroSEE/','dir')
+    python_executable = '/home/mgo/anaconda3/envs/neuroSEE/bin/python';
 end
-pystr =  [python_executable ' ' pyfun];
+pystr = [python_executable ' ' pyfun];
 % [status, pyout] = 
 system( pystr )
 

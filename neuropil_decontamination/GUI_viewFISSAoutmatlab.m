@@ -1,6 +1,6 @@
 function GUI_viewFISSAresults(raw, result)
 
-hdl_gui = figure('MenuBar','none','Name','FISSA result','NumberTitle','off','Resize','off',...
+hdl_gui = figure('Name','FISSA result','NumberTitle','off','Resize','off',...
     'Position',[1087 1022 907 666]);
 
 Numcells = numel(fieldnames(result));
@@ -60,12 +60,14 @@ plotResults(1);
     function plotResults(id)
         axes(ax1); 
             plot(raw.(['cell' num2str(id)]).trial0(1,:),'c'); 
-            axis([0 7500 0 14000]); hold on
+            % axis([0 7500 0 14000]); 
+            hold on
             plot(result.(['cell' num2str(id)]).trial0(1,:),'k'); 
             legend('raw','FISSA'); hold off
         axes(ax2); 
             plot(result.(['cell' num2str(id)]).trial0(1,:),'k'); 
-            axis([0 7500 0 14000]); hold on
+            % axis([0 7500 0 14000]); 
+            hold on
             plot(result.(['cell' num2str(id)]).trial0(2,:),'r'); hold on
             plot(result.(['cell' num2str(id)]).trial0(3,:),'g'); hold on
             plot(result.(['cell' num2str(id)]).trial0(4,:),'b'); hold on

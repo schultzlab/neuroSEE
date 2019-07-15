@@ -7,11 +7,15 @@
 function GUI_viewROIsSpikes_withSave( file, mean_imratio, masks, cell_tsG, cell_tsR, R, spikes )
     
     setAxisLimits = 0;
-    Ncells = length(masks);
+    Ncells = min([length(masks),size(masks,3)]);
     tmasks = zeros(512,512,Ncells);
     for i = 1:Ncells
         mask = zeros(512,512);
-        mask(masks{i}) = 1;
+        try
+            mask(masks{i}) = 1;
+        catch
+            mask(masks(:,:,i)) = 1;
+        end
         tmasks(:,:,i) = mask;
     end
 

@@ -37,6 +37,7 @@ for bini=1:size(OccMapProb, 1)
     end
 end
 
-infoSec = information;
+% infoSec = information;
+infoSec = MI;
 infoSpk = infoSec/meanRate;
 end

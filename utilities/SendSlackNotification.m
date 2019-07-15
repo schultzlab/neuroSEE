@@ -44,9 +44,13 @@ function [strHTTPOutput, sHTTPExtra] = SendSlackNotification(strHookURL, strText
 
 % Author: Dylan Muir <dylan.muir@unibas.ch>
 % Created: 19th November, 2014
+<<<<<<< HEAD
 %%adding paths
 full_path = '../utilities/Slack_dependencies/';
 addpath(full_path);
+=======
+
+>>>>>>> e1ab0d31330487c7174b86c220baa2340bb264df
 % -- Check arguments
 
 if (nargin < 2)

@@ -2,8 +2,13 @@ clear; close all;
 tic
 
 %% Basic setup
+<<<<<<< HEAD
 test = 0;       % set to 1 if testing, this will use one of smaller files in ../test
 default = 1;    % set to 1 to use default parameters
+=======
+test = 1;       % set to 1 if testing, this will use one of smaller files in ../test
+default = 0;    % set to 1 to use default parameters
+>>>>>>> e1ab0d31330487c7174b86c220baa2340bb264df
 display = 0;    % set to 1 to display results (all results are saved in 
                 %    individual file directories with summary pdfs regardless)
 force = 0;      % set to 1 to overwrite saved processed files. This will 
@@ -62,6 +67,7 @@ if test
     params.maxcells = 60;  
 end
 tic;
+<<<<<<< HEAD
 
 file = '20190406_18_51_09'; 
 [imG, imR] = load_imagefile(data_locn,file,force,'_mcorr');
@@ -74,6 +80,17 @@ imR = imR(:,:,1:5:size(imR,3));
 % 
 %% Load motion corrected tif files 
 file = '20190406_18_52_49';
+=======
+%% Load motion corrected tif files 
+file = '20181016_09_09_43';
+[imG, imR] = load_imagefile(data_locn,file,force,'_mcorr');
+
+imG = imG(:,:,1:5:size(imG,3));
+imR = imR(:,:,1:5:size(imR,3));
+
+%% Load motion corrected tif files 
+file = '20181016_09_14_03';
+>>>>>>> e1ab0d31330487c7174b86c220baa2340bb264df
 
 [imG_2, imR_2]  = load_imagefile(data_locn,file,force,'_mcorr');
 
@@ -87,7 +104,12 @@ clear imG_2; clear imR_2;
 
 
 %% Load motion corrected tif files 
+<<<<<<< HEAD
 file = '20190406_18_59_41';
+[imG_3, imR_3] = load_imagefile(data_locn,file,force,'_mcorr');
+
+=======
+file = '20181016_09_18_26';
 [imG_3, imR_3] = load_imagefile(data_locn,file,force,'_mcorr');
 
 imG_3 = imG_3(:,:,1:5:size(imG_3,3));
@@ -97,6 +119,49 @@ imG = cat(3,imG,imG_3);
 imR = cat(3,imR,imR_3);
 clear imG_3; clear imR_3;
 %%
+file = '20181016_09_22_45';
+[imG_3, imR_3] = load_imagefile(data_locn,file,force,'_mcorr');
+
+imG_3 = imG_3(:,:,1:5:size(imG_3,3));
+imR_3 = imR_3(:,:,1:5:size(imR_3,3));
+
+imG = cat(3,imG,imG_3);
+imR = cat(3,imR,imR_3);
+clear imG_3; clear imR_3;
+%%
+file = '20181016_09_44_06';
+[imG_3, imR_3] = load_imagefile(data_locn,file,force,'_mcorr');
+
+imG_3 = imG_3(:,:,1:5:size(imG_3,3));
+imR_3 = imR_3(:,:,1:5:size(imR_3,3));
+
+imG = cat(3,imG,imG_3);
+imR = cat(3,imR,imR_3);
+clear imG_3; clear imR_3;
+%%
+file = '20181016_09_49_06';
+[imG_3, imR_3] = load_imagefile(data_locn,file,force,'_mcorr');
+
+imG_3 = imG_3(:,:,1:5:size(imG_3,3));
+imR_3 = imR_3(:,:,1:5:size(imR_3,3));
+
+imG = cat(3,imG,imG_3);
+imR = cat(3,imR,imR_3);
+clear imG_3; clear imR_3;
+%%
+file = '20181016_09_57_43';
+[imG_3, imR_3] = load_imagefile(data_locn,file,force,'_mcorr');
+
+
+>>>>>>> e1ab0d31330487c7174b86c220baa2340bb264df
+imG_3 = imG_3(:,:,1:5:size(imG_3,3));
+imR_3 = imR_3(:,:,1:5:size(imR_3,3));
+
+imG = cat(3,imG,imG_3);
+imR = cat(3,imR,imR_3);
+clear imG_3; clear imR_3;
+%%
+<<<<<<< HEAD
 % file = '20181016_09_22_45';
 % [imG_3, imR_3] = load_imagefile(data_locn,file,force,'_mcorr');
 % 
@@ -174,6 +239,43 @@ clear imG_3; clear imR_3;
 t = toc;
 str = sprintf('MAC->All 10 tiff files loaded in %2.2f minutes',t/60);
 SendSlackNotification('https://hooks.slack.com/services/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',str, '#general','@manfredi.castelli17', [], [], []);
+=======
+file = '20181016_10_07_07';
+[imG_3, imR_3] = load_imagefile(data_locn,file,force,'_mcorr');
+
+imG_3 = imG_3(:,:,1:5:size(imG_3,3));
+imR_3 = imR_3(:,:,1:5:size(imR_3,3));
+
+imG = cat(3,imG,imG_3);
+imR = cat(3,imR,imR_3);
+clear imG_3; clear imR_3;
+%%
+file = '20181016_10_11_35';
+[imG_3, imR_3] = load_imagefile(data_locn,file,force,'_mcorr');
+
+imG_3 = imG_3(:,:,1:5:size(imG_3,3));
+imR_3 = imR_3(:,:,1:5:size(imR_3,3));
+
+
+imG = cat(3,imG,imG_3);
+imR = cat(3,imR,imR_3);
+clear imG_3; clear imR_3;
+%%
+file = '20181016_10_15_57';
+[imG_3, imR_3] = load_imagefile(data_locn,file,force,'_mcorr');
+
+imG_3 = imG_3(:,:,1:5:size(imG_3,3));
+imR_3 = imR_3(:,:,1:5:size(imR_3,3));
+
+
+imG = cat(3,imG,imG_3);
+imR = cat(3,imR,imR_3);
+
+clear imG_3; clear imR_3;
+t = toc;
+str = sprintf('All 10 tiff files loaded in %2.2f minutes',t/60);
+SendSlackNotification('https://hooks.slack.com/services/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',str, '#general','@manfredi.castelli17', [], [], []);
+>>>>>>> e1ab0d31330487c7174b86c220baa2340bb264df
 %% Use ABLE to extract ROIs and raw time series
 % Saved: image with ROIs (fig, pdf), mat with fields {tsG, tsR, masks, mean_imratio, params}
 

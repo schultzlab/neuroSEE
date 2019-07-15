@@ -4,7 +4,7 @@
 % transient (delta R / R) and the extracted spikes for each cell.
 % User can choose cell and mode of spike extraction (NND vs OASIS).
 
-function GUI_viewROIsSpikes( mean_R, masks, cell_tsG, cell_R, cell_spikes )
+function GUI_viewROIsSpikes( mean_imratio, masks, cell_tsG, R, spikes )
     
     % Create figure
     hfig_h = 500;
@@ -32,7 +32,7 @@ function GUI_viewROIsSpikes( mean_R, masks, cell_tsG, cell_R, cell_spikes )
     % Show 2P image and overlay mask of specific cell
     ax_masks = axes('Position',[0.01 0.03 0.4 0.93],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
                 'Visible','off','Units','normalized', 'clipping' , 'off'); 
-    imagesc(mean_R); colormap(gray); axis off;
+    imagesc(mean_imratio); colormap(gray); axis off;
     hold on
     outline = bwboundaries(masks(:,:,1));
     trace = outline{1};
@@ -55,7 +55,7 @@ function GUI_viewROIsSpikes( mean_R, masks, cell_tsG, cell_R, cell_spikes )
     % Plot ratiometric Ca time series (delta R/R) for specific cell
     ax_R = axes('Position',[0.45 0.54 0.52 0.15],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
                 'Visible','off','Units','normalized', 'clipping' , 'off'); 
-    plot(cell_R(1,:)); 
+    plot(R(1,:)); 
     axes('Position',[0.45 0.71 0.52 0.05],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
                 'Visible','off','Units','normalized', 'clipping' , 'off'); 
         text(0.46, 0, 'deltaR / R','Fontsize',12,'Fontweight','bold');
@@ -63,7 +63,7 @@ function GUI_viewROIsSpikes( mean_R, masks, cell_tsG, cell_R, cell_spikes )
     % Plot spikes for specific cell. Allow user to choose between 
     ax_spikes = axes('Position',[0.45 0.30 0.52 0.15],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
                 'Visible','off','Units','normalized', 'clipping' , 'off'); 
-    plot(cell_spikes(1,:)); 
+    plot(spikes(1,:)); 
     axes('Position',[0.45 0.47 0.52 0.05],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
                 'Visible','off','Units','normalized', 'clipping' , 'off'); 
         text(0.47, 0, 'Spikes','Fontsize',12,'Fontweight','bold');
@@ -72,7 +72,7 @@ function GUI_viewROIsSpikes( mean_R, masks, cell_tsG, cell_R, cell_spikes )
     function plotROIsSpikes(id)
         % Display neuron image overlaid with specified ROI mask
         axes(ax_masks);
-        imagesc(mean_R); colormap(gray); axis off;
+        imagesc(mean_imratio); colormap(gray); axis off;
         hold on
         if get(check_allROI,'Value') == 1
             for j = 1:Numcells
@@ -90,10 +90,10 @@ function GUI_viewROIsSpikes( mean_R, masks, cell_tsG, cell_R, cell_spikes )
         plot(ax_ts, cell_tsG(id,:)); 
 
         % Plot ratiometric Ca time series (delta R/R) for specific cell
-        plot(ax_R, cell_R(id,:)); 
+        plot(ax_R, R(id,:)); 
     
         % Plot spikes for specific cell. Allow user to choose between 
-        plot(ax_spikes, cell_spikes(id,:)); 
+        plot(ax_spikes, spikes(id,:)); 
 
     end
 

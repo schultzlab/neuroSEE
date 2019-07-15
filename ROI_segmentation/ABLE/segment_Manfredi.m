@@ -25,7 +25,7 @@ function [segmented_image,D,N,B,stat] = segment_Manfredi(img,tune)
 % stat:             measurement and features of img and its objects.
 % 
 
-
+grayImg = img;
 %1) convert mat to grayscale image->binarize img->remove noise
  if tune == 1 %red channel image
         cut = 140;
@@ -82,6 +82,6 @@ function [segmented_image,D,N,B,stat] = segment_Manfredi(img,tune)
 
 %     labelling each object in image and extracting features
     Ilabel = bwlabel(segmented_image);
-    stat = regionprops(Ilabel,  'all');
+    stat = regionprops(Ilabel,grayImg,  'all');
 end
 

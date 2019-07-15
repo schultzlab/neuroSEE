@@ -60,6 +60,9 @@ savefig(h,'Segmented.fig','compact');
 % eliminating roi that merged 
 stats_red(red_Roi_Merged) = [];
 
+h = figure('Name','Final centroids');imshow((metric./red_metric));hold on; label_centroid([stats_red;stats_green],'g.');hold off;
+savefig(h,'Segmented.fig','compact');
+
 obj_num    = size(stats_red,1);
 masks      = zeros(dim(1), dim(2), obj_num);
 masksG     = zeros(dim(1),dim(2),obj_num);
@@ -78,7 +81,7 @@ for ii  = 1:size(stats_green,1)
     masksG(:,:,ii)    = maskG;
 end
 
-masks = cat(3,masks,masksG);
+masks = cat(3,masksG,masks);
 
 %%BInarizing each mask since concatenation as affected morphology o f pixel
 

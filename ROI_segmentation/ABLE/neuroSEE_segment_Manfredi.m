@@ -98,8 +98,8 @@ tic;
 %             saveas(fig,fname_fig,'pdf');
 %             close(fig);
      elapsed = toc;
-    str = sprintf('Neuro see segment finished processing in %2.2f minutes. No errors.',elapsed/60);
-    SendSlackNotification('https://hooks.slack.com/services/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',str, '#general','@manfredi.castelli17', [], [], []);
+    str = sprintf('MAC -> Neuro see segment finished processing in %2.2f minutes. No errors.',elapsed/60);
+    SendSlackNotification('https://hooks.slack.com/services/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',str, '#general','@manfredi.castelli17', [], [], []);
             % Save masks in a mat file
 %             save(fname_out,'cell_tsG','cell_tsR','masks','mean_imratio','params')
         else

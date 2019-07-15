@@ -25,13 +25,20 @@ function [segmented_image,D,N,B,stat] = segment_Manfredi(img,tune)
 % stat:             measurement and features of img and its objects.
 % 
 
-
+grayImg = img;
 %1) convert mat to grayscale image->binarize img->remove noise
-img = mat2gray(img);
-img = imadjust(img);
-%  cut is the mininum number of pixels of each cell 
-    if tune == 1 %red channel image
-        cut = 100;
+ if tune == 1 %red channel image
+        cut = 140;
+        
+        se = strel('disk',8);
+        background = imopen(img,se);       
+        I2 = img - background;
+        img = imadjust(I2); 
+       
+        img = imbinarize(img, 'adaptive');
+        img = bwareafilt(img,[140 600]);
+        img = imclearborder(img);
+        img = imfill(img,'holes');
         
     elseif tune == 2 % ovelray
             cut = 60;
@@ -39,26 +46,14 @@ img = imadjust(img);
     else 
 %         correlated green image has lots of noise around border.
         cut = 140;
-        img = imclearborder(img,4);
-        img = medfilt2(img,[3,3]);
-        
-    end
-
-         
- 
-    if tune == 1 || tune ==3
-        
-       se = strel('disk',7);
-       background = imopen(img,se);       
-       I2 = img - background;
-       img = imadjust(I2); 
-    end
-    
-% binarizing image with adaptive threshold
+       
+%         img = medfilt2(img,[3,3]);
     img = imbinarize(img, 'adaptive');
-    img = bwareafilt(img,[140 600]);
-    img = imclearborder(img,4);
+    img = bwareaopen(img, cut);
+    img = imclearborder(img);
     img = imfill(img,'holes');
+        
+    end
 
 % bwdist uses a fast algorithm to compute the true Euclidean distanc
 % transform. it is the distance at each pixel to the nearest nonzero pixel.
@@ -76,10 +71,10 @@ img = imadjust(img);
      segmented_image = medfilt2(segmented_image,[3,3]);
     
      if tune == 3
-         segmented_image = bwareaopen(segmented_image, 100);
+         segmented_image = bwareaopen(segmented_image, 120);
      
      else
-         segmented_image = bwareaopen(segmented_image, 70);
+         segmented_image = bwareaopen(segmented_image, 110);
      end
          
 
@@ -87,6 +82,6 @@ img = imadjust(img);
 
 %     labelling each object in image and extracting features
     Ilabel = bwlabel(segmented_image);
-    stat = regionprops(Ilabel,  'all');
+    stat = regionprops(Ilabel,grayImg,  'all');
 end
 

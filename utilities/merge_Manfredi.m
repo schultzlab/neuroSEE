@@ -86,12 +86,12 @@ function [centroids,roiR_merged,green_percent,red_percent] = merge_Manfredi(red_
     red_percent = (100*size(red_cent,1))/size(centroids,1);
     
     
-    fprintf('\n\n%d ROI in total merged.',count);
-    fprintf('\n\nFinal number of ROI: %d\n\n',size(centroids,1));
+    fprintf('\n\nMAC->%d ROI in total merged.',count);
+    fprintf('\n\nMAC->Final number of ROI: %d\n\n',size(centroids,1));
     fprintf('Total percentage of centroids detected by green channel: %2.2f%%\n',green_percent);
     fprintf('Total percentage of centroids detected by red channel: %2.2f%%\n',red_percent);
-    str = sprintf('\n\nFinal number of ROI: %d\n\nTotal percentage of centroids detected by green channel: %2.2f%%\n',size(centroids,1),green_percent)
-    SendSlackNotification('MAC -> https://hooks.slack.com/services/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',str, '#general','@manfredi.castelli17', [], [], []);
+    str = sprintf('\n\nMAC->Final number of ROI: %d\n\nTotal percentage of centroids detected by green channel: %2.2f%%\n',size(centroids,1),green_percent)
+    SendSlackNotification('https://hooks.slack.com/services/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',str, '#general','@manfredi.castelli17', [], [], []);
 end
 
 

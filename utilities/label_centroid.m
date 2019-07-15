@@ -7,7 +7,7 @@ function label_centroid(stat,col)
     set(h,'Color',col(1));
     count = x;
     end
-    fprintf('\nTotal #of centroids %d\n',count);
+%     fprintf('\nTotal #of centroids %d\n',count);
 end
 
 

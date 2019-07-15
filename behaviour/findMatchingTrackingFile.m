@@ -13,7 +13,7 @@ function fname_track = findMatchingTrackingFile(data_locn, file, force)
     if nargin<3, force = 0; end
         
     dir_track = [data_locn 'Data/' file(1:8) '/Neurotar/'];
-    dir_processed = [data_locn 'Data/' file(1:8) '/Processed/' file '/'];
+    dir_processed = [data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/'];
         if ~exist(dir_processed,'dir'), mkdir(dir_processed); end
     
     imgformat   = 'yyyymmdd_HH_MM_SS';
@@ -107,28 +107,12 @@ function fname_track = findMatchingTrackingFile(data_locn, file, force)
                 if numel(tdmsfile) == 1
                     fname_track = tdmsfile.name;
                 else
-                    fprintf('Tracking file does not exist in folder\n');
+                    fprintf('%s: Tracking file does not exist in folder\n', file);
                 end
             end
         else
-            matfiles = subdir(fullfile(dir_processed,['*.','mat']));
-            if numel(matfiles) > 0 
-                s = zeros(1,numel(matfiles));
-                for i = 1:numel(matfiles)
-                    name = matfiles(i).name;
-                    if ~any([strcmpi(name(end-9:end-4),'output'),...
-                             strcmpi(name(end-10:end-4),'allData'),...
-                             strcmpi(name(end-10:end-4),'refined'),...
-                             strcmpi(name(end-12:end-4),'unrefined')]) 
-                        fname_track = matfiles(i).name;
-                        s(i) = 1;
-                    else 
-                        s(i) = 0;
-                    end
-                end
-            end
-                
-            if ~any(s)
+            matfile = subdir(fullfile(dir_processed,['*.','mat']));
+            if isempty(matfile) 
                 csvfile = subdir(fullfile(trackfolder,['*.','csv'])); % Files from 2018
                 if numel(csvfile) == 1
                     fname_track = csvfile.name;
@@ -137,9 +121,11 @@ function fname_track = findMatchingTrackingFile(data_locn, file, force)
                     if numel(tdmsfile) == 1
                         fname_track = tdmsfile.name;
                     else
-                        fprintf('Tracking file does not exist in folder\n');
+                        fprintf('%s: Tracking file does not exist in folder\n', file);
                     end
                 end
+            else
+                fname_track = matfile.name;
             end            
         end
     end

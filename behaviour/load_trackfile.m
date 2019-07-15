@@ -19,7 +19,7 @@ function trackdata = load_trackfile(data_locn,file,fname_track,force)
     str = sprintf('%s: Loading tracking data\n', file);
     cprintf(str)
     
-    dir_processed = [data_locn 'Data/' file(1:8) '/Processed/' file '/'];
+    dir_processed = [data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/'];
         if ~exist(dir_processed,'dir'), mkdir(dir_processed); end
     
     [~,~,ext] = fileparts(fname_track);
@@ -67,13 +67,13 @@ function trackdata = load_trackfile(data_locn,file,fname_track,force)
     
     yn_fname_fig = exist(fname_fig,'file');
     yn_fname_pdf = exist(fname_pdf,'file');
-    if any([force,~yn_fname_fig,~yn_fname_pdf])
+    if any([ force, ~yn_fname_fig, ~yn_fname_pdf ])
         fig = figure; plot(trackdata.x,trackdata.y); axis square; axis off; 
         tmax = (trackdata.time(end))/60; % min
             titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17) ' (' num2str(round(tmax)) ' min)'];
             title(titletext);
-         savefig(fig,fname_fig);
-         saveas(fig,fname_pdf);
+        savefig(fig,fname_fig);
+        saveas(fig,fname_pdf);
         close(fig);
     end
     

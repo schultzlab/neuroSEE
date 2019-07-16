@@ -72,6 +72,7 @@ savefig(h,'Segmented.fig','compact');
 % eliminating roi that merged 
 stats_red(red_Roi_Merged) = [];
 
+<<<<<<< HEAD
 
 
 
@@ -79,6 +80,18 @@ stats_red(red_Roi_Merged) = [];
 
 
 
+=======
+notCell = seedClassification(metric,stats_red);
+
+
+h = figure('Name','Final centroids before classfication');imshow((metric./red_metric));hold on; label_centroid([stats_red;stats_green],'g.');hold off;
+savefig(h,'Segmented.fig','compact');
+% eliminating roi that classifier discarded 
+stats_red(notCell) = [];
+
+h = figure('Name','Final centroids after classification');imshow((metric./red_metric));hold on; label_centroid([stats_red;stats_green],'g.');hold off;
+savefig(h,'Segmented.fig','compact');
+>>>>>>> 82aa60384bb471d0938045481007596d37549c4a
 
 obj_num    = size(stats_red,1);
 masks      = zeros(dim(1), dim(2), obj_num);

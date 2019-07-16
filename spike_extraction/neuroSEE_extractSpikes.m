@@ -1,12 +1,17 @@
 % Written by Ann Go
 %
+<<<<<<< HEAD
 % This function calculates the ratiometric Ca time series (R) and extracts
 % the spikes
 %
+=======
+% This function extracts spikes from df_f
+% 
+>>>>>>> 82aa60384bb471d0938045481007596d37549c4a
 % INPUTS
-%   tsG         : time series in green channel
-%   tsR         : time series in red channel
-%   data_locn   : directory of GCaMP6 data
+%   df_f        
+%   ddf_f       : decontaminated (fissa-corrected) df_f
+%   data_locn   : GCaMP data repository
 %   file        : part of filename of 2P image in the format
 %                   yyyymmdd_HH_MM_SS
 %   params.
@@ -16,12 +21,12 @@
 %   force       : if =1, existing R and spike data is overwritten
 %
 % OUTPUS
-%   R           : ratiometric Ca time series
 %   spikes      : spikes extracted from R
 %   params
 
-function [R, spikes, params] = neuroSEE_extractSpikes( tsG, tsR, data_locn, file, params, force )
+function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force )
     if nargin<6, force = 0; end
+<<<<<<< HEAD
 
     filedir = fullfile(data_locn,'Data/',file(1:8),'/Processed/',file,'/');
     fname_mat = [filedir file '_spikes_output.mat'];
@@ -63,6 +68,53 @@ function [R, spikes, params] = neuroSEE_extractSpikes( tsG, tsR, data_locn, file
 
             currstr = sprintf( '%s: Spikes extracted\n', file );
             refreshdisp(currstr,str)
+=======
+    
+    mcorr_method = params.methods.mcorr_method;
+    segment_method = params.methods.segment_method;
+    dofissa = params.methods.dofissa;
+    
+    if params.methods.dofissa
+        str_fissa = 'FISSA';
+    else
+        str_fissa = 'noFISSA';
+    end
+    filedir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/',str_fissa,'/'];
+    fname_mat = [filedir file '_spikes_output.mat'];
+
+    if ~isempty(ddf_f)
+        C = ddf_f;
+    else
+        C = df_f;
+    end
+    N = size(C,1); T = size(C,2);
+    
+    if force || ~exist(fname_mat,'file')
+        str = sprintf( '%s: Doing spike extraction\n', file );
+        cprintf(str)
+
+        for i = 1:N
+            fo = ones(1,T) * prctile(C(i,:),params.spkExtract.bl_prctile);
+            C(i,:) = (C(i,:) - fo); % ./ fo;
         end
+        spikes = zeros(N,T);
+        for i = 1:N
+            spkmin = params.spkExtract.spk_SNR*GetSn(C(i,:));
+            lam = choose_lambda(exp(-1/(params.fr*params.spkExtract.decay_time)),GetSn(C(i,:)),params.spkExtract.lam_pr);
+
+            [~,spk,~] = deconvolveCa(C(i,:),'ar2','method','thresholded','optimize_pars',true,'maxIter',20,...
+                                    'window',150,'lambda',lam,'smin',spkmin);
+            spikes(i,:) = spk(:);
+>>>>>>> 82aa60384bb471d0938045481007596d37549c4a
+        end
+
+        currstr = sprintf( '%s: Spike extraction done\n', file );
+        refreshdisp(currstr,str)
+    else
+        spike_output = load(fname_mat);
+        spikes = spike_output.spikes;
+        params.spkExtract = spike_output.params;
+        
+        fprintf( '%s: Spike extraction data found and loaded\n', file );
     end
 end

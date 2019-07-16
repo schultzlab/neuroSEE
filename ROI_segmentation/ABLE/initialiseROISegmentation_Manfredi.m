@@ -51,23 +51,40 @@ maxSize = round(pi * radius^2 * 1.8);
 
 [segmentedG, ~,~,~,stats_green] = segment_Manfredi(metric,tune_green);
 
-[~,red_Roi_Merged] = merge_Manfredi(stats_red,stats_green);
+
 
 h = figure('Name','Green');imshow(metric);hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
 savefig(h,'DistributionOfCentroids.fig','compact');
-h = figure('Name','Green');imshow(segmentedG);hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
+
+h = figure('Name','Final centroids before classfication');imshow((metric./red_metric));hold on; label_centroid([stats_red;stats_green],'g.');hold off;
 savefig(h,'Segmented.fig','compact');
+
+notCell = seedClassification((metric +0.1),stats_red);
+stats_red(notCell) = [];
+
+h = figure('Name','Final centroids after classification');imshow((metric./red_metric));hold on; label_centroid([stats_red;stats_green],'g.');hold off;
+savefig(h,'Segmented.fig','compact');
+
+% h = figure('Name','Green');imshow(segmentedG);hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
+% savefig(h,'Segmented.fig','compact');
+
+[~,red_Roi_Merged] = merge_Manfredi(stats_red,stats_green);
 % eliminating roi that merged 
 stats_red(red_Roi_Merged) = [];
 
-h = figure('Name','Final centroids');imshow((metric./red_metric));hold on; label_centroid([stats_red;stats_green],'g.');hold off;
-savefig(h,'Segmented.fig','compact');
+
+
+
+% eliminating roi that classifier discarded 
+
+
+
 
 obj_num    = size(stats_red,1);
 masks      = zeros(dim(1), dim(2), obj_num);
 masksG     = zeros(dim(1),dim(2),obj_num);
 
-% minSize = min([stats_red.Area]);
+% msave()inSize = min([stats_red.Area]);
 
 for ii  = 1:obj_num
     mask             = zeros(dim);

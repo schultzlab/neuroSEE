@@ -43,7 +43,7 @@ if force || ~exist(fname_mat,'file')
         df_medfilt1 = params.ROIsegment.df_medfilt1;
         fr = params.fr;
 
-        [tsG, masks, ~, corr_image] = ABLE_manfredi( imG, mean_imR, file, maxcells, cellrad );
+        [tsG, masks, corr_image] = ABLE_manfredi( imG, mean_imR, file, maxcells, cellrad );
 
         % Calculate df_f
         df_f = zeros(size(tsG));

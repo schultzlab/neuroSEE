@@ -28,7 +28,7 @@
 
 %function [tsG, tsR, masks, mean_imratio] = ABLE( stack_g, mean_r, cellrad, maxcells )
 
-function [tsG, masks, mean_imratio, corr_g] = ABLE( stack_g, mean_r, file, maxcells, cellrad ) % by Ann
+function [tsG, masks, corr_g] = ABLE( stack_g, mean_r, file, maxcells, cellrad ) % by Ann
 
    str = sprintf('%s: Extracting ROIs with ABLE\n', file);
    cprintf(str);

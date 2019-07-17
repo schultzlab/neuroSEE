@@ -28,7 +28,7 @@
 
 %function [tsG, tsR, masks, mean_imratio] = ABLE( stack_g, mean_r, cellrad, maxcells )
 
-function [tsG, masks, overl_corr] = ABLE( stack_g, mean_r, file, cellrad, maxcells ) 
+function [tsG, masks, overl_corr] = ABLE_manfredi( stack_g, mean_r, file, cellrad, maxcells ) 
    tic;
    str = sprintf('%s: Extracting ROIs with ABLE\n', file);
    cprintf(str);

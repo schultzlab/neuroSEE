@@ -14,16 +14,12 @@
 function files = extractFilenamesFromTxtfile(filename)
 
     fileID = fopen(filename);
-    C = textscan(fileID,'%s %s %s');
+    C = textscan(fileID,'%s');
     fclose(fileID);
-    k = numel(C{1})-1;
+    k = numel(C{1});
     
     files = blanks(length(C{1}{2}));
-    filesDim = zeros(k,1);
-    filesFOV = zeros(k,1);
     for i = 1:k
-        files(i,:) = C{1}{i+1};
-        filesDim(i,:) = str2double(C{2}{i+1});
-        filesFOV(i,:) = str2double(C{3}{i+1});
+        files(i,:) = C{1}{i};
     end
 end

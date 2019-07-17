@@ -25,7 +25,6 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
     
     mcorr_method = params.methods.mcorr_method;
     segment_method = params.methods.segment_method;
-    dofissa = params.methods.dofissa;
     
     if params.methods.dofissa
         str_fissa = 'FISSA';

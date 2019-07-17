@@ -16,13 +16,13 @@
 clear; % close all;
 tic
 
-%% USER: Set basic methods
+%% USER: Set basic settings
                             
-test = false;                    % flag to use one of smaller files in test folder)
+test = true;                    % flag to use one of smaller files in test folder)
 default = true;                 % flag to use default parameters
                                 % flag to force
 force = [false;...              % (1) motion correction even if motion corrected images exist
-         true;...              % (2) roi segmentation
+         false;...              % (2) roi segmentation
          false;...              % (3) force neuropil decontamination
          false;...              % (4) force spike extraction
          false;...              % (5) force tracking data extraction
@@ -45,6 +45,7 @@ if ~isempty(err)
 end
 if ~strcmpi(comp,'mac')
     manually_refine_spikes = false;     % no gui when running in linuxbox or hpc
+    manually_refine_PFmap = false;
 end
 if manually_refine_spikes
     global spikes params
@@ -52,7 +53,7 @@ end
 
 %% USER: Specify file
 
-file = '20181016_09_44_06'; 
+file = '20190406_20_38_41'; 
 
 
 %% USER: Set parameters (if not using default)
@@ -238,29 +239,29 @@ if manually_refine_spikes
 end
 
 
-%% (5) Find tracking file then load it
-% Saved: fig & pdf of trajectory
-%        mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
-
-fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
-trackData = load_trackfile( data_locn,file, fname_track, force(5) );
-if any(trackData.r < 100)
-    params.mode_dim = '2D'; % open field
-    params.PFmap.Nbins = [10, 10]; % number of location bins in [x y]               
-else 
-    params.mode_dim = '1D'; % circular linear track
-    params.PFmap.Nbins = 30;      % number of location bins               
-end
-
-
-%% (6) Generate place field maps
-% Saved: fig & pdf of summary consisting of occMap, infoMap, spikeMap and placeMap
-%        mat file with fields {occMap, spikeMap, infoMap, placeMap, downData, activeData,...
-%                               placeMap_smooth, sorted_placeMap, sortIdx, params}
-
-if manually_refine_spikes
-    force(6) = true;
-end
+% %% (5) Find tracking file then load it
+% % Saved: fig & pdf of trajectory
+% %        mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
+% 
+% fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
+% trackData = load_trackfile( data_locn,file, fname_track, force(5) );
+% if any(trackData.r < 100)
+%     params.mode_dim = '2D'; % open field
+%     params.PFmap.Nbins = [10, 10]; % number of location bins in [x y]               
+% else 
+%     params.mode_dim = '1D'; % circular linear track
+%     params.PFmap.Nbins = 30;      % number of location bins               
+% end
+% 
+% 
+% %% (6) Generate place field maps
+% % Saved: fig & pdf of summary consisting of occMap, infoMap, spikeMap and placeMap
+% %        mat file with fields {occMap, spikeMap, infoMap, placeMap, downData, activeData,...
+% %                               placeMap_smooth, sorted_placeMap, sortIdx, params}
+% 
+% if manually_refine_spikes
+%     force(6) = true;
+% end
 
 % if strcmpi(params.mode_dim,'2D')
 %     [occMap, spikeMap, infoMap, placeMap, placeMap_smooth, placeMap_asd, ...

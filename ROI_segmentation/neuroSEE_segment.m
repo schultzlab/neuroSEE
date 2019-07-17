@@ -32,7 +32,6 @@ filedir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method
 if ~exist( filedir, 'dir' ), mkdir( filedir ); end
 
 fname_mat = [filedir file '_segment_output.mat'];
-fname_fig = [filedir file '_ROIs.fig'];
 
 if force || ~exist(fname_mat,'file')
     maxcells = params.ROIsegment.maxcells;
@@ -81,10 +80,11 @@ if force || ~exist(fname_mat,'file')
     % Plot masks on correlation image and save plot
     plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
     fig = plotContoursOnSummaryImage(corr_image, masks, plotopts);
+    fname_fig = [filedir file '_ROIs'];
     savefig(fig,fname_fig);
     saveas(fig,fname_fig,'pdf');
     close(fig);
-    
+
     fprintf('%s: ROI segmentation done\n',file);
 
 else
@@ -109,6 +109,7 @@ else
     params.ROIsegment = segmentOutput.params;
 
     % If ROI image doesn't exist, create & save figure
+    fname_fig = [filedir file '_ROIs.fig'];
     if ~exist(fname_fig,'file')
        plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
        fig = plotContoursOnSummaryImage(corr_image, masks, plotopts);

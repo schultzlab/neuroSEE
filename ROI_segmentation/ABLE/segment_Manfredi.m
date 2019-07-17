@@ -25,10 +25,10 @@ function [segmented_image,D,N,B,stat] = segment_Manfredi(img,tune)
 % stat:             measurement and features of img and its objects.
 % 
 
-grayImg = img;
+
 %1) convert mat to grayscale image->binarize img->remove noise
  if tune == 1 %red channel image
-        cut = 140;
+        cut = 90;
         
         se = strel('disk',8);
         background = imopen(img,se);       
@@ -36,7 +36,7 @@ grayImg = img;
         img = imadjust(I2); 
        
         img = imbinarize(img, 'adaptive');
-        img = bwareafilt(img,[140 600]);
+        img = bwareafilt(img,[cut 650]);
         img = imclearborder(img);
         img = imfill(img,'holes');
         
@@ -45,7 +45,7 @@ grayImg = img;
             
     else 
 %         correlated green image has lots of noise around border.
-        cut = 140;
+        cut = 100;
        
 %         img = medfilt2(img,[3,3]);
     img = imbinarize(img, 'adaptive');
@@ -71,10 +71,10 @@ grayImg = img;
      segmented_image = medfilt2(segmented_image,[3,3]);
     
      if tune == 3
-         segmented_image = bwareaopen(segmented_image, 120);
+         segmented_image = bwareaopen(segmented_image, 100);
      
      else
-         segmented_image = bwareaopen(segmented_image, 110);
+         segmented_image = bwareaopen(segmented_image, 100);
      end
          
 
@@ -82,6 +82,6 @@ grayImg = img;
 
 %     labelling each object in image and extracting features
     Ilabel = bwlabel(segmented_image);
-    stat = regionprops(Ilabel,grayImg,  'all');
+    stat = regionprops(Ilabel,  'all');
 end
 

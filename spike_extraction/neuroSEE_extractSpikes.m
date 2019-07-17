@@ -1,7 +1,9 @@
 % Written by Ann Go
 %
+
 % This function extracts spikes from df_f
 % 
+
 % INPUTS
 %   df_f        
 %   ddf_f       : decontaminated (fissa-corrected) df_f
@@ -19,7 +21,7 @@
 %   params
 
 function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force )
-    if nargin<6, force = 0; end
+   if nargin<6, force = 0; end
     
     mcorr_method = params.methods.mcorr_method;
     segment_method = params.methods.segment_method;
@@ -56,6 +58,7 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
             [~,spk,~] = deconvolveCa(C(i,:),'ar2','method','thresholded','optimize_pars',true,'maxIter',20,...
                                     'window',150,'lambda',lam,'smin',spkmin);
             spikes(i,:) = spk(:);
+
         end
 
         currstr = sprintf( '%s: Spike extraction done\n', file );

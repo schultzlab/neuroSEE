@@ -19,7 +19,7 @@ tic
 %% USER: Set basic methods
                             
 test = false;                    % flag to use one of smaller files in test folder)
-default = true;                 % flag to use default parameters
+default = false;                 % flag to use default parameters
                                 % flag to force
 force = [false;...              % (1) motion correction even if motion corrected images exist
          true;...              % (2) roi segmentation
@@ -29,7 +29,7 @@ force = [false;...              % (1) motion correction even if motion corrected
          false];                % (6) force place field mapping
 
 mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, fft-rigid method (Katie's)
-segment_method = 'CaImAn';      % [ABLE,CaImAn] 
+segment_method = 'ABLE';      % [ABLE,CaImAn] 
 dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
 manuall_refine_PFmap = false;   % flag to tweak PFmap including changing number of epochs or velocity threshold
@@ -52,7 +52,7 @@ end
 
 %% USER: Specify file
 
-file = '20181016_09_44_06'; 
+file = '20190406_20_41_07'; 
 
 
 %% USER: Set parameters (if not using default)
@@ -85,8 +85,8 @@ if ~default
                 'init_batch',200);          % default: 200
         end
     % ROI segmentation 
-        params.ROIsegment.cellrad = 10;            % expected radius of a cell (pixels)    [default: 10]
-        params.ROIsegment.maxcells = 200;          % estimated number of cells in FOV      [default: 200]
+        params.ROIsegment.cellrad = 8;            % expected radius of a cell (pixels)    [default: 10]
+        params.ROIsegment.maxcells = 300;          % estimated number of cells in FOV      [default: 200]
         params.ROIsegment.df_prctile = 5;          % percentile to be used for estimating baseline [default: 5]
         params.ROIsegment.df_medfilt1 = 13;        % degree of smoothing for df_f          [default: 23]
     % neuropil correction

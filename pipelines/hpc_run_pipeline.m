@@ -21,8 +21,8 @@ tic
 test = false;                    % flag to use one of smaller files in test folder)
 default = true;                 % flag to use default parameters
                                 % flag to force
-force = [false;...              % (1) motion correction even if motion corrected images exist
-         true;...              % (2) roi segmentation
+force = [true;...              % (1) motion correction even if motion corrected images exist
+         false;...              % (2) roi segmentation
          false;...              % (3) force neuropil decontamination
          false;...              % (4) force spike extraction
          false;...              % (5) force tracking data extraction
@@ -52,7 +52,7 @@ end
 
 %% USER: Specify file
 
-file = '20181016_09_44_06'; 
+file = '20181016_09_14_03'; 
 
 
 %% USER: Set parameters (if not using default)

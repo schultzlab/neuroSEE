@@ -12,7 +12,7 @@ addpath(genpath('../neuropil_decontamination'));
 addpath(genpath('../PF_mapping'));
 addpath(genpath('../ROI_registration'));
 addpath(genpath('../ROI_segmentation'));
-addpath(genpath('../spike_estimation'));
+addpath(genpath('../spike_extraction'));
 addpath(genpath('../utilities'));
 
 err = [];

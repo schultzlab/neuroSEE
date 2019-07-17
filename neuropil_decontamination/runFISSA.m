@@ -50,6 +50,8 @@ if exist('/Users/mgo/anaconda3/envs/neuroSEE/','dir')
     python_executable = '/Users/mgo/anaconda3/envs/neuroSEE/bin/python';
 elseif exist('/home/mgo/anaconda3/envs/neuroSEE/','dir')
     python_executable = '/home/mgo/anaconda3/envs/neuroSEE/bin/python';
+else
+    python_executable = '/rds/general/user/mgo/home/anaconda3/envs/neuroSEE/bin/python';
 end
 pystr = [python_executable ' ' pyfun];
 % [status, pyout] = 

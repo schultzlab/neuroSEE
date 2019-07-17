@@ -87,7 +87,7 @@ savefig(h,'DistributionOfCentroids.fig','compact');
 
 
 %% Classify each ROI found from red channel 
-notCell = seedClassification((metric ),stats_red);
+%notCell = seedClassification((metric ),stats_red);
 % eliminating roi that classifier discarded 
 stats_red(notCell) = [];
 % %% Classify each ROI found from green channel 

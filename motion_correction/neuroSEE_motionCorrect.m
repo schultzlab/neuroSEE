@@ -9,11 +9,9 @@
 %   data_locn   : GCaMP data repository
 %   file        : part of file name of image stacks in the format
 %                   yyyymmdd_HH_MM_SS
-%   mcorr_method: motion correction method
-%                   CaImAn NoRMCorre method OR
-%                   fft-rigid method (Katie's)
-%   params      : parameters for specific motion correction method
-%   force       : if =1, motion correction will be done even though motion
+%   params.methods.mcorr_method: ['normcorre' or 'fftRigid'] motion correction method
+%                   * CaImAn NoRMCorre method OR fft-rigid method (Katie's)
+%   force       : (optional, default: 0) if =1, motion correction will be done even though motion
 %                   corrected images already exist
 % OUTPUTS
 %   imG         : matrix of motion corrected green image stack
@@ -112,7 +110,7 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
         str = sprintf( '%s: Motion corrected tif images saved\n', file );
         refreshdisp( str, prevstr );
     else
-        [imG, imR] = load_imagefile( data_locn, file, 0, '_mcorr', mcorr_method );
+        [imG, imR] = load_imagefile( data_locn, file, 0, '_mcorr', params );
         mcorr_output = load(fname_mat_mcorr);
         if strcmpi(mcorr_method,'normcorre')
             if isfield(mcorr_output,'params') 

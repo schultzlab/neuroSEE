@@ -1,13 +1,9 @@
 % Written by Ann Go
 %
-<<<<<<< HEAD
-% This function calculates the ratiometric Ca time series (R) and extracts
-% the spikes
-%
-=======
+
 % This function extracts spikes from df_f
 % 
->>>>>>> 82aa60384bb471d0938045481007596d37549c4a
+
 % INPUTS
 %   df_f        
 %   ddf_f       : decontaminated (fissa-corrected) df_f
@@ -25,50 +21,7 @@
 %   params
 
 function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force )
-    if nargin<6, force = 0; end
-<<<<<<< HEAD
-
-    filedir = fullfile(data_locn,'Data/',file(1:8),'/Processed/',file,'/');
-    fname_mat = [filedir file '_spikes_output.mat'];
-
-    % If asked to force overwrite
-    if force
-        str = sprintf( '%s: Extracting spikes\n', file );
-        cprintf(str)
-
-        % Calculate ratiometric Ca time series
-        R = ratiometric_Ca( tsG, tsR, params(1).RsmoothFac );
-
-        spikes = nndORoasis(R, 2, params(1).g, params(1).lambda); % always use 2 (oasis), 1 is for nnd
-         save(fname_mat,'R','spikes','params');
-
-        currstr = sprintf( '%s: Spikes extracted\n', file );
-        refreshdisp(currstr,str)
-    else
-        yn_fname_mat = exist(fname_mat,'file');
-        % Find out if spike extraction data already exists. If not,
-        % generate data
-        if yn_fname_mat
-            m = load(fname_mat);
-            R = m.R;
-            spikes = m.spikes;
-            params = m.params;
-
-            str = sprintf( '%s: Spike extraction data loaded\n', file );
-            cprintf(str)
-        else
-            str = sprintf( '%s: Extracting spikes\n', file );
-            cprintf(str)
-
-            % Calculate ratiometric Ca time series
-            R = ratiometric_Ca( tsG, tsR, params(1).RsmoothFac );
-
-            spikes = nndORoasis(R, 2, params(1).g, params(1).lambda); % always use 2 (oasis), 1 is for nnd
-             save(fname_mat,'R','spikes','params');
-
-            currstr = sprintf( '%s: Spikes extracted\n', file );
-            refreshdisp(currstr,str)
-=======
+   if nargin<6, force = 0; end
     
     mcorr_method = params.methods.mcorr_method;
     segment_method = params.methods.segment_method;
@@ -105,7 +58,7 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
             [~,spk,~] = deconvolveCa(C(i,:),'ar2','method','thresholded','optimize_pars',true,'maxIter',20,...
                                     'window',150,'lambda',lam,'smin',spkmin);
             spikes(i,:) = spk(:);
->>>>>>> 82aa60384bb471d0938045481007596d37549c4a
+
         end
 
         currstr = sprintf( '%s: Spike extraction done\n', file );

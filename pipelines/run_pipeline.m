@@ -23,7 +23,7 @@ default = true;                 % flag to use default parameters
                                 % flag to force
 force = [false;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
-         true;...              % (3) force neuropil decontamination
+         false;...              % (3) force neuropil decontamination
          false;...              % (4) force spike extraction
          false;...              % (5) force tracking data extraction
          false];                % (6) force place field mapping
@@ -205,9 +205,11 @@ end
 %   correlation image with ROIs (fig, pdf)
 %   mat with fields {tsG, df_f, masks, corr_image, params}
 
-
+if strcmpi(segment_method,'CaImAn')
+    clear imR; imR = [];
+end
 [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
-
+clear imG imR
 
 %% (3) Run FISSA to extract neuropil-corrected time-series
 % Saved in file folder: mat file with fields {tsG, df_f, masks}

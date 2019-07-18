@@ -23,7 +23,7 @@ default = true;                 % flag to use default parameters
                                 % flag to force
 force = [false;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
-         false;...              % (3) force neuropil decontamination
+         true;...              % (3) force neuropil decontamination
          false;...              % (4) force spike extraction
          false;...              % (5) force tracking data extraction
          false];                % (6) force place field mapping
@@ -44,8 +44,11 @@ if ~isempty(err)
     return
 end
 if ~strcmpi(comp,'mac')
-    manually_refine_spikes = false;     % no gui when running in linuxbox or hpc
-    manually_refine_PFmap = false;
+    manually_refine_spikes = false;     % No gui when running in linuxbox or hpc
+    manually_refine_PFmap = false;      % One can always run gui locally later using saved processed data.
+end
+if strcmpi(comp,'hpc')
+    LASTN = maxNumCompThreads(32);      % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
 end
 if manually_refine_spikes
     global spikes params

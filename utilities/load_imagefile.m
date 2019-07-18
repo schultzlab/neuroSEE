@@ -26,7 +26,11 @@ function [ imG, imR ] = load_imagefile( data_locn, file, force, suffix, params )
     end
     if nargin < 4, suffix  = [];    end
     if nargin < 3, force  = 0;    end
-    if strcmpi(segment_method,'CaImAn'), load_imR = false; end
+    if strcmpi(segment_method,'CaImAn') 
+        load_imR = false; 
+    else
+        load_imR = true; 
+    end
     err = 1;
 
     str = sprintf( '%s: Loading %s images...\n', file, suffix );

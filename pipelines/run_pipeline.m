@@ -32,7 +32,7 @@ mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, 
 segment_method = 'CaImAn';      % [ABLE,CaImAn] 
 dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
-manuall_refine_PFmap = false;   % flag to tweak PFmap including changing number of epochs or velocity threshold
+manually_refine_PFmap = false;   % flag to tweak PFmap including changing number of epochs or velocity threshold
 
 
 %% Load module folders and define data directory
@@ -48,7 +48,7 @@ if ~strcmpi(comp,'mac')
     manually_refine_PFmap = false;      % One can always run gui locally later using saved processed data.
 end
 if strcmpi(comp,'hpc')
-    LASTN = maxNumCompThreads(32);      % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
+    maxNumCompThreads(32);      % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
 end
 if manually_refine_spikes
     global spikes params
@@ -56,7 +56,7 @@ end
 
 %% USER: Specify file
 
-file = '20190406_20_38_41'; 
+file = '20181016_09_09_43'; 
 
 
 %% USER: Set parameters (if not using default)
@@ -244,43 +244,45 @@ if manually_refine_spikes
 end
 
 
-% %% (5) Find tracking file then load it
-% % Saved: fig & pdf of trajectory
-% %        mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
-% 
-% fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
-% trackData = load_trackfile( data_locn,file, fname_track, force(5) );
-% if any(trackData.r < 100)
-%     params.mode_dim = '2D'; % open field
-%     params.PFmap.Nbins = [10, 10]; % number of location bins in [x y]               
-% else 
-%     params.mode_dim = '1D'; % circular linear track
-%     params.PFmap.Nbins = 30;      % number of location bins               
-% end
-% 
-% 
-% %% (6) Generate place field maps
-% % Saved: fig & pdf of summary consisting of occMap, infoMap, spikeMap and placeMap
-% %        mat file with fields {occMap, spikeMap, infoMap, placeMap, downData, activeData,...
-% %                               placeMap_smooth, sorted_placeMap, sortIdx, params}
-% 
-% if manually_refine_spikes
-%     force(6) = true;
-% end
+%% (5) Find tracking file then load it
+% Saved: fig & pdf of trajectory
+%        mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
+
+fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
+trackData = load_trackfile( data_locn,file, fname_track, force(5) );
+if any(trackData.r < 100)
+    params.mode_dim = '2D'; % open field
+    params.PFmap.Nbins = [10, 10]; % number of location bins in [x y]               
+else 
+    params.mode_dim = '1D'; % circular linear track
+    params.PFmap.Nbins = 30;      % number of location bins               
+end
+
+
+%% (6) Generate place field maps
+% Saved: fig & pdf of summary consisting of occMap, infoMap, spikeMap and placeMap
+%        mat file with fields {occMap, spikeMap, infoMap, placeMap, downData, activeData,...
+%                               placeMap_smooth, sorted_placeMap, sortIdx, params}
+
+if manually_refine_spikes
+    force(6) = true;
+end
 
 % if strcmpi(params.mode_dim,'2D')
-%     [occMap, spikeMap, infoMap, placeMap, placeMap_smooth, placeMap_asd, ...
-%      downData, activeData, params] ...
+%     [occMap, spikeMap, normspikeMap, infoMap, infoMap_asd, pfMap, pfMap_sm, pfMap_asd, ...
+%      normpfMap, normpfMap_sm, normpfMap_asd, downData, activeData, params] ...
 %       = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
 % else
-%     [occMap, spikeMap, infoMap, placeMap, placeMap_smooth, placeMap_asd, ...
-%      downData, activeData, params, ...
-%      sorted_placeMap, sorted_placeMap_smooth, sorted_placeMap_asd, ...
-%      normsorted_placeMap, normsorted_placeMap_smooth, normsorted_placeMap_asd, ...
-%      placeMap_pertrial, normplaceMap_pertrial, PCidx, sortIdx]...
+%     [occMap, spikeMap, normspikeMap, infoMap, infoMap_asd, pfMap, pfMap_sm, pfMap_asd, ...
+%      normpfMap, normpfMap_sm, normpfMap_asd, downData, activeData, params, ...
+%      sorted_pfMap, sorted_pfMap_sm, sorted_pfMap_asd, ...
+%      sorted_normpfMap, sorted_normpfMap_sm, sorted_normpfMap_asd, ...
+%      spikeMap_pertrial, normspikeMap_pertrial, pcIdx, sortIdx]...
 %       = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
 % end
-% 
+
+if manually_refine_PFmap
+end
 
 %% Save output. These are all the variables needed for viewing data with GUI
 

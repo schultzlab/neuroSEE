@@ -68,32 +68,8 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
         end
         
         % Save summary figure
-        fh = figure; 
-        subplot(221), 
-            imagesc( out_g.meanframe ); 
-            axis image; colorbar; axis off;
-            title( 'Mean frame for raw green' );
-        subplot(222), 
-            imagesc( out_g.meanregframe ); 
-            axis image; colorbar; axis off; 
-            title( 'Mean frame for corrected green' );
-        subplot(223), 
-            imagesc( out_r.meanframe ); 
-            axis image; colorbar; axis off; 
-            title( 'Mean frame for raw red' );
-        subplot(224), 
-            imagesc( out_r.meanregframe ); 
-            axis image; colorbar; axis off;
-            title( 'Mean frame for corrected red' );
-        axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
-            'Visible','off','Units','normalized', 'clipping' , 'off');
-            titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17)];
-            text(0.5, 0.98,titletext);
-        fname_fig = [filedir file '_mcorr_summary'];
-            savefig( fh, fname_fig );
-            saveas( fh, fname_fig, 'pdf' );
-        close( fh );
-
+        makeplot(out_g,out_r);
+        
         % Save output
         mcorr_output.green = out_g;
         mcorr_output.red = out_r;
@@ -127,30 +103,35 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
             % If summary fig doesn't exist, create it   
             out_g = mcorr_output.green;
             out_r = mcorr_output.red;
-            fh = figure; 
-            subplot(221), 
-                imagesc( out_g.meanframe ); 
-                axis image; colorbar; axis off;
-                title( 'Mean frame for raw green' );
-            subplot(222), 
-                imagesc( out_g.meanregframe ); 
-                axis image; colorbar; axis off; 
-                title( 'Mean frame for corrected green' );
-            subplot(223), 
-                imagesc( out_r.meanframe ); 
-                axis image; colorbar; axis off; 
-                title( 'Mean frame for raw red' );
-            subplot(224), 
-                imagesc( out_r.meanregframe ); 
-                axis image; colorbar; axis off;
-                title( 'Mean frame for corrected red' );
-            axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
-                'Visible','off','Units','normalized', 'clipping' , 'off');
-                titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17)];
-                text(0.5, 0.98,titletext);
-            fname_fig = [filedir file '_mcorr_summary'];
-                savefig( fh, fname_fig );
-                saveas( fh, fname_fig, 'pdf' );
-            close( fh );
+            makeplot(out_g,out_r);
         end
     end
+    
+    function makeplot(out_g,out_r)
+        fh = figure; 
+        subplot(221), 
+            imagesc( out_g.meanframe ); 
+            axis image; colorbar; axis off;
+            title( 'Mean frame for raw green' );
+        subplot(222), 
+            imagesc( out_g.meanregframe ); 
+            axis image; colorbar; axis off; 
+            title( 'Mean frame for corrected green' );
+        subplot(223), 
+            imagesc( out_r.meanframe ); 
+            axis image; colorbar; axis off; 
+            title( 'Mean frame for raw red' );
+        subplot(224), 
+            imagesc( out_r.meanregframe ); 
+            axis image; colorbar; axis off;
+            title( 'Mean frame for corrected red' );
+        axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
+            'Visible','off','Units','normalized', 'clipping' , 'off');
+            titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17)];
+            text(0.5, 0.98,titletext);
+        fname_fig = [filedir file '_mcorr_summary'];
+            savefig( fh, fname_fig );
+            saveas( fh, fname_fig, 'pdf' );
+        close( fh );
+    end
+end

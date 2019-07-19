@@ -44,7 +44,7 @@ function check = checkforExistingProcData(data_locn, file, mcorr_method, segment
     end
     
     % 6) Check for existing PF mapping output
-    if exist([dir_fissa file '_PFmapping_output.mat'],'file')
+    if exist([dir_fissa file '_PFmap_output.mat'],'file')
         check(6) = 1;
     end
 

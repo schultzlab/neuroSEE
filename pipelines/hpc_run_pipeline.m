@@ -48,7 +48,7 @@ if ~strcmpi(comp,'mac')
     manually_refine_PFmap = false;      % One can always run gui locally later using saved processed data.
 end
 if strcmpi(comp,'hpc')
-    LASTN = maxNumCompThreads(32);      % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
+    maxNumCompThreads(32);      % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
 end
 if manually_refine_spikes
     global spikes params

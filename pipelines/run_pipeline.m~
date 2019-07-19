@@ -260,9 +260,9 @@ end
 
 
 %% (6) Generate place field maps
-% Saved: fig & pdf of several figures showing occMap, spkMap, pfMap,
-%           remapping and spkMap_pertrial
-%        mat file with fields {occMap, hist, asd, downData, activeData}
+% Saved: fig & pdf of summary consisting of occMap, infoMap, spikeMap and placeMap
+%        mat file with fields {occMap, spikeMap, infoMap, placeMap, downData, activeData,...
+%                               placeMap_smooth, sorted_placeMap, sortIdx, params}
 
 if manually_refine_spikes
     force(6) = true;
@@ -275,11 +275,9 @@ end
 
 %% Save output. These are all the variables needed for viewing data with GUI
 
-fname_allData = [data_locn ];
-save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
-                    'downData','activeData','occMap','hist','asd','params');
-if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
-if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
+% save(fname_allData,'file','corr_image','masks','tsG','dtsG','df_f','ddf_f','spikes',...
+%                     'fname_track','downData','activeData','occMap','hist','asd','params');
+if ~isempty(dtsG),
 
 
 t = toc;

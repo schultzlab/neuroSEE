@@ -26,7 +26,7 @@ for i = 1:N
     if infoMap(i,info_type) > prctile(MI(i,:),99)
         pcIdx = [pcIdx; i];
     end
-    if infoMap(i,info_type) > prctile(MI(i,:),99)
+    if infoMap_asd(i,info_type) > prctile(MI(i,:),99)
         pcIdx_asd = [pcIdx_asd; i];
     end
 end

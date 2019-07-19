@@ -129,7 +129,7 @@ Npcs_asd = length(asd.pcIdx);
 if Nepochs == 1
     hist.spkMap = spkMap(hist.pcIdx,:);
     hist.pfMap = pfMap(hist.pcIdx,:);
-    for i = 1:Npcs
+    for i = 1:hist.Npcs
         hist.normspkMap(i,:) = hist.spkMap(i,:)./max(hist.spkMap(i,:));
         hist.pfMap_sm(i,:) = smoothdata(hist.pfMap(i,:),'gaussian',Nbins/histsmoothFac);
         hist.normpfMap(i,:) = hist.pfMap(i,:)./max(hist.pfMap(i,:));
@@ -139,7 +139,7 @@ if Nepochs == 1
     
     asd.spkMap = spkMap(asd.pcIdx,:);
     asd.pfMap = pfMap_asd(asd.pcIdx,:);
-    for i = 1:Npcs_asd
+    for i = 1:asd.Npcs
         asd.normspkMap(i,:) = asd.spkMap(i,:)./max(asd.spkMap(i,:));
         asd.normpfMap(i,:) = asd.pfMap(i,:)./max(asd.pfMap(i,:));
     end
@@ -219,8 +219,8 @@ dthr = 190;
 phi_bound = find( abs(diff(activephi)) > dthr );
 Ntrials = length(phi_bound)-1;
 
-hist.spkMap_pertrial = zeros(length(phi_bound)-1,Nbins,Npcs);
-hist.normspkMap_pertrial = zeros(length(phi_bound)-1,Nbins,Npcs);
+spkMap_pertrial_hist = zeros(length(phi_bound)-1,Nbins,Npcs);
+normspkMap_pertrial_hist = zeros(length(phi_bound)-1,Nbins,Npcs);
 
 for i = 1:Npcs
     z = activespk_hist(i,:);
@@ -229,29 +229,29 @@ for i = 1:Npcs
         spike = z(phi_bound(j):phi_bound(j+1)-1);
 
         for k = 1:Nbins
-            hist.spkMap_pertrial(j,k,i) = sum(spike(phi == k));
+            spkMap_pertrial_hist(j,k,i) = sum(spike(phi == k));
         end
 
-        hist.normspkMap_pertrial(j,:,i) = hist.spkMap_pertrial(j,:,i)./max(hist.spkMap_pertrial(j,:,i));
-        hist.normspkMap_pertrial(isnan(hist.normspkMap_pertrial)) = 0;
+        normspkMap_pertrial_hist(j,:,i) = spkMap_pertrial_hist(j,:,i)./max(spkMap_pertrial_hist(j,:,i));
+        normspkMap_pertrial_hist(isnan(normspkMap_pertrial_hist)) = 0;
     end
 end
 
-asd.spkMap_pertrial = zeros(length(phi_bound)-1,Nbins,Npcs_asd);
-normasd.spkMap_pertrial = zeros(length(phi_bound)-1,Nbins,Npcs_asd);
+spkMap_pertrial_asd = zeros(length(phi_bound)-1,Nbins,Npcs);
+normspkMap_pertrial_asd = zeros(length(phi_bound)-1,Nbins,Npcs);
 
-for i = 1:Npcs_asd
+for i = 1:Npcs
     z = activespk_asd(i,:);
     for j = 1:Ntrials
         phi = bin_phi(phi_bound(j):phi_bound(j+1)-1);
         spike = z(phi_bound(j):phi_bound(j+1)-1);
 
         for k = 1:Nbins
-            asd.spkMap_pertrial(j,k,i) = sum(spike(phi == k));
+            spkMap_pertrial_asd(j,k,i) = sum(spike(phi == k));
         end
 
-        normasd.spkMap_pertrial(j,:,i) = asd.spkMap_pertrial(j,:,i)./max(asd.spkMap_pertrial(j,:,i));
-        normasd.spkMap_pertrial(isnan(normasd.spkMap_pertrial)) = 0;
+        normspkMap_pertrial_asd(j,:,i) = spkMap_pertrial_asd(j,:,i)./max(spkMap_pertrial_asd(j,:,i));
+        normspkMap_pertrial_asd(isnan(normspkMap_pertrial_asd)) = 0;
     end
 end
 

@@ -7,7 +7,7 @@ function [kasd,ASDstats] = runASD_1d(x,z,dims)
     end
     % run ASD
     % minlens = round(dims/100);  % minimum length scale along each dimension
-    minlens = ceil(dims/100);
+    minlens = 1;
     [kasd,ASDstats] = fastASD(xx,z,[dims,1],minlens);
     %kasd(kasd<0) = 0; % get rid of possible negative estimates    
 end

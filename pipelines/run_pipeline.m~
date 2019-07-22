@@ -19,7 +19,7 @@ tic
 %% USER: Set basic settings
                             
 test = true;                    % flag to use one of smaller files in test folder)
-default = true;                 % flag to use default parameters
+default = false;                 % flag to use default parameters
                                 % flag to force
 force = [false;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
@@ -104,7 +104,7 @@ if ~default
         params.spkExtract.decay_time = 0.4;        % length of a typical transient in seconds [default: 0.4]
         params.spkExtract.lam_pr = 0.99;           % false positive probability for determing lambda penalty   [default: 0.99]
     % PF mapping
-        params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video [default: 1]
+        params.PFmap.Nepochs = 2;             % number of epochs for each 4 min video [default: 1]
         params.PFmap.histsmoothFac = 10;      % Gaussian smoothing window for histogram extraction        [default: 10]
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                                   %                              Neurotar uses 8 mm/s
@@ -260,9 +260,9 @@ end
 
 
 %% (6) Generate place field maps
-% Saved: fig & pdf of summary consisting of occMap, infoMap, spikeMap and placeMap
-%        mat file with fields {occMap, spikeMap, infoMap, placeMap, downData, activeData,...
-%                               placeMap_smooth, sorted_placeMap, sortIdx, params}
+% Saved: fig & pdf of several figures showing occMap, spkMap, pfMap,
+%           remapping and spkMap_pertrial
+%        mat file with fields {occMap, hist, asd, downData, activeData}
 
 if manually_refine_spikes
     force(6) = true;
@@ -274,11 +274,18 @@ if manually_refine_PFmap
 end
 
 %% Save output. These are all the variables needed for viewing data with GUI
-
-% save(fname_allData,'file','corr_image','masks','tsG','dtsG','df_f','ddf_f','spikes',...
-%                     'fname_track','downData','activeData','occMap','hist','asd','params');
-if ~isempty(dtsG),
-
+    
+if dofissa
+    str_fissa = 'FISSA';
+else
+    str_fissa = 'noFISSA';
+end
+fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
+save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
+                    'downData','activeData','occMap','hist','asd','params');
+if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
+if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
+% 
 
 t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));

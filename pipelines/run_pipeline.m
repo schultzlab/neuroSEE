@@ -18,15 +18,15 @@ tic
 
 %% USER: Set basic settings
                             
-test = true;                    % flag to use one of smaller files in test folder)
-default = true;                 % flag to use default parameters
+test = false;                    % flag to use one of smaller files in test folder)
+default = false;                 % flag to use default parameters
                                 % flag to force
 force = [false;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
          false;...              % (3) force neuropil decontamination
          false;...              % (4) force spike extraction
          false;...              % (5) force tracking data extraction
-         false];                % (6) force place field mapping
+         true];                % (6) force place field mapping
 
 mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn] 
@@ -56,6 +56,7 @@ end
 
 %% USER: Specify file
 
+% file = '20190406_20_38_41'; 
 file = '20181016_09_09_43'; 
 
 
@@ -104,7 +105,7 @@ if ~default
         params.spkExtract.decay_time = 0.4;        % length of a typical transient in seconds [default: 0.4]
         params.spkExtract.lam_pr = 0.99;           % false positive probability for determing lambda penalty   [default: 0.99]
     % PF mapping
-        params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video [default: 1]
+        params.PFmap.Nepochs = 2;             % number of epochs for each 4 min video [default: 1]
         params.PFmap.histsmoothFac = 10;      % Gaussian smoothing window for histogram extraction        [default: 10]
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                                   %                              Neurotar uses 8 mm/s
@@ -268,19 +269,30 @@ if manually_refine_spikes
     force(6) = true;
 end
 
-[ occMap, hist, asd, downData, activeData, params ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+if strcmpi(params.mode_dim,'1D')
+    [ occMap, hist, asd, downData, activeData, params ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+else
+    [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+end
 
 if manually_refine_PFmap
 end
 
 %% Save output. These are all the variables needed for viewing data with GUI
-
-fname_allData = [data_locn ];
+    
+if dofissa
+    str_fissa = 'FISSA';
+else
+    str_fissa = 'noFISSA';
+end
+fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
 save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
                     'downData','activeData','occMap','hist','asd','params');
 if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
 if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
-
+if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end
+if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
+ 
 
 t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));

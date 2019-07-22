@@ -103,8 +103,8 @@ for id = 1:Ncells
     z = activespk(id,:);
 
     % Spike rate maps
-    for i = 1:Nbins
-        spkMap(id,i) = sum(z(bin_phi == i));
+    for n = 1:Nbins
+        spkMap(id,n) = sum(z(bin_phi == n));
     end
 
     % histogram estimation
@@ -113,7 +113,7 @@ for id = 1:Ncells
 
     % ASD estimation
     [pfMap_asd(id,:),~] = runASD_1d(bin_phi,z',Nbins);
-    [infoMap_asd(id,:), infoMap_asd(id,:)] =...
+    [infoMap_asd(id,1), infoMap_asd(id,2)] =...
         infoMeasures(pfMap_asd(id,:)',ones(Nbins,1),0);
 end
 
@@ -129,19 +129,19 @@ Npcs_asd = length(asd.pcIdx);
 if Nepochs == 1
     hist.spkMap = spkMap(hist.pcIdx,:);
     hist.pfMap = pfMap(hist.pcIdx,:);
-    for i = 1:Npcs
-        hist.normspkMap(i,:) = hist.spkMap(i,:)./max(hist.spkMap(i,:));
-        hist.pfMap_sm(i,:) = smoothdata(hist.pfMap(i,:),'gaussian',Nbins/histsmoothFac);
-        hist.normpfMap(i,:) = hist.pfMap(i,:)./max(hist.pfMap(i,:));
-        hist.normpfMap_sm(i,:) = hist.pfMap_sm(i,:)./max(hist.pfMap_sm(i,:));
+    for id = 1:Npcs
+        hist.normspkMap(id,:) = hist.spkMap(id,:)./max(hist.spkMap(id,:));
+        hist.pfMap_sm(id,:) = smoothdata(hist.pfMap(id,:),'gaussian',Nbins/histsmoothFac);
+        hist.normpfMap(id,:) = hist.pfMap(id,:)./max(hist.pfMap(id,:));
+        hist.normpfMap_sm(id,:) = hist.pfMap_sm(id,:)./max(hist.pfMap_sm(id,:));
     end
     hist.infoMap = infoMap(hist.pcIdx,:);
     
     asd.spkMap = spkMap(asd.pcIdx,:);
     asd.pfMap = pfMap_asd(asd.pcIdx,:);
-    for i = 1:Npcs_asd
-        asd.normspkMap(i,:) = asd.spkMap(i,:)./max(asd.spkMap(i,:));
-        asd.normpfMap(i,:) = asd.pfMap(i,:)./max(asd.pfMap(i,:));
+    for id = 1:Npcs_asd
+        asd.normspkMap(id,:) = asd.spkMap(id,:)./max(asd.spkMap(id,:));
+        asd.normpfMap(id,:) = asd.pfMap(id,:)./max(asd.pfMap(id,:));
     end
     asd.infoMap = infoMap_asd(asd.pcIdx,:);
 
@@ -174,19 +174,19 @@ else
 
             % Occupancy and spike rate maps
             occMap(e,:) = histcounts(bin_phi_e,Nbins);
-            for i = 1:Nbins
-                hist.spkMap(id,i,e) = sum(spike_e(bin_phi_e == i));
+            for n = 1:Nbins
+                hist.spkMap(id,n,e) = sum(spike_e(bin_phi_e == n));
             end
             hist.normspkMap(id,:,e) = hist.spkMap(id,:,e)./max(hist.spkMap(id,:,e));
             
             % histogram estimation
-            hist.pfMap(id,i,e) = hist.spkMap(id,:,e)./occMap(e,:);
+            hist.pfMap(id,:,e) = hist.spkMap(id,:,e)./occMap(e,:);
             hist.pfMap(isnan(hist.pfMap)) = 0;
-            hist.pfMap_sm(id,i,e) = smoothdata(hist.pfMap(id,i,e),'gaussian',Nbins/histsmoothFac);
+            hist.pfMap_sm(id,:,e) = smoothdata(hist.pfMap(id,:,e),'gaussian',Nbins/histsmoothFac);
 
-            hist.normpfMap(id,i,e) = hist.pfMap(id,i,e)./max(hist.pfMap(id,i,e));
-            hist.normpfMap_sm(id,i,e) = hist.pfMap_sm(id,i,e)./max(hist.pfMap_sm(id,i,e));
-            [hist.infoMap(id,1,e), hist.infoMap(id,2,e)] = infoMeasures(hist.pfMap(id,i,e),occMap(e,:),0);
+            hist.normpfMap(id,:,e) = hist.pfMap(id,:,e)./max(hist.pfMap(id,:,e));
+            hist.normpfMap_sm(id,:,e) = hist.pfMap_sm(id,:,e)./max(hist.pfMap_sm(id,:,e));
+            [hist.infoMap(id,1,e), hist.infoMap(id,2,e)] = infoMeasures(hist.pfMap(id,:,e),occMap(e,:),0);
         end
     end
     for id = 1:Npcs_asd
@@ -198,18 +198,16 @@ else
             spike_e = z(e_bound(e):e_bound(e+1));
 
             % Occupancy and spike rate maps
-            occMap(e,:) = histcounts(bin_phi_e,Nbins);
-            for i = 1:Nbins
-                asd.spkMap(id,i,e) = sum(spike_e(bin_phi_e == i));
+            for n = 1:Nbins
+                asd.spkMap(id,n,e) = sum(spike_e(bin_phi_e == n));
             end
             asd.normspkMap(id,:,e) = asd.spkMap(id,:,e)./max(asd.spkMap(id,:,e));
 
-            % histogram estimation
-            asd.pfMap(id,i,e) = asd.spkMap(id,:,e)./occMap(e,:);
-            asd.pfMap(isnan(asd.pfMap)) = 0;
-
-            asd.normpfMap(id,i,e) = asd.pfMap(id,i,e)./max(asd.pfMap(id,i,e));
-            [asd.infoMap(id,1,e), asd.infoMap(id,2,e)] = infoMeasures(asd.pfMap(id,i,e),occMap(e,:),0);
+            % asd estimation
+            [asd.pfMap(id,:,e),~] = runASD_1d(bin_phi_e,(spike_e)',Nbins);
+            asd.normpfMap(id,:,e) = asd.pfMap(id,:,e)./max(asd.pfMap(id,:,e));
+            [asd.infomap(id,1,e), asd.infomap(id,2,e)] = ...
+                infoMeasures(squeeze(asd.pfMap(id,:,e))',ones(Nbins,1),0);
         end
     end
 end
@@ -222,36 +220,36 @@ Ntrials = length(phi_bound)-1;
 hist.spkMap_pertrial = zeros(length(phi_bound)-1,Nbins,Npcs);
 hist.normspkMap_pertrial = zeros(length(phi_bound)-1,Nbins,Npcs);
 
-for i = 1:Npcs
-    z = activespk_hist(i,:);
-    for j = 1:Ntrials
-        phi = bin_phi(phi_bound(j):phi_bound(j+1)-1);
-        spike = z(phi_bound(j):phi_bound(j+1)-1);
+for id = 1:Npcs
+    z = activespk_hist(id,:);
+    for tr = 1:Ntrials
+        phi = bin_phi(phi_bound(tr):phi_bound(tr+1)-1);
+        spike = z(phi_bound(tr):phi_bound(tr+1)-1);
 
-        for k = 1:Nbins
-            hist.spkMap_pertrial(j,k,i) = sum(spike(phi == k));
+        for n = 1:Nbins
+            hist.spkMap_pertrial(tr,n,id) = sum(spike(phi == n));
         end
 
-        hist.normspkMap_pertrial(j,:,i) = hist.spkMap_pertrial(j,:,i)./max(hist.spkMap_pertrial(j,:,i));
+        hist.normspkMap_pertrial(tr,:,id) = hist.spkMap_pertrial(tr,:,id)./max(hist.spkMap_pertrial(tr,:,id));
         hist.normspkMap_pertrial(isnan(hist.normspkMap_pertrial)) = 0;
     end
 end
 
 asd.spkMap_pertrial = zeros(length(phi_bound)-1,Nbins,Npcs_asd);
-normasd.spkMap_pertrial = zeros(length(phi_bound)-1,Nbins,Npcs_asd);
+asd.normspkMap_pertrial = zeros(length(phi_bound)-1,Nbins,Npcs_asd);
 
-for i = 1:Npcs_asd
-    z = activespk_asd(i,:);
-    for j = 1:Ntrials
-        phi = bin_phi(phi_bound(j):phi_bound(j+1)-1);
-        spike = z(phi_bound(j):phi_bound(j+1)-1);
+for id = 1:Npcs_asd
+    z = activespk_asd(id,:);
+    for tr = 1:Ntrials
+        phi = bin_phi(phi_bound(tr):phi_bound(tr+1)-1);
+        spike = z(phi_bound(tr):phi_bound(tr+1)-1);
 
-        for k = 1:Nbins
-            asd.spkMap_pertrial(j,k,i) = sum(spike(phi == k));
+        for n = 1:Nbins
+            asd.spkMap_pertrial(tr,n,id) = sum(spike(phi == n));
         end
 
-        normasd.spkMap_pertrial(j,:,i) = asd.spkMap_pertrial(j,:,i)./max(asd.spkMap_pertrial(j,:,i));
-        normasd.spkMap_pertrial(isnan(normasd.spkMap_pertrial)) = 0;
+        asd.normspkMap_pertrial(tr,:,id) = asd.spkMap_pertrial(tr,:,id)./max(asd.spkMap_pertrial(tr,:,id));
+        asd.normspkMap_pertrial(isnan(asd.normspkMap_pertrial)) = 0;
     end
 end
 

@@ -1,4 +1,4 @@
-function [segmented_image,D,N,B,stat] = segment_Manfredi(img,tune)
+function [segmented_image,D,N,B,stat] = segment_Manfredi(img,tune,alpha)
 
 % Author:           Manfredi Castelli
 % Date:             25/06/2019
@@ -24,7 +24,7 @@ function [segmented_image,D,N,B,stat] = segment_Manfredi(img,tune)
 % N,B:              boundaries stats;
 % stat:             measurement and features of img and its objects.
 % 
-
+h  = sqrt(nanvar(img(:))); 
 
 %1) convert mat to grayscale image->binarize img->remove noise
  if tune == 1 %red channel image
@@ -37,7 +37,7 @@ function [segmented_image,D,N,B,stat] = segment_Manfredi(img,tune)
        
         img = imbinarize(img, 'adaptive');
         img = bwareafilt(img,[cut 650]);
-        img = imclearborder(img);
+        %img = imclearborder(img);
         img = imfill(img,'holes');
         
     elseif tune == 2 % ovelray
@@ -50,7 +50,7 @@ function [segmented_image,D,N,B,stat] = segment_Manfredi(img,tune)
 %         img = medfilt2(img,[3,3]);
     img = imbinarize(img, 'adaptive');
     img = bwareaopen(img, cut);
-    img = imclearborder(img);
+    img = imclearborder(img,8);
     img = imfill(img,'holes');
         
     end
@@ -59,7 +59,7 @@ function [segmented_image,D,N,B,stat] = segment_Manfredi(img,tune)
 % transform. it is the distance at each pixel to the nearest nonzero pixel.
     D = -bwdist(~img);
     
-    mask = imextendedmin(D,2);
+    mask = imextendedmin(D,h*alpha);
 
     % applying watershed and segmenting image
     D2 = imimposemin(D,mask);
@@ -68,7 +68,7 @@ function [segmented_image,D,N,B,stat] = segment_Manfredi(img,tune)
     segmented_image(Ld2 == 0) = 0;
     
 %     filtering noisy segmented image for well defined boundaries
-     segmented_image = medfilt2(segmented_image,[3,3]);
+     
     
      if tune == 3
          segmented_image = bwareaopen(segmented_image, 100);
@@ -76,12 +76,20 @@ function [segmented_image,D,N,B,stat] = segment_Manfredi(img,tune)
      else
          segmented_image = bwareaopen(segmented_image, 100);
      end
-         
-
+        
+    %% smoothing edges
+    E = edge(segmented_image,'canny');
+    Ed = imdilate(E,strel('disk',7));
+    %Filtered image
+    Ifilt = imfilter(segmented_image,fspecial('gaussian'));
+    %Use Ed as logical index into I to and replace with Ifilt
+    segmented_image(Ed) = Ifilt(Ed);
+    segmented_image = medfilt2(segmented_image,[2,2]); 
+    
     [B,~,N,~] = bwboundaries(img,'noholes');
 
 %     labelling each object in image and extracting features
-    Ilabel = bwlabel(segmented_image);
+    Ilabel = bwlabel(segmented_image);   
     stat = regionprops(Ilabel,  'all');
 end
 

@@ -45,16 +45,17 @@ function[masks] = initialiseROISegmentation(metric,red_metric,radius, alpha,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 dim     = size(metric);
-maxSize = round(pi * radius^2 * 1.8);
+maxSize = round(pi * radius^2 * 1.6);
+minSize  = round(pi * radius^2 * 0.5);
 
 %% Loading pretrained convolutional neural network
 load('cnn_2.mat');
 
 %% Segmenting and Making measuremnts of objects detected
 
-[segmentedR, ~,~,~,stats_red] = segment_Manfredi(red_metric,tune_red);
+[segmentedR, ~,~,~,stats_red] = segment_Manfredi(red_metric +(0.1+alpha),tune_red,alpha);
 
-[segmentedG, ~,~,~,stats_green] = segment_Manfredi((metric - 0.05),tune_green);
+[segmentedG, ~,~,~,stats_green] = segment_Manfredi(metric -alpha,tune_green,alpha);
 
 % Deleting ROI detected  at boundaries due to correlation artifacts
 boundaryDetect = [];
@@ -81,22 +82,25 @@ end
 stats_red(boundaryDetect) = [];
 
 
-h = figure('Name','Green');imshow(metric);hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
-savefig(h,'DistributionOfCentroids.fig','compact');
+% h = figure('Name','Green');imshow(metric);hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
+% savefig(h,'DistributionOfCentroids.fig','compact');
 
 
 
 %% Classify each ROI found from red channel 
 %notCell = seedClassification((metric ),stats_red);
 % eliminating roi that classifier discarded 
-stats_red(notCell) = [];
+
+%stats_red(notCell) = [];
+
+
 % %% Classify each ROI found from green channel 
 % notGreen = seedClassification(metric,stats_green);
 % stats_green(notGreen) = [];
-
-
-h = figure('Name','Final centroids after classification');imshow((metric - 0.05));hold on; label_centroid([stats_red;stats_green],'g.');hold off;
-savefig(h,'Segmented.fig','compact');
+% 
+% 
+% h = figure('Name','Final centroids after classification');imshow((metric - 0.05));hold on; label_centroid([stats_red;stats_green],'g.');hold off;
+% savefig(h,'Segmented.fig','compact');
 
 % h = figure('Name','Green');imshow(segmentedG);hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
 % savefig(h,'Segmented.fig','compact');
@@ -105,13 +109,22 @@ savefig(h,'Segmented.fig','compact');
 % eliminating roi that merged 
 stats_red(red_Roi_Merged) = [];
 
+  
+    
+    
+
+idx = find([stats_red.Area] < maxSize | [stats_red.Area] > minSize | [stats_red.Eccentricity] < 0.9 ); 
+stats_red = stats_red(idx);  
+
+idx = find([stats_green.Area] < maxSize | [stats_green.Area] > minSize | [stats_green.Eccentricity] < 0.92); 
+stats_green = stats_green(idx); 
 
 
 
 %% Creating masks 
 obj_num    = size(stats_red,1);
 masks      = zeros(dim(1), dim(2), obj_num);
-masksG     = zeros(dim(1),dim(2),obj_num);
+masksG     = zeros(dim(1),dim(2),size(stats_green,1));
 
 % msave()inSize = min([stats_red.Area]);
 
@@ -141,8 +154,8 @@ end
 % Final ROIs
 
 masks = -1*masks + ~masks;
-h = figure('Name','Green');imagesc(mean(masks,3));hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
-savefig(h,'masks+centr.fig','compact');
+% h = figure('Name','Green');imagesc(mean(masks,3));hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
+% savefig(h,'masks+centr.fig','compact');
 end
 
 

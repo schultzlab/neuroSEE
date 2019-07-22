@@ -39,9 +39,9 @@ manuall_refine_PFmap = false;   % flag to tweak PFmap including changing number 
 
 [data_locn,comp,err] = load_neuroSEEmodules(test);
 if ~isempty(err)
-    beep
-    cprintf('Errors',err);    
-    return
+%     beep
+%     cprintf('Errors',err);    
+    %return mANFREDI
 end
 if ~strcmpi(comp,'mac')
     manually_refine_spikes = false;     % no gui when running in linuxbox or hpc
@@ -119,8 +119,8 @@ if default
     % Remove irrelevant parameters 
     if strcmpi(mcorr_method,'normcorre')
         params = rmfield(params,'fftRigid');
-        fields = {'df_prctile','df_medfilt1'};
-        params.ROIsegment = rmfield(params.ROIsegment,fields);
+%         fields = {'df_prctile','df_medfilt1'};
+%         params.ROIsegment = rmfield(params.ROIsegment,fields);
     else
         params = rmfield(params,'nonrigid');
     end
@@ -154,7 +154,7 @@ if check(7) % All processing steps have been done
         beep
         str = sprintf( '%s: File has been processed with specified options. Skipping processing.\n', file );
         cprintf(str)
-        return
+        %return
     end
 end
 if force(1)

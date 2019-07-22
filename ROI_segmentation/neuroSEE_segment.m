@@ -29,7 +29,9 @@ if nargin<6, force = 0;      end
 mcorr_method = params.methods.mcorr_method;
 segment_method = params.methods.segment_method;
 filedir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/'];
-if ~exist( filedir, 'dir' ), mkdir( filedir ); end
+if ~exist( filedir, 'dir' )
+    % mkdir( filedir ); 
+end
 
 fname_mat = [filedir file '_segment_output.mat'];
 

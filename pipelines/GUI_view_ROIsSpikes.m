@@ -4,7 +4,7 @@
 % dF/F and spikes
 %
 % INPUTS:
-%   spikes      : spike estimates
+%   spikes      : spike estimates (optional)
 %   tsG         : raw timeseries 
 %   dtsG        : fissa-corrected timeseries (optional) 
 %   df_f        : dF/F (optional)

@@ -49,7 +49,7 @@
 %   pcIdx   : row indices of spikes corresponding to place cells
 %   sortIdx : sorted row indices corresponding to sorted_pfMap
 
-function [ occMap, hist, asd, downData, activeData, params ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force)
+function varargout = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force)
     
     if nargin<6, force = 0; end
 
@@ -62,7 +62,6 @@ function [ occMap, hist, asd, downData, activeData, params ] = neuroSEE_mapPF( s
         str_fissa = 'noFISSA';
     end
     filedir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/',str_fissa,'/PFmaps/'];
-    if ~exist(filedir,'dir'), mkdir(filedir); end
     fname_mat = [filedir file '_PFmap_output.mat'];
     
     if force || ~exist(fname_mat,'file')
@@ -77,31 +76,48 @@ function [ occMap, hist, asd, downData, activeData, params ] = neuroSEE_mapPF( s
 %         else
             imtime = [];
 %         end
-        
-        Nepochs = params.PFmap.Nepochs;
+
         if strcmpi(params.mode_dim,'1D')
             % Generate place field maps
             [occMap, hist, asd, downData, activeData] = generatePFmap_1d(spikes, imtime, trackData, params);
            
             % If 1D, sort place field maps 
-            [ hist.sort_pfMap, hist.sortIdx ] = sortPFmap_1d( hist.pfMap, hist.infoMap, Nepochs );
-            hist.sort_pfMap_sm = hist.pfMap_sm(hist.sortIdx,:,:);
-            hist.sort_normpfMap = hist.normpfMap(hist.sortIdx,:,:);
-            hist.sort_normpfMap_sm = hist.normpfMap_sm(hist.sortIdx,:,:);
-            
-            [ asd.sort_pfMap, asd.sortIdx ] = sortPFmap_1d( asd.pfMap, asd.infoMap, Nepochs );
-            asd.sort_pfMap = asd.pfMap(asd.sortIdx,:,:);
-            asd.sort_normpfMap = asd.normpfMap(asd.sortIdx,:,:);
+            [ hist.sorted_pfMap, sortIdx ] = sortPFmap_1d( pfMap, infoMap, Nepochs );
+            sorted_pfMap_sm = pfMap_sm(sortIdx,:,:);
+            sorted_pfMap_asd = pfMap_asd(sortIdx,:,:);
+            sorted_normpfMap = normpfMap(sortIdx,:,:);
+            sorted_normpfMap_sm = normpfMap_sm(sortIdx,:,:);
+            sorted_normpfMap_asd = normpfMap_asd(sortIdx,:,:);
             
             % Make plots
-%             makeplot_1d(occMap, hist, asd);
+            makeplot_1d(occMap, spikeMap, normspikeMap, infoMap, infoMap_asd, ...
+                        pfMap, pfMap_sm, pfMap_asd, ...
+                        normpfMap, normpfMap_sm, normpfMap_asd, ...
+                        spikeMap_pertrial, normspikeMap_pertrial);
         
             % Save output
             output.occMap = occMap;
-            output.hist = hist;
-            output.asd = asd;
+            output.spikeMap = spikeMap;
+            output.normspikeMap = normspikeMap;
+            output.infoMap = infoMap;
+            output.infoMap_asd = infoMap_asd;
+            output.pfMap = pfMap;
+            output.pfMap_sm = pfMap_sm;
+            output.pfMap_asd = pfMap_asd;
+            output.normpfMap = normpfMap;
+            output.normpfMap_sm = normpfMap_sm;
+            output.normpfMap_asd = normpfMap_asd;
             output.downData = downData;
             output.activeData = activeData;
+            output.pcIdx = pcIdx;output.sorted_pfMap = sorted_pfMap;
+            output.spikeMap_pertrial = spikeMap_pertrial;
+            output.normspikeMap_pertrial = normspikeMap_pertrial;
+            output.sorted_pfMap_sm = sorted_pfMap_sm;
+            output.sorted_pfMap_asd = sorted_pfMap_asd;
+            output.sorted_normpfMap = sorted_normpfMap;
+            output.sorted_normpfMap_sm = sorted_normpfMap_sm;
+            output.sorted_normpfMap_asd = sorted_normpfMap_asd;
+            output.sortIdx = sortIdx;
             output.params = params.PFmap;
             save(fname_mat,'-struct','output');
         else % '2D'
@@ -113,17 +129,65 @@ function [ occMap, hist, asd, downData, activeData, params ] = neuroSEE_mapPF( s
         if strcmpi(params.mode_dim,'1D')
             m = load(fname_mat);
             occMap = m.occMap;
-            hist = m.hist;
-            asd = m.asd;
+            spikeMap = m.spikeMap;
+            normspikeMap = m.normspikeMap;
+            infoMap = m.infoMap;
+            infoMap_asd = m.infoMap_asd;
+            pfMap = m.pfMap;
+            pfMap_sm = m.pfMap_sm;
+            pfMap_asd = m.pfMap_asd;
+            normpfMap = m.normpfMap;
+            normpfMap_sm = m.normpfMap_sm;
+            normpfMap_asd = m.normpfMap_asd;
+            downData = m.downData;
+            activeData = m.activeData;
             params.PFmap = m.params;
+            sorted_pfMap = m.sorted_pfMap;
+            sorted_pfMap_sm = m.sorted_pfMap_sm;
+            sorted_pfMap_asd = m.sorted_pfMap_asd;
+            sorted_normpfMap = m.sorted_normpfMap;
+            sorted_normpfMap_sm = m.sorted_normpfMap_sm;
+            sorted_normpfMap_asd = m.sorted_normpfMap_asd;
+            spikeMap_pertrial = m.spikeMap_pertrial;
+            normspikeMap_pertrial = m.normspikeMap_pertrial;
+            pcIdx = m.pcIdx;
+            sortIdx = m.sortIdx;
         else % '2D'
         end
             
         str = sprintf( '%s: Place field map data loaded\n', file );
         cprintf(str)
     end
-        
-    function makeplot_1d(occMap, hist, asd)
+    
+    varargout{1} = occMap;
+    varargout{2} = spikeMap;
+    varargout{3} = normspikeMap;
+    varargout{4} = infoMap;
+    varargout{5} = infoMap_asd;
+    varargout{6} = pfMap;
+    varargout{7} = pfMap_sm;
+    varargout{8} = pfMap_asd;
+    varargout{9} = normpfMap;
+    varargout{10} = normpfMap_sm;
+    varargout{11} = normpfMap_asd;
+    varargout{12} = downData;
+    varargout{13} = activeData;
+    varargout{14} = params;
+    varargout{15} = sorted_pfMap;
+    varargout{16} = sorted_pfMap_sm;
+    varargout{17} = sorted_pfMap_asd;
+    varargout{18} = sorted_normpfMap;
+    varargout{19} = sorted_normpfMap_sm;
+    varargout{20} = sorted_normpfMap_asd;
+    varargout{21} = spikeMap_pertrial;
+    varargout{22} = normspikeMap_pertrial;
+    varargout{23} = pcIdx;
+    varargout{24} = sortIdx;
+    
+    function makeplot_1d(occMap, spikeMap, normspikeMap, infoMap, infoMap_asd, ...
+                        sorted_pfMap, sorted_pfMap_sm, sorted_pfMap_asd, ...
+                        sorted_normpfMap, sorted_normpfMap_sm, sorted_normpfMap_asd, ...
+                        spikeMap_pertrial, normspikeMap_pertrial)
         % summary of occMap, spikeMap, pfMaps
         for e = 1:Nepochs
             fh = figure('Position',[1087 648 500 800]);

@@ -24,7 +24,7 @@ if force || ~exist(fname_mat,'file')
     refreshdisp(str, prevstr);
     prevstr = str;
     
-    if ~exist(fname_mat_temp,'file')
+    if force || and( ~exist(fname_mat,'file'), ~exist(fname_mat_temp,'file') )
         runFISSA( masks, tiffile, fissadir );
     end
     raw = load(fname_mat_temp,'raw');

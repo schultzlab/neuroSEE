@@ -91,7 +91,7 @@ function [tsG, masks, corr_g] = ABLE( stack_g, mean_r, file, maxcells, cellrad )
        refreshdisp( str, prevstr );
        prevstr = str; 
        % disp(['Alpha Tuning: Current Alpha is ', num2str(retuned_alpha)]);
-       phi    = initialiseROISegmentation_Manfredi(init_g,red, cellrad, retuned_alpha, retuned_opt,1,3);
+       phi    = initialiseROISegmentation_Manfredi(corr,red, cellrad, retuned_alpha, retuned_opt,1,3);
        retuned_masks_num = size(phi,3);
    end
    % disp(['Final alpha value is ', num2str(retuned_alpha)]);

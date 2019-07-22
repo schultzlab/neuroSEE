@@ -1,10 +1,10 @@
 % Written by Ann Go
 %
-% When force = 1 or if figure with ROIs don't yet exist in filedir, this function 
+% When force = 1 or if figure with ROIs don't yet exist in filedir, this function
 % implements either
 % (1) the ABLE fxn (renamed version of neuroSEE_segment
 % which Katie adapted from Seig's code) OR
-% (2) CaImAn 
+% (2) CaImAn
 %
 % INPUTS
 %   imG         : matrix of green image stack
@@ -17,7 +17,7 @@
 %               segmentation output already exists
 % OUTPUTS
 %   tsG         : raw time series from green channel
-%   df_f             
+%   df_f
 %   masks       : ROI masks
 %   corr_image  : correlation image from green channel
 %   params      : parameters for specific roi segmentation method
@@ -78,11 +78,11 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, mean_imR
 
         % Plot masks on correlation image and save plot
         makeplot(corr_image, masks);
-        
+
         fprintf('%s: ROI segmentation done\n',file);
 
     else
-        % If it exists, load it 
+        % If it exists, load it
         segmentOutput = load(fname_mat);
         masks = segmentOutput.masks;
         if isfield(segmentOutput,'cell_tsG')
@@ -110,7 +110,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, mean_imR
         str = sprintf('%s: Segmentation output found and loaded\n',file);
         cprintf(str)
     end
-    
+
     function makeplot(corr_image, masks)
         plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
         fig = plotContoursOnSummaryImage(corr_image, masks, plotopts);
@@ -120,4 +120,3 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, mean_imR
         close(fig);
     end
 end
-

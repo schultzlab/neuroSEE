@@ -83,7 +83,7 @@ function [tsG, masks, overl_corr] = ABLE_manfredi( stack_g, mean_r, file, cellra
    % - this is activity-based and morphological initialisation
    phi_0    = initialiseROISegmentation_Manfredi(corr,red, cellrad, alpha, init_opt,1,3);
    exp_ROIs = maxcells; 
-   save('able_workspace');
+%    save('able_workspace');
    %% Retune the alpha parameter
    
    retuned_alpha     = alpha;
@@ -144,7 +144,7 @@ function [tsG, masks, overl_corr] = ABLE_manfredi( stack_g, mean_r, file, cellra
 
    % [masks, tsG, ~, tsR, ~] ...
    %                     = segment_cells(phi, stack_g, mean_r, cellrad, seg_opt);
-   [masks, tsG] = segment_cells(phi, stack_g, cellrad, seg_opt); % edit by Ann
+   [masks, tsG] = segment_cells(phi, stack_g(:,:,1:2:size(stack_g,3)), cellrad, seg_opt); % edit by Ann
 
 %    runtime  = toc;
 %    mask_num = size(masks,3); % Number of detected ROIs

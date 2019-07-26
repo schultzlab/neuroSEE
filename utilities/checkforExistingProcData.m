@@ -32,7 +32,7 @@ function check = checkforExistingProcData(data_locn, file, mcorr_method, segment
     end
     
     % 4) Check for existing spike estimation output
-    if exist([dir_fissa file '_spike_output.mat'],'file')
+    if exist([dir_fissa file '_spikes_output.mat'],'file')
         check(4) = 1;
     end
 
@@ -44,12 +44,12 @@ function check = checkforExistingProcData(data_locn, file, mcorr_method, segment
     end
     
     % 6) Check for existing PF mapping output
-    if exist([dir_fissa file '_PFmap_output.mat'],'file')
+    if exist([dir_fissa 'PFmaps/' file '_PFmap_output.mat'],'file')
         check(6) = 1;
     end
 
     % 7) Check if mat file for all proc data for the file exists
-    matfiles = dir(fullfile(dir_proc,['*.','mat']));
+    matfiles = subdir(fullfile(dir_proc,['*.','mat']));
     if numel(matfiles) > 0 
         for i = 1:numel(matfiles)
             name = matfiles(i).name;

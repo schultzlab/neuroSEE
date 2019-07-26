@@ -18,8 +18,8 @@ tic
 
 %% USER: Set basic settings
                             
-test = false;                    % flag to use one of smaller files in test folder)
-default = false;                 % flag to use default parameters
+test = true;                    % flag to use one of smaller files in test folder)
+default = true;                 % flag to use default parameters
                                 % flag to force
 force = [false;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
@@ -29,7 +29,7 @@ force = [false;...              % (1) motion correction even if motion corrected
          true];                % (6) force place field mapping
 
 mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, fft-rigid method (Katie's)
-segment_method = 'CaImAn';      % [ABLE,CaImAn] 
+segment_method = 'CaImAn';      % [ABLE,CaImAn]    
 dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
 manually_refine_PFmap = false;   % flag to tweak PFmap including changing number of epochs or velocity threshold
@@ -56,8 +56,8 @@ end
 
 %% USER: Specify file
 
-% file = '20190406_20_38_41'; 
-file = '20181016_09_09_43'; 
+file = '20190406_20_38_41'; 
+% file = '20181016_09_09_43'; 
 
 
 %% USER: Set parameters (if not using default)
@@ -106,7 +106,7 @@ if ~default
         params.spkExtract.lam_pr = 0.99;           % false positive probability for determing lambda penalty   [default: 0.99]
     % PF mapping
         params.PFmap.Nepochs = 2;             % number of epochs for each 4 min video [default: 1]
-        params.PFmap.histsmoothFac = 10;      % Gaussian smoothing window for histogram extraction        [default: 10]
+        params.PFmap.histsmoothFac = 7;      % Gaussian smoothing window for histogram extraction        [default: 10]
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                                   %                              Neurotar uses 8 mm/s
 end
@@ -152,14 +152,6 @@ end
 % check(7) checks for existing mat file pooling all processed data for file
 
 check = checkforExistingProcData(data_locn, file, mcorr_method, segment_method, dofissa);
-if check(7) % All processing steps have been done
-    if ~any(force)
-        beep
-        str = sprintf( '%s: File has been processed with specified options. Skipping processing.\n', file );
-        cprintf(str)
-        return
-    end
-end
 if force(1)
     force([2:4,6]) = true; % because redoing motion correction step affects all succeeding steps except step 5
 elseif force(2)
@@ -253,7 +245,7 @@ fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
 trackData = load_trackfile( data_locn,file, fname_track, force(5) );
 if any(trackData.r < 100)
     params.mode_dim = '2D'; % open field
-    params.PFmap.Nbins = [10, 10]; % number of location bins in [x y]               
+    params.PFmap.Nbins = [16, 16]; % number of location bins in [x y]               
 else 
     params.mode_dim = '1D'; % circular linear track
     params.PFmap.Nbins = 30;      % number of location bins               
@@ -279,19 +271,22 @@ if manually_refine_PFmap
 end
 
 %% Save output. These are all the variables needed for viewing data with GUI
-    
+
 if dofissa
     str_fissa = 'FISSA';
 else
     str_fissa = 'noFISSA';
 end
-fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
-save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
-                    'downData','activeData','occMap','hist','asd','params');
-if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
-if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
-if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end
-if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
+fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
+
+% if any(force) || any(~check)
+%     save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
+%                         'downData','activeData','occMap','hist','asd','params');
+%     if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
+%     if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
+%     if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end
+%     if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
+% end
  
 
 t = toc;

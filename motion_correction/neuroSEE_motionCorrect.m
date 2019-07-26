@@ -131,7 +131,7 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
             text(0.5, 0.98,titletext);
         fname_fig = [filedir file '_mcorr_summary'];
             savefig( fh, fname_fig );
-            saveas( fh, fname_fig, 'pdf' );
+            saveas( fh, fname_fig, 'jpg' );
         close( fh );
     end
 end

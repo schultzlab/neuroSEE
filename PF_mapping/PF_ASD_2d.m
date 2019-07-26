@@ -3,9 +3,9 @@
 % load data ...
 %load('20190220_14_12_22_openfield.mat')
 
-spikes = open.activeData.spikes;
-xp1 = open.activeData.x;
-xp2 = open.activeData.y;
+% spikes = open.activeData.spikes;
+% xp1 = open.activeData.x;
+% xp2 = open.activeData.y;
 
 addpath(genpath([pwd,'/fastASD'])); % add ASD folder
 

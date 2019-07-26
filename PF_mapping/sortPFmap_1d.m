@@ -36,10 +36,10 @@ function [ sorted_pfMap, sortIdx ] = sortPFmap_1d( pfMap, infoMap, Nepochs)
         for i = 1:length(idx_info)
             [~,maxloc(i)] = max(pf_info(i,:));
         end
-        [~,sortIdx(:,e)] = sort(maxloc);                                % sort according to phi of max info
-        sorted_pfMap(:,:,e) = [ pf_info(sortIdx(:,e),:); mat(flip(idx_no),:) ]; % cat 2 sorted subsamples
+        [~,sIdx] = sort(maxloc);                                % sort according to phi of max info
+        sorted_pfMap(:,:,e) = [ pf_info(sIdx,:); mat(flip(idx_no),:) ]; % cat 2 sorted subsamples
         
-        % allIdx(:,e) = [idx_info(sortIdx(:,e)); flip(idx_no)];
+        sortIdx(:,e) = [idx_info(sIdx); flip(idx_no)];
     end
 
 end

@@ -44,9 +44,14 @@ if force || ~exist(fname_mat,'file')
 
     % Calculate df_f
     ddf_f = zeros(size(dtsG));
+    ddf_prctile = params.fissa.ddf_prctile;
     for i = 1:size(dtsG,1)
         x = lowpass( medfilt1(dtsG(i,:),params.fissa.ddf_medfilt1), 1, params.fr );
-        fo = ones(size(x)) * prctile(x,params.fissa.ddf_prctile);
+        fo = ones(size(x)) * prctile(x,ddf_prctile);
+        while fo == 0
+            fo = ones(size(x)) * prctile(x,ddf_prctile+5);
+            ddf_prctile = ddf_prctile+5;
+        end
         ddf_f(i,:) = (x - fo) ./ fo;
     end
     

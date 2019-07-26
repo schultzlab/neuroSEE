@@ -21,8 +21,8 @@ tic
 test = false;                    % flag to use one of smaller files in test folder)
 default = true;                 % flag to use default parameters
                                 % flag to force
-force = [true;...              % (1) motion correction even if motion corrected images exist
-         false;...              % (2) roi segmentation
+force = [false;...              % (1) motion correction even if motion corrected images exist
+         true;...              % (2) roi segmentation
          false;...              % (3) force neuropil decontamination
          false;...              % (4) force spike extraction
          false;...              % (5) force tracking data extraction
@@ -32,7 +32,7 @@ mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, 
 segment_method = 'CaImAn';      % [ABLE,CaImAn] 
 dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
-manuall_refine_PFmap = false;   % flag to tweak PFmap including changing number of epochs or velocity threshold
+manually_refine_PFmap = false;   % flag to tweak PFmap including changing number of epochs or velocity threshold
 
 
 %% Load module folders and define data directory
@@ -56,7 +56,9 @@ end
 
 %% USER: Specify file
 
-file = '20181016_09_14_03'; 
+% file = '20190406_20_38_41'; 
+% file = '20181016_09_09_43'; 
+file = '20181016_09_18_26';
 
 
 %% USER: Set parameters (if not using default)
@@ -104,8 +106,8 @@ if ~default
         params.spkExtract.decay_time = 0.4;        % length of a typical transient in seconds [default: 0.4]
         params.spkExtract.lam_pr = 0.99;           % false positive probability for determing lambda penalty   [default: 0.99]
     % PF mapping
-        params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video [default: 1]
-        params.PFmap.histsmoothFac = 10;      % Gaussian smoothing window for histogram extraction        [default: 10]
+        params.PFmap.Nepochs = 2;             % number of epochs for each 4 min video [default: 1]
+        params.PFmap.histsmoothFac = 7;      % Gaussian smoothing window for histogram extraction        [default: 10]
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                                   %                              Neurotar uses 8 mm/s
 end
@@ -150,11 +152,19 @@ end
 % check(1:6) check for existing data in processing steps 1-6
 % check(7) checks for existing mat file pooling all processed data for file
 
+if dofissa
+    str_fissa = 'FISSA';
+else
+    str_fissa = 'noFISSA';
+end
+fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
+
 check = checkforExistingProcData(data_locn, file, mcorr_method, segment_method, dofissa);
 if check(7) % All processing steps have been done
     if ~any(force)
         beep
-        str = sprintf( '%s: File has been processed with specified options. Skipping processing.\n', file );
+        load(fname_allData);
+        str = sprintf( '%s: File has been processed with specified options. Skipping processing. Processed data have been loaded. \n', file );
         cprintf(str)
         return
     end
@@ -244,50 +254,50 @@ if manually_refine_spikes
 end
 
 
-% %% (5) Find tracking file then load it
-% % Saved: fig & pdf of trajectory
-% %        mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
-% 
-% fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
-% trackData = load_trackfile( data_locn,file, fname_track, force(5) );
-% if any(trackData.r < 100)
-%     params.mode_dim = '2D'; % open field
-%     params.PFmap.Nbins = [10, 10]; % number of location bins in [x y]               
-% else 
-%     params.mode_dim = '1D'; % circular linear track
-%     params.PFmap.Nbins = 30;      % number of location bins               
-% end
-% 
-% 
-% %% (6) Generate place field maps
-% % Saved: fig & pdf of summary consisting of occMap, infoMap, spikeMap and placeMap
-% %        mat file with fields {occMap, spikeMap, infoMap, placeMap, downData, activeData,...
-% %                               placeMap_smooth, sorted_placeMap, sortIdx, params}
-% 
-% if manually_refine_spikes
-%     force(6) = true;
-% end
+%% (5) Find tracking file then load it
+% Saved: fig & pdf of trajectory
+%        mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
 
-% if strcmpi(params.mode_dim,'2D')
-%     [occMap, spikeMap, infoMap, placeMap, placeMap_smooth, placeMap_asd, ...
-%      downData, activeData, params] ...
-%       = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
-% else
-%     [occMap, spikeMap, infoMap, placeMap, placeMap_smooth, placeMap_asd, ...
-%      downData, activeData, params, ...
-%      sorted_placeMap, sorted_placeMap_smooth, sorted_placeMap_asd, ...
-%      normsorted_placeMap, normsorted_placeMap_smooth, normsorted_placeMap_asd, ...
-%      placeMap_pertrial, normplaceMap_pertrial, PCidx, sortIdx]...
-%       = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
-% end
-% 
+fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
+trackData = load_trackfile( data_locn,file, fname_track, force(5) );
+if any(trackData.r < 100)
+    params.mode_dim = '2D'; % open field
+    params.PFmap.Nbins = [16, 16]; % number of location bins in [x y]               
+else 
+    params.mode_dim = '1D'; % circular linear track
+    params.PFmap.Nbins = 30;      % number of location bins               
+end
+
+
+%% (6) Generate place field maps
+% Saved: fig & pdf of several figures showing occMap, spkMap, pfMap,
+%           remapping and spkMap_pertrial
+%        mat file with fields {occMap, hist, asd, downData, activeData}
+
+if manually_refine_spikes
+    force(6) = true;
+end
+
+if strcmpi(params.mode_dim,'1D')
+    [ occMap, hist, asd, downData, activeData, params ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+else
+    [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+end
+
+if manually_refine_PFmap
+end
 
 %% Save output. These are all the variables needed for viewing data with GUI
-
-% save(fname_allData,'file','corr_image','masks','tsG','dtsG','df_f','ddf_f','spikes',...
-%                     'fname_track','downData','activeData','occMap','spikeMap','infoMap',...
-%                     'placeMap','placeMap_smooth','params');
-
+    
+if any(force) || any(~check)
+    save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
+                        'downData','activeData','occMap','hist','asd','params');
+    if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
+    if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
+    if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end
+    if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
+end
+ 
 
 t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));

@@ -1,8 +1,6 @@
 % Written by Ann Go
-%
 
 % This function extracts spikes from df_f
-% 
 
 % INPUTS
 %   df_f        
@@ -32,6 +30,7 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
         str_fissa = 'noFISSA';
     end
     filedir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/',str_fissa,'/'];
+    if ~exist(filedir,'dir'), mkdir(filedir); end
     fname_mat = [filedir file '_spikes_output.mat'];
 
     if ~isempty(ddf_f)

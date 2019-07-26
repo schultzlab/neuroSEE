@@ -6,7 +6,6 @@ fr = params.fr;
 Nbins = params.PFmap.Nbins;
 Nepochs = params.PFmap.Nepochs;     % number of epochs to divide trial in
 Vthr = params.PFmap.Vthr;
-Ncells = size(spikes,1);
 histsmoothFac = params.PFmap.histsmoothFac;
 
 %% Pre-process tracking data
@@ -49,69 +48,79 @@ activet     = t(downspeed > Vthr);
 activespeed = speed(downspeed > Vthr);
 activer    = r(downspeed > Vthr);
 
-xcont = activex;
-ycont = activey;
-xcont = (xcont-min(xcont))/(max(xcont)-min(xcont)); % normalised 0 mean
-ycont = (ycont-min(ycont))/(max(ycont)-min(ycont));
-xycont  = [xcont,ycont];
+xp1 = activex;
+xp2 = activey;
 
-% discretize x and y position 
-x1 = linspace(0,1.0001,Nbins(1)+1);
-y1 = linspace(0,1.0001,Nbins(2)+1);
-x = floor((xycont(:,1)-x1(1))/(x1(2)-x1(1)))+1;
-y = floor((xycont(:,2)-y1(1))/(y1(2)-y1(1)))+1;
+n1=100; n2=100; nks=[n1,n2];     % env discretisation for ASD estimation
+h1 = Nbins(1); h2 = Nbins(2); % hs = [h1,h2];
 
-occMap = full(sparse(x, y, 1, Nbins(1), Nbins(2)));
+% process tracking-environment data
+xp1 = (xp1-min(xp1))/(max(xp1)-min(xp1)); % normalised 0 mean
+xp2 = (xp2-min(xp2))/(max(xp2)-min(xp2));
+xp  = [xp1,xp2];
+
+% discretize x and y position for histogram estimation
+x1 = linspace(0,1.0001,h1+1);
+x2 = linspace(0,1.0001,h2+1);
+xh = floor((xp(:,1)-x1(1))/(x1(2)-x1(1)))+1;
+yh = floor((xp(:,2)-x2(1))/(x2(2)-x2(1)))+1;
+occMap_hist = full(sparse(xh,yh,1,h1,h2));
 mode = 0; % the mask is obtained by imfill only
-envMask_hist = getEnvEdgePrior(occMap,mode); % hist
+envMask_h = getEnvEdgePrior(occMap_hist,mode); % hist
 
+% discretize x and y position for ASD estimation
+x1 = linspace(0,1.0001,n1+1);
+x2 = linspace(0,1.0001,n2+1);
+xi = floor((xp(:,1)-x1(1))/(x1(2)-x1(1)))+1;
+yi = floor((xp(:,2)-x2(1))/(x2(2)-x2(1)))+1;
+xind = sub2ind([n1,n2],xi,yi); % flatten bin tracking (for ASD)
+occMap_asd = full(sparse(xi,yi,1,n1,n2));
 mode = 2; % the mask is obtained by dilation and imfill
-envMask_asd = getEnvEdgePrior(occMap,mode); % ASD
-xyind = sub2ind([Nbins(1),Nbins(2)],x,y); % flatten bin tracking (for ASD)
+envMask_asd = getEnvEdgePrior(occMap_asd,mode); % ASD
 
 % find which neurons are spiking
-a = zeros(size(spikes));
-for ii = 1:Ncells
-    a(ii) = sum(activespk(ii,:));
+for ii = 1:size(spikes,1)
+    a(ii) = sum(spikes(ii,:));
 end
 spkIdx = find(a); % store indices
 Nspk = length(spkIdx);
 
 % initialise  variables to store results
-occMap = zeros(Nbins(1), Nbins(2), Nepochs);
-spkMap = zeros(Nbins(1), Nbins(2), Nspk, Nepochs);
-hist.pfMap    = zeros(Nbins(1), Nbins(2), Nspk, Nepochs);
-hist.pfMap_sm = zeros(Nbins(1), Nbins(2), Nspk, Nepochs);
-hist.infoMap  = zeros(Nspk, 2, Nepochs);
-asd.pfMap     = zeros(Nbins(1), Nbins(2), Nspk, Nepochs);
-asd.infoMap   = zeros(Nspk, 2, Nepochs);
+occMap          = zeros(h1, h2, Nepochs);
+spkMap          = zeros(h1, h2, Nspk, Nepochs);
+hist.pfMap      = zeros(h1, h2, Nspk, Nepochs);
+hist.pfMap_sm   = zeros(h1, h2, Nspk, Nepochs);
+hist.infoMap    = zeros(Nspk, 2, Nepochs);
+asd.pfMap       = zeros(n1, n2, Nspk, Nepochs);
+asd.infoMap     = zeros(Nspk, 2, Nepochs);
 
-e_bound = round(linspace(1,size(activespk,2),Nepochs+1));
 for id = 1:Nspk
     z = activespk(spkIdx(id),:);
-    
     % separate exploration in smaller intervals
+    e_bound = round(linspace(1,length(z),Nepochs+1));
     for e = 1:Nepochs
-        spike_e = z(e_bound(e):e_bound(e+1));
+        % ASD estimation
+        x_e = xind(e_bound(e):e_bound(e+1));
+        z_e = z(e_bound(e):e_bound(e+1));
+        [aaa,~] = runASD_2d(x_e',z_e',nks,envMask_asd);
+        if min(aaa)<0; aaa = aaa-min(aaa); end
+        asd.pfMap(:,:,id,e) = aaa;
         
         % histogram estimation
-        occMap(:,:,e) = full(sparse(x(e_bound(e):e_bound(e+1)), y(e_bound(e):e_bound(e+1)), 1,Nbins(1), Nbins(2)));
-        spkMap(:,:,id,e) = full(sparse(x(e_bound(e):e_bound(e+1)), y(e_bound(e):e_bound(e+1)), spike_e, Nbins(1), Nbins(2)));
-        hist.pfMap(:,:,id,e) = spkMap(:,:,id,e)./occMap(:,:,e);
-        hist.pfMap(isnan(hist.pfMap)) = 0;
-        hhh = imgaussfilt(hist.pfMap(:,:,id,e), Nbins(1)/histsmoothFac); hhh(~envMask_hist) = 0;
+        x_e = xh(e_bound(e):e_bound(e+1));
+        y_e = yh(e_bound(e):e_bound(e+1));
+        occMap(:,:,e) = full(sparse(x_e,y_e,1,h1,h2));
+        spkMap(:,:,id,e) = full(sparse(x_e,y_e,z_e,h1,h2));
+        hhh = spkMap(:,:,id,e)./occMap(:,:,e);
+        hhh(isnan(hhh)) = 0;
+        hist.pfMap(:,:,id,e) = hhh;
+        hhh = imgaussfilt(hhh,h1/histsmoothFac); hhh(~envMask_h) = 0;
         hist.pfMap_sm(:,:,id,e) = hhh;
-    
-        % ASD estimation
-        xyind_e = xyind(e_bound(e):e_bound(e+1));
-        [kasd,~] = runASD_2d(xyind_e',spike_e',Nbins,envMask_asd);
-        if min(kasd)<0; kasd = kasd-min(kasd); end
-        asd.pfMap(:,:,id,e) = kasd;
         
         % info estimation
-        [hist.infoMap(id,1,e), hist.infoMap(id,2,e)] = infoMeasures(hist.pfMap(:,:,id,e),occMap(:,:,e),0);
-        [asd.infoMap(id,1,e), asd.infoMap(id,2,e)] = ...
-            infoMeasures(asd.pfMap(:,:,id,e), ones(Nbins(1),Nbins(2)), 0);
+        [asd.infoMap(id,1,e), asd.infoMap(id,2,e)] =...
+            infoMeasures(aaa',ones(n1,n2),0);
+        [hist.infoMap(id,1,e), hist.infoMap(id,2,e)] = infoMeasures(hhh,occMap(:,e),0);
     end
 end
 

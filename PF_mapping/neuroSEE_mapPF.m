@@ -85,13 +85,15 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
            
             % If 1D, sort place field maps 
             [ hist.sort_pfMap, hist.sortIdx ] = sortPFmap_1d( hist.pfMap, hist.infoMap, Nepochs );
-            hist.sort_pfMap_sm = hist.pfMap_sm(hist.sortIdx,:,:);
-            hist.sort_normpfMap = hist.normpfMap(hist.sortIdx,:,:);
-            hist.sort_normpfMap_sm = hist.normpfMap_sm(hist.sortIdx,:,:);
-            
             [ asd.sort_pfMap, asd.sortIdx ] = sortPFmap_1d( asd.pfMap, asd.infoMap, Nepochs );
-            asd.sort_pfMap = asd.pfMap(asd.sortIdx,:,:);
-            asd.sort_normpfMap = asd.normpfMap(asd.sortIdx,:,:);
+            for en = 1:Nepochs
+                hist.sort_pfMap_sm(:,:,en) = hist.pfMap_sm(hist.sortIdx(:,en),:,en);
+                hist.sort_normpfMap(:,:,en) = hist.normpfMap(hist.sortIdx(:,en),:,en);
+                hist.sort_normpfMap_sm(:,:,en) = hist.normpfMap_sm(hist.sortIdx(:,en),:,en);
+            
+                asd.sort_pfMap(:,:,en) = asd.pfMap(asd.sortIdx(:,en),:,en);
+                asd.sort_normpfMap(:,:,en) = asd.normpfMap(asd.sortIdx(:,en),:,en);
+            end
             
             % Make plots
             makeplot_1d(occMap, hist, asd);
@@ -108,7 +110,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
             [occMap, spkMap, spkIdx, hist, asd, downData, activeData] = generatePFmap_2d(spikes, imtime, trackData, params);
             
              % Make plots
-            makeplot_2d(spkMap, activeData, hist, asd);
+%             makeplot_2d(spkMap, activeData, hist, asd);
         
             % Save output
             output.occMap = occMap;
@@ -151,10 +153,10 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
         % summary of occMap, spkMaps, pfMaps
         for e = 1:Nepochs
             fh = figure('Position',[1087 648 800 800]);
-            subplot(10,8,2:4); imagesc(occMap);
+            subplot(10,8,2:4); imagesc(occMap(e,:));
                 xticks([]); yticks([]); ylabel('Occ');
                 title('Histogram estimation'); colorbar;
-            subplot(10,8,6:8); imagesc(occMap);
+            subplot(10,8,6:8); imagesc(occMap(e,:));
                 xticks([]); yticks([]); ylabel('Occ');
                 title('ASD'); colorbar;
 
@@ -198,7 +200,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
             if Nepochs == 1
                 fname_fig = [filedir file '_PFmaps'];
             else
-                fname_fig = [filedir file '_PFmaps_' num2str(e) 'of' num2str(Nepochs) '_ep'];
+                fname_fig = [filedir file '_PFmaps_' num2str(e) 'of' num2str(Nepochs) 'ep'];
             end
             savefig( fh, fname_fig );
             saveas( fh, fname_fig, 'jpg' );
@@ -208,10 +210,10 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
         % summary of occMap, spkMaps, normpfMaps
         for e = 1:Nepochs
             fh = figure('Position',[1087 648 800 800]);
-            subplot(10,8,2:4); imagesc(occMap);
+            subplot(10,8,2:4); imagesc(occMap(e,:));
                 xticks([]); yticks([]); ylabel('Occ');
                 title('Histogram estimation'); colorbar;
-            subplot(10,8,6:8); imagesc(occMap);
+            subplot(10,8,6:8); imagesc(occMap(e,:));
                 xticks([]); yticks([]); ylabel('Occ');
                 title('ASD'); colorbar;
 
@@ -255,7 +257,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
             if Nepochs == 1
                 fname_fig = [filedir file '_normPFmaps'];
             else
-                fname_fig = [filedir file '_normPFmaps_' num2str(e) 'of' num2str(Nepochs) '_ep'];
+                fname_fig = [filedir file '_normPFmaps_' num2str(e) 'of' num2str(Nepochs) 'ep'];
             end
             savefig( fh, fname_fig );
             saveas( fh, fname_fig, 'jpg' );
@@ -366,7 +368,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
             fh = figure;
             for ei = 1:Nepochs % rows: sorting
                 for ej = 1:Nepochs % cols: epochs 
-                    subplot(Nepochs, Nepochs, (ei-1)*Nepochs + ej); imagesc(hist.sort_normpfMap(hist.sortIdx(:,ei),:,ej)); 
+                    subplot(Nepochs, Nepochs, (ei-1)*Nepochs + ej); imagesc(hist.normpfMap(hist.sortIdx(:,ei),:,ej)); 
                     title(['Epoch ' num2str(ej)]); ylabel(['Epoch' num2str(ei) ' sorting']);
                 end
             end
@@ -378,7 +380,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
             fh = figure;
             for ei = 1:Nepochs % rows: sorting
                 for ej = 1:Nepochs % cols: epochs 
-                    subplot(Nepochs, Nepochs, (ei-1)*Nepochs + ej); imagesc(asd.sort_normpfMap(asd.sortIdx(:,ei),:,ej)); 
+                    subplot(Nepochs, Nepochs, (ei-1)*Nepochs + ej); imagesc(asd.normpfMap(asd.sortIdx(:,ei),:,ej)); 
                     title(['Epoch ' num2str(ej)]); ylabel(['Epoch' num2str(ei) ' sorting']);
                 end
             end
@@ -406,6 +408,9 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
                         axes(ha(jj*nPlot+2));
                         imagesc(squeeze(hist.pfMap(:,:,ii*nPlot+jj+1,e))');
                         axis off; colorbar; % caxis([0 0.06]);
+                        if Nepochs >1 
+                            title(['Epoch ',num2str(e)],'fontsize',15);
+                        end
                         axes(ha(jj*nPlot+3)); 
                         imagesc(squeeze(hist.pfMap_sm(:,:,ii*nPlot+jj+1,e))');
                         axis off; colorbar; % caxis([0 0.005]);
@@ -418,13 +423,13 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
                     if Nepochs == 1
                         fname_fig = [filedir file '_PFmaps'];
                     else
-                        fname_fig = [filedir file '_PFmaps_' num2str(e) 'of' num2str(Nepochs) '_ep' ];
+                        fname_fig = [filedir file '_PFmaps_' num2str(e) 'of' num2str(Nepochs) 'ep' ];
                     end
                 else
                     if Nepochs == 1
                         fname_fig = [filedir file '_PFmaps_' num2str(ii+1)];
                     else
-                        fname_fig = [filedir file '_PFmaps_' num2str(ii+1) '_' num2str(e) 'of' num2str(Nepochs) '_ep' ];
+                        fname_fig = [filedir file '_PFmaps_' num2str(ii+1) '_' num2str(e) 'of' num2str(Nepochs) 'ep' ];
                     end
                 end
                 savefig( fh, fname_fig );

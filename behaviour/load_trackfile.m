@@ -24,7 +24,7 @@ function trackdata = load_trackfile(data_locn,file,fname_track,force)
     
     [~,~,ext] = fileparts(fname_track);
     fname_fig = [dir_processed file '_mtrajectory.fig'];
-    fname_pdf = [dir_processed file '_mtrajectory.pdf'];
+    fname_jpg = [dir_processed file '_mtrajectory.jpg'];
     switch ext
         case('.mat')
             data = load(fname_track);
@@ -66,14 +66,14 @@ function trackdata = load_trackfile(data_locn,file,fname_track,force)
     end
     
     yn_fname_fig = exist(fname_fig,'file');
-    yn_fname_pdf = exist(fname_pdf,'file');
-    if any([ force, ~yn_fname_fig, ~yn_fname_pdf ])
+    yn_fname_jpg = exist(fname_jpg,'file');
+    if any([ force, ~yn_fname_fig, ~yn_fname_jpg ])
         fig = figure; plot(trackdata.x,trackdata.y); axis square; axis off; 
         tmax = (trackdata.time(end))/60; % min
             titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17) ' (' num2str(round(tmax)) ' min)'];
             title(titletext);
         savefig(fig,fname_fig);
-        saveas(fig,fname_pdf);
+        saveas(fig,fname_jpg);
         close(fig);
     end
     

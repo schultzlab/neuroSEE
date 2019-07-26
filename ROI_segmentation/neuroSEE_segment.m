@@ -49,6 +49,10 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, mean_imR
             for i = 1:size(tsG,1)
                 x = lowpass( medfilt1(tsG(i,:),df_medfilt1), 1, fr );
                 fo = ones(size(x)) * prctile(x,df_prctile);
+                while fo == 0
+                    fo = ones(size(x)) * prctile(x,df_prctile+5);
+                    df_prctile = df_prctile+5;
+                end
                 df_f(i,:) = (x - fo) ./ fo;
             end
 
@@ -116,7 +120,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, mean_imR
         fig = plotContoursOnSummaryImage(corr_image, masks, plotopts);
         fname_fig = [filedir file '_ROIs'];
         savefig(fig,fname_fig);
-        saveas(fig,fname_fig,'pdf');
+        saveas(fig,fname_fig,'jpg');
         close(fig);
     end
 end

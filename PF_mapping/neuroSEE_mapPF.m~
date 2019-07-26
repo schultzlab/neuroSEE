@@ -49,7 +49,7 @@
 %   pcIdx   : row indices of spikes corresponding to place cells
 %   sortIdx : sorted row indices corresponding to sorted_pfMap
 
-function varargout = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force)
+function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force)
     
     if nargin<6, force = 0; end
 
@@ -85,13 +85,15 @@ function varargout = neuroSEE_mapPF( spikes, trackData, data_locn, file, params,
            
             % If 1D, sort place field maps 
             [ hist.sort_pfMap, hist.sortIdx ] = sortPFmap_1d( hist.pfMap, hist.infoMap, Nepochs );
-            hist.sort_pfMap_sm = hist.pfMap_sm(hist.sortIdx,:,:);
-            hist.sort_normpfMap = hist.normpfMap(hist.sortIdx,:,:);
-            hist.sort_normpfMap_sm = hist.normpfMap_sm(hist.sortIdx,:,:);
+            for e = 1:Nepochs
+                hist.sort_pfMap_sm(:,:,e) = hist.pfMap_sm(hist.sortIdx(:,e),:,:);
+                hist.sort_normpfMap(:,:,e) = hist.normpfMap(hist.sortIdx(:,e),:,:);
+                hist.sort_normpfMap_sm(:,:,e) = hist.normpfMap_sm(hist.sortIdx(:,e),:,:);
             
-            [ asd.sort_pfMap, asd.sortIdx ] = sortPFmap_1d( asd.pfMap, asd.infoMap, Nepochs );
-            asd.sort_pfMap = asd.pfMap(asd.sortIdx,:,:);
-            asd.sort_normpfMap = asd.normpfMap(asd.sortIdx,:,:);
+                [ asd.sort_pfMap, asd.sortIdx ] = sortPFmap_1d( asd.pfMap, asd.infoMap, Nepochs );
+                asd.sort_pfMap(:,:,e) = asd.pfMap(asd.sortIdx(:,e),:,:);
+                asd.sort_normpfMap(:,:,e) = asd.normpfMap(asd.sortIdx(:,e),:,:);
+            end
             
             % Make plots
             makeplot_1d(occMap, hist, asd);
@@ -139,19 +141,10 @@ function varargout = neuroSEE_mapPF( spikes, trackData, data_locn, file, params,
         if isfield(m,'spkIdx')
             spkIdx = m.spkIdx;
         end
-            
+        
         str = sprintf( '%s: Place field map data loaded\n', file );
         cprintf(str)
     end
-    
-    varargout{1} = occMap;
-    varargout{2} = hist;
-    varargout{3} = asd;
-    varargout{4} = downData;
-    varargout{5} = activeData;
-    varargout{6} = params;
-    varargout{7} = spkMap;
-    varargout{8} = spkIdx;
     
     function makeplot_1d(occMap, hist, asd)
         Npcs = length(hist.pcIdx);
@@ -286,7 +279,7 @@ function varargout = neuroSEE_mapPF( spikes, trackData, data_locn, file, params,
                     imagesc(hist.spkMap_pertrial(:,:,ii*nPlot+jj+1)); 
                     yticks(1:Ntrials:Ntrials); yticklabels([1,Ntrials]); ylabel('Trial #');
                     xticks([1 15 30]); xticklabels([1 50 100]); xlabel('Position (cm)');
-                    axis off; title(['Cell ' num2str(ii*nPlot+jj+1),'fontsize',15]);
+                    axis off; title(['Cell ' num2str(ii*nPlot+jj+1)],'fontsize',15);
                 end
             end
             if Npcs/nPlot <= 1
@@ -415,6 +408,9 @@ function varargout = neuroSEE_mapPF( spikes, trackData, data_locn, file, params,
                         axes(ha(jj*nPlot+2));
                         imagesc(squeeze(hist.pfMap(:,:,ii*nPlot+jj+1,e))');
                         axis off; colorbar; % caxis([0 0.06]);
+                        if Nepochs >1 
+                            title(['Epoch ',num2str(e)],'fontsize',15);
+                        end
                         axes(ha(jj*nPlot+3)); 
                         imagesc(squeeze(hist.pfMap_sm(:,:,ii*nPlot+jj+1,e))');
                         axis off; colorbar; % caxis([0 0.005]);
@@ -427,9 +423,14 @@ function varargout = neuroSEE_mapPF( spikes, trackData, data_locn, file, params,
                     if Nepochs == 1
                         fname_fig = [filedir file '_PFmaps'];
                     else
-                        fname_fig = [filedir file '_PFmaps_' num2str(e) 'of' num2str(Nepochs) '' ];
+                        fname_fig = [filedir file '_PFmaps_' num2str(e) 'of' num2str(Nepochs) '_ep' ];
+                    end
                 else
-                    fname_fig = [filedir file '_PFmaps_' num2str(ii+1)];
+                    if Nepochs == 1
+                        fname_fig = [filedir file '_PFmaps_' num2str(ii+1)];
+                    else
+                        fname_fig = [filedir file '_PFmaps_' num2str(ii+1) '_' num2str(e) 'of' num2str(Nepochs) '_ep' ];
+                    end
                 end
                 savefig( fh, fname_fig );
                 saveas( fh, fname_fig, 'jpg' );

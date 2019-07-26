@@ -14,15 +14,15 @@ cprintf(str);
 % imG = read_file(nam);
 
 % imG = imG - min(imG(:)); 
-if ~isa(imG,'single');    imG = single(imG);  end         % convert to single
+if ~isa(imG,'single');    imG = single(imG);  end     % convert to single
 
 [d1,d2,T] = size(imG);                                % dimensions of dataset
-d = d1*d2;                                          % total number of pixels
+d = d1*d2;                                            % total number of pixels
 
 %% Set parameters
 
-K = maxcells;                                     % number of components to be found
-tau = cellrad/2;                                  % std of gaussian kernel (half size of neuron) 
+K = maxcells;                                   % number of components to be found
+tau = cellrad;                                  % std of gaussian kernel (half size of neuron) 
 p = 2;
 
 options = CNMFSetParms(...   

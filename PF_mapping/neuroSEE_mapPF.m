@@ -110,7 +110,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
             [occMap, spkMap, spkIdx, hist, asd, downData, activeData] = generatePFmap_2d(spikes, imtime, trackData, params);
             
              % Make plots
-%             makeplot_2d(spkMap, activeData, hist, asd);
+            makeplot_2d(spkMap, activeData, hist, asd);
         
             % Save output
             output.occMap = occMap;

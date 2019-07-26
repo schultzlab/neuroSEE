@@ -17,6 +17,8 @@ if ~exist( fissadir, 'dir' ), mkdir( fissadir ); end
 
 fname_mat = [fissadir file '_fissa_output.mat'];
 fname_mat_temp = [fissadir 'FISSAout/matlab.mat'];
+fname_fig1 = [fissadir file '_fissa_result.fig'];
+fname_fig2 = [fissadir file '_fissa_df_f.fig'];
 
 prevstr = [];
 if force || ~exist(fname_mat,'file')
@@ -62,7 +64,9 @@ if force || ~exist(fname_mat,'file')
     save(fname_mat,'-struct','output');
     str = sprintf('%s: FISSA correction done\n',file);
     refreshdisp(str, prevstr);
-
+    
+    % plot 
+    makeplot(dtsG, ddf_f);
 else
     % If it exists, load it 
     fissa_output = load(fname_mat);
@@ -71,6 +75,33 @@ else
     ddf_f = fissa_output.ddf_f;
     params.fissa = fissa_output.params;
 
+    if ~exist(fname_fig1,'file') || ~exist(fname_fig2,'file')
+        makeplot(dtsG, ddf_f);
+    end
     fprintf('%s: Neuropil decontamination output found and loaded\n',file);
+end
+
+function makeplot(dtsG, ddf_f)
+    % raw timeseries
+    if ~exist(fname_fig1,'file')
+        fig = figure;
+        iosr.figures.multiwaveplot(1:size(dtsG,2),1:size(dtsG,1),dtsG,'gain',5); yticks([]); xticks([]); 
+        title('Fissa-corrected raw timeseries','Fontweight','normal','Fontsize',12); 
+        savefig(fig,[fissadir file '_fissa_result']);
+        saveas(fig,[fissadir file '_fissa_result'],'jpg');
+        close(fig);
+    end
+
+    % dF/F
+    if ~exist(fname_fig2,'file')
+        fig = figure;
+        iosr.figures.multiwaveplot(1:size(ddf_f,2),1:size(ddf_f,1),ddf_f,'gain',5); yticks([]); xticks([]); 
+        title('Fissa-corrected dF/F','Fontweight','normal','Fontsize',12); 
+        savefig(fig,[fissadir file '_fissa_df_f']);
+        saveas(fig,[fissadir file '_fissa_df_f'],'jpg');
+        close(fig);
+    end
+end
+
 end
 

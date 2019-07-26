@@ -29,26 +29,19 @@
 %function [tsG, tsR, masks, mean_imratio] = ABLE( stack_g, mean_r, cellrad, maxcells )
 
 function [tsG, masks, corr_g] = ABLE( stack_g, mean_r, file, maxcells, cellrad ) % by Ann
-   tic;
+
    str = sprintf('%s: Extracting ROIs with ABLE\n', file);
    cprintf(str);
 
 %% Initialise the summary images
-   szsmooth = [3 3];
+   szsmooth = [5 5];
    % Compute the summary images, i.e. mean and correlation images
    mean_g = mean(stack_g,3); 
-   corr_g = crossCorr(stack_g(:,:,1:2:7420)); %1:2:end));
-   
-   red = mat2gray(mean_r);
-   red = red - 0.3;
-   red = medfilt2(red,[3 3]);
-   
-   
+   corr_g = crossCorr(stack_g(:,:,:)); %1:2:end));
 
    mean_imratio = mean_r./mean_g;  
    % Set the initial images 
    init_g = medfilt2( corr_g, szsmooth );
-   corr = imadjust(init_g);
   
    R0     = mean_imratio - min(mean_imratio(:));
    R0     = R0 / max(R0(:));
@@ -75,8 +68,7 @@ function [tsG, masks, corr_g] = ABLE( stack_g, mean_r, file, maxcells, cellrad )
 
    %% Initialise by getting the candidate ROI seeds using the green channel
    % - this is activity-based initialisation
-  % phi_0    = initialiseROISegmentation(init_g, cellrad, alpha, init_opt);
-   phi_0    = initialiseROISegmentation_Manfredi(corr,red, cellrad, alpha, init_opt,1,3);
+   phi_0    = initialiseROISegmentation(init_g, cellrad, alpha, init_opt);
    exp_ROIs = maxcells; 
 
    %% Retune the alpha parameter
@@ -91,7 +83,7 @@ function [tsG, masks, corr_g] = ABLE( stack_g, mean_r, file, maxcells, cellrad )
        refreshdisp( str, prevstr );
        prevstr = str; 
        % disp(['Alpha Tuning: Current Alpha is ', num2str(retuned_alpha)]);
-       phi    = initialiseROISegmentation_Manfredi(init_g,red, cellrad, retuned_alpha, retuned_opt,1,3);
+       phi = initialiseROISegmentation(init_g, cellrad, retuned_alpha, retuned_opt);
        retuned_masks_num = size(phi,3);
    end
    % disp(['Final alpha value is ', num2str(retuned_alpha)]);
@@ -104,32 +96,32 @@ function [tsG, masks, corr_g] = ABLE( stack_g, mean_r, file, maxcells, cellrad )
        phi_0_g = phi_0;
    end
 
-   %% Initialise by getting the candidate ROI seeds using the red channel
-   % - this is morphology-based initialisation
-%    I_norm_ori = R0;
-%    min_sigma  = 4;
-%    max_sigma  = 8;
-%    Ntheta     = 8;
-%    C  = 0;
-%    tm = 0;
-%    p2 = 2*max_sigma*3 + 1;
-%    bw = adaptivethreshold( I_norm_ori, p2, C, tm );
-%    
-%    [ new_coord_x, new_coord_y, absigma_leave] = SeedDetection( I_norm_ori, min_sigma, max_sigma, bw, Ntheta );
-%    
-%    MinArea = 6;
-% 
-%    outparams = fastSegmentation( I_norm_ori, new_coord_x, new_coord_y, absigma_leave, MinArea, Ntheta, min_sigma );
-% 
-%    [szX, szY] = size( R0 );
-%    phi_0_r    = ones( szX, szY, length(outparams.xypos) );
-%    for k=1:length( outparams.Pixels )
-%        for j=1:length( outparams.Pixels{k} )
-%            phi_0_r( outparams.Pixels{k}(2,j), outparams.Pixels{k}(1,j), k ) = -1;
-%        end 
-%    end
-% 
-%    phi_0 = cat( 3, phi_0_g, phi_0_r ); 
+ %% Initialise by getting the candidate ROI seeds using the red channel
+  % - this is morphology-based initialisation
+   I_norm_ori = R0;
+   min_sigma  = 4;
+   max_sigma  = 8;
+   Ntheta     = 8;
+   C  = 0;
+   tm = 0;
+   p2 = 2*max_sigma*3 + 1;
+   bw = adaptivethreshold( I_norm_ori, p2, C, tm );
+   
+   [ new_coord_x, new_coord_y, absigma_leave] = SeedDetection( I_norm_ori, min_sigma, max_sigma, bw, Ntheta );
+   
+   MinArea = 6;
+
+   outparams = fastSegmentation( I_norm_ori, new_coord_x, new_coord_y, absigma_leave, MinArea, Ntheta, min_sigma );
+
+   [szX, szY] = size( R0 );
+   phi_0_r    = ones( szX, szY, length(outparams.xypos) );
+   for k=1:length( outparams.Pixels )
+       for j=1:length( outparams.Pixels{k} )
+           phi_0_r( outparams.Pixels{k}(2,j), outparams.Pixels{k}(1,j), k ) = -1;
+       end 
+   end
+
+   phi_0 = cat( 3, phi_0_g, phi_0_r ); 
 
 
    %% Retune the lambda parameter
@@ -167,22 +159,19 @@ function [tsG, masks, corr_g] = ABLE( stack_g, mean_r, file, maxcells, cellrad )
    %                     = segment_cells(phi, stack_g, mean_r, cellrad, seg_opt);
    [masks, tsG] = segment_cells(phi, stack_g, cellrad, seg_opt); % edit by Ann
 
-    runtime  = toc;
-    fprintf('\nABLE processing time %2.2f minutes.\n',runtime/60);
+%    runtime  = toc;
 %    mask_num = size(masks,3); % Number of detected ROIs
 
    % Plot masks on summary image and save plot
-  % plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
-   %fig = plotContoursOnSummaryImage(mean_imratio, masks, plotopts);
-   %fname_fig = [filedir file '_2P_ROIs'];
-   %savefig(fig,fname_fig,'compact');
+%    plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
+%    fig = plotContoursOnSummaryImage(mean_imratio, masks, plotopts);
+%    fname_fig = [filedir file '_2P_ROIs'];
+%    savefig(fig,fname_fig,'compact');
 %    saveas(fig,fname_fig,'pdf');
-  % close(fig);
+%    close(fig);
 %    
 %    % Save masks in a mat file
-    %fname_masks = [filedir file '_2P_segment_output.mat'];
-    
-    fname_masks = [file '_2P_segment_output.mat'];
-    save(fname_masks,'tsG','masks','corr');
+%    fname_masks = [filedir file '_2P_segment_output.mat'];
+%    save(fname_masks,'cell_tsG','cell_tsR','masks','mean_imratio');
 
 end 

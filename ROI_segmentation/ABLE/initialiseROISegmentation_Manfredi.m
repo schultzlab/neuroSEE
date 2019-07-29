@@ -1,18 +1,19 @@
-function[masks] = initialiseROISegmentation(metric,red_metric,radius, alpha,...
+function[masks] = initialiseROISegmentation_Manfredi(metric,red_metric,ratio,radius, alpha,...
                                             options,tune_red,tune_green)
 %
-% Author:      Stephanie Reynolds
+% Author:      Manfredi Castellil Stephanie Reynolds
 % Date:        25/09/2017
+% Acknowledgment: Stephanie Reynolds
 % Supervisors: Pier Luigi Dragotti, Simon R Schultz
 % Overview:    This function is used as the initialisation for the segmentation
-%              algorithm. Peaks in the 2D summary image(s) are identified 
-%              as candidate ROIs. Peaks are found with an built-in MATLAB 
-%              image processing function 'imextendedmax'. Peaks with 
-%              relative height (with respect to their neighbours) that are 
-%              less than alpha x sigma are suppressed. Here, sigma is
-%              the standard deviation of the summary image and alpha is a 
-%              tuning parameter. 
-% Reference:   Reynolds et al. (2016) ABLE: an activity-based level set 
+%              algorithm. The function computes the segmenttion of the correlation image
+%              from green channel; and of red channel mean image.
+%              To gets more seeds the red channel seeds are compared to the ones found in the mean_imratio
+%              and they are merged(mean_imratio -by inspection- helped us indentify cell overlap).
+%              Finally green and red ROI candidates  are selected based on geometry features
+%              (Area and Eccenctricity)/ The final candidates are used for creating var masks
+%
+% Reference:   Reynolds et al. (2016) ABLE: an activity-based level set
 %              segmentation algorithm for two-photon calcium imaging data
 %
 %Acknowledgment:   Stephanie Reynolds, Pier Luigi Dragotti
@@ -23,18 +24,17 @@ function[masks] = initialiseROISegmentation(metric,red_metric,radius, alpha,...
 % alpha                      tuning parameter, peaks below alpha*sigma will be
 %                            suppressed
 % options                    A variable of type struct. In the following we
-%                            describe the fields of this struct. 
+%                            describe the fields of this struct.
 % options.blur_radius        [Default: 1] If present, this is the radius of
-%                            blurring applied to the summary images. 
+%                            blurring applied to the summary images.
 %                            blurred with radius options.blur_radius.
 % options.secondary_metric   M x N array corresponding to a summary image,
-%                            e.g. the mean image. If this field is present, 
-%                            initialisation is  performed on both the first 
+%                            e.g. the mean image. If this field is present,
+%                            initialisation is  performed on both the first
 %                            argument 'metric' and a second summary image. The value
 %                            options.second_alpha (the value of alpha for the
-%                            second summary image) must also be present. 
-% 
-%  (Edit by Manfredi)
+%                            second summary image) must also be present.
+%
 %  tune                      filtering parameter for segmenting image.
 %
 %%%%%%%%%%%%%%%   OUTPUTS   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -45,25 +45,32 @@ function[masks] = initialiseROISegmentation(metric,red_metric,radius, alpha,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 dim     = size(metric);
-maxSize = round(pi * radius^2 * 1.6);
-minSize  = round(pi * radius^2 * 0.5);
+maxSize = round(pi * (radius*1.7)^2 );
+minSize = round(pi * (0.55*radius)^2);
 
-%% Loading pretrained convolutional neural network
-load('cnn_2.mat');
+%% Loading pretrained convolutional neural network - still trying to improve it (89.8 % accurate)
+%load('cnn_2.mat');
 
 %% Segmenting and Making measuremnts of objects detected
+[~, ~,stats_red] = segment_Manfredi(red_metric+alpha ,tune_red,alpha);
+[~, ~,stats_green] = segment_Manfredi(metric - alpha,tune_green,alpha);
+[~, ~,stats_ratio] = segment_Manfredi(imadjust(ratio),tune_red,alpha);
 
-[segmentedR, ~,~,~,stats_red] = segment_Manfredi(red_metric +(0.1+alpha),tune_red,alpha);
+% merging ratio and red seeds
+[~,Roi_Merged] = merge_Manfredi(stats_ratio,stats_red);
+% eliminating roi that merged
+stats_ratio(Roi_Merged) = [];
 
-[segmentedG, ~,~,~,stats_green] = segment_Manfredi(metric -alpha,tune_green,alpha);
+stats_red = [stats_red;stats_ratio];
+clear stat_ratio;
 
 % Deleting ROI detected  at boundaries due to correlation artifacts
 boundaryDetect = [];
 count = 1;
 
 for x = 1 : size(stats_red,1)
-    if (stats_red(x).Centroid(1) < 3) ||(stats_red(x).Centroid(1) > 509)
-        
+    if (stats_red(x).Centroid(1) < 7) ||(stats_red(x).Centroid(1) > 507)
+
         boundaryDetect(count) = x;
         count = count +1;
     end
@@ -73,60 +80,37 @@ stats_red(boundaryDetect) = [];
 boundaryDetect = [];
 count = 1;
 for x = 1 : size(stats_red,1)
-    if (stats_red(x).Centroid(2) < 15) ||(stats_red(x).Centroid(2) > 500)
-        
+    if (stats_red(x).Centroid(2) < 6) ||(stats_red(x).Centroid(2) > 506)
+
         boundaryDetect(count) = x;
         count = count +1;
     end
 end
 stats_red(boundaryDetect) = [];
 
-
-% h = figure('Name','Green');imshow(metric);hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
-% savefig(h,'DistributionOfCentroids.fig','compact');
-
-
-
-%% Classify each ROI found from red channel 
+%% Classify each ROI found from red channel
 %notCell = seedClassification((metric ),stats_red);
-% eliminating roi that classifier discarded 
+% eliminating roi that classifier discarded
 
 %stats_red(notCell) = [];
 
 
-% %% Classify each ROI found from green channel 
-% notGreen = seedClassification(metric,stats_green);
-% stats_green(notGreen) = [];
-% 
-% 
-% h = figure('Name','Final centroids after classification');imshow((metric - 0.05));hold on; label_centroid([stats_red;stats_green],'g.');hold off;
-% savefig(h,'Segmented.fig','compact');
+%% Selecting ROI based on geometrical features
+idx = find([stats_red.Area] > maxSize | [stats_red.Area] < minSize | [stats_red.Eccentricity] > 0.9 );
+stats_red(idx) = [];
 
-% h = figure('Name','Green');imshow(segmentedG);hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
-% savefig(h,'Segmented.fig','compact');
+idx = find([stats_green.Area] > maxSize | [stats_green.Area] < minSize |[stats_green.Eccentricity] > 0.92);
+stats_green(idx) = [];
 
 [~,red_Roi_Merged] = merge_Manfredi(stats_red,stats_green);
-% eliminating roi that merged 
+% eliminating roi that merged
 stats_red(red_Roi_Merged) = [];
 
-  
-    
-    
-
-idx = find([stats_red.Area] < maxSize | [stats_red.Area] > minSize | [stats_red.Eccentricity] < 0.9 ); 
-stats_red = stats_red(idx);  
-
-idx = find([stats_green.Area] < maxSize | [stats_green.Area] > minSize | [stats_green.Eccentricity] < 0.92); 
-stats_green = stats_green(idx); 
-
-
-
-%% Creating masks 
+%% Creating masks
 obj_num    = size(stats_red,1);
 masks      = zeros(dim(1), dim(2), obj_num);
 masksG     = zeros(dim(1),dim(2),size(stats_green,1));
 
-% msave()inSize = min([stats_red.Area]);
 
 for ii  = 1:obj_num
     mask             = zeros(dim);
@@ -142,27 +126,17 @@ end
 
 masks = cat(3,masksG,masks);
 
-%%BInarizing each mask since concatenation as affected morphology o f pixel
+%BInarizing each mask since concatenation as affected morphology o f pixel
 
-for ii  = 1:size(masks,3)
-    masks(:,:,ii) = imbinarize(masks(:,:,ii));
+%for ii  = 1:size(masks,3)
+%    masks(:,:,ii) = imbinarize(masks(:,:,ii));
 %     masks(:,:,ii) = medfilt2(masks(:,:,ii),[3 3]);
-end
-% % Remove any that are too large 
+%% % Remove any that are too large
 % nnzs  = squeeze(sum(sum(masks,1),2));
 % masks(:,:,nnzs > maxSize)     = [];
-% Final ROIs
+%% Final ROIs
 
 masks = -1*masks + ~masks;
-% h = figure('Name','Green');imagesc(mean(masks,3));hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
-% savefig(h,'masks+centr.fig','compact');
+%h = figure('Name','Green');imagesc(mean(masks,3));hold on; label_centroid(stats_green,'g.');label_centroid(stats_red,'r.');hold off;
+
 end
-
-
-
-
-
-
-
-
-

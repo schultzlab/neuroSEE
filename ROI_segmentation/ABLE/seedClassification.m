@@ -1,8 +1,11 @@
 function indexOfNotCell = seedClassification(img,stats_red)
+% written by Manfredi to be used when CNN classifier improves
+%
+%
 
 
     load('cnn_2.mat');
-    
+
     img = imadjust(img)+ 0.2;
 
     for i = 1: size(stats_red,1)
@@ -16,7 +19,7 @@ function indexOfNotCell = seedClassification(img,stats_red)
 
         crop_section = imcrop(img,bounding_box);
         crop_section = imresize(crop_section,[50 50]);
-         
+
          %Gray scale normalization
          crop_section = mat2gray(crop_section);
          crop_section = im2double(crop_section);
@@ -28,11 +31,11 @@ function indexOfNotCell = seedClassification(img,stats_red)
 
     imds = imageDatastore(fullfile('/Users/mc6017/Desktop/UROP/test'));
     [YPred,probs] = classify(net,imds);
-    
+
     notCell = (YPred ~= 'Cell') ;
     indexOfNotCell = find(notCell);
-    
-    
+
+
     for i = 1: size(stats_red,1)
         fprintf('%d: %s\n',i,YPred(i));
     end

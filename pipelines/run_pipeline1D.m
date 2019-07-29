@@ -19,10 +19,10 @@ tic
 %% USER: Set basic settings
                             
 test = false;                % flag to use one of smaller files in test folder)
-default = true;             % flag to use default parameters
+default = false;             % flag to use default parameters
                             % flag to force
 force = [false;...              % (1) motion correction even if motion corrected images exist
-         true;...              % (2) roi segmentation
+         false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
          false;...              % (5) tracking data extraction
@@ -30,7 +30,7 @@ force = [false;...              % (1) motion correction even if motion corrected
 
 mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-dofissa = false;                 % flag to implement FISSA (when false, overrides force(3) setting)
+dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
 
 
@@ -54,7 +54,6 @@ end
 
 %% USER: Specify file
 
-% file = '20190406_20_38_41'; 
 file = '20181016_09_09_43'; 
 
 
@@ -101,7 +100,7 @@ if ~default
         params.spkExtract.decay_time = 0.4;        % length of a typical transient in seconds [default: 0.4]
         params.spkExtract.lam_pr = 0.99;           % false positive probability for determing lambda penalty   [default: 0.99]
     % PF mapping
-        params.PFmap.Nepochs = 2;             % number of epochs for each 4 min video [default: 1]
+        params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video [default: 1]
         params.PFmap.histsmoothFac = 7;       % Gaussian smoothing window for histogram extraction        [default: 7]
         params.PFmap.Vthr = 10;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 10]
                                               %                              Neurotar uses 8 mm/s
@@ -137,7 +136,7 @@ if str2double(file(1:4)) > 2018
 else
     params.FOV = 330; 
     params.ROIsegment.cellrad = 9;            
-    params.ROIsegment.maxcells = 200;       
+    params.ROIsegment.maxcells = 200;         
 end
 
 
@@ -244,7 +243,7 @@ if any(trackData.r < 100)
     params.PFmap.Nbins = [16, 16]; % number of location bins in [x y]               
 else 
     params.mode_dim = '1D'; % circular linear track
-    params.PFmap.Nbins = 150;      % number of location bins               
+    params.PFmap.Nbins = 30;      % number of location bins               
 end
 
 

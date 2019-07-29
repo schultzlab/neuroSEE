@@ -60,6 +60,8 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
 
         end
 
+        makeplot(spikes);
+        
         currstr = sprintf( '%s: Spike extraction done\n', file );
         refreshdisp(currstr,str)
     else

@@ -83,24 +83,20 @@ end
 
 function makeplot(dtsG, ddf_f)
     % raw timeseries
-    if ~exist(fname_fig1,'file')
-        fig = figure;
-        iosr.figures.multiwaveplot(1:size(dtsG,2),1:size(dtsG,1),dtsG,'gain',5); yticks([]); xticks([]); 
-        title('Fissa-corrected raw timeseries','Fontweight','normal','Fontsize',12); 
-        savefig(fig,[fissadir file '_fissa_result']);
-        saveas(fig,[fissadir file '_fissa_result'],'jpg');
-        close(fig);
-    end
+    fig = figure;
+    iosr.figures.multiwaveplot(1:size(dtsG,2),1:size(dtsG,1),dtsG,'gain',5); yticks([]); xticks([]); 
+    title('Fissa-corrected raw timeseries','Fontweight','normal','Fontsize',12); 
+    savefig(fig,[fissadir file '_fissa_result']);
+    saveas(fig,[fissadir file '_fissa_result'],'jpg');
+    close(fig);
 
     % dF/F
-    if ~exist(fname_fig2,'file')
-        fig = figure;
-        iosr.figures.multiwaveplot(1:size(ddf_f,2),1:size(ddf_f,1),ddf_f,'gain',5); yticks([]); xticks([]); 
-        title('Fissa-corrected dF/F','Fontweight','normal','Fontsize',12); 
-        savefig(fig,[fissadir file '_fissa_df_f']);
-        saveas(fig,[fissadir file '_fissa_df_f'],'jpg');
-        close(fig);
-    end
+    fig = figure;
+    iosr.figures.multiwaveplot(1:size(ddf_f,2),1:size(ddf_f,1),ddf_f,'gain',5); yticks([]); xticks([]); 
+    title('Fissa-corrected dF/F','Fontweight','normal','Fontsize',12); 
+    savefig(fig,[fissadir file '_fissa_df_f']);
+    saveas(fig,[fissadir file '_fissa_df_f'],'jpg');
+    close(fig);
 end
 
 end

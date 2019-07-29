@@ -87,7 +87,7 @@ function fname_track = findMatchingTrackingFile(data_locn, file, force)
     end
 
     function finaltracktime = matchImgAndTrackTimes(imgtime, tracktimes)
-       maxtrackdelay = 10; % track recording must begin within this many mins of Ca image
+       maxtrackdelay = 12; % track recording must begin within this many mins of Ca image
 
        % now go through tracking files, & find the files that
        % are within a few minutes of imaging time

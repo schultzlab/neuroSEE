@@ -18,21 +18,20 @@ tic
 
 %% USER: Set basic settings
                             
-test = false;                    % flag to use one of smaller files in test folder)
-default = true;                 % flag to use default parameters
-                                % flag to force
+test = false;                % flag to use one of smaller files in test folder)
+default = true;             % flag to use default parameters
+                            % flag to force
 force = [false;...              % (1) motion correction even if motion corrected images exist
-         true;...              % (2) roi segmentation
-         false;...              % (3) force neuropil decontamination
-         false;...              % (4) force spike extraction
-         false;...              % (5) force tracking data extraction
-         false];                % (6) force place field mapping
+         false;...              % (2) roi segmentation
+         false;...              % (3) neuropil decontamination
+         false;...              % (4) spike extraction
+         false;...              % (5) tracking data extraction
+         false];                % (6) place field mapping
 
 mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, fft-rigid method (Katie's)
-segment_method = 'CaImAn';      % [ABLE,CaImAn] 
-dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
+segment_method = 'CaImAn';      % [ABLE,CaImAn]    
+dofissa = false;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
-manually_refine_PFmap = false;   % flag to tweak PFmap including changing number of epochs or velocity threshold
 
 
 %% Load module folders and define data directory
@@ -45,7 +44,6 @@ if ~isempty(err)
 end
 if ~strcmpi(comp,'mac')
     manually_refine_spikes = false;     % No gui when running in linuxbox or hpc
-    manually_refine_PFmap = false;      % One can always run gui locally later using saved processed data.
 end
 if strcmpi(comp,'hpc')
     maxNumCompThreads(32);      % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
@@ -56,9 +54,8 @@ end
 
 %% USER: Specify file
 
-% file = '20190406_20_38_41'; 
+file = '20190406_20_38_41'; 
 % file = '20181016_09_09_43'; 
-file = '20181016_09_18_26';
 
 
 %% USER: Set parameters (if not using default)
@@ -91,8 +88,6 @@ if ~default
                 'init_batch',200);          % default: 200
         end
     % ROI segmentation 
-        params.ROIsegment.cellrad = 10;            % expected radius of a cell (pixels)    [default: 10]
-        params.ROIsegment.maxcells = 200;          % estimated number of cells in FOV      [default: 200]
         params.ROIsegment.df_prctile = 5;          % percentile to be used for estimating baseline [default: 5]
         params.ROIsegment.df_medfilt1 = 13;        % degree of smoothing for df_f          [default: 23]
     % neuropil correction
@@ -107,17 +102,13 @@ if ~default
         params.spkExtract.lam_pr = 0.99;           % false positive probability for determing lambda penalty   [default: 0.99]
     % PF mapping
         params.PFmap.Nepochs = 2;             % number of epochs for each 4 min video [default: 1]
-        params.PFmap.histsmoothFac = 7;      % Gaussian smoothing window for histogram extraction        [default: 10]
-        params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
-                                                  %                              Neurotar uses 8 mm/s
-end
-
-if test
-    params.ROIsegment.maxcells = 60;  
+        params.PFmap.histsmoothFac = 7;       % Gaussian smoothing window for histogram extraction        [default: 7]
+        params.PFmap.Vthr = 10;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 10]
+                                              %                              Neurotar uses 8 mm/s
 end
 
 
-%% Default parameters
+%% Default and non-user defined parameters
 
 if default
     params = load( 'default_params.mat' );
@@ -136,14 +127,17 @@ if default
     end
 end
 
-% Fixed parameters
 params.methods.mcorr_method = mcorr_method;
 params.methods.segment_method = segment_method;
 params.methods.dofissa = dofissa;
 if str2double(file(1:4)) > 2018
-    params.FOV = 490; % FOV area = FOV x FOV, FOV in um
+    params.FOV = 490;                               % FOV area = FOV x FOV, FOV in um
+    params.ROIsegment.cellrad = 6;                  % expected radius of a cell (pixels)    
+    params.ROIsegment.maxcells = 300;     % estimated number of cells in FOV      
 else
     params.FOV = 330; 
+    params.ROIsegment.cellrad = 9;            
+    params.ROIsegment.maxcells = 200;         
 end
 
 
@@ -152,23 +146,7 @@ end
 % check(1:6) check for existing data in processing steps 1-6
 % check(7) checks for existing mat file pooling all processed data for file
 
-if dofissa
-    str_fissa = 'FISSA';
-else
-    str_fissa = 'noFISSA';
-end
-fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
-
 check = checkforExistingProcData(data_locn, file, mcorr_method, segment_method, dofissa);
-if check(7) % All processing steps have been done
-    if ~any(force)
-        beep
-        load(fname_allData);
-        str = sprintf( '%s: File has been processed with specified options. Skipping processing. Processed data have been loaded. \n', file );
-        cprintf(str)
-        return
-    end
-end
 if force(1)
     force([2:4,6]) = true; % because redoing motion correction step affects all succeeding steps except step 5
 elseif force(2)
@@ -191,16 +169,15 @@ end
 
             
 %% (1) Motion correction
-% Saved in file folder: 
-%   motion corrected tif files 
-%   summary fig & pdf, 
-%   mat with fields 
-%       green.[ meanframe, meanregframe ]
-%       red.[ meanframe, meanregframe ]
-%       template
-%       shifts
-%       col_shift
-%       params
+% Saved in file folder: motion corrected tif files
+%                       summary fig & jpg, 
+%                       mat with fields 
+%                           green.[ meanframe, meanregframe ]
+%                           red.[ meanframe, meanregframe ]
+%                           template
+%                           shifts
+%                           col_shift
+%                           params
 
 if any([ any(force(1:2)), ~check(2), ~check(1) ]) 
     [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
@@ -211,9 +188,9 @@ end
 
 
 %% (2) ROI segmentation
-% Saved in file folder: 
-%   correlation image with ROIs (fig, pdf)
-%   mat with fields {tsG, df_f, masks, corr_image, params}
+% Saved in file folder: correlation image with ROIs (fig, jpg) 
+%                       summary plots of tsG, df_f (fig, jpg)
+%                       mat with fields {tsG, df_f, masks, corr_image, params}
 
 if strcmpi(segment_method,'CaImAn')
     clear imR; imR = [];
@@ -222,7 +199,8 @@ end
 clear imG imR
 
 %% (3) Run FISSA to extract neuropil-corrected time-series
-% Saved in file folder: mat file with fields {tsG, df_f, masks}
+% Saved in file folder: mat file with fields {dtsG, ddf_f, masks}
+%                       summary plots of tsG, ddf_f (fig & jpg)
 
 if dofissa
     [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
@@ -234,6 +212,7 @@ end
 
 %% (4) Estimate spikes
 % Saved in file folder: mat with fields {tsG, dtsG, df_f, ddf_f, spikes, params}
+%                       summary plot of spikes (fig & jpg)
 
 [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
 
@@ -255,8 +234,8 @@ end
 
 
 %% (5) Find tracking file then load it
-% Saved: fig & pdf of trajectory
-%        mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
+% Saved in file folder: trajectory plot (fig & jpg)
+%                       mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
 
 fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
 trackData = load_trackfile( data_locn,file, fname_track, force(5) );
@@ -270,8 +249,7 @@ end
 
 
 %% (6) Generate place field maps
-% Saved: fig & pdf of several figures showing occMap, spkMap, pfMap,
-%           remapping and spkMap_pertrial
+% Saved: fig & jpg of several figures showing occMap, spkMap, pfMap, remapping and spkMap_pertrial
 %        mat file with fields {occMap, hist, asd, downData, activeData}
 
 if manually_refine_spikes
@@ -284,11 +262,16 @@ else
     [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
 end
 
-if manually_refine_PFmap
-end
 
 %% Save output. These are all the variables needed for viewing data with GUI
-    
+
+if dofissa
+    str_fissa = 'FISSA';
+else
+    str_fissa = 'noFISSA';
+end
+fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
+
 if any(force) || any(~check)
     save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
                         'downData','activeData','occMap','hist','asd','params');

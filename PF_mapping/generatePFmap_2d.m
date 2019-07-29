@@ -51,7 +51,7 @@ activer    = r(downspeed > Vthr);
 xp1 = activex;
 xp2 = activey;
 
-n1=100; n2=100; nks=[n1,n2];     % env discretisation for ASD estimation
+n1=16; n2=16; nks=[n1,n2];     % env discretisation for ASD estimation
 h1 = Nbins(1); h2 = Nbins(2); % hs = [h1,h2];
 
 % process tracking-environment data

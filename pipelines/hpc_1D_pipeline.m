@@ -1,3 +1,5 @@
+function hpc_1D_pipeline(array_id)
+
 % Written by Ann Go
 % 
 % This script runs the complete data processing pipeline for a single
@@ -13,24 +15,30 @@
 %
 % Matlab version requirement: neuroSEE_neuropilDecon requires at least Matlab R2018
 
-clear; % close all;
+% clear; % close all;
 tic
+
+if array_id == 1 
+    SendSlackNotification('https://hooks.slack.com/services/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', ...
+   'hpc 1D batch run: Started', '@m.go', ...
+   [], [], [], []);      
+end
 
 %% USER: Set basic settings
                             
-test = true;                    % flag to use one of smaller files in test folder)
-default = true;                 % flag to use default parameters
-                                % flag to force
-force = [false;...              % (1) motion correction even if motion corrected images exist
+test = false;                % flag to use one of smaller files in test folder)
+default = true;             % flag to use default parameters
+                            % flag to force
+force = [true;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
-         false;...              % (3) force neuropil decontamination
-         false;...              % (4) force spike extraction
-         false;...              % (5) force tracking data extraction
-         true];                % (6) force place field mapping
+         false;...              % (3) neuropil decontamination
+         false;...              % (4) spike extraction
+         false;...              % (5) tracking data extraction
+         false];                % (6) place field mapping
 
 mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
+dofissa = false;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
 
 
@@ -52,10 +60,11 @@ if manually_refine_spikes
     global spikes params
 end
 
-%% USER: Specify file
+%% Image file
 
-file = '20190406_20_38_41'; 
-% file = '20181016_09_09_43'; 
+files = extractFilenamesFromTxtfile('list_1D.txt');
+
+file = files(array_id,:); 
 
 
 %% USER: Set parameters (if not using default)
@@ -101,14 +110,10 @@ if ~default
         params.spkExtract.decay_time = 0.4;        % length of a typical transient in seconds [default: 0.4]
         params.spkExtract.lam_pr = 0.99;           % false positive probability for determing lambda penalty   [default: 0.99]
     % PF mapping
-        params.PFmap.Nepochs = 2;             % number of epochs for each 4 min video [default: 1]
-        params.PFmap.histsmoothFac = 7;      % Gaussian smoothing window for histogram extraction        [default: 10]
+        params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video [default: 1]
+        params.PFmap.histsmoothFac = 7;       % Gaussian smoothing window for histogram extraction        [default: 7]
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
-                                                  %                              Neurotar uses 8 mm/s
-end
-
-if test
-    params.ROIsegment.maxcells = 60;  
+                                              %                              Neurotar uses 8 mm/s
 end
 
 
@@ -135,15 +140,13 @@ params.methods.mcorr_method = mcorr_method;
 params.methods.segment_method = segment_method;
 params.methods.dofissa = dofissa;
 if str2double(file(1:4)) > 2018
-    params.FOV = 490;                       % FOV area = FOV x FOV, FOV in um
-    params.ROIsegment.cellrad = 10;         % expected radius of a cell (pixels)    [default: 10]
-    if ~test
-        params.ROIsegment.maxcells = 200;       % estimated number of cells in FOV      [default: 200]
-    end
+    params.FOV = 490;                               % FOV area = FOV x FOV, FOV in um
+    params.ROIsegment.cellrad = 6;                  % expected radius of a cell (pixels)    
+    params.ROIsegment.maxcells = 300;     % estimated number of cells in FOV      
 else
     params.FOV = 330; 
-    params.ROIsegment.cellrad = 10;            
-    if ~test, params.ROIsegment.maxcells = 200;          
+    params.ROIsegment.cellrad = 9;            
+    params.ROIsegment.maxcells = 200;         
 end
 
 
@@ -175,19 +178,36 @@ end
 
             
 %% (1) Motion correction
-% Saved in file folder: 
-%   motion corrected tif files 
-%   summary fig & jpg, 
-%   mat with fields 
-%       green.[ meanframe, meanregframe ]
-%       red.[ meanframe, meanregframe ]
-%       template
-%       shifts
-%       col_shift
-%       params
+% Saved in file folder: motion corrected tif files
+%                       summary fig & jpg, 
+%                       mat with fields 
+%                           green.[ meanframe, meanregframe ]
+%                           red.[ meanframe, meanregframe ]
+%                           template
+%                           shifts
+%                           col_shift
+%                           params
 
-if any([ any(force(1:2)), ~check(2), ~check(1) ]) 
-    [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
+if any([ any(force(1:2)), ~check(2), ~check(1) ])
+    try
+        [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
+    catch
+        try
+            fprintf('%s: Error in motion correction, changing max_shift to 40\n', file);
+            params.nonrigid = NoRMCorreSetParms('max_shift',40);
+            [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
+        catch
+            try
+                fprintf('%s: Error in motion correction, changing max_shift to 30\n', file);
+                params.nonrigid = NoRMCorreSetParms('max_shift',30);
+                [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
+            catch
+                fprintf('%s: Error in motion correction, changing max_shift to 25\n', file);
+                params.nonrigid = NoRMCorreSetParms('max_shift',25);
+                [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
+            end
+        end
+    end
 else 
     fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
     imG = []; imR = [];
@@ -195,9 +215,9 @@ end
 
 
 %% (2) ROI segmentation
-% Saved in file folder: 
-%   correlation image with ROIs (fig, jpg)
-%   mat with fields {tsG, df_f, masks, corr_image, params}
+% Saved in file folder: correlation image with ROIs (fig, jpg) 
+%                       summary plots of tsG, df_f (fig, jpg)
+%                       mat with fields {tsG, df_f, masks, corr_image, params}
 
 if strcmpi(segment_method,'CaImAn')
     clear imR; imR = [];
@@ -206,7 +226,8 @@ end
 clear imG imR
 
 %% (3) Run FISSA to extract neuropil-corrected time-series
-% Saved in file folder: mat file with fields {tsG, df_f, masks}
+% Saved in file folder: mat file with fields {dtsG, ddf_f, masks}
+%                       summary plots of tsG, ddf_f (fig & jpg)
 
 if dofissa
     [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
@@ -218,6 +239,7 @@ end
 
 %% (4) Estimate spikes
 % Saved in file folder: mat with fields {tsG, dtsG, df_f, ddf_f, spikes, params}
+%                       summary plot of spikes (fig & jpg)
 
 [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
 
@@ -239,8 +261,8 @@ end
 
 
 %% (5) Find tracking file then load it
-% Saved: fig & jpg of trajectory
-%        mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
+% Saved in file folder: trajectory plot (fig & jpg)
+%                       mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
 
 fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
 trackData = load_trackfile( data_locn,file, fname_track, force(5) );
@@ -254,19 +276,18 @@ end
 
 
 %% (6) Generate place field maps
-% Saved: fig & jpg of several figures showing occMap, spkMap, pfMap,
-%           remapping and spkMap_pertrial
+% Saved: fig & jpg of several figures showing occMap, spkMap, pfMap, remapping and spkMap_pertrial
 %        mat file with fields {occMap, hist, asd, downData, activeData}
 
 if manually_refine_spikes
     force(6) = true;
 end
 
-% if strcmpi(params.mode_dim,'1D')
-%     [ occMap, hist, asd, downData, activeData, params ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
-% else
-%     [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
-% end
+if strcmpi(params.mode_dim,'1D')
+    [ occMap, hist, asd, downData, activeData, params ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+else
+    [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+end
 
 
 %% Save output. These are all the variables needed for viewing data with GUI
@@ -286,8 +307,15 @@ if any(force) || any(~check)
     if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end
     if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
 end
- 
+
+if array_id == size(files,1)
+    SendSlackNotification('https://hooks.slack.com/services/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', ...
+   'hpc 1D batch run: Finished', '@m.go', ...
+   [], [], [], []);      
+end
 
 t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
 cprintf(str)
+
+end

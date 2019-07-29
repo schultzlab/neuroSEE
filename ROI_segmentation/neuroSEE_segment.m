@@ -32,6 +32,9 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, mean_imR
     if ~exist( filedir, 'dir' ), mkdir( filedir ); end
 
     fname_mat = [filedir file '_segment_output.mat'];
+    fname_fig1 = [filedir file '_ROIs.fig'];
+    fname_fig2 = [filedir file '_raw_timeseries.fig'];
+    fname_fig3 = [filedir file '_df_f.fig'];
 
     if force || ~exist(fname_mat,'file')
         maxcells = params.ROIsegment.maxcells;
@@ -107,10 +110,6 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, mean_imR
         params.ROIsegment = segmentOutput.params;
 
         % If ROI image doesn't exist, create & save figure
-        fname_fig1 = [filedir file '_ROIs.fig'];
-        fname_fig2 = [filedir file '_raw_timeseries.fig'];
-        fname_fig3 = [filedir file '_df_f.fig'];
-
         if any([~exist(fname_fig1,'file'),~exist(fname_fig2,'file'),~exist(fname_fig3,'file')])
            makeplot(corr_image, masks);
         end
@@ -120,32 +119,26 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, mean_imR
 
     function makeplot(corr_image, masks)
         % ROIs overlayed on correlation image
-        if ~exist(fname_fig1,'file')
-            plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
-            fig = plotContoursOnSummaryImage(corr_image, masks, plotopts);
-            savefig(fig,[filedir file '_ROIs']);
-            saveas(fig,[filedir file '_ROIs'],'jpg');
-            close(fig);
-        end
+        plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
+        fig = plotContoursOnSummaryImage(corr_image, masks, plotopts);
+        savefig(fig,[filedir file '_ROIs']);
+        saveas(fig,[filedir file '_ROIs'],'jpg');
+        close(fig);
         
         % raw timeseries
-        if ~exist(fname_fig2,'file')
-            fig = figure;
-            iosr.figures.multiwaveplot(1:size(tsG,2),1:size(tsG,1),tsG,'gain',5); yticks([]); xticks([]); 
-            title('Raw timeseries','Fontweight','normal','Fontsize',12); 
-            savefig(fig,[filedir file '_raw_timeseries']);
-            saveas(fig,[filedir file '_raw_timeseries'],'jpg');
-            close(fig);
-        end
+        fig = figure;
+        iosr.figures.multiwaveplot(1:size(tsG,2),1:size(tsG,1),tsG,'gain',5); yticks([]); xticks([]); 
+        title('Raw timeseries','Fontweight','normal','Fontsize',12); 
+        savefig(fig,[filedir file '_raw_timeseries']);
+        saveas(fig,[filedir file '_raw_timeseries'],'jpg');
+        close(fig);
         
         % dF/F
-        if ~exist(fname_fig3,'file')
-            fig = figure;
-            iosr.figures.multiwaveplot(1:size(df_f,2),1:size(df_f,1),df_f,'gain',5); yticks([]); xticks([]); 
-            title('dF/F','Fontweight','normal','Fontsize',12); 
-            savefig(fig,[filedir file '_df_f']);
-            saveas(fig,[filedir file '_df_f'],'jpg');
-            close(fig);
-        end
+        fig = figure;
+        iosr.figures.multiwaveplot(1:size(df_f,2),1:size(df_f,1),df_f,'gain',5); yticks([]); xticks([]); 
+        title('dF/F','Fontweight','normal','Fontsize',12); 
+        savefig(fig,[filedir file '_df_f']);
+        saveas(fig,[filedir file '_df_f'],'jpg');
+        close(fig);
     end
 end

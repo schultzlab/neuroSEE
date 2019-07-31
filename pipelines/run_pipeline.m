@@ -52,10 +52,17 @@ if manually_refine_spikes
     global spikes params
 end
 
+
 %% USER: Specify file
 
 % file = '20190406_20_38_41'; 
 file = '20190220_14_34_54'; 
+
+% Send Ann slack message if processing has started
+slacktext = [file ': processing started'];
+SendSlackNotification('https://hooks.slack.com/services/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', ...
+   slacktext, '@m.go', ...
+   [], [], [], []);    
 
 
 %% USER: Set parameters (if not using default)
@@ -290,7 +297,12 @@ if any(force) || any(~check)
     if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
 end
  
-
 t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
 cprintf(str)
+
+% Send Ann slack message if processing has finished
+slacktext = [file ': FINISHED processing in' num2str(round(t/3600,2)) ' hrs. No errors!'];
+SendSlackNotification('https://hooks.slack.com/services/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', ...
+   slacktext, '@m.go', ...
+   [], [], [], []);    

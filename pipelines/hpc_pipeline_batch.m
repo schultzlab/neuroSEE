@@ -1,9 +1,9 @@
-function hpc_pipeline_batch1D(array_id)
+function hpc_pipeline_batch(array_id,list)
 
 % Written by Ann Go
 % 
-% This script runs the complete data processing pipeline for a single
-% image file. Processing steps include:
+% This script runs the complete data processing pipeline for a list of image 
+% files. Processing steps include:
 % (1) motion correction (and dezippering)
 % (2) roi segmentation 
 % (3) neuropil decontamination and timeseries extraction
@@ -54,16 +54,17 @@ if manually_refine_spikes
     global spikes params
 end
 
-% Send Ann slack message if processing has started
+% Send Ann slack message 
 if array_id == 1 
+    slacktext = [list(1:end-5) ': processing 1st file'];
     SendSlackNotification('https://hooks.slack.com/services/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', ...
-   'hpc: batch 1D processing started', '@m.go', ...
-   [], [], [], []);      
+       slacktext, '@m.go', ...
+       [], [], [], []);    
 end
 
 %% Image file
 
-files = extractFilenamesFromTxtfile('list_1D_fissa.txt');
+files = extractFilenamesFromTxtfile(list);
 
 file = files(array_id,:); 
 
@@ -318,11 +319,12 @@ if any(force) || any(~check)
     if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
 end
 
-% Send Ann slack message if processing has finished
+% Send Ann slack message 
 if array_id == size(files,1)
+    slacktext = [list(1:end-5) ': processing LAST file'];
     SendSlackNotification('https://hooks.slack.com/services/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', ...
-   'hpc: batch 1D processing FINISHED', '@m.go', ...
-   [], [], [], []);      
+       slacktext, '@m.go', ...
+       [], [], [], []);    
 end
 
 t = toc;

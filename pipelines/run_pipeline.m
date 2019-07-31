@@ -22,15 +22,15 @@ test = false;                % flag to use one of smaller files in test folder)
 default = true;             % flag to use default parameters
                             % flag to force
 force = [false;...              % (1) motion correction even if motion corrected images exist
-         true;...              % (2) roi segmentation
+         false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
-         false;...              % (5) tracking data extraction
+         true;...              % (5) tracking data extraction
          false];                % (6) place field mapping
 
 mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-dofissa = false;                 % flag to implement FISSA (when false, overrides force(3) setting)
+dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
 
 
@@ -55,7 +55,7 @@ end
 %% USER: Specify file
 
 % file = '20190406_20_38_41'; 
-file = '20181016_09_09_43'; 
+file = '20190220_14_34_54'; 
 
 
 %% USER: Set parameters (if not using default)
@@ -203,7 +203,16 @@ clear imG imR
 %                       summary plots of tsG, ddf_f (fig & jpg)
 
 if dofissa
-    [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+    release = version('-release'); % Find out what Matlab release version is running
+    MatlabVer = str2double(release(1:4));
+    if MatlabVer > 2017
+        [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+    else
+        fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
+        dofissa = false;
+        dtsG = [];
+        ddf_f = [];
+    end
 else
     dtsG = [];
     ddf_f = [];

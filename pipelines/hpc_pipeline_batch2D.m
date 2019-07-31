@@ -1,3 +1,5 @@
+function hpc_pipeline_batch2D(array_id)
+
 % Written by Ann Go
 % 
 % This script runs the complete data processing pipeline for a single
@@ -13,7 +15,7 @@
 %
 % Matlab version requirement: neuroSEE_neuropilDecon requires at least Matlab R2018
 
-clear; % close all;
+% clear; % close all;
 tic
 
 %% USER: Set basic settings
@@ -30,7 +32,7 @@ force = [false;...              % (1) motion correction even if motion corrected
 
 mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-dofissa = false;                 % flag to implement FISSA (when false, overrides force(3) setting)
+dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
 
 
@@ -52,10 +54,18 @@ if manually_refine_spikes
     global spikes params
 end
 
-%% USER: Specify file
+% Send Ann slack message if processing has started
+if array_id == 1 
+    SendSlackNotification('https://hooks.slack.com/services/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', ...
+   'hpc: batch 2D processing started', '@m.go', ...
+   [], [], [], []);      
+end
 
-file = '20190406_20_38_41'; 
-% file = '20181016_09_09_43'; 
+%% Image file
+
+files = extractFilenamesFromTxtfile('list_2D_v2.txt');
+
+file = files(array_id,:); 
 
 
 %% USER: Set parameters (if not using default)
@@ -101,9 +111,9 @@ if ~default
         params.spkExtract.decay_time = 0.4;        % length of a typical transient in seconds [default: 0.4]
         params.spkExtract.lam_pr = 0.99;           % false positive probability for determing lambda penalty   [default: 0.99]
     % PF mapping
-        params.PFmap.Nepochs = 2;             % number of epochs for each 4 min video [default: 1]
+        params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video [default: 1]
         params.PFmap.histsmoothFac = 7;       % Gaussian smoothing window for histogram extraction        [default: 7]
-        params.PFmap.Vthr = 10;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 10]
+        params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                               %                              Neurotar uses 8 mm/s
 end
 
@@ -179,8 +189,26 @@ end
 %                           col_shift
 %                           params
 
-if any([ any(force(1:2)), ~check(2), ~check(1) ]) 
-    [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
+if any([ any(force(1:2)), ~check(2), ~check(1) ])
+    try
+        [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
+    catch
+        try
+            fprintf('%s: Error in motion correction, changing max_shift to 40\n', file);
+            params.nonrigid.max_shift = 40;
+            [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
+        catch
+            try
+                fprintf('%s: Error in motion correction, changing max_shift to 30\n', file);
+                params.nonrigid.max_shift = 30;
+                [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
+            catch
+                fprintf('%s: Error in motion correction, changing max_shift to 25\n', file);
+                params.nonrigid.max_shift = 25;
+                [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
+            end
+        end
+    end
 else 
     fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
     imG = []; imR = [];
@@ -203,7 +231,16 @@ clear imG imR
 %                       summary plots of tsG, ddf_f (fig & jpg)
 
 if dofissa
-    [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+    release = version('-release'); % Find out what Matlab release version is running
+    MatlabVer = str2double(release(1:4));
+    if MatlabVer > 2017
+        [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+    else
+        fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
+        dofissa = false;
+        dtsG = [];
+        ddf_f = [];
+    end
 else
     dtsG = [];
     ddf_f = [];
@@ -241,7 +278,7 @@ fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
 trackData = load_trackfile( data_locn,file, fname_track, force(5) );
 if any(trackData.r < 100)
     params.mode_dim = '2D'; % open field
-    params.PFmap.Nbins = [16, 16]; % number of location bins in [x y]               
+    params.PFmap.Nbins = [10, 10]; % number of location bins in [x y]               
 else 
     params.mode_dim = '1D'; % circular linear track
     params.PFmap.Nbins = 30;      % number of location bins               
@@ -280,8 +317,16 @@ if any(force) || any(~check)
     if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end
     if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
 end
- 
+
+% Send Ann slack message if processing has finished
+if array_id == size(files,1)
+    SendSlackNotification('https://hooks.slack.com/services/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', ...
+   'hpc: batch 2D processing FINISHED', '@m.go', ...
+   [], [], [], []);      
+end
 
 t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
 cprintf(str)
+
+end

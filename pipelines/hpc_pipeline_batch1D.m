@@ -1,4 +1,4 @@
-function hpc_1D_pipeline(array_id)
+function hpc_pipeline_batch1D(array_id)
 
 % Written by Ann Go
 % 
@@ -18,18 +18,12 @@ function hpc_1D_pipeline(array_id)
 % clear; % close all;
 tic
 
-if array_id == 1 
-    SendSlackNotification('https://hooks.slack.com/services/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', ...
-   'hpc 1D batch run: Started', '@m.go', ...
-   [], [], [], []);      
-end
-
 %% USER: Set basic settings
                             
 test = false;                % flag to use one of smaller files in test folder)
 default = true;             % flag to use default parameters
                             % flag to force
-force = [true;...              % (1) motion correction even if motion corrected images exist
+force = [false;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
@@ -38,7 +32,7 @@ force = [true;...              % (1) motion correction even if motion corrected 
 
 mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-dofissa = false;                 % flag to implement FISSA (when false, overrides force(3) setting)
+dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
 
 
@@ -60,9 +54,16 @@ if manually_refine_spikes
     global spikes params
 end
 
+% Send Ann slack message if processing has started
+if array_id == 1 
+    SendSlackNotification('https://hooks.slack.com/services/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', ...
+   'hpc: batch 1D processing started', '@m.go', ...
+   [], [], [], []);      
+end
+
 %% Image file
 
-files = extractFilenamesFromTxtfile('list_1D.txt');
+files = extractFilenamesFromTxtfile('list_1D_fissa.txt');
 
 file = files(array_id,:); 
 
@@ -194,16 +195,16 @@ if any([ any(force(1:2)), ~check(2), ~check(1) ])
     catch
         try
             fprintf('%s: Error in motion correction, changing max_shift to 40\n', file);
-            params.nonrigid = NoRMCorreSetParms('max_shift',40);
+            params.nonrigid.max_shift = 40;
             [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
         catch
             try
                 fprintf('%s: Error in motion correction, changing max_shift to 30\n', file);
-                params.nonrigid = NoRMCorreSetParms('max_shift',30);
+                params.nonrigid.max_shift = 30;
                 [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
             catch
                 fprintf('%s: Error in motion correction, changing max_shift to 25\n', file);
-                params.nonrigid = NoRMCorreSetParms('max_shift',25);
+                params.nonrigid.max_shift = 25;
                 [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
             end
         end
@@ -230,7 +231,16 @@ clear imG imR
 %                       summary plots of tsG, ddf_f (fig & jpg)
 
 if dofissa
-    [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+    release = version('-release'); % Find out what Matlab release version is running
+    MatlabVer = str2double(release(1:4));
+    if MatlabVer > 2017
+        [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+    else
+        fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
+        dofissa = false;
+        dtsG = [];
+        ddf_f = [];
+    end
 else
     dtsG = [];
     ddf_f = [];
@@ -308,9 +318,10 @@ if any(force) || any(~check)
     if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
 end
 
+% Send Ann slack message if processing has finished
 if array_id == size(files,1)
     SendSlackNotification('https://hooks.slack.com/services/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', ...
-   'hpc 1D batch run: Finished', '@m.go', ...
+   'hpc: batch 1D processing FINISHED', '@m.go', ...
    [], [], [], []);      
 end
 

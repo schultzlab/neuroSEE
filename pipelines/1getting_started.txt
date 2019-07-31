@@ -1,8 +1,12 @@
 1. To process a single file
 	run_pipeline.m
 
-2. To process a batch of files individually
-	a. 1D files without fissa: run1D.pbs is submitted to hpc, calls Matlab R2017a and runs hpc_pipeline_batch1D.m. This script processes all the files listed in list_1D.txt without FISSA correction (because CaImAn does not work in Matlab R2018a and FISSA needs to run in R2018a or higher).
-	b. 1D files with fissa: run1D_fissa.pbs is submitted to hpc, calls Matlab R2018a and runs hpc_pipeline_batch1D.m (same script as above) which processes all the files listed in list_1D_fissa.txt. The script automatically detects which version is running and disables fissa when version is R2017a.
-	c. 2D files without fissa: run2D.pbs
-	d. 2D files with fisssa: run2D_fissa.pbs
+2. To process a batch of files individually through hpc
+	pbs jobscript e.g. run1D.pbs, run1D_fissa.pbs  
+    hpc_pipeline_batch.m - function with input arguments array_id and list
+    * pbs jobscript generates array_id values and processes all files in list.txt
+
+    Notes:  On hpc, normcorre and CaImAn only work with Matlab R2017a.
+            FISSA, in contrast, needs higher versions.
+            So hpc_pipeline_batch automatically detects the version running and 
+                disregards FISSA when running R2017a even when settings call for it.

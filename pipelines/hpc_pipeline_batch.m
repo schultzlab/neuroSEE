@@ -1,4 +1,4 @@
-function hpc_pipeline_batch(array_id,list)
+function hpc_pipeline_batch( array_id, list )
 
 % Written by Ann Go
 % 

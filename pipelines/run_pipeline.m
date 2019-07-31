@@ -302,7 +302,7 @@ str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
 cprintf(str)
 
 % Send Ann slack message if processing has finished
-slacktext = [file ': FINISHED processing in' num2str(round(t/3600,2)) ' hrs. No errors!'];
+slacktext = [file ': FINISHED in' num2str(round(t/3600,2)) ' hrs. No errors!'];
 SendSlackNotification('https://hooks.slack.com/services/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', ...
    slacktext, '@m.go', ...
    [], [], [], []);    

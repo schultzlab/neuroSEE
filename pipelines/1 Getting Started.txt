@@ -14,10 +14,17 @@ Note: All file names are in the format yyyymmdd_HH_MM_SS.
      - generate array_id values in <jobscript.pbs> for number of files in 'list.txt' to process all files in 'list.txt'
         (e.g. #PBS -J 1-112 will generate array_id values from 1 to 112) 
        
-     Notes:  On hpc, normcorre and CaImAn only work with Matlab R2017a.
-             FISSA, in contrast, needs higher versions.
-             So frun_pipeline_batch automatically detects the version running and 
-                disregards FISSA when running R2017a even when settings call for it.
+     Notes:  
+    1. On hpc, normcorre and CaImAn only work with Matlab R2017a. FISSA, in contrast, needs higher versions. 
+        So frun_pipeline_batch automatically detects the version running and disregards FISSA when running R2017a even when settings call for it.
+    2. This also means that 2 jobscripts are required to process the batch
+        - one jobscript loads matlab/R2017a and does the pipeline with FISSA
+        - another jobscript loads matlab/R2018a and picks up from FISSA correction
+    3. The way frun_pipeline_batch.m is written, unless user forces overwriting of old data, it detects when a processing
+        step has been done and picks up where it left off. So the jobscript for loading matlab/R2018a skips 
+        motion correction and roi segmentation steps and picks up from FISSA correction.
+    4. If both jobscripts are successful (usually the one without FISSA correction has errros in PF mapping, perhaps because
+        no cells pass the placiness threshold), then there are 2 sets of PF maps to compare - with and without FISSA correction.
 
 3. To register a batch of files from the same experiment and then do the pipeline
     a. frun_comparisons_expbatch.m 

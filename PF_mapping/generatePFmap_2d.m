@@ -12,14 +12,13 @@ histsmoothFac = params.PFmap.histsmoothFac;
 %% Pre-process tracking data
 if dsample
     tracktime = trackData.time;
-    xcont = trackData.x;
-    ycont = trackData.y;
+    x = trackData.x;
+    y = trackData.y;
     r = trackData.r;
     phi = trackData.phi;
     speed = trackData.speed;
 
     t0 = tracktime(1);                  % initial time in tracking data
-    nspikes = spikes; %bsxfun( @rdivide, bsxfun(@minus, spikes, min(spikes,[],2)), range(spikes,2) ); % normalisation
     Nt = size(spikes,2);                % number of timestamps for spikes
 
     % Convert -180:180 to 0:360

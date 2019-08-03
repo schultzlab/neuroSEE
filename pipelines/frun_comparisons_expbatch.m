@@ -35,7 +35,7 @@ for ii=0:Nfiles/nPlot
         if (ii*nPlot+jj+1) <= Nfiles
             axes(ha(ii*nPlot+jj+1));
             imagesc(M(ii*nPlot+jj+1).green.meanregframe./max(max(M(ii*nPlot+jj+1).green.meanregframe))); 
-            axis off;
+            axis off; colormap(gray);
             str = files(ii*nPlot+jj+1,:);
             title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
         end
@@ -60,7 +60,7 @@ for ii=0:Nfiles/nPlot
         if (ii*nPlot+jj+1) <= Nfiles
             axes(ha(ii*nPlot+jj+1));
             imagesc(M(ii*nPlot+jj+1).red.meanregframe./max(max(M(ii*nPlot+jj+1).red.meanregframe))); 
-            axis off;
+            axis off; colormap(gray);
             str = files(ii*nPlot+jj+1,:);
             title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
         end

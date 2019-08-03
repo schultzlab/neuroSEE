@@ -84,12 +84,12 @@ function [ imG, mcorr_output, params ] = neuroSEE_imreg(...
         fh = figure; 
         subplot(221), 
             imagesc( out_g.meanframe ); 
-            axis image; axis off;
-            titletext = ['Motion-corrected ' file];
+            axis image; axis off; colormap(gray);
+            titletext = ['Non-motion-corrected ' file];
             title(titletext);
         subplot(222), 
             imagesc( template ); 
-            axis image; axis off; 
+            axis image; axis off; colormap(gray); 
             titletext = [templatefile ' (template)'];
             title(titletext);
         subplot(223), 

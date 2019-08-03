@@ -47,17 +47,17 @@ function [ imG, mcorr_output, params ] = neuroSEE_imreg(...
     
  
     fname_tif_gr = [filedir file '_2P_XYT_green_imreg_ref' templatefile '.tif'];
-    fname_mat_mcorr = [filedir file '_imreg_output_ref' templatefile '.mat'];
-    fname_fig = [filedir file '_imreg_summary_ref' templatefile '.fig'];
+    fname_mat_mcorr = [filedir file '_imreg_ref' templatefile '_output.mat'];
+    fname_fig = [filedir file '_imreg_ref' templatefile '_summary.fig'];
     
     if force || ~exist(fname_tif_gr,'file')
         fprintf( '%s: Starting image registration to %s\n', file, templatefile );
         out_g.meanframe = mean(imG,3);
-        [imG, shifts, ~, ~, ~] = normcorre( imG, params.nonrigid, template );
+        [imG, ~, ~, shifts, ~, ~] = normcorre( imG, params.nonrigid, template );
         out_g.meanregframe = mean(imG,3);
         
         % Save summary figure
-        makeplot(out_g, template);
+        makeplot(out_g);
         
         % Save output
         mcorr_output.green = out_g;
@@ -74,10 +74,9 @@ function [ imG, mcorr_output, params ] = neuroSEE_imreg(...
         refreshdisp( str, prevstr );
     else
         if ~exist(fname_fig,'file')
-            mcorr_output = load(fname_tif_gr);
+            mcorr_output = load(fname_mat_mcorr);
             out_g = mcorr_output.green;
-            stemplate = mcorr_output.template;
-            makeplot(out_g, stemplate);
+            makeplot(out_g);
         end
     end
     
@@ -85,27 +84,25 @@ function [ imG, mcorr_output, params ] = neuroSEE_imreg(...
         fh = figure; 
         subplot(221), 
             imagesc( out_g.meanframe ); 
-            axis image; colorbar; axis off;
+            axis image; axis off;
             titletext = ['Motion-corrected ' file];
             title(titletext);
         subplot(222), 
             imagesc( template ); 
-            axis image; colorbar; axis off; 
+            axis image; axis off; 
             titletext = [templatefile ' (template)'];
             title(titletext);
         subplot(223), 
             C1 = imfuse( out_g.meanframe, template, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
             imshow(C1);  
-            axis image; colorbar; axis off; 
             title( 'Before registration' );
         subplot(224), 
             C2 = imfuse(out_g.meanregframe,template,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
             imshow(C2); 
-            axis image; colorbar; axis off; 
             title( 'After registration' );
-        figname = [filedir file '_imreg_summary_ref' templatefile];
+        figname = [filedir file '_imreg_ref' templatefile '_summary'];
             savefig( fh, figname );
-            saveas( fh, figname, 'jpg' );
+            saveas( fh, figname, 'png' );
         close( fh );
     end
 end

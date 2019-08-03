@@ -81,7 +81,7 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
         iosr.figures.multiwaveplot(1:size(spikes,2),1:size(spikes,1),spikes,'gain',5); yticks([]); xticks([]);
         title('dF/F','Fontweight','normal','Fontsize',12);
         savefig(fig,[filedir file '_spikes']);
-        saveas(fig,[filedir file '_spikes'],'jpg');
+        saveas(fig,[filedir file '_spikes'],'png');
         close(fig);
     end
 

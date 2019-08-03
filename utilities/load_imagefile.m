@@ -22,7 +22,11 @@ function [ imG, imR ] = load_imagefile( data_locn, file, force, suffix, params )
         segment_method  = 'CaImAn'; 
     else
         mcorr_method  = params.methods.mcorr_method;
-        segment_method  = params.methods.segment_method;
+        if isfield(params.methods,'segment_method')
+            segment_method  = params.methods.segment_method;
+        else
+            segment_method = 'CaImAn';
+        end
     end
     if nargin < 4, suffix  = [];    end
     if nargin < 3, force  = 0;    end

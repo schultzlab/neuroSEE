@@ -1,0 +1,58 @@
+Note: All file names are in the format yyyymmdd_HH_MM_SS.
+
+1. To process a single file
+	run_pipeline.m OR
+    frun_pipeline.m - function with input argument 'file' (character string) (e.g. '20181103_12_26_31')
+    * processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
+
+2. To process a batch of files 
+    frun_pipeline_batch.m - function with input arguments array_id (number) and 'list.txt' (character string)
+    * processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
+
+    * To run through hpc
+	 <jobscript>.pbs (e.g. run1D.pbs, run1D_fissa.pbs)  
+     - generate array_id values in <jobscript.pbs> for number of files in 'list.txt' to process all files in 'list.txt'
+        (e.g. #PBS -J 1-112 will generate array_id values from 1 to 112) 
+       
+     Notes:  On hpc, normcorre and CaImAn only work with Matlab R2017a.
+             FISSA, in contrast, needs higher versions.
+             So frun_pipeline_batch automatically detects the version running and 
+                disregards FISSA when running R2017a even when settings call for it.
+
+3. To register a batch of files from the same experiment and then do the pipeline
+    a. frun_comparisons_expbatch.m 
+        - function with input arguments 'expname' and 'list.txt' (both char strings)
+        - generates fig with all green channel images of files in 'list.txt'
+                                   red channel images
+                                 trajectories
+        - user can choose a reference (template) image from these figures
+        - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Analysis/mouseid/'
+            where mouseid is the first 3 characters of expname (e.g. m62)
+
+    b. frun_imreg_expbatch.m 
+        - function with input arguments array_id, 'expname', 'list.txt', 'reffile'
+        - registers the motion corrected file number <array_id> in 'list.txt' to the template 'reffile'
+        - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
+    
+        * To run through hpc
+            - generate array_id values in <jobscript.pbs> for number of files in 'list.txt'
+
+        Notes: 'list.txt' can include 'reffile'. It will simply be skipped.
+    
+    c. frun_CaImAn_expbatch.m
+        - function with input arguments 'expname', 'list.txt', 'reffile',
+        - loads all images in 'list.txt' and performs CaImAn 
+        - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
+
+    d. frun_fissa2maps_expbatch.m
+        - function with input arguments 'expname', 'expsubname', 'list.txt', 'reffile'
+            e.g. ('m62_fam1fam1rev', 'm62_fam1', 'list_m62_fam1fam1rev_fam1.txt', '20181016_09_49_06')
+                 ('m82_open','m82_open_day1','list_m82_open_day1.txt','20190406_20_27_07')
+        - does fissa, spike extraction, tracking data loading for each image in 'list.txt'
+            then consolidates the data before running PF mapping
+        - processed data from individual fissa, spike extraction, trackind data loading are saved in
+            '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
+        - processed consolidated data (PF maps) are save in
+            '...thefarm2/live/CrazyEights/AD_2PCa/Analysis/mouseid/'
+            
+

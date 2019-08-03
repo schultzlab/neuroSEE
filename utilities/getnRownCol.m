@@ -1,13 +1,21 @@
 function [nRow, nCol] = getnRownCol(N)
 
 fun = @(N,a,b) N > a && N <= b;
-if N < 5
-    nRow = 1; nCol = 5;
-elseif fun(N,5,10)
+if N < 6
+    nRow = 1; nCol = N;
+elseif N == 6
+    nRow = 2; nCol = 3;
+elseif fun(N,6,8)
+    nRow = 2; nCol = 4;
+elseif fun(N,8,10)
     nRow = 2; nCol = 5;
-elseif fun(N,10,15)
+elseif fun(N,10,12)
+    nRow = 3; nCol = 4;
+elseif fun(N,12,15)
     nRow = 3; nCol = 5;
-elseif fun(N,15,20)
+elseif N == 16
+    nRow = 4; nCol = 4;
+elseif fun(N,16,20)
     nRow = 4; nCol = 5;
 elseif fun(N,20,25)
     nRow = 5; nCol = 5;

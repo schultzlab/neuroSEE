@@ -1,7 +1,8 @@
 % Written by Ann Go, adapted from Giuseppe's PF_ASD_2d.m
 
-function [occMap, spkMap, spkIdx, hist, asd, downData, activeData] = generatePFmap_2d(spikes, imtime, trackData, params)
+function [occMap, spkMap, spkIdx, hist, asd, downData, activeData] = generatePFmap_2d(spikes, imtime, trackData, params, dsample)
 
+if nargin<5, dsample = true; end
 fr = params.fr;
 Nbins = params.PFmap.Nbins;
 Nepochs = params.PFmap.Nepochs;     % number of epochs to divide trial in
@@ -9,44 +10,52 @@ Vthr = params.PFmap.Vthr;
 histsmoothFac = params.PFmap.histsmoothFac;
 
 %% Pre-process tracking data
-tracktime = trackData.time;
-xcont = trackData.x;
-ycont = trackData.y;
-r = trackData.r;
-phi = trackData.phi;
-speed = trackData.speed;
+if dsample
+    tracktime = trackData.time;
+    xcont = trackData.x;
+    ycont = trackData.y;
+    r = trackData.r;
+    phi = trackData.phi;
+    speed = trackData.speed;
 
-t0 = tracktime(1);                  % initial time in tracking data
-nspikes = spikes; %bsxfun( @rdivide, bsxfun(@minus, spikes, min(spikes,[],2)), range(spikes,2) ); % normalisation
-Nt = size(spikes,2);                % number of timestamps for spikes
+    t0 = tracktime(1);                  % initial time in tracking data
+    nspikes = spikes; %bsxfun( @rdivide, bsxfun(@minus, spikes, min(spikes,[],2)), range(spikes,2) ); % normalisation
+    Nt = size(spikes,2);                % number of timestamps for spikes
 
-% Convert -180:180 to 0:360
-if min(phi)<0
-   phi(phi<0) = phi(phi<0)+360;
+    % Convert -180:180 to 0:360
+    if min(phi)<0
+       phi(phi<0) = phi(phi<0)+360;
+    end
+
+    % If no timestamps were recorded for Ca images, generate timestamps
+    % using known image frame rate
+    if isempty(imtime)
+       dt = 1/fr;
+       t = (t0:dt:Nt*dt)';
+    end
+
+    % Downsample tracking to Ca trace
+    downphi   = interp1(tracktime,phi,t,'linear');
+    downx     = interp1(tracktime,x,t,'linear');
+    downy     = interp1(tracktime,y,t,'linear');
+    downspeed = interp1(tracktime,speed,t,'linear'); % mm/s
+    downr     = interp1(tracktime,r,t,'linear'); % mm/s
+else
+    downphi   = trackData.phi;
+    downx     = trackData.x;
+    downy     = trackData.y;
+    downspeed = trackData.speed;
+    downr     = trackData.r;
 end
-
-% If no timestamps were recorded for Ca images, generate timestamps
-% using known image frame rate
-if isempty(imtime)
-   dt = 1/fr;
-   t = (t0:dt:Nt*dt)';
-end
-
-% Downsample tracking to Ca trace
-downphi = interp1(tracktime,phi,t,'linear');
-downx   = interp1(tracktime,xcont,t,'linear');
-downy   = interp1(tracktime,ycont,t,'linear');
-downspeed = interp1(tracktime,speed,t,'linear'); % mm/s
-downr   = interp1(tracktime,r,t,'linear'); % mm/s
 
 % Consider only samples when the mouse is active
-activex    = downx(downspeed > Vthr);
-activey    = downy(downspeed > Vthr);
-activephi  = downphi(downspeed > Vthr);
-activespk  = nspikes(:,downspeed > Vthr);
+activex     = downx(downspeed > Vthr);
+activey     = downy(downspeed > Vthr);
+activephi   = downphi(downspeed > Vthr);
+activespk   = spikes(:,downspeed > Vthr);
 activet     = t(downspeed > Vthr);
-activespeed = speed(downspeed > Vthr);
-activer    = r(downspeed > Vthr);
+activespeed = downspeed(downspeed > Vthr);
+activer     = downr(downspeed > Vthr);
 
 xp1 = activex;
 xp2 = activey;

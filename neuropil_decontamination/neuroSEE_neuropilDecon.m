@@ -87,7 +87,7 @@ function makeplot(dtsG, ddf_f)
     iosr.figures.multiwaveplot(1:size(dtsG,2),1:size(dtsG,1),dtsG,'gain',5); yticks([]); xticks([]); 
     title('Fissa-corrected raw timeseries','Fontweight','normal','Fontsize',12); 
     savefig(fig,[fissadir file '_fissa_result']);
-    saveas(fig,[fissadir file '_fissa_result'],'jpg');
+    saveas(fig,[fissadir file '_fissa_result'],'png');
     close(fig);
 
     % dF/F
@@ -95,7 +95,7 @@ function makeplot(dtsG, ddf_f)
     iosr.figures.multiwaveplot(1:size(ddf_f,2),1:size(ddf_f,1),ddf_f,'gain',5); yticks([]); xticks([]); 
     title('Fissa-corrected dF/F','Fontweight','normal','Fontsize',12); 
     savefig(fig,[fissadir file '_fissa_df_f']);
-    saveas(fig,[fissadir file '_fissa_df_f'],'jpg');
+    saveas(fig,[fissadir file '_fissa_df_f'],'png');
     close(fig);
 end
 

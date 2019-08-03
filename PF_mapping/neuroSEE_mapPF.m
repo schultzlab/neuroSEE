@@ -203,7 +203,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
                 fname_fig = [filedir file '_PFmaps_' num2str(e) 'of' num2str(Nepochs) 'ep'];
             end
             savefig( fh, fname_fig );
-            saveas( fh, fname_fig, 'jpg' );
+            saveas( fh, fname_fig, 'png' );
             close( fh );
         end
         
@@ -260,7 +260,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
                 fname_fig = [filedir file '_normPFmaps_' num2str(e) 'of' num2str(Nepochs) 'ep'];
             end
             savefig( fh, fname_fig );
-            saveas( fh, fname_fig, 'jpg' );
+            saveas( fh, fname_fig, 'png' );
             close( fh );
         end
         
@@ -288,7 +288,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
                 fname_fig = [filedir file '_spk_pertrial_hist_' num2str(ii+1)];
             end
             savefig( fh, fname_fig );
-            saveas( fh, fname_fig, 'jpg' );
+            saveas( fh, fname_fig, 'png' );
             close( fh );
         end 
 
@@ -310,7 +310,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
                 fname_fig = [filedir file '_normspk_pertrial_hist_' num2str(ii+1)];
             end
             savefig( fh, fname_fig );
-            saveas( fh, fname_fig, 'jpg' );
+            saveas( fh, fname_fig, 'png' );
             close( fh );
         end 
         
@@ -337,7 +337,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
                 fname_fig = [filedir file '_spk_pertrial_asd_' num2str(ii+1)];
             end
             savefig( fh, fname_fig );
-            saveas( fh, fname_fig, 'jpg' );
+            saveas( fh, fname_fig, 'png' );
             close( fh );
         end 
 
@@ -359,7 +359,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
                 fname_fig = [filedir file '_normspk_pertrial_asd_' num2str(ii+1)];
             end
             savefig( fh, fname_fig );
-            saveas( fh, fname_fig, 'jpg' );
+            saveas( fh, fname_fig, 'png' );
             close( fh );
         end 
         
@@ -374,7 +374,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
             end
             fname_fig = [filedir file '_remapping_hist'];
             savefig( fh, fname_fig );
-            saveas( fh, fname_fig, 'jpg' );
+            saveas( fh, fname_fig, 'png' );
             close( fh );
             
             fh = figure;
@@ -386,7 +386,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
             end
             fname_fig = [filedir file '_remapping_asd'];
             savefig( fh, fname_fig );
-            saveas( fh, fname_fig, 'jpg' );
+            saveas( fh, fname_fig, 'png' );
             close( fh );
         end
     end
@@ -433,7 +433,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
                     end
                 end
                 savefig( fh, fname_fig );
-                saveas( fh, fname_fig, 'jpg' );
+                saveas( fh, fname_fig, 'png' );
                 close( fh );
             end 
         end

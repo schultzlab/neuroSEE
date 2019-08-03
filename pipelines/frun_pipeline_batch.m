@@ -1,4 +1,4 @@
-function hpc_pipeline_batch( array_id, list )
+function frun_pipeline_batch( array_id, list )
 
 % Written by Ann Go
 % 
@@ -181,7 +181,7 @@ end
             
 %% (1) Motion correction
 % Saved in file folder: motion corrected tif files
-%                       summary fig & jpg, 
+%                       summary fig & png, 
 %                       mat with fields 
 %                           green.[ meanframe, meanregframe ]
 %                           red.[ meanframe, meanregframe ]
@@ -217,8 +217,8 @@ end
 
 
 %% (2) ROI segmentation
-% Saved in file folder: correlation image with ROIs (fig, jpg) 
-%                       summary plots of tsG, df_f (fig, jpg)
+% Saved in file folder: correlation image with ROIs (fig, png) 
+%                       summary plots of tsG, df_f (fig, png)
 %                       mat with fields {tsG, df_f, masks, corr_image, params}
 
 if strcmpi(segment_method,'CaImAn')
@@ -229,7 +229,7 @@ clear imG imR
 
 %% (3) Run FISSA to extract neuropil-corrected time-series
 % Saved in file folder: mat file with fields {dtsG, ddf_f, masks}
-%                       summary plots of tsG, ddf_f (fig & jpg)
+%                       summary plots of tsG, ddf_f (fig & png)
 
 if dofissa
     release = version('-release'); % Find out what Matlab release version is running
@@ -250,7 +250,7 @@ end
 
 %% (4) Estimate spikes
 % Saved in file folder: mat with fields {tsG, dtsG, df_f, ddf_f, spikes, params}
-%                       summary plot of spikes (fig & jpg)
+%                       summary plot of spikes (fig & png)
 
 [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
 
@@ -272,7 +272,7 @@ end
 
 
 %% (5) Find tracking file then load it
-% Saved in file folder: trajectory plot (fig & jpg)
+% Saved in file folder: trajectory plot (fig & png)
 %                       mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
 
 fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
@@ -287,7 +287,7 @@ end
 
 
 %% (6) Generate place field maps
-% Saved: fig & jpg of several figures showing occMap, spkMap, pfMap, remapping and spkMap_pertrial
+% Saved: fig & png of several figures showing occMap, spkMap, pfMap, remapping and spkMap_pertrial
 %        mat file with fields {occMap, hist, asd, downData, activeData}
 
 if manually_refine_spikes

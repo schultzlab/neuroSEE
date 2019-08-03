@@ -34,8 +34,9 @@
 %   activeData  : downsampled tracking data for when animal was moving, fields are
 %                 x, y, r, phi, speed, t, spikes, spikes_pc 
 
-function [ occMap, hist, asd, downData, activeData ] = generatePFmap_1d( spikes, imtime, trackData, params )
+function [ occMap, hist, asd, downData, activeData ] = generatePFmap_1d( spikes, imtime, trackData, params, dsample )
     
+if nargin<5, dsample = true; end
 fr = params.fr;
 Nbins = params.PFmap.Nbins;
 Nepochs = params.PFmap.Nepochs;
@@ -45,20 +46,8 @@ Ncells = size(spikes,1);
 
 %% Pre-process tracking data
 tracktime = trackData.time;
-x = trackData.x;
-y = trackData.y;
-r = trackData.r;
-phi = trackData.phi;
-speed = trackData.speed;
-
 t0 = tracktime(1);                  % initial time in tracking data
-nspikes = spikes; %bsxfun( @rdivide, bsxfun(@minus, spikes, min(spikes,[],2)), range(spikes,2) ); % normalisation
 Nt = size(spikes,2);                % number of timestamps for spikes
-
-% Convert -180:180 to 0:360
-if min(phi)<0
-   phi(phi<0) = phi(phi<0)+360;
-end
 
 % If no timestamps were recorded for Ca images, generate timestamps
 % using known image frame rate
@@ -67,21 +56,40 @@ if isempty(imtime)
    t = (t0:dt:Nt*dt)';
 end
 
-% Downsample tracking to Ca trace
-downphi = interp1(tracktime,phi,t,'linear');
-downx = interp1(tracktime,x,t,'linear');
-downy = interp1(tracktime,y,t,'linear');
-downspeed = interp1(tracktime,speed,t,'linear'); % mm/s
-downr = interp1(tracktime,r,t,'linear'); % mm/s
+if dsample
+    x = trackData.x;
+    y = trackData.y;
+    r = trackData.r;
+    phi = trackData.phi;
+    speed = trackData.speed;
+
+    % Convert -180:180 to 0:360
+    if min(phi)<0
+       phi(phi<0) = phi(phi<0)+360;
+    end
+
+    % Downsample tracking to Ca trace
+    downphi   = interp1(tracktime,phi,t,'linear');
+    downx     = interp1(tracktime,x,t,'linear');
+    downy     = interp1(tracktime,y,t,'linear');
+    downspeed = interp1(tracktime,speed,t,'linear'); % mm/s
+    downr     = interp1(tracktime,r,t,'linear'); % mm/s
+else
+    downphi   = trackData.phi;
+    downx     = trackData.x;
+    downy     = trackData.y;
+    downspeed = trackData.speed;
+    downr     = trackData.r;
+end
 
 % Consider only samples when the mouse is active
-activex    = downx(downspeed > Vthr);
-activey    = downy(downspeed > Vthr);
-activephi  = downphi(downspeed > Vthr);
-activespk = nspikes(:,downspeed > Vthr);
+activex     = downx(downspeed > Vthr);
+activey     = downy(downspeed > Vthr);
+activephi   = downphi(downspeed > Vthr);
+activespk   = spikes(:,downspeed > Vthr);
 activet     = t(downspeed > Vthr);
-activespeed = speed(downspeed > Vthr);
-activer = r(downspeed > Vthr);
+activespeed = downspeed(downspeed > Vthr);
+activer     = downr(downspeed > Vthr);
 
 % Bin phi data
 [bin_phi,~] = discretize(activephi,Nbins);

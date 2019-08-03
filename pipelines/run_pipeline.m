@@ -25,7 +25,7 @@ force = [false;...              % (1) motion correction even if motion corrected
          false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
-         true;...              % (5) tracking data extraction
+         false;...              % (5) tracking data extraction
          false];                % (6) place field mapping
 
 mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, fft-rigid method (Katie's)
@@ -260,7 +260,7 @@ if any(trackData.r < 100)
     params.PFmap.Nbins = [16, 16]; % number of location bins in [x y]               
 else 
     params.mode_dim = '1D'; % circular linear track
-    params.PFmap.Nbins = 150;      % number of location bins               
+    params.PFmap.Nbins = 30;      % number of location bins               
 end
 
 

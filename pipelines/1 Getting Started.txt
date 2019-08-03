@@ -42,7 +42,7 @@ Note: All file names are in the format yyyymmdd_HH_MM_SS.
         - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
     
         * To run through hpc
-            - generate array_id values in <jobscript.pbs> for number of files in 'list.txt'
+            - generate array_id values in <jobscript>.pbs for number of files in 'list.txt'
 
         Notes: 'list.txt' can include 'reffile'. It will simply be skipped.
     
@@ -59,7 +59,7 @@ Note: All file names are in the format yyyymmdd_HH_MM_SS.
             then consolidates the data before running PF mapping
         - processed data from individual fissa, spike extraction, trackind data loading are saved in
             '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
-        - processed consolidated data (PF maps) are save in
+        - processed consolidated data (PF maps) are saved in
             '...thefarm2/live/CrazyEights/AD_2PCa/Analysis/mouseid/'
             
 

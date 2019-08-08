@@ -28,10 +28,10 @@ params = rmfield(params,'nonrigid');
 
 mouseid = expname(1:3);
 if isempty(expsubname)
-    sdir = [data_locn 'Analysis/' mouseid '/' expname '/'];
+    sdir = [data_locn 'Analysis/' mouseid '/ref' reffile '/' expname '/'];
     expsubname = expname;
 else
-    sdir = [data_locn 'Analysis/' mouseid '/' expname '/' expsubname '/'];
+    sdir = [data_locn 'Analysis/' mouseid '/ref' reffile '/' expname '/' expsubname '/'];
 end
 if ~exist(sdir,'dir'), mkdir(sdir); end
 

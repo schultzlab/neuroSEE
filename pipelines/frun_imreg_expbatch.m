@@ -40,7 +40,12 @@ params.methods.mcorr_method = mcorr_method;
 
 if ~strcmpi(file,reffile)
 
-    [ imG, ~ ] = load_imagefile( data_locn, file );
+    filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre_ref' reffile '/'];
+    if force || ~exist([filedir file '_imreg_ref' reffile '_output.mat'],'file')
+        [ imG, ~ ] = load_imagefile( data_locn, file );
+    else
+        imG = [];
+    end
 
     % template file
     filedir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_' mcorr_method '/'];

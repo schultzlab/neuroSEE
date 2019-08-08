@@ -1,5 +1,6 @@
 Note: All file names are in the format yyyymmdd_HH_MM_SS.
 
+INDIVIDUAL FILE PROCESSING (single or batch)
 1. To process a single file
 	run_pipeline.m OR
     frun_pipeline.m - function with input argument 'file' (character string) (e.g. '20181103_12_26_31')
@@ -26,40 +27,46 @@ Note: All file names are in the format yyyymmdd_HH_MM_SS.
     4. If both jobscripts are successful (usually the one without FISSA correction has errros in PF mapping, perhaps because
         no cells pass the placiness threshold), then there are 2 sets of PF maps to compare - with and without FISSA correction.
 
-3. To register a batch of files from the same experiment and then do the pipeline
-    a. frun_comparisons_expbatch.m 
-        - function with input arguments 'expname' and 'list.txt' (both char strings)
-        - generates fig with all green channel images of files in 'list.txt'
-                                   red channel images
-                                 trajectories
-        - user can choose a reference (template) image from these figures
-        - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Analysis/mouseid/'
-            where mouseid is the first 3 characters of expname (e.g. m62)
+3. To view results for a file
+    GUI_view_fileData.m - function with input argument 'file'
 
-    b. frun_imreg_expbatch.m 
-        - function with input arguments array_id, 'expname', 'list.txt', 'reffile'
-        - registers the motion corrected file number <array_id> in 'list.txt' to the template 'reffile'
-        - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
+EXPERIMENT PROCESSING
+- To register a batch of files from the same experiment and then do the pipeline
+1. frun_comparisons_expbatch.m 
+    - function with input arguments 'expname' and 'list.txt' (both char strings)
+    - generates fig with all green channel images of files in 'list.txt'
+                               red channel image
+                             trajectories
+    - user can choose a reference (template) image from these figures
+    - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Analysis/mouseid/'
+        where mouseid is the first 3 characters of expname (e.g. m62)
+
+2. frun_imreg_expbatch.m 
+    - function with input arguments array_id, 'expname', 'list.txt', 'reffile'
+    - registers the motion corrected file number <array_id> in 'list.txt' to the template 'reffile'
+    - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
     
-        * To run through hpc
-            - generate array_id values in <jobscript>.pbs for number of files in 'list.txt'
+    * To run through hpc
+        - generate array_id values in <jobscript>.pbs for number of files in 'list.txt'
 
-        Notes: 'list.txt' can include 'reffile'. It will simply be skipped.
+    Notes: 'list.txt' can include 'reffile'. It will simply be skipped.
+
+3. frun_comparison_imreg_expbatch.m
     
-    c. frun_CaImAn_expbatch.m
-        - function with input arguments 'expname', 'list.txt', 'reffile',
-        - loads all images in 'list.txt' and performs CaImAn 
-        - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
+4. frun_CaImAn_expbatch.m
+    - function with input arguments 'expname', 'list.txt', 'reffile',
+    - loads all images in 'list.txt' and performs CaImAn 
+    - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
 
-    d. frun_fissa2maps_expbatch.m
-        - function with input arguments 'expname', 'expsubname', 'list.txt', 'reffile'
-            e.g. ('m62_fam1fam1rev', 'm62_fam1', 'list_m62_fam1fam1rev_fam1.txt', '20181016_09_49_06')
-                 ('m82_open','m82_open_day1','list_m82_open_day1.txt','20190406_20_27_07')
-        - does fissa, spike extraction, tracking data loading for each image in 'list.txt'
-            then consolidates the data before running PF mapping
-        - processed data from individual fissa, spike extraction, trackind data loading are saved in
-            '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
-        - processed consolidated data (PF maps) are saved in
-            '...thefarm2/live/CrazyEights/AD_2PCa/Analysis/mouseid/'
+5. frun_fissa2maps_expbatch.m
+    - function with input arguments 'expname', 'expsubname', 'list.txt', 'reffile'
+        e.g. ('m62_fam1fam1rev', 'm62_fam1', 'list_m62_fam1fam1rev_fam1.txt', '20181016_09_49_06')
+             ('m82_open','m82_open_day1','list_m82_open_day1.txt','20190406_20_27_07')
+    - does fissa, spike extraction, tracking data loading for each image in 'list.txt'
+        then consolidates the data before running PF mapping
+    - processed data from individual fissa, spike extraction, trackind data loading are saved in
+        '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
+    - processed consolidated data (PF maps) are saved in
+        '...thefarm2/live/CrazyEights/AD_2PCa/Analysis/mouseid/'
             
 

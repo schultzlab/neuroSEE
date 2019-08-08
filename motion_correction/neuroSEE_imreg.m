@@ -25,6 +25,7 @@ function [ imG, mcorr_output, params ] = neuroSEE_imreg(...
                                                 imG, data_locn, file, templatefile, template, params, force )
     
     if nargin<7, force = 0; end
+    if isempty(imG), imG = zeros(512,512); end
     
     filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre_ref' templatefile '/'];
     if ~exist( filedir, 'dir' ), mkdir( filedir ); end
@@ -73,8 +74,8 @@ function [ imG, mcorr_output, params ] = neuroSEE_imreg(...
         str = sprintf( '%s: Registered tif images saved\n', file );
         refreshdisp( str, prevstr );
     else
+        mcorr_output = load(fname_mat_mcorr);
         if ~exist(fname_fig,'file')
-            mcorr_output = load(fname_mat_mcorr);
             out_g = mcorr_output.green;
             makeplot(out_g);
         end
@@ -85,12 +86,12 @@ function [ imG, mcorr_output, params ] = neuroSEE_imreg(...
         subplot(221), 
             imagesc( out_g.meanframe ); 
             axis image; axis off; colormap(gray);
-            titletext = ['Non-motion-corrected ' file];
+            titletext = ['Non-motion-corrected ' file(1:8) '-' file(10:11) '-' file(13:14)];
             title(titletext);
         subplot(222), 
             imagesc( template ); 
             axis image; axis off; colormap(gray); 
-            titletext = [templatefile ' (template)'];
+            titletext = ['Template: ' templatefile(1:8) '-' templatefile(10:11) '-' templatefile(13:14)];
             title(titletext);
         subplot(223), 
             C1 = imfuse( out_g.meanframe, template, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);

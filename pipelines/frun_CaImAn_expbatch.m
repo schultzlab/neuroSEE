@@ -81,16 +81,21 @@ for i = 1:size(files,1)
     if strcmpi(file,reffile)
         sdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/CaImAn_' expname '/'];
         if ~exist(sdir,'dir'), mkdir(sdir); end
-        sname = [sdir expname '_masks.mat'];
+        sname = [sdir expname '_ref' reffile '_masks.mat'];
     else
         sdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre_ref' reffile '/CaImAn_' expname '/'];
         if ~exist(sdir,'dir'), mkdir(sdir); end
-        sname = [sdir expname '_masks.mat'];
+        sname = [sdir expname '_ref' reffile '_masks.mat'];
     end
     save(sname,'masks','corr_image');
-    savefig(fig,[sdir expname '_ROIs']);
-    saveas(fig,[sdir expname '_ROIs'],'png');
+    savefig(fig,[sdir expname '_ref' reffile '_ROIs']);
+    saveas(fig,[sdir expname '_ref' reffile '_ROIs'],'png');
 end
+sdir = [data_locn 'Analysis/' expname(1:3) '/experiment rois/' expname '_ref' reffile '/'];
+sname = [sdir expname '_ref' reffile '_masks.mat'];
+save(sname,'masks','corr_image');
+savefig(fig,[sdir expname '_ref' reffile '_ROIs']);
+saveas(fig,[sdir expname '_ref' reffile '_ROIs'],'png');
 close(fig);
 
 % Send Ann slack message if processing has finished

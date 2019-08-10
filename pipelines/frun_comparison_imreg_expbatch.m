@@ -1,8 +1,9 @@
 function frun_comparison_imreg_expbatch( expname, reffile, list, mcorr_method, force )
 
-% e.g. expname: 'm62_fam1novfam1fam1rev'
+% e.g. expname: 'm62_fam1nov_fam1fam1rev'
 %               'm62_fam1fam1rev'
-%               'm82'
+%               'm70_fam1_day1-5'
+%               'm82_open_day1-2'
 %               'm82_open_day1'
 
 if nargin<5, force = false; end
@@ -28,21 +29,17 @@ nPlot = nCol*nRow;
 % template file
 filedir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_' mcorr_method '/'];
 c = load([filedir reffile '_mcorr_output.mat']);
-templateG = c.template;
-templateR = c.red.meanregframe;
+templateG = c.template./max(max(c.template));
+templateR = c.red.meanregframe./(max(max(c.red.meanregframe)));
 clear c
 
 
 %% Load image data for each recording
-if numel(expname) > 3
-    sdir = [data_locn 'Analysis/' mouseid '/' expname '/ref' reffile '/'];
-else
-    sdir = [data_locn 'Analysis/' mouseid '/ref' reffile '/'];
-end
+sdir = [data_locn 'Analysis/' mouseid '/individual file comparisons/' expname '_imreg_ref' reffile '/'];
 if ~exist(sdir,'dir'), mkdir(sdir); end
     
-if any([ force, ~exist([sdir expname '_comparison_GREEN_ref' reffile '.fig'],'file'),...
-                ~exist([sdir expname '_comparison_RED_ref' reffile '.fig'],'file') ])
+if any([ force, ~exist([sdir expname '_GREEN_imreg_ref' reffile '.fig'],'file'),...
+                ~exist([sdir expname '_RED_imreg_ref' reffile '.fig'],'file') ])
     for i = 1:Nfiles
         file = files(i,:);
         if ~strcmpi(file,reffile)
@@ -68,7 +65,8 @@ if any([ force, ~exist([sdir expname '_comparison_GREEN_ref' reffile '.fig'],'fi
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
                 axes(ha(ii*nPlot+jj+1));
-                C = imfuse(M(ii*nPlot+jj+1).green.meanregframe,templateG,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
+                C = imfuse(M(ii*nPlot+jj+1).green.meanregframe./max(max(M(ii*nPlot+jj+1).green.meanregframe)),...
+                            templateG,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
                 imshow(C);
                 axis off; 
                 str = files(ii*nPlot+jj+1,:);
@@ -77,16 +75,11 @@ if any([ force, ~exist([sdir expname '_comparison_GREEN_ref' reffile '.fig'],'fi
         end
         axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
             'Visible','off','Units','normalized', 'clipping' , 'off');
-            if numel(expname) > 3
-                titletext = [mouseid '_' expname(5:end) ': GREEN channel registered to '...
+            titletext = [expname(5:end) ': GREEN channel registered to '...
                              reffile(1:8) ' ' reffile(10:11) ':' reffile(13:14) ':' reffile(16:17)];
-            else
-                titletext = [mouseid ': GREEN channel registered to '...
-                             reffile(1:8) ' ' reffile(10:11) ':' reffile(13:14) ':' reffile(16:17)];
-            end
             text('Position',[0.35 0.99], 'FontSize',14, 'String',titletext);
     end 
-    fname_fig = [sdir expname '_comparison_GREEN_ref' reffile '.fig'];
+    fname_fig = [sdir expname '_GREEN_imreg_ref' reffile '.fig'];
         savefig( fh, fname_fig );
         saveas( fh, fname_fig(1:end-4), 'png' );
         close( fh );
@@ -98,7 +91,8 @@ if any([ force, ~exist([sdir expname '_comparison_GREEN_ref' reffile '.fig'],'fi
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Nfiles
                     axes(ha(ii*nPlot+jj+1));
-                    C = imfuse(M(ii*nPlot+jj+1).red.meanregframe,templateR,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
+                    C = imfuse(M(ii*nPlot+jj+1).red.meanregframe./max(max(M(ii*nPlot+jj+1).red.meanregframe)),...
+                                templateR,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
                     imshow(C);
                     axis off; 
                     str = files(ii*nPlot+jj+1,:);
@@ -107,16 +101,11 @@ if any([ force, ~exist([sdir expname '_comparison_GREEN_ref' reffile '.fig'],'fi
             end
             axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
                 'Visible','off','Units','normalized', 'clipping' , 'off');
-                if numel(expname) > 3
-                    titletext = [mouseid '_' expname(5:end) ': RED channel registered to '...
+                titletext = [mouseid '_' expname(5:end) ': RED channel registered to '...
                                  reffile(1:8) ' ' reffile(10:11) ':' reffile(13:14) ':' reffile(16:17)];
-                else
-                    titletext = [mouseid ': RED channel registered to '...
-                                 reffile(1:8) ' ' reffile(10:11) ':' reffile(13:14) ':' reffile(16:17)];
-                end
                 text('Position',[0.35 0.99], 'FontSize',14, 'String',titletext);
         end 
-        fname_fig = [sdir expname '_comparison_RED_ref' reffile '.fig'];
+        fname_fig = [sdir expname '_RED_imreg_ref' reffile '.fig'];
             savefig( fh, fname_fig );
             saveas( fh, fname_fig(1:end-4), 'png' );
             close( fh );

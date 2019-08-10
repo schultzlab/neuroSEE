@@ -10,27 +10,27 @@ Vthr = params.PFmap.Vthr;
 histsmoothFac = params.PFmap.histsmoothFac;
 
 %% Pre-process tracking data
+tracktime = trackData.time;
+t0 = tracktime(1);                  % initial time in tracking data
+Nt = size(spikes,2);                % number of timestamps for spikes
+
+% If no timestamps were recorded for Ca images, generate timestamps
+% using known image frame rate
+if isempty(imtime)
+   dt = 1/fr;
+   t = (t0:dt:Nt*dt)';
+end
+
 if dsample
-    tracktime = trackData.time;
     x = trackData.x;
     y = trackData.y;
     r = trackData.r;
     phi = trackData.phi;
     speed = trackData.speed;
 
-    t0 = tracktime(1);                  % initial time in tracking data
-    Nt = size(spikes,2);                % number of timestamps for spikes
-
     % Convert -180:180 to 0:360
     if min(phi)<0
        phi(phi<0) = phi(phi<0)+360;
-    end
-
-    % If no timestamps were recorded for Ca images, generate timestamps
-    % using known image frame rate
-    if isempty(imtime)
-       dt = 1/fr;
-       t = (t0:dt:Nt*dt)';
     end
 
     % Downsample tracking to Ca trace

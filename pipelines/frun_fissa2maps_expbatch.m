@@ -1,8 +1,23 @@
 % Written by Ann Go
+% expname: Experiment name in the format 'm##_expname'. 'expname'
+%           corresponds to the group of files for which ROI segmentation has been
+%           done, the results of which are used here for fissa correction to PF
+%           mapping.
+% envname: Environment name which is a subset of expname
+%               expname             envname      
+%       e.g. 'm62_fam1fam1rev'      'fam1rev'
+%            'm82_open_day1'        ''
 
-function frun_fissa2maps_expbatch( expname, expsubname, list, reffile )
+function frun_fissa2maps_expbatch( expname, envname, list, reffile, force )
 
 tic 
+
+if nargin<5, force = false; end
+if isempty(envname)
+    str_env = [];
+else
+    str_env = ['-' envname];
+end
 
 %% Load module folders and define data directory
 
@@ -27,12 +42,7 @@ params.ROIsegment = rmfield(params.ROIsegment,fields);
 params = rmfield(params,'nonrigid');
 
 mouseid = expname(1:3);
-if isempty(expsubname)
-    sdir = [data_locn 'Analysis/' mouseid '/ref' reffile '/' expname '/'];
-    expsubname = expname;
-else
-    sdir = [data_locn 'Analysis/' mouseid '/ref' reffile '/' expname '/' expsubname '/'];
-end
+sdir = [data_locn 'Analysis/' mouseid '/environment PFmaps/' expname str_env '_ref' reffile '/'];
 if ~exist(sdir,'dir'), mkdir(sdir); end
 
 % files
@@ -41,9 +51,9 @@ files = extractFilenamesFromTxtfile( list );
 % masks
 file = files(1,:);
 if strcmpi(file,reffile)
-    matfile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/CaImAn_' expname '/' expname '_masks.mat'];
+    matfile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/CaImAn_' expname '/' expname '_ref' reffile '_masks.mat'];
 else
-    matfile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre_ref' reffile '/CaImAn_' expname '/' expname '_masks.mat'];
+    matfile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre_ref' reffile '/CaImAn_' expname '/' expname '_ref' reffile '_masks.mat'];
 end
 masks = load(matfile,'masks');
 masks = masks.masks;
@@ -56,8 +66,8 @@ SdownData.y = [];
 SdownData.speed = [];
 SdownData.r = [];
 
-for i = 1:size(files,1)
-    file = files(i,:);
+for id = 1:size(files,1)
+    file = files(id,:);
     if strcmpi(file,reffile)
         tiffile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/' file '_2P_XYT_green_mcorr.tif'];
         fissadir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/CaImAn_' expname '/FISSA/'];
@@ -68,10 +78,10 @@ for i = 1:size(files,1)
     if ~exist( fissadir, 'dir' ), mkdir( fissadir ); end
     
     % FISSA
-    if ~exist([fissadir expsubname '_fissa_output.mat'],'file')
-        fprintf('%s: doing fissa\n',[expsubname '_' file]);
+    if force || ~exist([fissadir file '_' expname '_ref' reffile '_fissa_output.mat'],'file')
+        fprintf('%s: doing fissa\n',[expname str_env '_' file]);
         fname_mat_temp = [fissadir 'FISSAout/matlab.mat'];
-        if ~exist(fname_mat_temp,'file')
+        if force || and(~exist([fissadir file '_' expname '_ref' reffile '_fissa_output.mat'],'file'), ~exist(fname_mat_temp,'file'))
             runFISSA( masks, tiffile, fissadir );
         end
 
@@ -86,29 +96,35 @@ for i = 1:size(files,1)
         % Calculate df_f
         ddf_f = zeros(size(dtsG));
         xddf_prctile = params.fissa.ddf_prctile;
-        for m = 1:size(dtsG,1)
-            x = lowpass( medfilt1(dtsG(i,:),params.fissa.ddf_medfilt1), 1, params.fr );
+        for k = 1:size(dtsG,1)
+            x = lowpass( medfilt1(dtsG(k,:),params.fissa.ddf_medfilt1), 1, params.fr );
             fo = ones(size(x)) * prctile(x,xddf_prctile);
             while fo == 0
                 fo = ones(size(x)) * prctile(x,xddf_prctile+5);
                 xddf_prctile = xddf_prctile+5;
             end
-            ddf_f(m,:) = (x - fo) ./ fo;
+            ddf_f(k,:) = (x - fo) ./ fo;
         end
         
-        save([fissadir expsubname '_fissa_output.mat'],'dtsG','ddf_f');
+        fname_fig = [fissadir file '_' expname '_ref' reffile];
+        plotfissa(dtsG, ddf_f, fname_fig);
+        save([fissadir file '_' expname '_ref' reffile '_fissa_output.mat'],'dtsG','ddf_f');
     else
-        fprintf('%s: loading fissa output\n',[expsubname '_' file]);
-        M = load([fissadir expsubname '_fissa_output.mat']);
+        fprintf('%s: loading fissa output\n',[expname str_env '_' file]);
+        M = load([fissadir file '_' expname '_ref' reffile '_fissa_output.mat']);
         dtsG = M.dtsG;
         ddf_f = M.ddf_f;
+        if ~exist([fissadir file '_' expname '_ref' reffile '_fissa_result.fig'],'file')
+            fname_fig = [fissadir file '_' expname '_ref' reffile];
+            plotfissa(dtsG, ddf_f, fname_fig);
+        end
     end
 
     % tracking data
-    fprintf('%s: loading tracking data\n', [expsubname '_' file]);
-    if ~exist([fissadir expsubname '_downData.mat'],'file')
+    fprintf('%s: loading tracking data\n', [expname str_env '_' file]);
+    if force || ~exist([fissadir file '_' expname '_ref' reffile '_downData.mat'],'file')
         trackfile = findMatchingTrackingFile(data_locn, file, 0);
-        c = load_trackfile(data_locn, files(i,:), trackfile, 0);
+        c = load_trackfile(data_locn, files(id,:), trackfile, 0);
         x = c.x;
         y = c.y;
         r = c.r;
@@ -137,43 +153,49 @@ for i = 1:size(files,1)
         downData.r = interp1(tracktime,r,t,'linear'); % mm/s
         downData.time = t;
 
-        save([fissadir expsubname '_downData.mat'],'downData');
+        save([fissadir file '_' expname '_ref' reffile '_downData.mat'],'downData');
     else
-        M = load([fissadir expsubname '_downData.mat']);
+        M = load([fissadir file '_' expname '_ref' reffile '_downData.mat']);
         downData = M.downData;
     end
 
     % Spike extraction
-    if ~exist([fissadir expsubname '_spikes.mat'],'file')
-        fprintf('%s: extracting spikes\n', [expsubname '_' file]);
+    if force || ~exist([fissadir file '_' expname '_ref' reffile '_spikes.mat'],'file')
+        fprintf('%s: extracting spikes\n', [expname str_env '_' file]);
         C = ddf_f;
         N = size(C,1); T = size(C,2);
 
-        for n = 1:N
-            fo = ones(1,T) * prctile(C(n,:),params.spkExtract.bl_prctile);
-            C(n,:) = (C(n,:) - fo); % ./ fo;
+        for k = 1:N
+            fo = ones(1,T) * prctile(C(k,:),params.spkExtract.bl_prctile);
+            C(k,:) = (C(k,:) - fo); % ./ fo;
         end
         spikes = zeros(N,T);
-        for n = 1:N
-            spkmin = params.spkExtract.spk_SNR*GetSn(C(n,:));
-            lam = choose_lambda(exp(-1/(params.fr*params.spkExtract.decay_time)),GetSn(C(n,:)),params.spkExtract.lam_pr);
+        for k = 1:N
+            spkmin = params.spkExtract.spk_SNR*GetSn(C(k,:));
+            lam = choose_lambda(exp(-1/(params.fr*params.spkExtract.decay_time)),GetSn(C(k,:)),params.spkExtract.lam_pr);
 
-            [~,spk,~] = deconvolveCa(C(n,:),'ar2','method','thresholded','optimize_pars',true,'maxIter',20,...
+            [~,spk,~] = deconvolveCa(C(k,:),'ar2','method','thresholded','optimize_pars',true,'maxIter',20,...
                                     'window',150,'lambda',lam,'smin',spkmin);
-            spikes(n,:) = spk(:);
+            spikes(k,:) = spk(:);
         end
-        save([fissadir expsubname '_spikes.mat'],'spikes');
+        
+        fname_fig = [fissadir file '_' expname '_ref' reffile];
+        plotspikes(spikes, fname_fig);
+        save([fissadir file '_' expname '_ref' reffile '_spikes.mat'],'spikes');
     else
-        fprintf('%s: loading spike data\n', [expsubname '_' file]);
-        M = load([fissadir expsubname '_spikes.mat']);
+        fprintf('%s: loading spike data\n', [expname str_env '_' file]);
+        M = load([fissadir file '_' expname '_ref' reffile '_spikes.mat']);
         spikes = M.spikes;
+        if ~exist([fissadir file '_' expname '_ref' reffile '_spikes.fig'],'file')
+            plotspikes(spikes, [fissadir file '_' expname '_ref' reffile]);
+        end
     end
     
     % Superset arrays
     SdtsG = [SdtsG dtsG];
     Sddf_f = [Sddf_f ddf_f];
     Sspikes = [Sspikes spikes];
-    
+
     SdownData.phi = [SdownData.phi; downData.phi];
     SdownData.x = [SdownData.x; downData.x];
     SdownData.y = [SdownData.y; downData.y];
@@ -185,40 +207,42 @@ end
 
 %% Plot and save superset arrays
 % raw timeseries
-if ~exist([sdir expsubname '_fissa_result.fig'],'file')
+if ~exist([sdir expname str_env '_ref' reffile '_fissa_result.fig'],'file')
     fig = figure;
     iosr.figures.multiwaveplot(1:size(SdtsG,2),1:size(SdtsG,1),SdtsG,'gain',5); yticks([]); xticks([]); 
     title('Fissa-corrected raw timeseries','Fontweight','normal','Fontsize',12); 
-    savefig(fig,[sdir expsubname '_fissa_result']);
-    saveas(fig,[sdir expsubname '_fissa_result'],'png');
+    savefig(fig,[sdir expname str_env '_ref' reffile '_fissa_result']);
+    saveas(fig,[sdir expname str_env '_ref' reffile '_fissa_result'],'png');
     close(fig); 
 end
 clear dtsG
-dtsG = SdtsG;
 
 % dF/F
-if ~exist([sdir expsubname '_fissa_df_f.fig'],'file')
+if ~exist([sdir expname str_env '_ref' reffile '_fissa_df_f.fig'],'file')
     fig = figure;
     iosr.figures.multiwaveplot(1:size(Sddf_f,2),1:size(Sddf_f,1),Sddf_f,'gain',5); yticks([]); xticks([]); 
     title('Fissa-corrected dF/F','Fontweight','normal','Fontsize',12); 
-    savefig(fig,[sdir expsubname '_fissa_df_f']);
-    saveas(fig,[sdir expsubname '_fissa_df_f'],'png');
+    savefig(fig,[sdir expname str_env '_ref' reffile '_fissa_df_f']);
+    saveas(fig,[sdir expname str_env '_ref' reffile '_fissa_df_f'],'png');
     close(fig); 
 end
 clear ddf_f
-ddf_f = Sddf_f;
 
 % spikes
 % NOTE: plotting spikes results in fatal segmentation fault (core dumped)
-% if ~exist([sdir expsubname '_spikes.fig'],'file')
+% if ~exist([sdir expname str_env '_ref' reffile '_spikes.fig'],'file')
 %     fig = figure;
 %     iosr.figures.multiwaveplot(1:size(Sspikes,2),1:size(Sspikes,1),Sspikes,'gain',5); yticks([]); xticks([]);
 %     title('Spikes','Fontweight','normal','Fontsize',12);
-%     savefig(fig,[sdir expsubname '_spikes']);
-%     saveas(fig,[sdir expsubname '_spikes'],'png');
+%     savefig(fig,[sdir expname str_env '_ref' reffile '_spikes']);
+%     saveas(fig,[sdir expname str_env '_ref' reffile '_spikes'],'png');
 %     close(fig);
 % end
 clear spikes
+
+% Concatenated data
+dtsG = SdtsG;
+ddf_f = Sddf_f;
 spikes = Sspikes;
 
 % tracking data
@@ -228,23 +252,25 @@ dt = 1/params.fr;
 t = (t0:dt:Nt*dt)';
 SdownData.time = t;
 trackData = SdownData;
-
-fprintf('%s: saving fissa, spike, track data',expsubname);
-save([sdir expsubname '_fissa_spike_track_data.mat'],'dtsG','ddf_f','spikes','trackData');
+    
+if ~exist([sdir expname str_env '_ref' reffile '_fissa_spike_track_data.mat'],'file')
+    fprintf('%s: saving fissa, spike, track data', [expname str_env]);
+    save([sdir expname str_env '_ref' reffile '_fissa_spike_track_data.mat'],'dtsG','ddf_f','spikes','trackData');
+end
 
 
 %% PFmapping
 if any(trackData.r < 100)
-    params.mode_dim = '2D'; % open field
-    params.PFmap.Nbins = [16, 16]; % number of location bins in [x y]               
+    params.mode_dim = '2D';         % open field
+    params.PFmap.Nbins = [16, 16];  % number of location bins in [x y]               
 else 
-    params.mode_dim = '1D'; % circular linear track
-    params.PFmap.Nbins = 150;      % number of location bins               
+    params.mode_dim = '1D';         % circular linear track
+    params.PFmap.Nbins = 30;        % number of location bins               
 end
 
 Nepochs = params.PFmap.Nepochs;
-if ~exist([sdir expsubname '_PFmap_output.mat'],'file')
-    fprintf('%s: generating PFmaps\n', expsubname);
+if ~exist([sdir expname str_env '_ref' reffile '_PFmap_output.mat'],'file')
+    fprintf('%s: generating PFmaps\n', [expname str_env]);
     if strcmpi(params.mode_dim,'1D')
         % Generate place field maps
         [occMap, hist, asd, ~, activeData] = generatePFmap_1d(spikes, [], trackData, params, false);
@@ -262,7 +288,7 @@ if ~exist([sdir expsubname '_PFmap_output.mat'],'file')
         end
 
         % Make plots
-        makeplot_1d(occMap, hist, asd);
+        plotPF_1d(occMap, hist, asd);
 
         % Save output
         output.occMap = occMap;
@@ -270,12 +296,12 @@ if ~exist([sdir expsubname '_PFmap_output.mat'],'file')
         output.asd = asd;
         output.activeData = activeData;
         output.params = params.PFmap;
-        save([sdir expsubname '_PFmap_output.mat'],'-struct','output');
+        save([sdir expname str_env '_ref' reffile '_PFmap_output.mat'],'-struct','output');
     else % '2D'
-        [occMap, spkMap, spkIdx, hist, asd, ~, activeData] = generatePFmap_2d(spikes, imtime, trackData, params, false);
+        [occMap, spkMap, spkIdx, hist, asd, ~, activeData] = generatePFmap_2d(spikes, [], trackData, params, false);
 
          % Make plots
-        makeplot_2d(spkMap, activeData, hist, asd);
+        plotPF_2d(spkMap, activeData, hist, asd);
 
         % Save output
         output.occMap = occMap;
@@ -285,16 +311,43 @@ if ~exist([sdir expsubname '_PFmap_output.mat'],'file')
         output.asd = asd;
         output.activeData = activeData;
         output.params = params.PFmap;
-        save([sdir expsubname '_PFmap_output.mat'],'-struct','output');
+        save([sdir expname str_env '_ref' reffile '_PFmap_output.mat'],'-struct','output');
     end
 end
 
 
 t = toc;
-str = sprintf('%s: Processing done in %g hrs\n', expsubname, round(t/3600,2));
+str = sprintf('%s: Processing done in %g hrs\n', [expname str_env], round(t/3600,2));
 cprintf(str)
 
-function makeplot_1d(occMap, hist, asd)
+function plotfissa(dtsG, ddf_f, fname_fig)
+    % raw timeseries
+    fig = figure;
+    iosr.figures.multiwaveplot(1:size(dtsG,2),1:size(dtsG,1),dtsG,'gain',5); yticks([]); xticks([]); 
+    title('Fissa-corrected raw timeseries','Fontweight','normal','Fontsize',12); 
+    savefig(fig,[fname_fig '_fissa_result']);
+    saveas(fig,[fname_fig '_fissa_result'],'png');
+    close(fig);
+
+    % dF/F
+    fig = figure;
+    iosr.figures.multiwaveplot(1:size(ddf_f,2),1:size(ddf_f,1),ddf_f,'gain',5); yticks([]); xticks([]); 
+    title('Fissa-corrected dF/F','Fontweight','normal','Fontsize',12); 
+    savefig(fig,[fname_fig '_fissa_df_f']);
+    saveas(fig,[fname_fig '_fissa_df_f'],'png');
+    close(fig);
+end
+
+function plotspikes(spikes, fname_fig)
+    fig = figure;
+    iosr.figures.multiwaveplot(1:size(spikes,2),1:size(spikes,1),spikes,'gain',5); yticks([]); xticks([]);
+    title('dF/F','Fontweight','normal','Fontsize',12);
+    savefig(fig,[fname_fig '_spikes']);
+    saveas(fig,[fname_fig '_spikes'],'png');
+    close(fig);
+end
+
+function plotPF_1d(occMap, hist, asd)
     Npcs = length(hist.pcIdx);
     Npcs_asd = length(asd.pcIdx);
 
@@ -345,12 +398,12 @@ function makeplot_1d(occMap, hist, asd)
             xlabel('Position (cm)');
             title('Smoothened pf map'); colorbar; 
 
+        if ~exist([sdir 'PFmaps/'],'dir'), mkdir([sdir 'PFmaps/']); end
         if Nepochs == 1
-            fname_fig = [sdir '/PFmaps/' expsubname '_PFmaps'];
+            fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_PFmaps'];
         else
-            fname_fig = [sdir '/PFmaps/' expsubname '_PFmaps_' num2str(e) 'of' num2str(Nepochs) 'ep'];
+            fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_PFmaps_' num2str(e) 'of' num2str(Nepochs) 'ep'];
         end
-        if ~exist([sdir '/PFmaps/']), mkdir([sdir '/PFmaps/']); end
         savefig( fh, fname_fig );
         saveas( fh, fname_fig, 'png' );
         close( fh );
@@ -404,9 +457,9 @@ function makeplot_1d(occMap, hist, asd)
             title('Norm smooth pf map'); colorbar; 
 
         if Nepochs == 1
-            fname_fig = [sdir '/PFmaps/' expsubname '_normPFmaps'];
+            fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_normPFmaps'];
         else
-            fname_fig = [sdir '/PFmaps/' expsubname '_normPFmaps_' num2str(e) 'of' num2str(Nepochs) 'ep'];
+            fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_normPFmaps_' num2str(e) 'of' num2str(Nepochs) 'ep'];
         end
         savefig( fh, fname_fig );
         saveas( fh, fname_fig, 'png' );
@@ -432,9 +485,9 @@ function makeplot_1d(occMap, hist, asd)
             end
         end
         if Npcs/nPlot <= 1
-            fname_fig = [sdir '/PFmaps/' expsubname '_spk_pertrial_hist'];
+            fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_spk_pertrial_hist'];
         else
-            fname_fig = [sdir '/PFmaps/' expsubname '_spk_pertrial_hist_' num2str(ii+1)];
+            fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_spk_pertrial_hist_' num2str(ii+1)];
         end
         savefig( fh, fname_fig );
         saveas( fh, fname_fig, 'png' );
@@ -454,9 +507,9 @@ function makeplot_1d(occMap, hist, asd)
             end
         end
         if Npcs/nPlot <= 1
-            fname_fig = [sdir '/PFmaps/' expsubname '_normspk_pertrial_hist'];
+            fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_normspk_pertrial_hist'];
         else
-            fname_fig = [sdir '/PFmaps/' expsubname '_normspk_pertrial_hist_' num2str(ii+1)];
+            fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_normspk_pertrial_hist_' num2str(ii+1)];
         end
         savefig( fh, fname_fig );
         saveas( fh, fname_fig, 'png' );
@@ -481,9 +534,9 @@ function makeplot_1d(occMap, hist, asd)
             end
         end
         if Npcs_asd/nPlot <= 1
-            fname_fig = [sdir '/PFmaps/' expsubname '_spk_pertrial_asd'];
+            fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_spk_pertrial_asd'];
         else
-            fname_fig = [sdir '/PFmaps/' expsubname '_spk_pertrial_asd_' num2str(ii+1)];
+            fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_spk_pertrial_asd_' num2str(ii+1)];
         end
         savefig( fh, fname_fig );
         saveas( fh, fname_fig, 'png' );
@@ -503,9 +556,9 @@ function makeplot_1d(occMap, hist, asd)
             end
         end
         if Npcs_asd/nPlot <= 1
-            fname_fig = [sdir '/PFmaps/' expsubname '_normspk_pertrial_asd'];
+            fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_normspk_pertrial_asd'];
         else
-            fname_fig = [sdir '/PFmaps/' expsubname '_normspk_pertrial_asd_' num2str(ii+1)];
+            fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_normspk_pertrial_asd_' num2str(ii+1)];
         end
         savefig( fh, fname_fig );
         saveas( fh, fname_fig, 'png' );
@@ -521,7 +574,7 @@ function makeplot_1d(occMap, hist, asd)
                 title(['Epoch ' num2str(ej)]); ylabel(['Epoch' num2str(ei) ' sorting']);
             end
         end
-        fname_fig = [sdir '/PFmaps/' expsubname '_remapping_hist'];
+        fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_remapping_hist'];
         savefig( fh, fname_fig );
         saveas( fh, fname_fig, 'png' );
         close( fh );
@@ -533,14 +586,14 @@ function makeplot_1d(occMap, hist, asd)
                 title(['Epoch ' num2str(ej)]); ylabel(['Epoch' num2str(ei) ' sorting']);
             end
         end
-        fname_fig = [sdir '/PFmaps/' expsubname '_remapping_asd'];
+        fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_remapping_asd'];
         savefig( fh, fname_fig );
         saveas( fh, fname_fig, 'png' );
         close( fh );
     end
 end
 
-function makeplot_2d(spkMap, activeData, hist, asd)
+function plotPF_2d(spkMap, activeData, hist, asd)
     Nspk = size(spkMap,3);
     nPlot = 4;
     for e = 1:Nepochs
@@ -568,17 +621,19 @@ function makeplot_2d(spkMap, activeData, hist, asd)
                     axis off; colorbar; % caxis([0 0.003]);
                 end
             end
+            
+            if ~exist([sdir 'PFmaps/'],'dir'), mkdir([sdir 'PFmaps/']); end
             if Nspk/nPlot <= 1
                 if Nepochs == 1
-                    fname_fig = [sdir '/PFmaps/' expsubname '_PFmaps'];
+                    fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_PFmaps'];
                 else
-                    fname_fig = [sdir '/PFmaps/' expsubname '_PFmaps_' num2str(e) 'of' num2str(Nepochs) 'ep' ];
+                    fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_PFmaps_' num2str(e) 'of' num2str(Nepochs) 'ep' ];
                 end
             else
                 if Nepochs == 1
-                    fname_fig = [sdir '/PFmaps/' expsubname '_PFmaps_' num2str(ii+1)];
+                    fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_PFmaps_' num2str(ii+1)];
                 else
-                    fname_fig = [sdir '/PFmaps/' expsubname '_PFmaps_' num2str(ii+1) '_' num2str(e) 'of' num2str(Nepochs) 'ep' ];
+                    fname_fig = [sdir 'PFmaps/' expname str_env '_ref' reffile '_PFmaps_' num2str(ii+1) '_' num2str(e) 'of' num2str(Nepochs) 'ep' ];
                 end
             end
             savefig( fh, fname_fig );

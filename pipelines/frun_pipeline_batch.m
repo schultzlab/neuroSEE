@@ -64,7 +64,8 @@ end
 
 %% Image file
 
-files = extractFilenamesFromTxtfile(list);
+listfile = [data_locn 'Digital_Logbook/lists/' list];
+files = extractFilenamesFromTxtfile(listfile);
 
 file = files(array_id,:); 
 

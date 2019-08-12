@@ -28,7 +28,8 @@ end
 
 %% Image files
 
-files = extractFilenamesFromTxtfile( list );
+listfile = [data_locn 'Digital_Logbook/lists/' list];
+files = extractFilenamesFromTxtfile( listfile );
 
 for i = 1:size(files,1)
     file = files(i,:);

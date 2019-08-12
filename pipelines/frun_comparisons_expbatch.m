@@ -27,7 +27,8 @@ if ~isempty(err)
 end
 
 %% Files
-files = extractFilenamesFromTxtfile( list );
+listfile = [data_locn 'Digital_Logbook/lists/' list];
+files = extractFilenamesFromTxtfile( listfile );
 Nfiles = size(files,1);
 mouseid = expname(1:3);
 

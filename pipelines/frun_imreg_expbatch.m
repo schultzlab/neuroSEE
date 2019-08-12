@@ -22,7 +22,8 @@ end
 
 %% Files
 
-files = extractFilenamesFromTxtfile( list );
+listfile = [data_locn 'Digital_Logbook/lists/' list];
+files = extractFilenamesFromTxtfile( listfile );
 
 % Send Ann slack message
 if slacknotify

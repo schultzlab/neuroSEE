@@ -46,7 +46,8 @@ sdir = [data_locn 'Analysis/' mouseid '/environment_PFmaps/' expname str_env '_r
 if ~exist(sdir,'dir'), mkdir(sdir); end
 
 % files
-files = extractFilenamesFromTxtfile( list );
+listfile = [data_locn 'Digital_Logbook/lists/' list];
+files = extractFilenamesFromTxtfile( listfile );
 
 % masks
 file = files(1,:);

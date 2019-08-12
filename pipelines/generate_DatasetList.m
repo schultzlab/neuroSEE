@@ -7,21 +7,29 @@
 %   name : 'm62'
 %   exp  : {[1x1 struct] [1x1 struct]}
 
-mice     = {'m62'}; % {'m66', 'm62', 'm69', 'm70', 'all'} 
-                    % or {'20190310', '20190311'}
-out_dir  = fullfile( '/Volumes','RDS','project','thefarm2','live','CrazyEights','AD_2PCa','Processed');
-out_file = fullfile( out_dir, 'm62_pipeline.mat' );
+mice     = {'all'}; % {'m66', 'm62', 'm69', 'm70', 'all'} 
+
+[data_locn,~,err] = load_neuroSEEmodules(false);
+if ~isempty(err)
+    beep
+    cprintf('Errors',err);    
+    return
+end
+
+out_dir  = [data_locn 'Digital Logbook/lists/'];
+out_file = [out_dir 'MouseDataList.mat'];
+init = false;
 
 % if we already have mouse dataset list, load it & merge it with new list
 if exist( out_file, 'file' )
-   load( out_file, 'mouseDset' );
-   mousenames = getStructFieldFromCell( mouseDset, 'name' );
+   load( out_file, 'MouseDataList' );
+   mousenames = getStructFieldFromCell( MouseDataList, 'name' );
 else
    mousenames = [];
 end
 
 % extract recorded mouse experiment list from log book & Gcamp directory
-if ~exist('micerec','var')   
+if init || ~exist('micerec','var')   
    % Get mouse info
    try
       miceexp = identifyMouseExperimentDates;

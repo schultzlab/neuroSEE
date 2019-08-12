@@ -238,6 +238,7 @@ if dofissa
         [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
     else
         fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
+        params.methods.dofissa = false;
         dofissa = false;
         dtsG = [];
         ddf_f = [];

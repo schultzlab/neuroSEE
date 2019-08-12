@@ -36,17 +36,20 @@ nPlot = nCol*nRow;
 
 
 %% Load image data for each recording
-sdir1 = [data_locn 'Analysis/' mouseid '/individual file comparisons/' expname '_mcorr/'];
+sdir1 = [data_locn 'Analysis/' mouseid '/individual_file_comparisons/' expname '_mcorr/'];
     if ~exist(sdir1,'dir'), mkdir(sdir1); end
     
 if any([ force, ~exist([sdir1 expname '_GREEN_mcorr.fig'],'file'),...
                 ~exist([sdir1 expname '_RED_mcorr.fig'],'file') ])
+                
     for i = 1:Nfiles
         file = files(i,:);
         fname = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/' file '_mcorr_output.mat'];
-        c = load(fname);
-        M(i).green = c.green;
-        M(i).red = c.red;
+        if exist(fname,'file')
+            c = load(fname);
+            M(i).green = c.green;
+            M(i).red = c.red;
+        end
     end
     clear c
 
@@ -57,11 +60,13 @@ if any([ force, ~exist([sdir1 expname '_GREEN_mcorr.fig'],'file'),...
         ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
-                axes(ha(ii*nPlot+jj+1));
-                imagesc(M(ii*nPlot+jj+1).green.meanregframe./max(max(M(ii*nPlot+jj+1).green.meanregframe))); 
-                axis off; colormap(gray);
-                str = files(ii*nPlot+jj+1,:);
-                title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
+                if isfield(M(ii*nPlot+jj+1),'green')
+                    axes(ha(ii*nPlot+jj+1));
+                    imagesc(M(ii*nPlot+jj+1).green.meanregframe./max(max(M(ii*nPlot+jj+1).green.meanregframe))); 
+                    axis off; colormap(gray);
+                    str = files(ii*nPlot+jj+1,:);
+                    title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
+                end
             end
         end
         axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
@@ -81,10 +86,12 @@ if any([ force, ~exist([sdir1 expname '_GREEN_mcorr.fig'],'file'),...
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
                 axes(ha(ii*nPlot+jj+1));
-                imagesc(M(ii*nPlot+jj+1).red.meanregframe./max(max(M(ii*nPlot+jj+1).red.meanregframe))); 
-                axis off; colormap(gray);
-                str = files(ii*nPlot+jj+1,:);
-                title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
+                if isfield(M(ii*nPlot+jj+1),'red')
+                    imagesc(M(ii*nPlot+jj+1).red.meanregframe./max(max(M(ii*nPlot+jj+1).red.meanregframe))); 
+                    axis off; colormap(gray);
+                    str = files(ii*nPlot+jj+1,:);
+                    title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
+                end
             end
         end
         axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
@@ -100,7 +107,7 @@ end
 
 
 %% Load tracking data for each recording
-sdir2 = [data_locn 'Analysis/' mouseid '/individual file comparisons/' expname '_trajectories/'];
+sdir2 = [data_locn 'Analysis/' mouseid '/individual_file_comparisons/' expname '_trajectories/'];
     if ~exist(sdir2,'dir'), mkdir(sdir2); end
 
 if force || ~exist([sdir2 expname '_traj.fig'],'file')
@@ -124,10 +131,12 @@ if force || ~exist([sdir2 expname '_traj.fig'],'file')
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
                 axes(ha(ii*nPlot+jj+1));
-                plot(M(ii*nPlot+jj+1).trackdata.x,M(ii*nPlot+jj+1).trackdata.y); 
-                axis off; 
-                str = files(ii*nPlot+jj+1,:);
-                title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
+                if isfield(M(ii*nPlot+jj+1),trackdata)
+                    plot(M(ii*nPlot+jj+1).trackdata.x,M(ii*nPlot+jj+1).trackdata.y); 
+                    axis off; 
+                    str = files(ii*nPlot+jj+1,:);
+                    title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
+                end
             end
         end
         axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
@@ -155,7 +164,7 @@ else
 end
 
 
-sdir3 = [data_locn 'Analysis/' mouseid '/individual file comparisons/' expname '_PFmaps/'];
+sdir3 = [data_locn 'Analysis/' mouseid '/individual_file_comparisons/' expname '_PFmaps/'];
     if ~exist(sdir3,'dir'), mkdir(sdir3); end
 
 if (force || ~exist([sdir3 expname '_PFmaps.fig'],'file')) && strcmpi(mode_dim,'1D')
@@ -165,8 +174,6 @@ if (force || ~exist([sdir3 expname '_PFmaps.fig'],'file')) && strcmpi(mode_dim,'
         if exist(PFmapfile,'file')
             c = load(PFmapfile);
             M(i).PFmap = c.hist.sort_normpfMap_sm(:,:,1);
-        else
-            M(i).PFmap = [];
         end
     end
     clear c
@@ -178,7 +185,7 @@ if (force || ~exist([sdir3 expname '_PFmaps.fig'],'file')) && strcmpi(mode_dim,'
         ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
-                if ~isempty(M(ii*nPlot+jj+1).PFmap)
+                if isfield(M(ii*nPlot+jj+1),'PFmap')
                     axes(ha(ii*nPlot+jj+1));
                     imagesc(M(ii*nPlot+jj+1).PFmap); 
                     axis off; 
@@ -199,20 +206,21 @@ if (force || ~exist([sdir3 expname '_PFmaps.fig'],'file')) && strcmpi(mode_dim,'
 end
 
 %% Load ROIs
-sdir4 = [data_locn 'Analysis/' mouseid '/individual file comparisons/' expname '_ROIs/'];
+sdir4 = [data_locn 'Analysis/' mouseid '/individual_file_comparisons/' expname '_ROIs/'];
     if ~exist(sdir4,'dir'), mkdir(sdir4); end
 
 if (force || ~exist([sdir4 expname '_ROIs.fig'],'file')) 
     for i = 1:Nfiles
         file = files(i,:);
         ROIfile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/CaImAn/' file '_segment_output.mat'];
-        c = load(ROIfile);
-        M(i).corr_image = c.corr_image;
-        M(i).masks = c.masks;
-        for j = 1:size(c.masks,3)
-            M(i).outline{:,:,j} = bwboundaries(c.masks(:,:,j));    % boundary of each ROI
+        if exist(ROIfile,'file')
+            c = load(ROIfile);
+            M(i).corr_image = c.corr_image;
+            M(i).masks = c.masks;
+            for j = 1:size(c.masks,3)
+                M(i).outline{:,:,j} = bwboundaries(c.masks(:,:,j));    % boundary of each ROI
+            end
         end
-
     end
     clear c
 
@@ -224,13 +232,15 @@ if (force || ~exist([sdir4 expname '_ROIs.fig'],'file'))
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
                 axes(ha(ii*nPlot+jj+1));
-                imagesc(M(ii*nPlot+jj+1).corr_image); colormap(gray); hold on;
-                for j = 1:size(M(ii*nPlot+jj+1).masks,3)
-                    plot(M(ii*nPlot+jj+1).outline{1,1,j}{1}(:,2),M(ii*nPlot+jj+1).outline{1,1,j}{1}(:,1),'w','Linewidth',1);
+                if isfield(M(ii*nPlot+jj+1),'outline')
+                    imagesc(M(ii*nPlot+jj+1).corr_image); colormap(gray); hold on;
+                    for j = 1:size(M(ii*nPlot+jj+1).masks,3)
+                        plot(M(ii*nPlot+jj+1).outline{1,1,j}{1}(:,2),M(ii*nPlot+jj+1).outline{1,1,j}{1}(:,1),'w','Linewidth',1);
+                    end
+                    hold off; axis off; 
+                    str = files(ii*nPlot+jj+1,:);
+                    title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
                 end
-                hold off; axis off; 
-                str = files(ii*nPlot+jj+1,:);
-                title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
             end
         end
         axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...

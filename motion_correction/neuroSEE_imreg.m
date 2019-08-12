@@ -22,8 +22,13 @@
 
 function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
                                                 imG, imR, data_locn, file, reffile, params, force )
-    
+                                            
     if nargin<7, force = 0; end
+    if isfield(params,'refChannel')
+        refChannel = params.refChannel;
+    else
+        refChannel = 'green';
+    end
     
     filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre_ref' reffile '/'];
     if ~exist( filedir, 'dir' ), mkdir( filedir ); end
@@ -60,7 +65,11 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
                             'init_batch', params.nonrigid.init_batch,...
                             'correct_bidir', params.nonrigid.correct_bidir);        
 
-        [ imG, imR, out_g, out_r, col_shift, shifts, ~, ~ ] = normcorre_2ch( imG, imR, params.nonrigid, template );
+        if strcmpi(refChannel,'green')
+            [ imG, imR, out_g, out_r, col_shift, shifts, ~, ~ ] = normcorre_2ch( imG, imR, params.nonrigid, template );
+        else
+            [ imR, imG, out_g, out_r, col_shift, shifts, ~, ~ ] = normcorre_2ch( imR, imG, params.nonrigid, template );
+        end
         
         % Save summary figure
         makeplot(out_g,out_r);

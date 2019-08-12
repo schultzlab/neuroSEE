@@ -1,6 +1,6 @@
 % Written by Ann Go
 
-function frun_imreg_expbatch( array_id, list, reffile, slacknotify, force )
+function frun_imreg_expbatch( array_id, list, reffile, refChannel, slacknotify, force )
 
 if nargin<6, force = false; end
 if nargin<5, slacknotify = false; end
@@ -37,6 +37,7 @@ end
 % image to be registered
 file = files(array_id,:);
 params.methods.mcorr_method = mcorr_method;
+params.refChannel = refChannel;
 
 if ~strcmpi(file,reffile)
 

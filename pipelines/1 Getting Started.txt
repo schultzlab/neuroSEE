@@ -1,12 +1,11 @@
 Notes: 
 1. 'file': All file names are in the format yyyymmdd_HH_MM_SS.
 2. 'expname'
-    e.g.    m62_linear
-            m62_fam1nov-fam1fam1rev
+    e.g.    m62_linear_day1-4
+            m62_fam1nov_fam1fam1rev
             m62_fam1fam1rev
-            m82_open
             m82_open_day1
-            m82_open_day23
+            m82_open_day2-3
     
 
 INDIVIDUAL FILE PROCESSING (single or batch)

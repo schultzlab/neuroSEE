@@ -4,6 +4,7 @@ function frun_imreg_expbatch( array_id, list, reffile, refChannel, slacknotify, 
 
 if nargin<6, force = false; end
 if nargin<5, slacknotify = false; end
+if nargin<4, refChannel = 'green'; end
 tic
 
 %% Load module folders and define data directory

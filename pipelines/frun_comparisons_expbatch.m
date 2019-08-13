@@ -14,8 +14,7 @@
 
 function frun_comparisons_expbatch( expname, list, force )
 
-if nargin<4, force = false; end
-if nargin<3, mode_dim = '1D'; end
+if nargin<3, force = false; end
     
 %% Load module folders and define data directory
 test = false;                   % flag to use one of smaller files in test folder)
@@ -61,7 +60,7 @@ if any([ force, ~exist([sdir1 expname '_GREEN_mcorr.fig'],'file'),...
         ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
-                if isfield(M(ii*nPlot+jj+1),'green')
+                if ~isempty(M(ii*nPlot+jj+1).green)
                     axes(ha(ii*nPlot+jj+1));
                     imagesc(M(ii*nPlot+jj+1).green.meanregframe./max(max(M(ii*nPlot+jj+1).green.meanregframe))); 
                     axis off; colormap(gray);
@@ -73,6 +72,8 @@ if any([ force, ~exist([sdir1 expname '_GREEN_mcorr.fig'],'file'),...
         axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
             'Visible','off','Units','normalized', 'clipping' , 'off');
             titletext = [expname ': GREEN channel'];
+            ind = strfind(titletext,'_');
+            titletext(ind) = '-';
             text('Position',[0.35 0.99], 'FontSize',14, 'String',titletext);
     end 
     fname_fig = [sdir1 expname '_GREEN_mcorr.fig'];
@@ -87,7 +88,7 @@ if any([ force, ~exist([sdir1 expname '_GREEN_mcorr.fig'],'file'),...
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
                 axes(ha(ii*nPlot+jj+1));
-                if isfield(M(ii*nPlot+jj+1),'red')
+                if ~isempty(M(ii*nPlot+jj+1).red)
                     imagesc(M(ii*nPlot+jj+1).red.meanregframe./max(max(M(ii*nPlot+jj+1).red.meanregframe))); 
                     axis off; colormap(gray);
                     str = files(ii*nPlot+jj+1,:);
@@ -98,6 +99,8 @@ if any([ force, ~exist([sdir1 expname '_GREEN_mcorr.fig'],'file'),...
         axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
             'Visible','off','Units','normalized', 'clipping' , 'off');
             titletext = [expname ': RED channel'];
+            ind = strfind(titletext,'_');
+            titletext(ind) = '-';
             text('Position',[0.35 0.99], 'FontSize',14, 'String',titletext);
     end 
     fname_fig = [sdir1 expname '_RED_mcorr.fig'];
@@ -132,7 +135,7 @@ if force || ~exist([sdir2 expname '_traj.fig'],'file')
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
                 axes(ha(ii*nPlot+jj+1));
-                if isfield(M(ii*nPlot+jj+1),trackdata)
+                if ~isempty(M(ii*nPlot+jj+1).trackdata)
                     plot(M(ii*nPlot+jj+1).trackdata.x,M(ii*nPlot+jj+1).trackdata.y); 
                     axis off; 
                     str = files(ii*nPlot+jj+1,:);
@@ -143,6 +146,8 @@ if force || ~exist([sdir2 expname '_traj.fig'],'file')
         axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
             'Visible','off','Units','normalized', 'clipping' , 'off');
             titletext = [expname ': trajectories'];
+            ind = strfind(titletext,'_');
+            titletext(ind) = '-';
             text('Position',[0.4 0.99], 'FontSize',14, 'String',titletext);
     end 
     fname_fig = [sdir2 expname '_traj.fig'];
@@ -186,7 +191,7 @@ if (force || ~exist([sdir3 expname '_PFmaps.fig'],'file')) && strcmpi(mode_dim,'
         ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
-                if isfield(M(ii*nPlot+jj+1),'PFmap')
+                if ~isempty(M(ii*nPlot+jj+1).PFmap)
                     axes(ha(ii*nPlot+jj+1));
                     imagesc(M(ii*nPlot+jj+1).PFmap); 
                     axis off; 
@@ -198,6 +203,8 @@ if (force || ~exist([sdir3 expname '_PFmaps.fig'],'file')) && strcmpi(mode_dim,'
         axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
             'Visible','off','Units','normalized', 'clipping' , 'off');
             titletext = [expname ': PF maps'];
+            ind = strfind(titletext,'_');
+            titletext(ind) = '-';
             text('Position',[0.35 0.99], 'FontSize',14, 'String',titletext);
     end 
     fname_fig = [sdir3 expname '_PFmaps.fig'];
@@ -233,7 +240,7 @@ if (force || ~exist([sdir4 expname '_ROIs.fig'],'file'))
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
                 axes(ha(ii*nPlot+jj+1));
-                if isfield(M(ii*nPlot+jj+1),'outline')
+                if ~isempty(M(ii*nPlot+jj+1).outline)
                     imagesc(M(ii*nPlot+jj+1).corr_image); colormap(gray); hold on;
                     for j = 1:size(M(ii*nPlot+jj+1).masks,3)
                         plot(M(ii*nPlot+jj+1).outline{1,1,j}{1}(:,2),M(ii*nPlot+jj+1).outline{1,1,j}{1}(:,1),'w','Linewidth',1);
@@ -247,6 +254,8 @@ if (force || ~exist([sdir4 expname '_ROIs.fig'],'file'))
         axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
             'Visible','off','Units','normalized', 'clipping' , 'off');
             titletext = [expname ': ROIs'];
+            ind = strfind(titletext,'_');
+            titletext(ind) = '-';
             text('Position',[0.35 0.99], 'FontSize',14, 'String',titletext);
     end 
     fname_fig = [sdir4 expname '_ROIs.fig'];

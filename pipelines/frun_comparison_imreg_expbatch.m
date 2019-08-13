@@ -77,7 +77,9 @@ if any([ force, ~exist([sdir expname '_GREEN_imreg_ref' reffile '.fig'],'file'),
         axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
             'Visible','off','Units','normalized', 'clipping' , 'off');
             titletext = [expname(5:end) ': GREEN channel registered to '...
-                             reffile(1:8) ' ' reffile(10:11) ':' reffile(13:14) ':' reffile(16:17)];
+                             reffile];
+            ind = strfind(titletext,'_');
+            titletext(ind) = '-';
             text('Position',[0.35 0.99], 'FontSize',14, 'String',titletext);
     end 
     fname_fig = [sdir expname '_GREEN_imreg_ref' reffile '.fig'];
@@ -102,8 +104,9 @@ if any([ force, ~exist([sdir expname '_GREEN_imreg_ref' reffile '.fig'],'file'),
             end
             axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
                 'Visible','off','Units','normalized', 'clipping' , 'off');
-                titletext = [mouseid '_' expname(5:end) ': RED channel registered to '...
-                                 reffile(1:8) ' ' reffile(10:11) ':' reffile(13:14) ':' reffile(16:17)];
+                titletext = [expname ': RED channel registered to ' reffile];
+                ind = strfind(titletext,'_');
+                titletext(ind) = '-';
                 text('Position',[0.35 0.99], 'FontSize',14, 'String',titletext);
         end 
         fname_fig = [sdir expname '_RED_imreg_ref' reffile '.fig'];

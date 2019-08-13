@@ -65,13 +65,15 @@ if any([ force, ~exist([sdir expname '_GREEN_imreg_ref' reffile '.fig'],'file'),
         ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
-                axes(ha(ii*nPlot+jj+1));
-                C = imfuse(M(ii*nPlot+jj+1).green.meanregframe./max(max(M(ii*nPlot+jj+1).green.meanregframe)),...
-                            templateG,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
-                imshow(C);
-                axis off; 
-                str = files(ii*nPlot+jj+1,:);
-                title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
+                if ~isempty(M(ii*nPlot+jj+1).green)
+                    axes(ha(ii*nPlot+jj+1));
+                    C = imfuse(M(ii*nPlot+jj+1).green.meanregframe./max(max(M(ii*nPlot+jj+1).green.meanregframe)),...
+                                templateG,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
+                    imshow(C);
+                    axis off; 
+                    str = files(ii*nPlot+jj+1,:);
+                    title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
+                end
             end
         end
         axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
@@ -93,13 +95,15 @@ if any([ force, ~exist([sdir expname '_GREEN_imreg_ref' reffile '.fig'],'file'),
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Nfiles
-                    axes(ha(ii*nPlot+jj+1));
-                    C = imfuse(M(ii*nPlot+jj+1).red.meanregframe./max(max(M(ii*nPlot+jj+1).red.meanregframe)),...
-                                templateR,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
-                    imshow(C);
-                    axis off; 
-                    str = files(ii*nPlot+jj+1,:);
-                    title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
+                    if ~isempty(M(ii*nPlot+jj+1).red)
+                        axes(ha(ii*nPlot+jj+1));
+                        C = imfuse(M(ii*nPlot+jj+1).red.meanregframe./max(max(M(ii*nPlot+jj+1).red.meanregframe)),...
+                                    templateR,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
+                        imshow(C);
+                        axis off; 
+                        str = files(ii*nPlot+jj+1,:);
+                        title([str(5:6) '-' str(7:8) ' ' str(10:11) ':' str(13:14)]);
+                    end
                 end
             end
             axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...

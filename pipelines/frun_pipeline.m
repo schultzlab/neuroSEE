@@ -27,7 +27,7 @@ force = [false;...              % (1) motion correction even if motion corrected
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
          false;...              % (5) tracking data extraction
-         true];                % (6) place field mapping
+         false];                % (6) place field mapping
 
 mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
@@ -212,6 +212,7 @@ if dofissa
         [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
     else
         fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
+        params.methods.dofissa = false;
         dofissa = false;
         dtsG = [];
         ddf_f = [];

@@ -87,8 +87,8 @@ if any([ force, ~exist([sdir1 expname '_GREEN_mcorr.fig'],'file'),...
         ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
-                axes(ha(ii*nPlot+jj+1));
                 if ~isempty(M(ii*nPlot+jj+1).red)
+                    axes(ha(ii*nPlot+jj+1));
                     imagesc(M(ii*nPlot+jj+1).red.meanregframe./max(max(M(ii*nPlot+jj+1).red.meanregframe))); 
                     axis off; colormap(gray);
                     str = files(ii*nPlot+jj+1,:);
@@ -134,8 +134,8 @@ if force || ~exist([sdir2 expname '_traj.fig'],'file')
         ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
-                axes(ha(ii*nPlot+jj+1));
                 if ~isempty(M(ii*nPlot+jj+1).trackdata)
+                    axes(ha(ii*nPlot+jj+1));
                     plot(M(ii*nPlot+jj+1).trackdata.x,M(ii*nPlot+jj+1).trackdata.y); 
                     axis off; 
                     str = files(ii*nPlot+jj+1,:);
@@ -239,8 +239,8 @@ if (force || ~exist([sdir4 expname '_ROIs.fig'],'file'))
         ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Nfiles
-                axes(ha(ii*nPlot+jj+1));
                 if ~isempty(M(ii*nPlot+jj+1).outline)
+                    axes(ha(ii*nPlot+jj+1));
                     imagesc(M(ii*nPlot+jj+1).corr_image); colormap(gray); hold on;
                     for j = 1:size(M(ii*nPlot+jj+1).masks,3)
                         plot(M(ii*nPlot+jj+1).outline{1,1,j}{1}(:,2),M(ii*nPlot+jj+1).outline{1,1,j}{1}(:,1),'w','Linewidth',1);

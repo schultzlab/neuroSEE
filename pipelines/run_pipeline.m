@@ -56,7 +56,7 @@ end
 %% USER: Specify file
 
 % file = '20190406_20_38_41'; 
-file = '20190302_10_13_57'; 
+file = '20181013_11_54_43'; 
 
 % Send Ann slack message if processing has started
 slacktext = [file ': processing started'];

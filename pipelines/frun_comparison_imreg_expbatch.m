@@ -2,9 +2,9 @@ function frun_comparison_imreg_expbatch( expname, reffile, list, mcorr_method, f
 
 % e.g. expname: 'm62_fam1nov_fam1fam1rev'
 %               'm62_fam1fam1rev'
-%               'm70_fam1_day1-5'
-%               'm82_open_day1-2'
-%               'm82_open_day1'
+%               'm70_fam1_s1-5'
+%               'm82_open_s1-2'
+%               'm82_open_s1'
 
 if nargin<5, force = false; end
 if nargin<4, mcorr_method = 'normcorre'; end
@@ -46,10 +46,17 @@ if any([ force, ~exist([sdir expname '_GREEN_imreg_ref' reffile '.fig'],'file'),
         if ~strcmpi(file,reffile)
             fname = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre_ref' reffile '/'...
                      file '_imreg_ref' reffile '_output.mat'];
-            c = load(fname);
-            M(i).green = c.green;
-            if isfield(c,'red')
-                M(i).red = c.red;
+            if exist(fname,'file')
+                c = load(fname);
+                M(i).green = c.green;
+                if isfield(c,'red')
+                    M(i).red = c.red;
+                else
+                    M(i).red = [];
+                end
+            else
+                M(i).green = [];
+                M(i).red = [];
             end
         else
             M(i).green.meanregframe = templateG;

@@ -6,7 +6,7 @@
 % envname: Environment name which is a subset of expname
 %               expname             envname      
 %       e.g. 'm62_fam1fam1rev'      'fam1rev'
-%            'm82_open_day1'        ''
+%            'm82_open_s1'        ''
 
 function frun_fissa2maps_expbatch( expname, envname, list, reffile, force )
 

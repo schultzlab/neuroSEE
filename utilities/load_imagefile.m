@@ -52,11 +52,19 @@ function [ imG, imR ] = load_imagefile( data_locn, file, force, suffix, params )
             % load raw and create tif stacks
             if exist( fname_raw, 'file' )
                 options.skipN = 2; %skip every other frame
-                if force || ~exist(fname_tif_gr,'file')
+                if force 
                     imG = read_file( fname_raw, 1, Inf, options );
                     writeTifStack( imG, fname_tif_gr );
+                    imR = read_file( fname_raw, 2, Inf, options );
+                    writeTifStack( imR, fname_tif_red );
+                end 
+                if ~exist(fname_tif_gr,'file')
+                    imG = read_file( fname_raw, 1, Inf, options );
+                    writeTifStack( imG, fname_tif_gr );
+                    imR = read_file( fname_tif_red ); 
                 end
-                if force || ~exist(fname_tif_red,'file')
+                if  ~exist(fname_tif_red,'file')
+                    imG = read_file( fname_tif_gr );
                     imR = read_file( fname_raw, 2, Inf, options );
                     writeTifStack( imR, fname_tif_red );
                 end

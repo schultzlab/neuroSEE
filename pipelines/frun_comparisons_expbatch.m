@@ -5,8 +5,8 @@
 %           /...thefarm2/CrazyEights/AD_2PCa/Analysis/m##/individual file comparisons/
 %   e.g.    'm62_fam1nov_fam1fam1rev' - compares all files in fam1nov and
 %                                           fam1fam1rev experiments
-%           'm79_fam1_day1-5'
-%           'm86_open_day1-2'
+%           'm79_fam1_s1-5'
+%           'm86_open_s1-2'
 %
 % list   :  File name of text file containing filenames of images to be compared.
 %           Typically in the format 'list_expname.txt' but may be shortened to 'list_m##.txt'

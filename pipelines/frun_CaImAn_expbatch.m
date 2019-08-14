@@ -20,9 +20,7 @@ end
 % Send Ann slack message if processing has started
 if slacknotify
     slacktext = [expname ': starting CaImAn'];
-    SendSlackNotification('https://hooks.slack.com/services/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', ...
-       slacktext, '@m.go', ...
-       [], [], [], []);   
+    neuroSEE_slackNotify( slacktext );
 end
 
 
@@ -102,9 +100,7 @@ close(fig);
 % Send Ann slack message if processing has finished
 if slacknotify
     slacktext = [expname ': CaImAn FINISHED. No errors!'];
-    SendSlackNotification('https://hooks.slack.com/services/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', ...
-       slacktext, '@m.go', ...
-       [], [], [], []);   
+    neuroSEE_slackNotify( slacktext );
 end
 
 t = toc;

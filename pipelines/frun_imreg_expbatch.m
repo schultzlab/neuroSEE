@@ -30,9 +30,7 @@ files = extractFilenamesFromTxtfile( listfile );
 if slacknotify
     if array_id == 1
         slacktext = [list(6:end-4) ': registering 1 of ' num2str(size(files,1)) 'files'];
-        SendSlackNotification('https://hooks.slack.com/services/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', ...
-           slacktext, '@m.go', ...
-           [], [], [], []);   
+        neuroSEE_slackNotify( slacktext );
     end
 end
 
@@ -93,9 +91,7 @@ if ~strcmpi(file,reffile)
     if slacknotify
         if array_id == size(files,1)
             slacktext = [list(6:end-4) ': registering ' num2str(size(files,1)) ' of ' num2str(size(files,1)) 'files'];
-            SendSlackNotification('https://hooks.slack.com/services/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', ...
-               slacktext, '@m.go', ...
-               [], [], [], []);   
+            neuroSEE_slackNotify( slacktext );
         end
     end
     

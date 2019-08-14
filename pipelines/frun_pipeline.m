@@ -56,9 +56,7 @@ end
 
 % Send Ann slack message if processing has started
 slacktext = [file ': processing started'];
-SendSlackNotification('https://hooks.slack.com/services/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', ...
-   slacktext, '@m.go', ...
-   [], [], [], []);    
+neuroSEE_slackNotify( slacktext );
 
 
 %% USER: Set parameters (if not using default)
@@ -300,8 +298,6 @@ cprintf(str)
 
 % Send Ann slack message if processing has finished
 slacktext = [file ': FINISHED in' num2str(round(t/3600,2)) ' hrs. No errors!'];
-SendSlackNotification('https://hooks.slack.com/services/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', ...
-   slacktext, '@m.go', ...
-   [], [], [], []);    
+neuroSEE_slackNotify( slacktext );
 
 end

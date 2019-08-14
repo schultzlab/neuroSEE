@@ -57,9 +57,7 @@ end
 % Send Ann slack message 
 if array_id == 1 
     slacktext = [list(1:end-5) ': processing 1st file'];
-    SendSlackNotification('https://hooks.slack.com/services/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', ...
-       slacktext, '@m.go', ...
-       [], [], [], []);    
+    neuroSEE_slackNotify( slacktext );
 end
 
 %% Image file
@@ -324,9 +322,7 @@ end
 % Send Ann slack message 
 if array_id == size(files,1)
     slacktext = [list(1:end-5) ': processing LAST file'];
-    SendSlackNotification('https://hooks.slack.com/services/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', ...
-       slacktext, '@m.go', ...
-       [], [], [], []);    
+    neuroSEE_slackNotify( slacktext );
 end
 
 t = toc;

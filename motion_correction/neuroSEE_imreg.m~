@@ -73,7 +73,7 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
         if strcmpi(refChannel,'green')
             [ imG, imR, out_g, out_r, col_shift, shifts, ~, ~ ] = normcorre_2ch( imG, imR, params.nonrigid, template_ch1 );
         else
-            [ imR, imG, out_r, out_g, col_shift, shifts, ~, ~ ] = normcorre_2ch( imR, imG, params.nonrigid, template_ch1 );
+            [ imR, imG, out_r, out_g, col_shift, shifts, ~, ~ ] = normcorre_2ch( imR, imG, params.nonrigid, template_ch2 );
         end
         
         % Save summary figure
@@ -106,6 +106,8 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
     
     function makeplot(out_g,out_r)
         fh = figure; 
+        if strcmp(refChannel,'green')
+            template = template
         subplot(221), 
             imagesc( out_g.meanframe ); 
             axis image; axis off; colormap(gray);

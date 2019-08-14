@@ -42,15 +42,8 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
     % template file
     refdir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_normcorre/'];
     c = load([refdir reffile '_mcorr_output.mat']);
-    if strcmp(refChannel,'green')
-        template_ch1 = c.template;
-        template_ch2 = c.red.meanregframe;
-        clear c        
-    else
-        template_ch1 = c.red.meanregframe;
-        template_ch2 = c.template;
-        clear c
-    end
+    template_g = c.green.meanregframe;
+    template_r = c.red.meanregframe;
     
     if any([ force, ~exist(fname_tif_gr,'file'), ~exist(fname_tif_red,'file'), ~exist(fname_mat_mcorr,'file') ])
         fprintf( '%s: Starting image registration to %s\n', file, reffile );
@@ -71,9 +64,9 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
                             'init_batch', params.nonrigid.init_batch);        
 
         if strcmpi(refChannel,'green')
-            [ imG, imR, out_g, out_r, col_shift, shifts, ~, ~ ] = normcorre_2ch( imG, imR, params.nonrigid, template_ch1 );
+            [ imG, imR, out_g, out_r, col_shift, shifts, ~, ~ ] = normcorre_2ch( imG, imR, params.nonrigid, template_g );
         else
-            [ imR, imG, out_r, out_g, col_shift, shifts, ~, ~ ] = normcorre_2ch( imR, imG, params.nonrigid, template_ch2 );
+            [ imR, imG, out_r, out_g, col_shift, shifts, ~, ~ ] = normcorre_2ch( imR, imG, params.nonrigid, template_r );
         end
         
         % Save summary figure
@@ -84,7 +77,8 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
         mcorr_output.red = out_r;
         mcorr_output.shifts = shifts;
         mcorr_output.col_shift = col_shift;
-        mcorr_output.template = template_ch1;
+        mcorr_output.template_g = template_g;
+        mcorr_output.template_r = template_r;
         mcorr_output.params = params.nonrigid;
         save(fname_mat_mcorr,'-struct','mcorr_output');
 
@@ -112,16 +106,16 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
             titletext = ['Non-motion-corrected ' file(1:8) '-' file(10:11) '-' file(13:14)];
             title(titletext);
         subplot(222), 
-            imagesc( template_ch1 ); 
+            imagesc( template_g ); 
             axis image; axis off; colormap(gray); 
             titletext = ['Template: ' reffile(1:8) '-' reffile(10:11) '-' reffile(13:14)];
             title(titletext);
         subplot(223), 
-            C1 = imfuse( out_g.meanframe, template_ch1, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
+            C1 = imfuse( out_g.meanframe, template_g, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
             imshow(C1);  
             title( 'Before registration' );
         subplot(224), 
-            C2 = imfuse(out_g.meanregframe,template_ch1,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
+            C2 = imfuse(out_g.meanregframe,template_g,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
             imshow(C2); 
             title( 'After registration' );
         figname = [filedir file '_green_imreg_ref' reffile '_summary'];
@@ -136,16 +130,16 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
             titletext = ['Non-motion-corrected ' file(1:8) '-' file(10:11) '-' file(13:14)];
             title(titletext);
         subplot(222), 
-            imagesc( template_ch2 ); 
+            imagesc( template_r ); 
             axis image; axis off; colormap(gray); 
             titletext = ['Template: ' reffile(1:8) '-' reffile(10:11) '-' reffile(13:14)];
             title(titletext);
         subplot(223), 
-            C1 = imfuse( out_r.meanframe, template_ch2, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
+            C1 = imfuse( out_r.meanframe, template_r, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
             imshow(C1);  
             title( 'Before registration' );
         subplot(224), 
-            C2 = imfuse(out_r.meanregframe,template_ch2,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
+            C2 = imfuse(out_r.meanregframe,template_r,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
             imshow(C2); 
             title( 'After registration' );
         figname = [filedir file '_red_imreg_ref' reffile '_summary'];

@@ -30,7 +30,7 @@ nPlot = nCol*nRow;
 % template file
 filedir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_' mcorr_method '/'];
 c = load([filedir reffile '_mcorr_output.mat']);
-templateG = c.template./max(max(c.template));
+templateG = c.green.meanregframe./(max(max(c.green.meanregframe)));
 templateR = c.red.meanregframe./(max(max(c.red.meanregframe)));
 clear c
 

@@ -48,6 +48,16 @@ function [ imG, imR ] = load_imagefile( data_locn, file, force, suffix, params )
             fname_raw = [ dir_2P file '_2P_XYTZ.raw' ];
         end
         
+        if ~any([ force, ~exist(fname_tif_gr,'file'), ~exist(fname_tif_red,'file') ])
+            imG = read_file( fname_tif_gr );
+            imR = read_file( fname_tif_red ); 
+            if any( size(imG) ~= size(imR) )
+                force = true;
+            else
+                err = 0;
+            end
+        end
+        
         if any([ force, ~exist(fname_tif_gr,'file'), ~exist(fname_tif_red,'file') ]) 
             % load raw and create tif stacks
             if exist( fname_raw, 'file' )
@@ -62,11 +72,20 @@ function [ imG, imR ] = load_imagefile( data_locn, file, force, suffix, params )
                     imG = read_file( fname_raw, 1, Inf, options );
                     writeTifStack( imG, fname_tif_gr );
                     imR = read_file( fname_tif_red ); 
+                    if any( size(imG) ~= size(imR) )
+                        imR = read_file( fname_raw, 2, Inf, options );
+                        writeTifStack( imR, fname_tif_red );
+                    end
                 end
                 if  ~exist(fname_tif_red,'file')
                     imG = read_file( fname_tif_gr );
                     imR = read_file( fname_raw, 2, Inf, options );
                     writeTifStack( imR, fname_tif_red );
+                    if any( size(imG) ~= size(imR) )
+                        imG = read_file( fname_raw, 1, Inf, options );
+                        writeTifStack( imG, fname_tif_gr );
+                    end
+
                 end
                 % Note: This is somehow faster than reading entire raw file, saving half of
                 % it as imG, the other half as imR and then creating tif stacks.
@@ -76,10 +95,6 @@ function [ imG, imR ] = load_imagefile( data_locn, file, force, suffix, params )
                 cprintf( 'Error', str )
                 imG = []; imR = [];
             end
-        else
-            imG = read_file( fname_tif_gr );
-            imR = read_file( fname_tif_red ); 
-            err = 0;
         end
     else % if there's a suffix '_mcorr'
         % motion corrected tif stacks are in the Processed directory

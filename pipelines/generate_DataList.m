@@ -31,15 +31,28 @@ else
    mDataList_micenum = 0;
 end
 
+if strcmp( mice, 'all' )
+   logbookdir  = fullfile( data_locn, 'Digital_Logbook', 'byAnimal' );
+   lognames  = dir( logbookdir );
+   log_micenum = 0;
+   for li = 1:length(lognames)
+       m = lognames(li).name;
+       if length(filename) > 2 && m(1)=='m'
+           log_micenum = log_micenum + 1;
+           mice{log_micenum} = m(1:end-5); 
+       end
+   end
+end
+
 % if mouse is not on the list, extract recorded mouse experiment list from
 % log book, Gcamp directory and Neurotar directories
-for i = 1:numel(mice)
-    mouse = mice{i};
+for mi = 1:numel(mice)
+    mouse = mice{mi};
     if ~any( strcmp( mDataList_mousenames, mouse ) )
        % Get mouse info
        try
-          miceDataList{i} = identifyMouseRecordingFiles( data_locn, mouse );
-          mDataList{ mDataList_micenum + 1 } = miceDataList{i};
+          miceDataList{mi} = identifyMouseRecordingFiles( data_locn, mouse );
+          mDataList{ mDataList_micenum + 1 } = miceDataList{mi};
           mDataList_micenum = mDataList_micenum + 1;
        catch ME
           str = sprintf('Error getting mouse experiment details (%s, line %d, function %s)\n',...
@@ -47,8 +60,19 @@ for i = 1:numel(mice)
           return;
        end  
     else
-        ind = find( strcmp(mDataList_mousenames, mice) );
-        miceDataList{i} = mDataList{ ind };
+        miceDataList{mi} = mDataList{  strcmp(mDataList_mousenames, mice)  };
+    end
+    mLi = 0; expLi = 0; envLi = 0;
+    for ei = 1:numel(miceDataList{mi}.exp)
+        for ii = 1:length(miceDataList{mi}.exp{ei}.imgtimes)
+            mLi = mLi + 1;
+            mList(mLi) = miceDataList{mi}.exp{ei}.imgtimes(ii);
+            expLi = expLi + 1;
+            expList(expLi) = miceDataList{mi}.exp{ei}.imgtimes(ii);
+        end
     end
 end
+
+
+save(out_file,'mDataList');
 

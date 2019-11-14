@@ -104,7 +104,7 @@ if ~default
     % PF mapping
         params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video [default: 1]
         params.PFmap.histsmoothFac = 7;       % Gaussian smoothing window for histogram extraction        [default: 7]
-        params.PFmap.Vthr = 10;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
+        params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                               %                              Neurotar uses 8 mm/s
 end
 

@@ -23,8 +23,11 @@ data_locn = '/Volumes/thefarm2/live/CrazyEights/AD_2PCa/';
 comp = 'mac';
 if ~exist(data_locn,'dir')
     data_locn = '/Volumes/RDS/project/thefarm2/live/CrazyEights/AD_2PCa/';
-    comp = 'mac';
 end
+if ~exist(data_locn,'dir')
+    data_locn = '/Volumes/mgo/projects/thefarm2/live/CrazyEights/AD_2PCa/';
+end
+
 % Works in linuxbox
 % REPLACE mgo WITH APPROPRIATE USERNAME
 if ~exist(data_locn,'dir')

@@ -6,8 +6,8 @@ function [A_union, assignments, matchings] = register_multisession(A, options, t
 %
 % Register ROIs across multiple sessions using an intersection over union metric
 % and the Hungarian algorithm for optimal matching. Registration occurs by 
-% aligning session 1 to session 2, keeping the union of the matched and 
-% non-matched components to register with session 3 and so on.
+% aligning session 2 to session 1, keeping the union of the matched and 
+% non-matched components. Then session 3 is aligned to 1 and so on.
 %
 % INPUTS:
 % A:                      cell array with spatial components from each session
@@ -31,7 +31,7 @@ function [A_union, assignments, matchings] = register_multisession(A, options, t
 %                               pairs the ROIs from session # 1 are kept)
 % assignments:            matrix of size # of total distinct components x # sessions
 %                               element [i,j] = k if component k from session j is mapped to component
-%                               i in the A_union matrix. If there is no much the value is NaN
+%                               i in the A_union matrix. If there is no match the value is NaN
 % matchings:              cell array. Each entry matchings{i}(j) = k means that component j from session
 %                               i is represented by component k in A_union
 
@@ -52,7 +52,7 @@ if ~isfield(options,'dist_maxthr') || isempty(options.maxthr); options.dist_maxt
 if ~isfield(options,'dist_exp') || isempty(options.dist_exp); options.dist_exp = 1; end
 if ~isfield(options,'dist_thr') || isempty(options.dist_thr); options.dist_thr = 0.5; end
 if ~isfield(options,'dist_overlap_thr') || isempty(options.dist_overlap_thr); options.dist_overlap_thr = 0.8; end
-options.plot_reg = false;
+options.plot_reg = true;
 
 n_sessions = length(A);
 if ~align_flag
@@ -69,14 +69,25 @@ options_mc.correct_bidir = false;
 A_union = A{1};
 matchings{1} = 1:size(A{1},2);
 
+% Ann's note: This is the original version, but this is wrong. It aligns 1
+% to 2, then the union to 3, then the union to 4, etc. And in the case of
+% matched pairs between 1 and 2, it keeps 2!
+% for session = 2:n_sessions
+%    [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_un] = register_ROIs(A{session},A_union,options,templates{session},templates{session-1},options_mc);
+%    A_union = A_un;
+%    A_union(:, matched_ROIs(:,2)) = A{session}(:, matched_ROIs(:,1));
+%    A_union = [A_union, A{session}(:,nonmatched_1)];
+%    new_match = zeros(1,size(A{session},2));
+%    new_match(matched_ROIs(:,1)) = matched_ROIs(:,2);
+%    new_match(nonmatched_1) = size(A_un,2)+1:size(A_union,2);
+%    matchings{session} = new_match;
+% end
+
 for session = 2:n_sessions
-   [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_un] = register_ROIs(A{session},A_union,options,templates{session},templates{session-1},options_mc);
-   A_union = A_un;
-   A_union(:, matched_ROIs(:,2)) = A{session}(:, matched_ROIs(:,1));
-   A_union = [A_union, A{session}(:,nonmatched_1)];
+   [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A_union,A{session},options,templates{1},templates{session},options_mc);
    new_match = zeros(1,size(A{session},2));
-   new_match(matched_ROIs(:,1)) = matched_ROIs(:,2);
-   new_match(nonmatched_1) = size(A_un,2)+1:size(A_union,2);
+   new_match(matched_ROIs(:,2)) = matched_ROIs(:,1);
+   new_match(nonmatched_2) = size(A_union,2)-numel(nonmatched_2)+1 : size(A_union,2);
    matchings{session} = new_match;
 end
 

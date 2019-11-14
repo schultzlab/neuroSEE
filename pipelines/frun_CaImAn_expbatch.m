@@ -90,7 +90,7 @@ for i = 1:size(files,1)
     savefig(fig,[sdir expname '_ref' reffile '_ROIs']);
     saveas(fig,[sdir expname '_ref' reffile '_ROIs'],'png');
 end
-sdir = [data_locn 'Analysis/' expname(1:3) '/experiment_ROIs/' expname '_ref' reffile '/'];
+sdir = [data_locn 'Analysis/' expname(1:3) '/summaries based on registered images/experiment_ROIs/' expname '_ref' reffile '/'];
 if ~exist(sdir,'dir'), mkdir(sdir); end
 sname = [sdir expname '_ref' reffile '_masks.mat'];
 save(sname,'masks','corr_image');

@@ -42,7 +42,7 @@ params.ROIsegment = rmfield(params.ROIsegment,fields);
 params = rmfield(params,'nonrigid');
 
 mouseid = expname(1:3);
-sdir = [data_locn 'Analysis/' mouseid '/environment_PFmaps/' expname str_env '_ref' reffile '/'];
+sdir = [data_locn 'Analysis/' mouseid '/summaries based on registered images/environment_PFmaps/' expname str_env '_ref' reffile '/'];
 if ~exist(sdir,'dir'), mkdir(sdir); end
 
 % files

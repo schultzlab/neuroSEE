@@ -4,7 +4,7 @@ function [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A
 %   [MATCHED_ROIS, NONMATCHED_1, NONMATCHED_2, A2] = REGISTER_ROIS( ...
 %         A1, A2, OPTIONS, TEMPLATE1, TEMPLATE2, OPTIONS_MC)
 %
-% Register ROIs from two different sessions. Before registration the ROIs 
+% Register ROIs from two different sessions. Before registration of ROIs 
 % the displacement between the FOVs of session1 and session2 is calculated
 % and the ROIs from session 2 are aligned to the FOV of session 1.
 %

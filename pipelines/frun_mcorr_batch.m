@@ -44,7 +44,6 @@ file = files(array_id,:);
 %% USER: Set parameters (if not using default)
 
 if ~default
-params.fr = 30.9;                                    % imaging frame rate [default: 30.9]
     % motion correction
         % neurosee method
         if strcmpi(mcorr_method,'fftRigid')
@@ -108,12 +107,20 @@ if default
 end
 
 
-%% Check if file has been processed. If not, continue processing unless forced to overwrite 
-% existing processed data
-% check(1:6) check for existing data in processing steps 1-6
-% check(7) checks for existing mat file pooling all processed data for file
+%% Check if file has been processed. 
 
-check = checkforExistingProcData(data_locn, file, params);
+dir_proc = [data_locn 'Data/' file(1:8) '/Processed/' file '/'];
+        
+check = 0;
+if exist(dir_proc,'dir')
+    dir_mcorr = [dir_proc 'mcorr_' mcorr_method '/'];
+    if all( [exist([dir_mcorr file '_2P_XYT_green_mcorr.tif'],'file'),...
+             exist([dir_mcorr file '_2P_XYT_red_mcorr.tif'],'file'),...
+             exist([dir_mcorr file '_mcorr_output.mat'],'file')] )
+        check = 1;
+    end
+end
+
 
 %% Motion correction
 % Saved in file folder: motion corrected tif files
@@ -128,6 +135,7 @@ check = checkforExistingProcData(data_locn, file, params);
 
 if force || ~check(1)
     [imG,imR] = load_imagefile( data_locn, file );
+    params.methods.mcorr_method = mcorr_method;
     [~, ~, ~, ~] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force );
 else 
     fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);

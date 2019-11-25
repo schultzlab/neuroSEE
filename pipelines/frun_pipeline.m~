@@ -147,7 +147,7 @@ end
 % check(1:6) check for existing data in processing steps 1-6
 % check(7) checks for existing mat file pooling all processed data for file
 
-check = checkforExistingProcData(data_locn, file, params);
+check = checkforExistingProcData(data_locn, file, mcorr_method, segment_method, dofissa);
 if force(1)
     force([2:4,6]) = true; % because redoing motion correction step affects all succeeding steps except step 5
 elseif force(2)
@@ -209,7 +209,7 @@ if dofissa
     if MatlabVer > 2017
         [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
     else
-        fprintf('%s: Higher Matlab version required, skipping FISSA.\n', file);
+        fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
         params.methods.dofissa = false;
         dofissa = false;
         dtsG = [];

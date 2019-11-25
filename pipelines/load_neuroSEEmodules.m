@@ -5,6 +5,8 @@
 
 function [data_locn,comp,err] = load_neuroSEEmodules(test)
 
+if nargin < 1, test = false; end
+
 %% Add module folders
 addpath(genpath('../behaviour'));
 addpath(genpath('../motion_correction'));

@@ -156,7 +156,7 @@ end
 % check(1:6) check for existing data in processing steps 1-6
 % check(7) checks for existing mat file pooling all processed data for file
 
-check = checkforExistingProcData(data_locn, file, mcorr_method, segment_method, dofissa);
+check = checkforExistingProcData(data_locn, file, params);
 if force(1)
     force([2:4,6]) = true; % because redoing motion correction step affects all succeeding steps except step 5
 elseif force(2)

@@ -108,28 +108,50 @@ activespk_asd = activespk(asd.pcIdx,:);
 Npcs = length(hist.pcIdx);
 Npcs_asd = length(asd.pcIdx);
 
-% Calculate PF maps per trial
-dthr = 100;
+% Calculate spike maps per trial
+dthr = 10;
 for ii = 1:Ncells
-    idx_temp = find( abs(diff(activephi{ii})) > dthr );
-    for k = 1:numel(idx_temp)-1
-        if idx_temp(k+1) == idx_temp(k)+1
-            idx_temp(k) = 0;
+    % find the delineations for the video: find t = 0
+    idx_file = find(diff(activet{ii}) < 0);
+    idx_file = [0; idx_file; numel(activet{ii})] +1; 
+    p = bin_phi{ii};
+    s = activespk{ii};
+    Ntrial = 1;
+    ytick_files{ii} = 1;
+    
+    for jj = 1:numel(idx_file)-1
+        % find the delineations per trial (i.e. loop)
+        p_tr = p(idx_file(jj):idx_file(jj+1)-1);
+        idx_tr = find( abs(diff(p_tr)) > dthr );
+        for k = 1:numel(idx_tr)-1
+            if idx_tr(k+1) == idx_tr(k)+1
+                idx_tr(k) = 0;
+            end
+        end
+        idx_tr = idx_tr( idx_tr > 0 );
+        
+        for k = 1:numel(idx_tr)-1
+            phi{ii}{Ntrial} = p_tr(idx_tr(k)+1:idx_tr(k+1));
+            spike{ii}{Ntrial} = s(idx_tr(k)+1:idx_tr(k+1));
+            Ntrial = Ntrial + 1;
+        end
+        
+        Ntrials(ii,jj) = numel(idx_tr)-1;
+        if jj == numel(idx_file)-1
+            ytick_files{ii} = [ytick_files{ii}; sum(Ntrials(ii,1:jj))];
+        else
+            ytick_files{ii} = [ytick_files{ii}; sum(Ntrials(ii,1:jj))+1];
         end
     end
-    phi_bound{ii} = idx_temp( idx_temp > 0 );
 end
 
 for ii = 1:Ncells
-    z = activespk{ii};
-    binPhi = bin_phi{ii};
-    Ntrials = numel(phi_bound{ii})-1;
-    for tr = 1:Ntrials
-        phi = binPhi(phi_bound{ii}(tr)+1:phi_bound{ii}(tr+1));
-        spike = z(phi_bound{ii}(tr)+1:phi_bound{ii}(tr+1));
+    for tr = 1:numel(phi{ii})
+        phi_tr = phi{ii}{tr};
+        spike_tr = spike{ii}{tr};
 
         for n = 1:Nbins
-            spkMap_pertrial{ii}(tr,n) = sum(spike(phi == n));
+            spkMap_pertrial{ii}(tr,n) = sum(spike_tr(phi_tr == n));
         end
 
         normspkMap_pertrial{ii}(tr,:) = spkMap_pertrial{ii}(tr,:)./max(spkMap_pertrial{ii}(tr,:));
@@ -140,11 +162,13 @@ end
 if ~isempty(hist.pcIdx)
     hist.spkMap_pertrial = spkMap_pertrial(hist.pcIdx);
     hist.normspkMap_pertrial = normspkMap_pertrial(hist.pcIdx);
+    hist.ytick_files = ytick_files(hist.pcIdx);
 end
 
 if ~isempty(asd.pcIdx)
     asd.spkMap_pertrial = spkMap_pertrial(asd.pcIdx);
     asd.normspkMap_pertrial = normspkMap_pertrial(asd.pcIdx);
+    asd.ytick_files = ytick_files(asd.pcIdx);
 end
 
 
@@ -248,6 +272,7 @@ activeData.spikes_hist = activespk_hist;
 activeData.spikes_asd = activespk_asd; 
 activeData.spkMap_pertrial = spkMap_pertrial;
 activeData.normspkMap_pertrial = normspkMap_pertrial;
+activeData.ytick_files = ytick_files;
 
 end
 

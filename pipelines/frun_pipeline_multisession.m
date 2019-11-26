@@ -1,9 +1,10 @@
-function frun_pipeline_multisession( list, Nfiles )
+function frun_pipeline_multisession( list )
 
 % Written by Ann Go
 % 
 % This script runs the complete data processing pipeline for a list of
-% image files. Processing steps for each image file include:
+% image files typically corresponding to one experiment. Processing steps
+% for each file include:
 % (1) motion correction (and dezippering)
 % (2) roi segmentation 
 % (3) neuropil decontamination and timeseries extraction
@@ -21,7 +22,6 @@ function frun_pipeline_multisession( list, Nfiles )
 %
 % Matlab version requirement: neuroSEE_neuropilDecon requires at least Matlab R2018
 
-if nargin<2, subset = false; else, subset = true; end
 
 %% SETTINGS
 
@@ -40,13 +40,16 @@ force = [false;...              % (1) motion correction even if motion corrected
          false;...              % (7) spike/tracking data consolidation across images
          false];                % (8) place field mapping
 
-mcorr_method = 'normcorre';    % values: [normcorre, normcorre-nr, fftRigid] 
-                                    % CaImAn NoRMCorre method: r-nr rigid then nonrigid, nr - nonrigid
+mcorr_method = 'normcorre';    % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
+                                    % CaImAn NoRMCorre method: 
+                                    %   normcorre (rigid + nonrigid) 
+                                    %   normcorre-r (rigid),
+                                    %   normcorre-nr (nonrigid), 
                                     % fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % values: [ABLE,CaImAn]    
 dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
-slacknotify = false;            % flag to send Ann slack notification re start and end of processing
+slacknotify = true;            % flag to send Ann slack notification re start and end of processing
 
             % Not user-defined
             % Load module folders and define data directory
@@ -79,7 +82,7 @@ if ~default
             params.fftRigid.redoT = 300;             % no. of frames at start of file to redo motion correction for after 1st iteration [default: 300]
         end
         % NoRMCorre-rigid
-        if strcmpi(mcorr_method,'normcorre-r-nr')
+        if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
             params.rigid = NoRMCorreSetParms(...
                 'd1',512,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
                 'd2',512,...        % length of image [default: 512] *value from actual image    
@@ -88,8 +91,8 @@ if ~default
                 'us_fac',50,...             % default: 50
                 'init_batch',200);          % default: 200
         end
-        % NoRMCorre-rigid
-        if strcmpi(mcorr_method,'normcorre-nr')
+        % NoRMCorre-nonrigid
+        if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
             params.nonrigid = NoRMCorreSetParms(...
                 'd1',512,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
                 'd2',512,...        % length of image [default: 512] *value from actual image    
@@ -98,7 +101,7 @@ if ~default
                 'overlap_post',[32,32],...  % default: [32,32]
                 'iter',1,...                % default: 1
                 'use_parallel',false,...    % default: false
-                'max_shift',50,...          % default: 50
+                'max_shift',15,...          % default: 50
                 'mot_uf',4,...              % default: 4
                 'bin_width',200,...         % default: 200
                 'max_dev',3,...             % default: 3
@@ -150,7 +153,7 @@ tic
 
 listfile = [data_locn 'Digital_Logbook/lists/' list];
 files = extractFilenamesFromTxtfile(listfile);
-if subset, Nsessions = Nfiles; else, Nsessions = size(files,1); end
+Nsessions = size(files,1); 
 
 % MouseID and experiment name
 [ mouseid, expname ] = find_mouseIDexpname(list);
@@ -176,7 +179,7 @@ end
 
 % Check for existing processed data
 check_list = checkforExistingProcData(data_locn, list, params);
-if check_list(3)
+if check_list(4)
     fprintf('%s: Processed data found. Skipping processing\n', list);
     return
 end
@@ -189,6 +192,10 @@ for i = 1:Nsessions
     
     % Check for existing processed data for specific file
     check_file = checkforExistingProcData(data_locn, file, params);
+    if check(1:5)
+        fprintf('%s: Processed data found. Skipping processing\n', file);
+        return
+    end
     
     %% (1) Motion correction and dezippering
     % Load original image files if forced to do motion correction or if motion corrected files don't exist 
@@ -198,17 +205,72 @@ for i = 1:Nsessions
         imG = []; imR = [];
     end
     
-    %
+    % motion correction
     if any([ any(force(1:2)), ~check_file(2), ~check_file(1) ]) 
         [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
     else 
         fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
         imG = []; imR = [];
     end
+    
+    %% (2) ROI segmentation
+    if strcmpi(segment_method,'CaImAn')
+        clear imR; imR = [];
+    end
+    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
+    clear imG imR
+    
+    %% Continue with next steps if Matlab version is at least R2018
+    release = version('-release'); % Find out what Matlab release version is running
+    MatlabVer = str2double(release(1:4));
+    if MatlabVer < 2018
+        beep
+        err = sprintf('%s: Higher Matlab version required; skipping FISSA and the rest of processing steps.\n', file);
+        cprintf('Errors',err);    
+        return
+    end
+    
+    %% (3) Neuropil decontamination and timeseries extraction
+    if dofissa
+        [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+    else
+        dtsG = [];
+        ddf_f = [];
+    end
 
+    %% (4) Spike estimation
+    [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
+
+    % Save spike output if required
+    if any([ ~check(4), any(force([1,2,4])), and(force(3), dofissa) ])
+        spike_output.spikes = spikes;
+        spike_output.tsG = tsG;
+        spike_output.df_f = df_f;
+        if ~isempty(dtsG), spike_output.dtsG = dtsG; end
+        if ~isempty(ddf_f), spike_output.ddf_f = ddf_f; end
+        spike_output.params = params.spkExtract;
+        save(fname_mat,'-struct','spike_output');
+    end
+
+    if manually_refine_spikes
+        GUI_manually_refine_spikes( spikes, tsG, dtsG, df_f, ddf_f, data_locn, file, params, corr_image, masks );
+        uiwait 
+    end
+
+
+    %% (5) Tracking data extraction
+    fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
+    trackData = load_trackfile( data_locn,file, fname_track, force(5) );
+    if any(trackData.r < 100)
+        params.mode_dim = '2D'; % open field
+        params.PFmap.Nbins = [16, 16]; % number of location bins in [x y]               
+    else 
+        params.mode_dim = '1D'; % circular linear track
+        params.PFmap.Nbins = 30;      % number of location bins               
+    end
 end
 
-%% Load ROIs and templates from each session 
+%% (6) Load ROIs and templates from each session 
 fdir = [ data_locn 'Analysis/' mouseid '/summaries based on registered ROIs/' mouseid '_' expname '_ref_' files(1,:) '/'];
     if ~exist(fdir,'dir'), mkdir(fdir); end
 fname = [fdir mouseid '_' expname '_ref_' files(1,:) '_registered_rois.mat' ];

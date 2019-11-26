@@ -28,7 +28,7 @@ function check = checkforExistingProcData(data_locn, text, params)
         dir_proc = [data_locn 'Analysis/' mouseid '/environment_PFmaps/' mouseid '_' expname '_ref_' reffile '/'...
                     mcorr_method '_' segment_method '_' str_fissa '/'];
         
-        check = zeros(1,7);
+        check = zeros(1,4);
         if exist(dir_proc,'dir')
             % 1) Check for existing registered rois across all image files
             % on the list
@@ -44,6 +44,12 @@ function check = checkforExistingProcData(data_locn, text, params)
             % 3) Check for existing PF mapping output
             if exist([dir_proc  mouseid '_' expname '_ref_' reffile '_PFmap_output.mat'],'file')
                 check(3) = 1;
+            end
+            
+            % 4) Check if mat file for all proc data for the file exists
+            if exist([dir_proc  mouseid '_' expname '_ref_' reffile '/'...
+                    mcorr_method '_' segment_method '_' str_fissa '_allData.mat'],'file')
+                check(4) = 1;
             end
         end
     else 
@@ -89,20 +95,8 @@ function check = checkforExistingProcData(data_locn, text, params)
             end
 
             % 7) Check if mat file for all proc data for the file exists
-            matfiles = subdir(fullfile(dir_proc,['*.','mat']));
-            if numel(matfiles) > 0 
-                for i = 1:numel(matfiles)
-                    name = matfiles(i).name;
-                    if contains(name,'allData')
-                        if contains(name,mcorr_method)
-                            if contains(name,segment_method)
-                                if contains(name,str_fissa)
-                                    check(7) = 1;
-                                end
-                            end
-                        end
-                    end
-                end
+            if exist([dir_proc file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'],'file')
+                check(6) = 1;
             end
         end
     end

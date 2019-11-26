@@ -29,7 +29,7 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
     if nargin<6, force = 0;      end
     mcorr_method = params.methods.mcorr_method;
     
-    filedir = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_', mcorr_method, '/' );
+    filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ];
         if ~exist( filedir, 'dir' ), mkdir( filedir ); end
 
     if or(strcmpi(mcorr_method,'normcorre'), strcmpi(mcorr_method,'normcorre-nr'))

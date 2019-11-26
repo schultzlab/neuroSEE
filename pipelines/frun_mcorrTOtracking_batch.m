@@ -163,7 +163,7 @@ force = logicalForce(force);    % Only allow combinations of force values that m
 
 % Check for existing processed data for specific file
 check_file = checkforExistingProcData(data_locn, file, params);
-if check(1:5)
+if check_file(1:5)
     fprintf('%s: Processed data found. Skipping processing\n', file);
     return
 end

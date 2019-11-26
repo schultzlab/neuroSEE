@@ -202,6 +202,7 @@ for i = 1:Nfiles
             if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
                 params.rigid.d1 = size(imG,1);
                 params.rigid.d2 = size(imG,2);
+                params.rigid.grid_size = [params.rigid.d1,params.rigid.d2];
             end
             if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr'))
                 params.nonrigid.d1 = size(imG,1);

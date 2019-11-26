@@ -27,7 +27,7 @@ function frun_mcorrTOtracking_batch( array_id, list )
 % Basic settings
 default = true;             % flag to use default parameters
                             % flag to force
-force = [true;...              % (1) motion correction even if motion corrected images exist
+force = [false;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
@@ -77,7 +77,9 @@ if ~default
         % NoRMCorre-rigid
         if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
             params.rigid = NoRMCorreSetParms(...
-                'max_shift',20,...          % default: 50
+                'd1',512,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
+                'd2',512,...        % length of image [default: 512] *value from actual image    
+                'grid_size',[d1,d2],...     
                 'bin_width',200,...         % default: 200
                 'us_fac',50,...             % default: 50
                 'init_batch',200);          % default: 200
@@ -85,6 +87,8 @@ if ~default
         % NoRMCorre-nonrigid
         if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
             params.nonrigid = NoRMCorreSetParms(...
+                'd1',512,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
+                'd2',512,...        % length of image [default: 512] *value from actual image    
                 'grid_size',[32,32],...     % default: [32,32]
                 'overlap_pre',[32,32],...   % default: [32,32]
                 'overlap_post',[32,32],...  % default: [32,32]
@@ -175,17 +179,6 @@ end
 
 % motion correction
 if any([ any(force(1:2)), ~check_file(2), ~check_file(1) ]) 
-    if ~isempty(imG)
-        if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
-            params.rigid.d1 = size(imG,1);
-            params.rigid.d2 = size(imG,2);
-            params.rigid.grid_size = [params.rigid.d1,params.rigid.d2];
-        end
-        if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr'))
-            params.nonrigid.d1 = size(imG,1);
-            params.nonrigid.d2 = size(imG,2);
-        end
-    end
     [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
 else 
     fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);

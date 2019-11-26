@@ -84,8 +84,6 @@ if ~default
         % NoRMCorre-rigid
         if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
             params.rigid = NoRMCorreSetParms(...
-                'd1',512,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
-                'd2',512,...        % length of image [default: 512] *value from actual image    
                 'max_shift',20,...          % default: 50
                 'bin_width',200,...         % default: 200
                 'us_fac',50,...             % default: 50
@@ -94,8 +92,6 @@ if ~default
         % NoRMCorre-nonrigid
         if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
             params.nonrigid = NoRMCorreSetParms(...
-                'd1',512,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
-                'd2',512,...        % length of image [default: 512] *value from actual image    
                 'grid_size',[32,32],...     % default: [32,32]
                 'overlap_pre',[32,32],...   % default: [32,32]
                 'overlap_post',[32,32],...  % default: [32,32]
@@ -202,6 +198,17 @@ for i = 1:Nfiles
     
     % motion correction
     if any([ any(force(1:2)), ~check_file(2), ~check_file(1) ]) 
+        if ~isempty(imG)
+            if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
+                params.rigid.d1 = size(imG,1);
+                params.rigid.d2 = size(imG,2);
+                params.rigid.gridsize = [params.rigid.d1,d2];
+            end
+            if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr'))
+                params.nonrigid.d1 = size(imG,1);
+                params.nonrigid.d2 = size(imG,2);
+            end
+        end
         [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
     else 
         fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
@@ -290,20 +297,6 @@ if ~exist(fname,'file') || force
     %% Register ROIs across sessions
     params.d1 = size(masks,1);
     params.d2 = size(masks,2);
-    params.maxthr = [];
-%         params.dist_maxthr = 0.1;
-%         params.dist_exp = 1;
-%         params.dist_thr = 0.5;
-%         params.dist_overlap_thr = 0.8;
-    params.dist_maxthr = 0.1;
-    params.dist_exp = 0.5;
-    params.dist_thr = 0.7;
-    params.dist_overlap_thr = 0.5;
-
-
-    params.plot_reg = true;
-    params.print_msg = true;
-
     params_mc = NoRMCorreSetParms(...
                 'd1',params.d1,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
                 'd2',params.d2,...        % length of image [default: 512] *value from actual image    

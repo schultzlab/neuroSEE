@@ -55,8 +55,6 @@ if ~default
         % NoRMCorre-rigid
         if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
             params.rigid = NoRMCorreSetParms(...
-                'd1',512,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
-                'd2',512,...        % length of image [default: 512] *value from actual image    
                 'max_shift',20,...          % default: 50
                 'bin_width',200,...         % default: 200
                 'us_fac',50,...             % default: 50
@@ -65,8 +63,6 @@ if ~default
         % NoRMCorre-nonrigid
         if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
             params.nonrigid = NoRMCorreSetParms(...
-                'd1',512,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
-                'd2',512,...        % length of image [default: 512] *value from actual image    
                 'grid_size',[32,32],...     % default: [32,32]
                 'overlap_pre',[32,32],...   % default: [32,32]
                 'overlap_post',[32,32],...  % default: [32,32]
@@ -136,6 +132,15 @@ end
 if force || ~check(1)
     [imG,imR] = load_imagefile( data_locn, file );
     params.methods.mcorr_method = mcorr_method;
+    if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
+        params.rigid.d1 = size(imG,1);
+        params.rigid.d2 = size(imG,2);
+        params.rigid.grid_size = [params.rigid.d1,params.rigid.d2];
+    end
+    if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr'))
+        params.nonrigid.d1 = size(imG,1);
+        params.nonrigid.d2 = size(imG,2);
+    end
     [~, ~, ~, ~] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force );
 else 
     fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);

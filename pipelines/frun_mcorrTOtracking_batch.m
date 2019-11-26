@@ -186,26 +186,33 @@ else
 end
 
 
-%% (2) ROI segmentation
+%% (2) Do ROI segmentation if Matlab version is R2017
 if strcmpi(segment_method,'CaImAn')
+    release = version('-release'); % Find out what Matlab release version is running
+    MatlabVer = str2double(release(1:4));
+    if MatlabVer > 2017
+        beep
+        err = sprintf('%s: Lower Matlab version required; skipping ROI segmentation and the rest of processing steps.\n', file);
+        cprintf('Errors',err);    
+        return
+    end
+
     clear imR; imR = [];
 end
+
 [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
 clear imG imR
 
 
-%% Continue with next steps if Matlab version is at least R2018
-release = version('-release'); % Find out what Matlab release version is running
-MatlabVer = str2double(release(1:4));
+%% (3) Neuropil decontamination and timeseries extraction
+% Continue only if Matlab version is at least R2018
 if MatlabVer < 2018
     beep
-    err = sprintf('%s: Higher Matlab version required; skipping FISSA and the rest of processing steps.\n', file);
+    err = sprintf('%s: Higher Matlab version required; skipping ROI segmentation and the rest of processing steps.\n', file);
     cprintf('Errors',err);    
     return
 end
 
-
-%% (3) Neuropil decontamination and timeseries extraction
 if dofissa
     [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
 else

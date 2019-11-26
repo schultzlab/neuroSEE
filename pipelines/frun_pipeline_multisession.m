@@ -84,8 +84,6 @@ if ~default
         % NoRMCorre-rigid
         if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
             params.rigid = NoRMCorreSetParms(...
-                'd1',512,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
-                'd2',512,...        % length of image [default: 512] *value from actual image    
                 'max_shift',20,...          % default: 50
                 'bin_width',200,...         % default: 200
                 'us_fac',50,...             % default: 50
@@ -94,8 +92,6 @@ if ~default
         % NoRMCorre-nonrigid
         if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
             params.nonrigid = NoRMCorreSetParms(...
-                'd1',512,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
-                'd2',512,...        % length of image [default: 512] *value from actual image    
                 'grid_size',[32,32],...     % default: [32,32]
                 'overlap_pre',[32,32],...   % default: [32,32]
                 'overlap_post',[32,32],...  % default: [32,32]
@@ -153,7 +149,7 @@ tic
 
 listfile = [data_locn 'Digital_Logbook/lists/' list];
 files = extractFilenamesFromTxtfile(listfile);
-Nsessions = size(files,1); 
+Nfiles = size(files,1); 
 
 % MouseID and experiment name
 [ mouseid, expname ] = find_mouseIDexpname(list);
@@ -187,15 +183,8 @@ end
 % Some security measures
 force = logicalForce(force);    % Only allow combinations of force values that make sense
 
-for i = 1:Nsessions
+for i = 1:Nfiles
     file = files(i,:);
-    
-    % Check for existing processed data for specific file
-    check_file = checkforExistingProcData(data_locn, file, params);
-    if check(1:5)
-        fprintf('%s: Processed data found. Skipping processing\n', file);
-        return
-    end
     
     %% (1) Motion correction and dezippering
     % Load original image files if forced to do motion correction or if motion corrected files don't exist 
@@ -203,10 +192,22 @@ for i = 1:Nsessions
         [imG,imR] = load_imagefile( data_locn, file );
     else
         imG = []; imR = [];
+        t = load([data_locn 'Data/' file(1:8) '/Processed/' file '/' mcorr_method file '_mcorr_output.mat']);
+        templates{i} = t.template;
     end
     
     % motion correction
     if any([ any(force(1:2)), ~check_file(2), ~check_file(1) ]) 
+        if ~isempty(imG)
+            if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
+                params.rigid.d1 = size(imG,1);
+                params.rigid.d2 = size(imG,2);
+            end
+            if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr'))
+                params.nonrigid.d1 = size(imG,1);
+                params.nonrigid.d2 = size(imG,2);
+            end
+        end
         [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
     else 
         fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
@@ -217,7 +218,7 @@ for i = 1:Nsessions
     if strcmpi(segment_method,'CaImAn')
         clear imR; imR = [];
     end
-    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
+    [tsG, df_f, masks{i}, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
     clear imG imR
     
     %% Continue with next steps if Matlab version is at least R2018
@@ -232,7 +233,7 @@ for i = 1:Nsessions
     
     %% (3) Neuropil decontamination and timeseries extraction
     if dofissa
-        [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+        [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks{i}, data_locn, file, params, force(3) );
     else
         dtsG = [];
         ddf_f = [];
@@ -262,13 +263,14 @@ for i = 1:Nsessions
     fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
     trackData = load_trackfile( data_locn,file, fname_track, force(5) );
     if any(trackData.r < 100)
-        params.mode_dim = '2D'; % open field
-        params.PFmap.Nbins = [16, 16]; % number of location bins in [x y]               
+        params.mode_dim = '2D';         % open field
+        params.PFmap.Nbins = [16, 16];  % number of location bins in [x y]               
     else 
-        params.mode_dim = '1D'; % circular linear track
-        params.PFmap.Nbins = 30;      % number of location bins               
+        params.mode_dim = '1D';         % circular linear track
+        params.PFmap.Nbins = 30;        % number of location bins               
     end
 end
+
 
 %% (6) Load ROIs and templates from each session 
 fdir = [ data_locn 'Analysis/' mouseid '/summaries based on registered ROIs/' mouseid '_' expname '_ref_' files(1,:) '/'];
@@ -277,10 +279,9 @@ fname = [fdir mouseid '_' expname '_ref_' files(1,:) '_registered_rois.mat' ];
 
 if ~exist(fname,'file') || force
     fprintf('%s: loading ROIs and templates\n',[mouseid '_' expname]);
-    for jj = 1:Nsessions
+    for jj = 1:Nfiles
         file = files(jj,:); 
-        M = load([data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/CaIman/' file '_segment_output.mat']);
-        masks = M.masks;
+        
         A_temp = zeros(size(masks,1)*size(masks,2),size(masks,3));
         for ii = 1:size(masks,3)
             masks_temp = masks(:,:,ii);
@@ -289,27 +290,12 @@ if ~exist(fname,'file') || force
         end
         A{jj} = sparse(A_temp); % masks
 
-        t = load([data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/' file '_mcorr_output.mat']);
-        templates{jj} = t.template;
+        
     end
 
     %% Register ROIs across sessions
     params.d1 = size(masks,1);
     params.d2 = size(masks,2);
-    params.maxthr = [];
-%         params.dist_maxthr = 0.1;
-%         params.dist_exp = 1;
-%         params.dist_thr = 0.5;
-%         params.dist_overlap_thr = 0.8;
-    params.dist_maxthr = 0.1;
-    params.dist_exp = 0.5;
-    params.dist_thr = 0.7;
-    params.dist_overlap_thr = 0.5;
-
-
-    params.plot_reg = true;
-    params.print_msg = true;
-
     params_mc = NoRMCorreSetParms(...
                 'd1',params.d1,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
                 'd2',params.d2,...        % length of image [default: 512] *value from actual image    
@@ -358,7 +344,7 @@ if ~exist(fname,'file') || force
             if (n*nPlot+ii+1) <= Nrois
                 axes(ha(ii+1));
                 imshow(zeros(512,512)); hold on
-                for jj = 1:Nsessions
+                for jj = 1:Nfiles
                     k = assignments(n*nPlot+ii+1,jj);
                     if ~isnan(k)
                         plot(outlines{k,jj}{1}(:,2),outlines{k,jj}{1}(:,1),'Linewidth',1.5); hold on
@@ -389,7 +375,7 @@ fname = [fdir mouseid '_' expname '_ref_' files(1,:) '_spikes_tracking_data.mat'
 if ~exist(fname,'file') || force
     fprintf('%s: concatinating timeseries and tracking data\n',[mouseid '_' expname]);
     downr_all = [];
-    for jj = 1:Nsessions
+    for jj = 1:Nfiles
         file = files(jj,:);
         ts{jj} = load([data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/CaIman/FISSA/' file '_spikes_output.mat']);
         Nt(jj) = size(ts{jj}.spikes,2);
@@ -439,7 +425,7 @@ if ~exist(fname,'file') || force
     trackData.time = cell(Nrois,1);   trackData.speed = cell(Nrois,1);
 
     for ii = 1:Nrois
-        for jj = 1:Nsessions
+        for jj = 1:Nfiles
             k = assignments(ii,jj);
             if ~isnan(k)
                 tsG{ii} = [tsG{ii}; ts{jj}.tsG(k,:)'];

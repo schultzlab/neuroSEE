@@ -8,7 +8,7 @@ function check = checkforExistingProcData(data_locn, text, params)
     dofissa = params.methods.dofissa;
     
     if dofissa
-        str_fissa = '_FISSA';
+        str_fissa = 'FISSA';
     else
         str_fissa = 'noFISSA';
     end

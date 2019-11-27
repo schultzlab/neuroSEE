@@ -124,7 +124,7 @@ if ~default
         params.ROIreg.dist_thr = 0.7;                % threshold for setting a distance to infinity    [default: 0.5]
         params.ROIreg.dist_overlap_thr = 0.5;        % overlap threshold for detecting if one ROI is a subset of another [default: 0.8]
         params.ROIreg.plot_reg = true;
-        params.ROIreg.print_msg = true;
+        params.print_msg = true;
         params.nonrigid.print_msg = false;
     % PF mapping
         params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video           [default: 1]
@@ -183,8 +183,8 @@ end
 % Some security measures
 force = logicalForce(force);    % Only allow combinations of force values that make sense
 
-for i = 1:Nfiles
-    file = files(i,:);
+for n = 1:Nfiles
+    file = files(n,:);
     
     %% (1) Motion correction and dezippering
     % Load original image files if forced to do motion correction or if motion corrected files don't exist 
@@ -193,7 +193,7 @@ for i = 1:Nfiles
     else
         imG = []; imR = [];
         t = load([data_locn 'Data/' file(1:8) '/Processed/' file '/' mcorr_method file '_mcorr_output.mat']);
-        templates{i} = t.template;
+        templates{n} = t.template;
     end
     
     % motion correction
@@ -219,7 +219,7 @@ for i = 1:Nfiles
     if strcmpi(segment_method,'CaImAn')
         clear imR; imR = [];
     end
-    [tsG, df_f, masks{i}, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
+    [tsG, df_f, masks{n}, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
     clear imG imR
     
     %% Continue with next steps if Matlab version is at least R2018
@@ -234,14 +234,16 @@ for i = 1:Nfiles
     
     %% (3) Neuropil decontamination and timeseries extraction
     if dofissa
-        [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks{i}, data_locn, file, params, force(3) );
+        [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks{n}, data_locn, file, params, force(3) );
+        str_fissa = 'FISSA';
     else
         dtsG = [];
         ddf_f = [];
+        str_fissa = 'noFISSA';
     end
 
     %% (4) Spike estimation
-    [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
+    [spikes{n}, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
 
     % Save spike output if required
     if any([ ~check(4), any(force([1,2,4])), and(force(3), dofissa) ])
@@ -262,7 +264,7 @@ for i = 1:Nfiles
 
     %% (5) Tracking data extraction
     fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
-    trackData = load_trackfile( data_locn,file, fname_track, force(5) );
+    trackData{n} = load_trackfile( data_locn,file, fname_track, force(5) );
     if any(trackData.r < 100)
         params.mode_dim = '2D';         % open field
         params.PFmap.Nbins = [16, 16];  % number of location bins in [x y]               
@@ -273,30 +275,22 @@ for i = 1:Nfiles
 end
 
 
-%% (6) Load ROIs and templates from each session 
-fdir = [ data_locn 'Analysis/' mouseid '/summaries based on registered ROIs/' mouseid '_' expname '_ref_' files(1,:) '/'];
-    if ~exist(fdir,'dir'), mkdir(fdir); end
-fname = [fdir mouseid '_' expname '_ref_' files(1,:) '_registered_rois.mat' ];
-
-if ~exist(fname,'file') || force
-    fprintf('%s: loading ROIs and templates\n',[mouseid '_' expname]);
-    for jj = 1:Nfiles
-        file = files(jj,:); 
-        
-        A_temp = zeros(size(masks,1)*size(masks,2),size(masks,3));
-        for ii = 1:size(masks,3)
-            masks_temp = masks(:,:,ii);
-            A_temp(:,ii) = masks_temp(:);
-            outlines{ii,jj} = bwboundaries(masks(:,:,ii));    % boundary of each ROI
+%% (6) Register ROIs across sessions
+if ~check_list(1) || force(6)
+    fprintf('%s: registering ROIs\n',[mouseid '_' expname]);
+    for n = 1:Nfiles
+        masks_n = masks{n};
+        A_temp = zeros( size(masks_n,1)*size(masks_n,2), size(masks_n,3 ));
+        for ii = 1:size(masks_n,3)
+            mask = masks_n(:,:,ii);
+            A_temp(:,ii) = mask(:);
+            outlines{ii,n} = bwboundaries(masks(:,:,ii));    % boundary of each ROI
         end
-        A{jj} = sparse(A_temp); % masks
-
-        
+        A{n} = sparse(A_temp); % masks
     end
-
-    %% Register ROIs across sessions
-    params.d1 = size(masks,1);
-    params.d2 = size(masks,2);
+    
+    params.ROIreg.d1 = size(masks_n,1);
+    params.ROIreg.d2 = size(masks_n,2);
     params_mc = NoRMCorreSetParms(...
                 'd1',params.d1,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
                 'd2',params.d2,...        % length of image [default: 512] *value from actual image    
@@ -345,13 +339,13 @@ if ~exist(fname,'file') || force
             if (n*nPlot+ii+1) <= Nrois
                 axes(ha(ii+1));
                 imshow(zeros(512,512)); hold on
-                for jj = 1:Nfiles
-                    k = assignments(n*nPlot+ii+1,jj);
+                for n = 1:Nfiles
+                    k = assignments(n*nPlot+ii+1,n);
                     if ~isnan(k)
-                        plot(outlines{k,jj}{1}(:,2),outlines{k,jj}{1}(:,1),'Linewidth',1.5); hold on
+                        plot(outlines{k,n}{1}(:,2),outlines{k,n}{1}(:,1),'Linewidth',1.5); hold on
                     end
                 end
-                axis off; title(['Cell ' num2str(n*nPlot+jj+1)],'fontsize',15);
+                axis off; title(['Cell ' num2str(n*nPlot+n+1)],'fontsize',15);
             end
         end
 %             if Nrois/nPlot <= 1
@@ -376,10 +370,10 @@ fname = [fdir mouseid '_' expname '_ref_' files(1,:) '_spikes_tracking_data.mat'
 if ~exist(fname,'file') || force
     fprintf('%s: concatinating timeseries and tracking data\n',[mouseid '_' expname]);
     downr_all = [];
-    for jj = 1:Nfiles
-        file = files(jj,:);
-        ts{jj} = load([data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/CaIman/FISSA/' file '_spikes_output.mat']);
-        Nt(jj) = size(ts{jj}.spikes,2);
+    for n = 1:Nfiles
+        file = files(n,:);
+        ts{n} = load([data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/CaIman/FISSA/' file '_spikes_output.mat']);
+        Nt(n) = size(ts{n}.spikes,2);
 
         trackfile = dir([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/*.mat']);
         td = load([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' trackfile.name]);
@@ -401,19 +395,19 @@ if ~exist(fname,'file') || force
         % generate imaging timestamps using known image frame rate
         fr = 30.9;
         dt = 1/fr;
-        t = (t0:dt:Nt(jj)*dt)';
-        if length(t) ~= Nt(jj)
-            t = (t0:dt:(Nt(jj)+1)*dt)';
+        t = (t0:dt:Nt(n)*dt)';
+        if length(t) ~= Nt(n)
+            t = (t0:dt:(Nt(n)+1)*dt)';
         end
 
         % Downsample tracking to Ca trace
-        downData{jj}.phi = interp1(tracktime,phi,t,'linear');
-        downData{jj}.x = interp1(tracktime,x,t,'linear');
-        downData{jj}.y = interp1(tracktime,y,t,'linear');
-        downData{jj}.speed = interp1(tracktime,speed,t,'linear'); % mm/s
-        downData{jj}.r = interp1(tracktime,r,t,'linear'); % mm/s
-        downData{jj}.time = t;
-        r_all = [downr_all; downData{jj}.r];
+        downData{n}.phi = interp1(tracktime,phi,t,'linear');
+        downData{n}.x = interp1(tracktime,x,t,'linear');
+        downData{n}.y = interp1(tracktime,y,t,'linear');
+        downData{n}.speed = interp1(tracktime,speed,t,'linear'); % mm/s
+        downData{n}.r = interp1(tracktime,r,t,'linear'); % mm/s
+        downData{n}.time = t;
+        r_all = [downr_all; downData{n}.r];
     end
     clear phi x y speed r t
 
@@ -426,27 +420,27 @@ if ~exist(fname,'file') || force
     trackData.time = cell(Nrois,1);   trackData.speed = cell(Nrois,1);
 
     for ii = 1:Nrois
-        for jj = 1:Nfiles
-            k = assignments(ii,jj);
+        for n = 1:Nfiles
+            k = assignments(ii,n);
             if ~isnan(k)
-                tsG{ii} = [tsG{ii}; ts{jj}.tsG(k,:)'];
-                dtsG{ii} = [dtsG{ii}; ts{jj}.dtsG(k,:)'];
-                df_f{ii} = [df_f{ii}; ts{jj}.df_f(k,:)'];
-                ddf_f{ii} = [ddf_f{ii}; ts{jj}.ddf_f(k,:)'];
-                spikes{ii} = [spikes{ii}; ts{jj}.spikes(k,:)'];
+                tsG{ii} = [tsG{ii}; ts{n}.tsG(k,:)'];
+                dtsG{ii} = [dtsG{ii}; ts{n}.dtsG(k,:)'];
+                df_f{ii} = [df_f{ii}; ts{n}.df_f(k,:)'];
+                ddf_f{ii} = [ddf_f{ii}; ts{n}.ddf_f(k,:)'];
+                spikes{ii} = [spikes{ii}; ts{n}.spikes(k,:)'];
 
-                trackData.phi{ii} = [trackData.phi{ii}; downData{jj}.phi];
-                trackData.x{ii} = [trackData.x{ii}; downData{jj}.x];
-                trackData.y{ii} = [trackData.y{ii}; downData{jj}.y];
-                trackData.speed{ii} = [trackData.speed{ii}; downData{jj}.speed];
-                trackData.r{ii} = [trackData.r{ii}; downData{jj}.r];
+                trackData.phi{ii} = [trackData.phi{ii}; downData{n}.phi];
+                trackData.x{ii} = [trackData.x{ii}; downData{n}.x];
+                trackData.y{ii} = [trackData.y{ii}; downData{n}.y];
+                trackData.speed{ii} = [trackData.speed{ii}; downData{n}.speed];
+                trackData.r{ii} = [trackData.r{ii}; downData{n}.r];
                 trackData.r_all = r_all;
 %                     if ~isempty(trackData.time{ii})
 %                         tt = trackData.time{ii};
 %                     else
 %                         tt = 0;
 %                     end
-                trackData.time{ii} = [trackData.time{ii}; downData{jj}.time];
+                trackData.time{ii} = [trackData.time{ii}; downData{n}.time];
             end
         end
     end

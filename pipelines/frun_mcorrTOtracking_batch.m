@@ -201,6 +201,9 @@ if strcmpi(segment_method,'CaImAn')
         beep
         err = sprintf('%s: Lower Matlab version required; skipping ROI segmentation and the rest of processing steps.\n', file);
         cprintf('Errors',err);    
+        t = toc;
+        str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+        cprintf(str)
         return
     end
 
@@ -215,7 +218,10 @@ clear imG imR
 if MatlabVer < 2018
     beep
     err = sprintf('%s: Higher Matlab version required; skipping ROI segmentation and the rest of processing steps.\n', file);
-    cprintf('Errors',err);    
+    cprintf('Errors',err);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
     return
 end
 

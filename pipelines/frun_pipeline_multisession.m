@@ -118,13 +118,13 @@ if ~default
         params.spkExtract.decay_time = 0.4;   % length of a typical transient in seconds        [default: 0.4]
         params.spkExtract.lam_pr = 0.99;      % false positive probability for determing lambda penalty   [default: 0.99]
     % roi registration
-        params.maxthr = [];                     
-        params.dist_maxthr = 0.1;             % threshold for turning spatial components into binary masks [default: 0.1]
-        params.dist_exp = 0.5;                % power n for distance between masked components: dist = 1 - (and(m1,m2)/or(m1,m2))^n [default: 1]
-        params.dist_thr = 0.7;                % threshold for setting a distance to infinity    [default: 0.5]
-        params.dist_overlap_thr = 0.5;        % overlap threshold for detecting if one ROI is a subset of another [default: 0.8]
-        params.plot_reg = true;
-        params.print_msg = true;
+        params.ROIreg.maxthr = [];                     
+        params.ROIreg.dist_maxthr = 0.1;             % threshold for turning spatial components into binary masks [default: 0.1]
+        params.ROIreg.dist_exp = 0.5;                % power n for distance between masked components: dist = 1 - (and(m1,m2)/or(m1,m2))^n [default: 1]
+        params.ROIreg.dist_thr = 0.7;                % threshold for setting a distance to infinity    [default: 0.5]
+        params.ROIreg.dist_overlap_thr = 0.5;        % overlap threshold for detecting if one ROI is a subset of another [default: 0.8]
+        params.ROIreg.plot_reg = true;
+        params.ROIreg.print_msg = true;
         params.nonrigid.print_msg = false;
     % PF mapping
         params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video           [default: 1]
@@ -202,7 +202,7 @@ for i = 1:Nfiles
             if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
                 params.rigid.d1 = size(imG,1);
                 params.rigid.d2 = size(imG,2);
-                params.rigid.grid_size = [params.rigid.d1,params.rigid.d2];
+                params.rigid.grid_size = [params.rigid.d1, params.rigid.d2, 1];
             end
             if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr'))
                 params.nonrigid.d1 = size(imG,1);

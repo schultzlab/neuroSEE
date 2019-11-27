@@ -40,6 +40,7 @@ Nbins = params.PFmap.Nbins;
 Nepochs = params.PFmap.Nepochs;
 Vthr = params.PFmap.Vthr;
 histsmoothFac = params.PFmap.histsmoothFac;
+prctile_thr = params.PFmap.prctile_thr;
 Ncells = size(spikes,1);
 
 %% Tracking data
@@ -102,7 +103,7 @@ for ii = 1:Ncells
 end
 
 % Identify place cells
-[hist.pcIdx,asd.pcIdx] = filter_nonPC(bin_phi, activespk, infoMap, infoMap_asd, Nbins);
+[hist.pcIdx,asd.pcIdx] = filter_nonPC(bin_phi, activespk, infoMap, infoMap_asd, Nbins, prctile_thr);
 activespk_hist = activespk(hist.pcIdx,:);
 activespk_asd = activespk(asd.pcIdx,:);
 Npcs = length(hist.pcIdx);

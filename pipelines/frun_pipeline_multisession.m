@@ -92,9 +92,9 @@ if ~default
         % NoRMCorre-nonrigid
         if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
             params.nonrigid = NoRMCorreSetParms(...
-                'grid_size',[32,32],...     % default: [32,32]
-                'overlap_pre',[32,32],...   % default: [32,32]
-                'overlap_post',[32,32],...  % default: [32,32]
+                'grid_size',[64,64],...     % default: [64,64]
+                'overlap_pre',[64,64],...   % default: [64,64]
+                'overlap_post',[64,64],...  % default: [64,64]
                 'iter',1,...                % default: 1
                 'use_parallel',false,...    % default: false
                 'max_shift',15,...          % default: 50
@@ -131,6 +131,7 @@ if ~default
         params.PFmap.histsmoothFac = 7;       % Gaussian smoothing window for histogram extraction        [default: 7]
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                               %                              Neurotar uses 8 mm/s
+        params.PFmap.prctile_thr = 95;        % percentile threshold for filtering nonPCs
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -186,13 +187,16 @@ force = logicalForce(force);    % Only allow combinations of force values that m
 for n = 1:Nfiles
     file = files(n,:);
     
+    % Check for existing processed data
+    check_file = checkforExistingProcData(data_locn, file, params);
+    
     %% (1) Motion correction and dezippering
     % Load original image files if forced to do motion correction or if motion corrected files don't exist 
     if force(1) || ~check_file(1)
         [imG,imR] = load_imagefile( data_locn, file );
     else
         imG = []; imR = [];
-        t = load([data_locn 'Data/' file(1:8) '/Processed/' file '/' mcorr_method file '_mcorr_output.mat']);
+        t = load([data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' file '_mcorr_output.mat']);
         templates{n} = t.template;
     end
     
@@ -216,15 +220,29 @@ for n = 1:Nfiles
     end
     
     %% (2) ROI segmentation
-    if strcmpi(segment_method,'CaImAn')
-        clear imR; imR = [];
+    release = version('-release'); % Find out what Matlab release version is running
+    MatlabVer = str2double(release(1:4));
+
+    if force(2) || ~check_file(2) 
+        if strcmpi(segment_method,'CaImAn')
+            if MatlabVer > 2017
+                beep
+                err = sprintf('%s: Lower Matlab version required; skipping ROI segmentation and the rest of processing steps.\n', file);
+                cprintf('Errors',err);    
+                t = toc;
+                str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+                cprintf(str)
+                return
+            end
+
+            clear imR; imR = [];
+        end
     end
-    [tsG, df_f, masks{n}, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
+
+    [tsG{n}, df_f{n}, masks{n}, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
     clear imG imR
     
     %% Continue with next steps if Matlab version is at least R2018
-    release = version('-release'); % Find out what Matlab release version is running
-    MatlabVer = str2double(release(1:4));
     if MatlabVer < 2018
         beep
         err = sprintf('%s: Higher Matlab version required; skipping FISSA and the rest of processing steps.\n', file);
@@ -237,48 +255,47 @@ for n = 1:Nfiles
     
     %% (3) Neuropil decontamination and timeseries extraction
     if dofissa
-        [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks{n}, data_locn, file, params, force(3) );
+        [tsG{n}, dtsG{n}, ddf_f{n}, params] = neuroSEE_neuropilDecon( masks{n}, data_locn, file, params, force(3) );
         str_fissa = 'FISSA';
     else
-        dtsG = [];
-        ddf_f = [];
+        dtsG{n} = [];
+        ddf_f{n} = [];
         str_fissa = 'noFISSA';
     end
 
     %% (4) Spike estimation
-    [spikes{n}, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
+    [spikes{n}, params, fname_mat] = neuroSEE_extractSpikes( df_f{n}, ddf_f{n}, data_locn, file, params, force(4) );
 
     % Save spike output if required
-    if any([ ~check(4), any(force([1,2,4])), and(force(3), dofissa) ])
-        spike_output.spikes = spikes;
-        spike_output.tsG = tsG;
-        spike_output.df_f = df_f;
-        if ~isempty(dtsG), spike_output.dtsG = dtsG; end
-        if ~isempty(ddf_f), spike_output.ddf_f = ddf_f; end
+    if any([ ~check_file(4), any(force([1,2,4])), and(force(3), dofissa) ])
+        spike_output.spikes = spikes{n};
+        spike_output.tsG = tsG{n};
+        spike_output.df_f = df_f{n};
+        if ~isempty(dtsG), spike_output.dtsG = dtsG{n}; end
+        if ~isempty(ddf_f), spike_output.ddf_f = ddf_f{n}; end
         spike_output.params = params.spkExtract;
         save(fname_mat,'-struct','spike_output');
     end
 
     if manually_refine_spikes
-        GUI_manually_refine_spikes( spikes, tsG, dtsG, df_f, ddf_f, data_locn, file, params, corr_image, masks );
+        GUI_manually_refine_spikes( spikes{n}, tsG{n}, dtsG{n}, df_f{n}, ddf_f{n}, data_locn, file, params, corr_image, masks );
         uiwait 
     end
-
 
     %% (5) Tracking data extraction
     fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
     trackData{n} = load_trackfile( data_locn,file, fname_track, force(5) );
-    if any(trackData.r < 100)
-        params.mode_dim = '2D';         % open field
-        params.PFmap.Nbins = [16, 16];  % number of location bins in [x y]               
-    else 
-        params.mode_dim = '1D';         % circular linear track
-        params.PFmap.Nbins = 30;        % number of location bins               
-    end
+
 end
 
 
-%% (6) Register ROIs across sessions
+%% (6) ROI registration across sessions
+reffile = files(1,:);
+fdir = [data_locn 'Analysis/' mouseid '/environment_PFmaps/' mouseid '_' expname '_ref_' reffile '/'...
+        mcorr_method '_' segment_method '_' str_fissa '/'];
+    if ~exist(fdir,'dir'), mkdir(fdir); end
+fname = [fdir  mouseid '_' expname '_ref_' reffile '_registered_rois.mat'];
+
 if ~check_list(1) || force(6)
     for n = 1:Nfiles
         masks_n = masks{n};
@@ -286,92 +303,102 @@ if ~check_list(1) || force(6)
         for ii = 1:size(masks_n,3)
             mask = masks_n(:,:,ii);
             A_temp(:,ii) = mask(:);
-            outlines{n,ii} = bwboundaries(masks(:,:,ii));    % boundary of each ROI
+            outlines{n,ii} = bwboundaries(mask);    % boundary of each ROI
         end
         A{n} = sparse(A_temp); % masks
     end
     
     params.ROIreg.d1 = size(masks{1},1);
     params.ROIreg.d2 = size(masks{1},2);
-    params_mc.correct_bidir = false;
-    params_mc.print_msg = false;
+    params.ROIreg_mc = params.nonrigid;
+    params.ROIreg_mc.rigid.correct_bidir = false;
+    params.ROIreg_mc.print_msg = false;
 
     fprintf('%s: registering ROIs\n',[mouseid '_' expname]);
-    [A_union, assignments, matchings] = register_multisession(A, params, templates, params_mc);
-    masks = reshape(full(A_union), params.ROIreg.d1, params.ROIreg.d2, size(A_union,2));
-    Nrois = numel(masks);
+    [A_union, assignments, matchings] = register_multisession(A, params.ROIreg, templates, params.ROIreg_mc);
+    Mmasks = reshape(full(A_union), params.ROIreg.d1, params.ROIreg.d2, size(A_union,2));
+    Nrois = numel(Mmasks);
 
     % save masks
-    registered_rois.masks = masks;
+    registered_rois.masks = Mmasks;
     registered_rois.outlines = outlines;
     registered_rois.assignments = assignments;
     registered_rois.matchings = matchings;
-    registered_rois.params = params;
-    registered_rois.params_mc = params_mc;
+    registered_rois.params = params.ROIreg;
 
-    % fprintf('%s: saving registered ROIs\n',[mouseid '_' expname]);
-    % save(fname, '-struct', 'registered_rois')
+    fprintf('%s: saving registered ROIs\n',[mouseid '_' expname]);
+    save(fname, '-struct', 'registered_rois')
 
-    % superposition plots of matched ROIs
+    do_ROIplots = true;
+else
+    fprintf('%s: loading registered ROIs\n',[mouseid '_' expname]);
+    C = load(fname);
+    Mmasks = C.masks;
+    outlines = C.outlines;
+    assignments = C.assignments;
+    params.ROIreg = C.params;
+    Nrois = size(Mmasks,3);
+    
+    if exist([fdir,'registered_rois/'],'dir')
+        matfiles = subdir(fullfile(fdir,'registered_rois',['*.','fig']));
+        if numel(matfiles) > 0     % superposition plots of matched ROIs
+            do_ROIplots = false;
+        else
+            do_ROIplots = true;
+        end
+    else
+        do_ROIplots = true;
+    end
+end
+
+if do_ROIplots
+    if ~exist([fdir 'registered_rois/'],'dir')
+        mkdir([fdir 'registered_rois/']);
+    end
+
     [nRow, nCol] = getnRownCol(Nrois);
     nPlot = nRow*nCol;
-
-    if fsave
-        if ~exist([fdir 'registered_rois/'],'dir')
-            mkdir([fdir 'registered_rois/']);
-        end
-    end
-    for n = 0:Nrois/nPlot
+    for f = 0:Nrois/nPlot
         fh = figure;
         ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
         for ii = 0:nPlot-1
-            if (n*nPlot+ii+1) <= Nrois
+            if (f*nPlot+ii+1) <= Nrois
                 axes(ha(ii+1));
                 imshow(zeros(512,512)); hold on
                 for n = 1:Nfiles
-                    k = assignments(n*nPlot+ii+1,n);
+                    k = assignments(f*nPlot+ii+1,n);
                     if ~isnan(k)
-                        plot(outlines{k,n}{1}(:,2),outlines{k,n}{1}(:,1),'Linewidth',1.5); hold on
+                        plot(outlines{n,k}{1}(:,2),outlines{n,k}{1}(:,1),'Linewidth',1.5); hold on
                     end
                 end
-                axis off; title(['Cell ' num2str(n*nPlot+n+1)],'fontsize',15);
+                axis off; title(['Cell ' num2str(f*nPlot+ii+1)],'fontsize',15);
             end
         end
-%             if Nrois/nPlot <= 1
-%                 fname_fig = [fdir 'registered_rois/' mouseid '_' expname '_ref_' files(1,:) '_registered_rois'];
-%             else
-%                 fname_fig = [fdir 'registered_rois/' mouseid '_' expname '_ref_' files(1,:) '_registered_rois_' num2str(n+1)];
-%             end
-%             savefig( fh, fname_fig );
-%             saveas( fh, fname_fig, 'png' );
-%             close( fh );
+        if Nrois/nPlot <= 1
+            fname_fig = [fdir 'registered_rois/' mouseid '_' expname '_ref_' files(1,:) '_registered_rois'];
+        else
+            fname_fig = [fdir 'registered_rois/' mouseid '_' expname '_ref_' files(1,:) '_registered_rois_' num2str(f+1)];
+        end
+        savefig( fh, fname_fig );
+        saveas( fh, fname_fig, 'png' );
+        close( fh );
     end 
-
-else
-    fprintf('%s: loading registered ROIs\n',[mouseid '_' expname]);
-    load(fname)
-    Nrois = size(masks,3);
 end
+    
+%% (7) Spike/tracking data consolidation
+fname = [fdir  mouseid '_' expname '_ref_' reffile '_spikes_tracking_data.mat'];
 
-%% Collate the data for tsG, dtsG, df_f, ddf_f, spikes for each roi in A_union
-fname = [fdir mouseid '_' expname '_ref_' files(1,:) '_spikes_tracking_data.mat' ];
-
-if ~exist(fname,'file') || force
+if ~exist(fname,'file') || force(7)
     fprintf('%s: concatinating timeseries and tracking data\n',[mouseid '_' expname]);
     downr_all = [];
     for n = 1:Nfiles
-        file = files(n,:);
-        ts{n} = load([data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/CaIman/FISSA/' file '_spikes_output.mat']);
-        Nt(n) = size(ts{n}.spikes,2);
-
-        trackfile = dir([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/*.mat']);
-        td = load([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' trackfile.name]);
-        x = td.x;
-        y = td.y;
-        r = td.r;
-        phi = td.phi;
-        speed = td.speed;
-        tracktime = td.time;
+        Nt(n) = size(spikes{n},2);
+        x = trackData{n}.x;
+        y = trackData{n}.y;
+        r = trackData{n}.r;
+        phi = trackData{n}.phi;
+        speed = trackData{n}.speed;
+        tracktime = trackData{n}.time;
 
         % Pre-process tracking data
         t0 = tracktime(1);                  % initial time in tracking data
@@ -401,76 +428,76 @@ if ~exist(fname,'file') || force
     clear phi x y speed r t
 
     % Initialise cell arrays
-    tsG = cell(Nrois,1);        dtsG = cell(Nrois,1); 
-    df_f = cell(Nrois,1);       ddf_f = cell(Nrois,1); 
-    spikes = cell(Nrois,1);
-    trackData.x = cell(Nrois,1);      trackData.y = cell(Nrois,1);
-    trackData.phi = cell(Nrois,1);    trackData.r = cell(Nrois,1); 
-    trackData.time = cell(Nrois,1);   trackData.speed = cell(Nrois,1);
+    MtsG = cell(Nrois,1);               MdtsG = cell(Nrois,1); 
+    Mdf_f = cell(Nrois,1);              Mddf_f = cell(Nrois,1); 
+    Mspikes = cell(Nrois,1);
+    MtrackData.x = cell(Nrois,1);       MtrackData.y = cell(Nrois,1);
+    MtrackData.phi = cell(Nrois,1);     MtrackData.r = cell(Nrois,1); 
+    MtrackData.time = cell(Nrois,1);    MtrackData.speed = cell(Nrois,1);
 
     for ii = 1:Nrois
         for n = 1:Nfiles
             k = assignments(ii,n);
             if ~isnan(k)
-                tsG{ii} = [tsG{ii}; ts{n}.tsG(k,:)'];
-                dtsG{ii} = [dtsG{ii}; ts{n}.dtsG(k,:)'];
-                df_f{ii} = [df_f{ii}; ts{n}.df_f(k,:)'];
-                ddf_f{ii} = [ddf_f{ii}; ts{n}.ddf_f(k,:)'];
-                spikes{ii} = [spikes{ii}; ts{n}.spikes(k,:)'];
+                MtsG{ii} = [MtsG{ii}; tsG{n}(k,:)'];
+                MdtsG{ii} = [MdtsG{ii}; dtsG{n}(k,:)'];
+                Mdf_f{ii} = [Mdf_f{ii}; df_f{n}(k,:)'];
+                Mddf_f{ii} = [Mddf_f{ii}; ddf_f{n}(k,:)'];
+                Mspikes{ii} = [Mspikes{ii}; spikes{n}(k,:)'];
 
-                trackData.phi{ii} = [trackData.phi{ii}; downData{n}.phi];
-                trackData.x{ii} = [trackData.x{ii}; downData{n}.x];
-                trackData.y{ii} = [trackData.y{ii}; downData{n}.y];
-                trackData.speed{ii} = [trackData.speed{ii}; downData{n}.speed];
-                trackData.r{ii} = [trackData.r{ii}; downData{n}.r];
-                trackData.r_all = r_all;
+                MtrackData.phi{ii} = [MtrackData.phi{ii}; downData{n}.phi];
+                MtrackData.x{ii} = [MtrackData.x{ii}; downData{n}.x];
+                MtrackData.y{ii} = [MtrackData.y{ii}; downData{n}.y];
+                MtrackData.speed{ii} = [MtrackData.speed{ii}; downData{n}.speed];
+                MtrackData.r{ii} = [MtrackData.r{ii}; downData{n}.r];
+                MtrackData.r_all = r_all;
 %                     if ~isempty(trackData.time{ii})
 %                         tt = trackData.time{ii};
 %                     else
 %                         tt = 0;
 %                     end
-                trackData.time{ii} = [trackData.time{ii}; downData{n}.time];
+                MtrackData.time{ii} = [MtrackData.time{ii}; downData{n}.time];
             end
         end
     end
 
     % save timeseries and track data
-    spike_track_data.tsG = tsG;
-    spike_track_data.dtsG = dtsG;
-    spike_track_data.df_f = df_f;
-    spike_track_data.ddf_f = ddf_f;
-    spike_track_data.spikes = spikes;
+    spike_track_data.tsG = MtsG;
+    spike_track_data.dtsG = MdtsG;
+    spike_track_data.df_f = Mdf_f;
+    spike_track_data.ddf_f = Mddf_f;
+    spike_track_data.spikes = Mspikes;
+    spike_track_data.trackData = MtrackData;
 
-    spike_track_data.trackData = trackData;
-
-    % save(fname, '-struct', 'spike_track_data')
+    save(fname, '-struct', 'spike_track_data')
 else
     fprintf('%s: loading timeseries and tracking data\n',[mouseid '_' expname]);
-    load(fname)
+    C = load(fname);
+    MtrackData = C.trackData;
+    Mspikes = C.spikes;
 end
 
-%% Calculate place field maps
+%% (8) Place field mapping
 
 % settings
-if any(trackData.r_all < 100)
+if any(MtrackData.r_all < 100)
     params.mode_dim = '2D';         % open field
     params.PFmap.Nbins = [16, 16];  % number of location bins in [x y]               
 else 
     params.mode_dim = '1D';         % circular linear track
     params.PFmap.Nbins = 30;        % number of location bins               
 end
-params.PFmap.Nepochs = 1;
-params.PFmap.Vthr = 20;
-params.PFmap.histsmoothFac = 7;
-params.fr = 30.9;
 
 Nepochs = params.PFmap.Nepochs;
-fname = [fdir mouseid '_' expname '_ref_' files(1,:) '_PFmap_output.mat'];
-if ~exist(fname,'file') || force
+prctile_thr = 95;                   % percentile threshold for filtering nonPCs
+params.PFmap.prctile_thr = prctile_thr;
+
+fname = [fdir mouseid '_' expname '_ref_' reffile '_PFmap_output.mat'];
+if ~exist(fname,'file') || force(8)
     fprintf('%s: generating PFmaps\n', [mouseid '_' expname]);
     if strcmpi(params.mode_dim,'1D')
         % Generate place field maps
-        [ occMap, hist, asd, activeData ] = generatePFmap_1d_multisession( spikes, trackData, params );
+        [ occMap, hist, asd, activeData ] = generatePFmap_1d_multisession( Mspikes, MtrackData, params );
 
         % If 1D, sort place field maps 
         [ hist.sort_pfMap, hist.sortIdx ] = sortPFmap_1d( hist.pfMap, hist.infoMap, Nepochs );
@@ -497,7 +524,8 @@ if ~exist(fname,'file') || force
         output.asd = asd;
         output.activeData = activeData;
         output.params = params.PFmap;
-        % save(fname,'-struct','output');
+        save(fname,'-struct','output');
+        
     else % '2D'
         [occMap, spkMap, spkIdx, hist, asd, ~, activeData] = generatePFmap_2d(spikes, [], trackData, params, false);
 

@@ -27,7 +27,7 @@ function frun_mcorrTOtracking_batch( array_id, list )
 % Basic settings
 default = true;             % flag to use default parameters
                             % flag to force
-force = [true;...              % (1) motion correction even if motion corrected images exist
+force = [false;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
@@ -194,35 +194,39 @@ end
 
 
 %% (2) Do ROI segmentation if Matlab version is R2017
-if strcmpi(segment_method,'CaImAn')
-    release = version('-release'); % Find out what Matlab release version is running
-    MatlabVer = str2double(release(1:4));
-    if MatlabVer > 2017
-        beep
-        err = sprintf('%s: Lower Matlab version required; skipping ROI segmentation and the rest of processing steps.\n', file);
-        cprintf('Errors',err);    
-        t = toc;
-        str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
-        cprintf(str)
-        return
+release = version('-release'); % Find out what Matlab release version is running
+MatlabVer = str2double(release(1:4));
+
+if force(2) || ~check_file(2) 
+    if strcmpi(segment_method,'CaImAn')
+        if MatlabVer > 2017
+            beep
+            err = sprintf('%s: Lower Matlab version required; skipping ROI segmentation and the rest of processing steps.\n', file);
+            cprintf('Errors',err);    
+            t = toc;
+            str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+            cprintf(str)
+            return
+        end
+
+        clear imR; imR = [];
     end
-
-    clear imR; imR = [];
 end
-
 [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
 clear imG imR
 
 
 % Continue next steps only if Matlab version is at least R2018
-if MatlabVer < 2018
-    beep
-    err = sprintf('%s: Higher Matlab version required; skipping ROI segmentation and the rest of processing steps.\n', file);
-    cprintf('Errors',err);
-    t = toc;
-    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
-    cprintf(str)
-    return
+if force(3) || ~check_file(3)
+    if MatlabVer < 2018
+        beep
+        err = sprintf('%s: Higher Matlab version required; skipping ROI segmentation and the rest of processing steps.\n', file);
+        cprintf('Errors',err);
+        t = toc;
+        str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+        cprintf(str)
+        return
+    end
 end
 
 %% (3) Neuropil decontamination and timeseries extraction
@@ -238,7 +242,7 @@ end
 [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
 
 % Save spike output if required
-if any([ ~check(4), any(force([1,2,4])), and(force(3), dofissa) ])
+if any([ ~check_file(4), any(force([1,2,4])), and(force(3), dofissa) ])
     spike_output.spikes = spikes;
     spike_output.tsG = tsG;
     spike_output.df_f = df_f;

@@ -1,13 +1,16 @@
-function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, sdir, files, fclose)
-    if nargin < 9, fclose = false; end
+function plotPF_1d(list, occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, sdir, files, fclose)
+    if nargin < 10, fclose = false; end
+    if nargin < 9, fsave = false; end
     if nargin < 8, fsave = false; end
     if nargin < 7, fsave = false; end
-    if nargin < 6, fsave = false; end
     
     Ncells = numel(normspkMap_pertrial);
     Npcs = length(hist.pcIdx);
     Npcs_asd = length(asd.pcIdx);
     Nepochs = size(occMap,3);
+
+    % MouseID and experiment name
+    [ mouseid, expname ] = find_mouseIDexpname(list);
 
     % summary of occMap, spkMaps, pfMaps
     for e = 1:Nepochs
@@ -195,9 +198,9 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
 
         if fsave
             if Nepochs == 1
-                fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_normPFmaps'];
+                fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_PFmaps_norm'];
             else
-                fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_normPFmaps_' num2str(e) 'of' num2str(Nepochs) 'ep'];
+                fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_PFmaps_norm_' num2str(e) 'of' num2str(Nepochs) 'ep'];
             end
             savefig( fh, fname_fig );
             saveas( fh, fname_fig, 'png' );
@@ -209,7 +212,7 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
     [nRow, nCol] = getnRownCol(Ncells);
     nPlot = nRow*nCol;
     
-    for ii=0:Ncells/nPlot
+    for ii=0:(Ncells/nPlot)-1
         fh = figure;
         ha = tight_subplot(nRow,nCol,[.02 .015],[.01 .05],[.01 .01]);
         for jj=0:nPlot-1
@@ -222,10 +225,10 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
             end
         end
         if fsave
-            if Npcs/nPlot <= 1
-                fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_spk_pertrial_hist'];
+            if Ncells/nPlot <= 1
+                fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_spk_pertrial_hist_norm'];
             else
-                fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_spk_pertrial_hist_' num2str(ii+1)];
+                fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_spk_pertrial_hist_norm_' num2str(ii+1)];
             end
             savefig( fh, fname_fig );
             saveas( fh, fname_fig, 'png' );
@@ -239,7 +242,7 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
     
     % histogram
     if Npcs > 0 
-        for ii=0:Npcs/nPlot
+        for ii=0:(Npcs/nPlot)-1
             fh = figure;
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1
@@ -253,9 +256,9 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
             end
             if fsave
                 if Npcs/nPlot <= 1
-                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_spk_pertrial_hist'];
+                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_PCs_hist_spk_pertrial'];
                 else
-                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_spk_pertrial_hist_' num2str(ii+1)];
+                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_PCs_hist_spk_pertrial' num2str(ii+1)];
                 end
                 savefig( fh, fname_fig );
                 saveas( fh, fname_fig, 'png' );
@@ -263,7 +266,7 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
             end
         end 
 
-        for ii=0:Npcs/nPlot
+        for ii=0:(Npcs/nPlot)-1
             fh = figure;
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1
@@ -277,9 +280,9 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
             end
             if fsave
                 if Npcs/nPlot <= 1
-                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_normspk_pertrial_hist'];
+                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_PCs_hist_spk_pertrial_norm'];
                 else
-                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_normspk_pertrial_hist_' num2str(ii+1)];
+                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_PCs_hist_spk_pertrial_norm' num2str(ii+1)];
                 end
                 savefig( fh, fname_fig );
                 saveas( fh, fname_fig, 'png' );
@@ -293,7 +296,7 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
     nPlot = nRow*nCol;
     
     if Npcs_asd > 0 
-        for ii=0:Npcs_asd/nPlot
+        for ii=0:(Npcs_asd/nPlot)-1
             fh = figure;
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1
@@ -307,9 +310,9 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
             end
             if fsave
                 if Npcs_asd/nPlot <= 1
-                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_spk_pertrial_asd'];
+                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_PCs_asd_spk_pertrial'];
                 else
-                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_spk_pertrial_asd_' num2str(ii+1)];
+                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_PCs_asd_spk_pertrial' num2str(ii+1)];
                 end
                 savefig( fh, fname_fig );
                 saveas( fh, fname_fig, 'png' );
@@ -317,7 +320,7 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
             end
         end 
 
-        for ii=0:Npcs_asd/nPlot
+        for ii=0:(Npcs_asd/nPlot)-1
             fh = figure;
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1
@@ -331,9 +334,9 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
             end
             if fsave
                 if Npcs_asd/nPlot <= 1
-                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_normspk_pertrial_asd'];
+                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_PCs_asd_spk_pertrial_norm'];
                 else
-                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_normspk_pertrial_asd_' num2str(ii+1)];
+                    fname_fig = [sdir 'PFmaps/' mouseid '_' expname '_ref_' files(1,:) '_PCs_asd_spk_pertrial_norm' num2str(ii+1)];
                 end
                 savefig( fh, fname_fig );
                 saveas( fh, fname_fig, 'png' );
@@ -343,8 +346,8 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
     end
 
     % remapping within a session
-    if Npcs > 0
-        if Nepochs > 1
+    if Nepochs > 1
+        if Npcs > 0
             fh = figure;
             for ei = 1:Nepochs % rows: sorting
                 for ej = 1:Nepochs % cols: epochs 
@@ -358,7 +361,9 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
                 saveas( fh, fname_fig, 'png' );
                 if fclose, close( fh ); end
             end
+        end
 
+        if Npcs_asd > 0
             fh = figure;
             for ei = 1:Nepochs % rows: sorting
                 for ej = 1:Nepochs % cols: epochs 

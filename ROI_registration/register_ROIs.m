@@ -1,4 +1,4 @@
-function [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A1,A2,options,template1,template2,options_mc)
+function [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A1,A2,options,template1,template2,options_mc,fname_fig,fsave)
 % REGISTER_ROIs - register ROIs from two different recording sessions
 %
 %   [MATCHED_ROIS, NONMATCHED_1, NONMATCHED_2, A2] = REGISTER_ROIS( ...
@@ -33,6 +33,9 @@ function [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A
 % A_union:                union of ROIs aligned to session 1 (for matched
 %                               pairs the ROIs from session # 1 are kept)
 
+% Ann's addition:
+if nargin < 8, fsave = true; end
+if nargin < 7, fsave = false; end
 
 defoptions = CNMFSetParms;
 if ~exist('options','var'); options = defoptions; end
@@ -124,7 +127,7 @@ R = sparse(matched_ROIs(:,1),matched_ROIs(:,2),1,K1,K2);
 
 if options.plot_reg
     fprintf('Creating contour plot... \n')
-    figure; imagesc(template1);
+    fh = figure; imagesc(template1);
     options.plot_bck_image = false;
     plot_contours(A1(:,matched_ROIs(:,1)),template1,options,0,[],[],'w'); hold on;
     plot_contours(A2(:,matched_ROIs(:,2)),template1,options,0,[],[],'m'); hold on;
@@ -136,4 +139,21 @@ if options.plot_reg
     h(3) = plot(NaN,NaN,'g');
     h(4) = plot(NaN,NaN,'k');
     legend(h,'Matched #1','Matched #2','Mismatched #1','Mismatched # 2'); hold off;
+
+    if nargin>6
+        ind = strfind(fname_fig,'/');
+        titletext = fname_fig(ind(end)+1:end);
+    
+        dirname = fname_fig(1:ind(end));
+        ind = strfind(titletext,'_');
+        titletext(ind) = '-';
+        title(titletext);
+    end
+    
+    if fsave
+        if ~exist(dirname,'dir'), mkdir(dirname); end
+        % save figure
+        savefig( fh, fname_fig );
+        saveas( fh, fname_fig, 'png' );
+    end
 end

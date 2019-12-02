@@ -1,4 +1,4 @@
-function [A_union, assignments, matchings] = register_multisession(A, options, templates, options_mc)
+function [A_union, assignments, matchings] = register_multisession(A, options, templates, options_mc, sdir, list, reffile)
 % REGISTER_MULTISESSION - register ROIs from multiple recording sessions
 %
 %   [A_UNION, ASSIGNMENTS, MATCHINGS] = REGISTER_MULTISESSION(A,...
@@ -83,8 +83,12 @@ matchings{1} = 1:size(A{1},2);
 %    matchings{session} = new_match;
 % end
 
+% MouseID and experiment name
+[ mouseid, expname ] = find_mouseIDexpname(list);
+
 for session = 2:n_sessions
-   [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A_union,A{session},options,templates{1},templates{session},options_mc);
+   fname_fig = [sdir 'registered_rois/' mouseid '_' expname '_ref_' reffile '_session' num2str(session) '_regto_1'];
+   [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A_union,A{session},options,templates{1},templates{session},options_mc,fname_fig,options.figsave);
    new_match = zeros(1,size(A{session},2));
    new_match(matched_ROIs(:,2)) = matched_ROIs(:,1);
    new_match(nonmatched_2) = size(A_union,2)-numel(nonmatched_2)+1 : size(A_union,2);

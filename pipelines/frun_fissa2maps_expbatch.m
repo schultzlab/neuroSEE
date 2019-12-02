@@ -1,28 +1,17 @@
 % Written by Ann Go
-% expname: Experiment name in the format 'm##_expname'. 'expname'
-%           corresponds to the group of files for which ROI segmentation has been
-%           done, the results of which are used here for fissa correction to PF
-%           mapping.
-% envname: Environment name which is a subset of expname
-%               expname             envname      
-%       e.g. 'm62_fam1fam1rev'      'fam1rev'
-%            'm82_open_s1'        ''
 
-function frun_fissa2maps_expbatch( expname, envname, list, reffile, force )
+function frun_fissa2maps_expbatch( list, reffile, force )
 
 tic 
 
-if nargin<5, force = false; end
-if isempty(envname)
-    str_env = [];
-else
-    str_env = ['-' envname];
-end
+if nargin<, force = false; end
+
+% MouseID and experiment name
+[ mouseid, expname ] = find_mouseIDexpname(list);
 
 %% Load module folders and define data directory
 
-test = false;                   % flag to use one of smaller files in test folder)
-[data_locn,comp,err] = load_neuroSEEmodules(test);
+[data_locn,comp,err] = load_neuroSEEmodules;
 if ~isempty(err)
     beep
     cprintf('Errors',err);    
@@ -40,9 +29,9 @@ params = rmfield(params,'fftRigid');
 fields = {'df_prctile','df_medfilt1'};
 params.ROIsegment = rmfield(params.ROIsegment,fields);
 params = rmfield(params,'nonrigid');
+params = rmfield(params,'rigid');
 
-mouseid = expname(1:3);
-sdir = [data_locn 'Analysis/' mouseid '/summaries based on registered images/environment_PFmaps/' expname str_env '_ref' reffile '/'];
+sdir = [data_locn 'Analysis/' mouseid '/data based on registered images/environment_PFmaps/' mouseid '_' expname '_ref' reffile '/'];
 if ~exist(sdir,'dir'), mkdir(sdir); end
 
 % files

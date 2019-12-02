@@ -90,7 +90,7 @@ if any([ force, ~exist([sdir1 mouseid '_' expname '_GREEN_mcorr.fig'],'file'),..
         fname_fig = [sdir1 mouseid '_' expname '_GREEN_mcorr.fig'];
         savefig( fh, fname_fig );
         saveas( fh, fname_fig(1:end-4), 'png' );
-        %close( fh );
+        close( fh );
     end
 
     for ii=0:(Nfiles/nPlot)-1

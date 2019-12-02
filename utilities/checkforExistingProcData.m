@@ -37,7 +37,7 @@ function check = checkforExistingProcData(data_locn, text, params)
             end
             
             % 2) Check for existing concatenated spiking and tracking data
-            if exist([dir_proc  mouseid '_' expname '_ref_' reffile '_spike_track_data.mat'],'file')
+            if exist([dir_proc  mouseid '_' expname '_ref_' reffile '_spikes_tracking_data.mat'],'file')
                 check(2) = 1;
             end
             

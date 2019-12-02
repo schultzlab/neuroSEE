@@ -72,9 +72,20 @@ if ~strcmpi(file,reffile)
     try
         [ ~, ~, ~, ~ ] = neuroSEE_imreg( imG, imR, data_locn, file, reffile, params, force );
     catch
-        fprintf('%s: Error in image registration, changing max_shift to 15\n', file);
-        params.nonrigid.max_shift = 15;
-        [ ~, ~, ~, ~ ] = neuroSEE_imreg( imG, imR, data_locn, file, reffile, params, force );
+            fprintf('%s: Error in image registration, changing max_shift to 40\n', file);
+            params.nonrigid.max_shift = 40;
+            [ ~, ~, ~, ~ ] = neuroSEE_imreg( imG, imR, data_locn, file, reffile, params, force );
+        catch
+            try
+                fprintf('%s: Error in image registration, changing max_shift to 30\n', file);
+                params.nonrigid.max_shift = 30;
+                [ ~, ~, ~, ~ ] = neuroSEE_imreg( imG, imR, data_locn, file, reffile, params, force );
+            catch
+                fprintf('%s: Error in image registration, changing max_shift to 25\n', file);
+                params.nonrigid.max_shift = 25;
+                [ ~, ~, ~, ~ ] = neuroSEE_imreg( imG, imR, data_locn, file, reffile, params, force );
+            end
+        end
     end
 
     % Send Ann slack message

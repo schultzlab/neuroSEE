@@ -177,6 +177,7 @@ if force || ~exist(sname,'file')
     saveas(fig,[sdir mouseid '_' expname '_ref' reffile '_ROIs'],'png');
     close(fig);
 else
+    fprintf('%s: Found ROI segmentation results. Proceeding to FISSA correction\n',[mouseid '_' expname])
     masks = load(sname,'masks');
     masks = masks.masks;
 end

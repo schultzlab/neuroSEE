@@ -58,9 +58,9 @@ else
 
     % generate imaging timestamps using known image frame rate
     dt = 1/fr;
-    t = (t0:dt:Nt(jj)*dt)';
-    if length(t) ~= Nt(jj)
-        t = (t0:dt:(Nt(jj)+1)*dt)';
+    t = (t0:dt:Nt*dt)';
+    if length(t) ~= Nt
+        t = (t0:dt:(Nt+1)*dt)';
     end
 
     % Downsample tracking to Ca trace

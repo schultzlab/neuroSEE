@@ -230,18 +230,18 @@ for ii = 1:Ncells
             Ntrial = Ntrial + 1;
         end
         
-        Ntrials(jj) = numel(idx_tr)-1;
+        Ntrials(ii,jj) = numel(idx_tr)-1;
         if jj == numel(idx_file)-1
-            ytick_files = [ytick_files; sum(Ntrials(1:jj))];
+            ytick_files{ii} = [ytick_files{ii}; sum(Ntrials(ii,1:jj))];
         else
-            ytick_files = [ytick_files; sum(Ntrials(1:jj))+1];
+            ytick_files{ii} = [ytick_files{ii}; sum(Ntrials(ii,1:jj))+1];
         end
     end
 end
 
 for ii = 1:Ncells
-    for tr = 1:numel(phi)
-        phi_tr = phi{tr};
+    for tr = 1:numel(phi{ii})
+        phi_tr = phi{ii}{tr};
         spike_tr = spike{ii}{tr};
 
         for n = 1:Nbins

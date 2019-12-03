@@ -42,9 +42,9 @@ if nargin<2, reffile = files(1,:); end
 for i = 1:size(files,1)
     file = files(i,:);
     if strcmpi(file,reffile)
-        fname = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr' mcorr_method '/' file '_2P_XYT_green_mcorr.tif'];
+        fname = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' file '_2P_XYT_green_mcorr.tif'];
     else
-        fname = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr' mcorr_method '_ref' reffile '/' file '_2P_XYT_green_imreg_ref' reffile '.tif'];
+        fname = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/' file '_2P_XYT_green_imreg_ref' reffile '.tif'];
     end
     fprintf('%s: reading %s\n',[mouseid '_' expname],file)
     Yii = read_file(fname);

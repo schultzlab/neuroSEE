@@ -193,6 +193,7 @@ if force || ~exist(sname,'file')
     SdownData.y = [];
     SdownData.speed = [];
     SdownData.r = [];
+    SdownData.time = [];
 
     for id = 1:size(files,1)
         file = files(id,:);

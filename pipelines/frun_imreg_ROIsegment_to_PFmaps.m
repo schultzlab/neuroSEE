@@ -360,8 +360,8 @@ if force || ~exist([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat']
     fprintf('%s: generating PFmaps\n', [mouseid '_' expname]);
     if strcmpi(params.mode_dim,'1D')
         % Generate place field maps
-        [occMap, hist, asd, activeData] = generatePFmap_1d_multifile( spikes, trackData, params );
-
+        [ occMap, hist, asd, ~, activeData ] = generatePFmap_1d( spikes, trackData, params, true );
+        
         % If 1D, sort place field maps 
         [ hist.sort_pfMap, hist.sortIdx ] = sortPFmap_1d( hist.pfMap, hist.infoMap, Nepochs );
         [ asd.sort_pfMap, asd.sortIdx ] = sortPFmap_1d( asd.pfMap, asd.infoMap, Nepochs );
@@ -375,9 +375,9 @@ if force || ~exist([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat']
         end
 
         % Make plots
-        plotPF_1d_multifile(list, occMap, hist, asd, activeData.normspkMap_pertrial, activeData.ytick_files, ...
-                            true, sdir, files, true)
-
+        plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, true, [sdir 'PFmaps/'], ...
+                  [mouseid '_' expname '_ref' reffile], true)
+        
         % Save output
         output.occMap = occMap;
         output.hist = hist;

@@ -57,7 +57,7 @@ if dsample
     t = downData.time;
 else
     downx = trackData.x;
-    downy = trackata.y;
+    downy = trackData.y;
     downphi = trackData.phi;
     downr = trackData.r;
     downspeed = trackData.speed;

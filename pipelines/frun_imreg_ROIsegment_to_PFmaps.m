@@ -71,7 +71,13 @@ params.methods.dofissa = dofissa;
 if default
     params = load_defaultparams(params);
 end
-fields = {'ROIreg','fftRigid','rigid','nonrigid'};
+if strcmpi(mcorr_method,'normcorre-nr')
+    fields = {'ROIreg','fftRigid','nonrigid'};
+elseif strcmpi(mcorr_method,'normcorre-r')
+    fields = {'ROIreg','fftRigid','rigid'};
+elseif strcmpi(mcorr_method,'normcorre')
+    fields = {'ROIreg','fftRigid','rigid','nonrigid'};
+end
 params = rmfield(params,fields);
 
 % Experiment name

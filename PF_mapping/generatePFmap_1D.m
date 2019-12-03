@@ -34,7 +34,7 @@
 %   activeData  : downsampled tracking data for when animal was moving, fields are
 %                 x, y, r, phi, speed, t, spikes, spikes_pc 
 
-function [ occMap, hist, asd, downData, activeData ] = generatePFmap_1d( spikes, trackData, params, dsample )
+function [ occMap, hist, asd, downData, activeData ] = generatePFmap_1D( spikes, trackData, params, dsample )
     
 if nargin<5, dsample = false; end
 
@@ -230,11 +230,11 @@ for jj = 1:numel(idx_file)-1
         Ntrial = Ntrial + 1;
     end
 
-    Ntrials(ii,jj) = numel(idx_tr)-1;
+    Ntrials(jj) = numel(idx_tr)-1;
     if jj == numel(idx_file)-1
-        ytick_files = [ytick_files; sum(Ntrials(ii,1:jj))];
+        ytick_files = [ytick_files; sum(Ntrials(1:jj))];
     else
-        ytick_files = [ytick_files; sum(Ntrials(ii,1:jj))+1];
+        ytick_files = [ytick_files; sum(Ntrials(1:jj))+1];
     end
 end
 

@@ -34,7 +34,7 @@
 %   activeData  : downsampled tracking data for when animal was moving, fields are
 %                 x, y, r, phi, speed, t, spikes, spikes_pc 
 
-function [ occMap, hist, asd, activeData ] = generatePFmap_1d_multisession( spikes, trackData, params )
+function [ occMap, hist, asd, activeData ] = generatePFmap_1d_multifile( spikes, trackData, params )
     
 Nbins = params.PFmap.Nbins;
 Nepochs = params.PFmap.Nepochs;

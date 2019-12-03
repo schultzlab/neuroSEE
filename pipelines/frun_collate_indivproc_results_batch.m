@@ -1,24 +1,24 @@
 % Written by Ann Go
-% list   :  File name of text file containing filenames of images to be compared.
+% list   :  name of text file containing filenames of files to be compared.
 %           Typically in the format 'list_m##_expname.txt' or 'list_m##.txt'
 %           (when wanting to include all files for mouse).
 %
 % Comparison figures will be saved in
-%           /...thefarm2/CrazyEights/AD_2PCa/Analysis/m##/individual file comparisons/
-%   e.g.    'list_m62_fam1nov-fam1.txt'         - all fam1 files in fam1nov
-%                                                   experiment
+%           /...thefarm2/CrazyEights/AD_2PCa/Analysis/m##/m##_expname/
+%   e.g.    'list_m62_fam1nov-fam1.txt'         - all fam1 files in fam1nov experiment
 %           'list_m62_fam1nov_fam1fam1rev.txt'  - all files in fam1nov and
 %                                                   fam1fam1rev experiments
 %           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
-%           'list_m86_open_s1-2.txt'            - all open field files
-%                                                   across 2 sessions
+%           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
 
 function frun_comparisons_expbatch( list, force )
 
 if nargin<2, force = false; end
     
 %% Load module folders and define data directory
-[data_locn,~,err] = load_neuroSEEmodules;
+test = false;   % flag to use test file directory
+
+[data_locn,~,err] = load_neuroSEEmodules(test);
 if ~isempty(err)
     beep
     cprintf('Errors',err);    
@@ -28,11 +28,7 @@ end
 mcorr_method = 'normcorre-nr';
 segment_method = 'CaImAn';
 dofissa = true;
-    if dofissa
-        str_fissa = 'FISSA';
-    else
-        str_fissa = 'noFISSA';
-    end
+    if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
 
 %% MouseID and experiment name
 [ mouseid, expname ] = find_mouseIDexpname(list);
@@ -45,9 +41,8 @@ Nfiles = size(files,1);
 [nRow, nCol] = getnRownCol(Nfiles);
 nPlot = nCol*nRow;
 
-
 %% Load image data for each recording
-sdir1 = [data_locn 'Analysis/' mouseid '/individual_file_comparisons/' mouseid '_' expname '_mcorr/'];
+sdir1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '_' segment_method '_' str_fissa '/indiv_mcorr/'];
     if ~exist(sdir1,'dir'), mkdir(sdir1); end
     
 if any([ force, ~exist([sdir1 mouseid '_' expname '_GREEN_mcorr.fig'],'file'),...
@@ -90,7 +85,7 @@ if any([ force, ~exist([sdir1 mouseid '_' expname '_GREEN_mcorr.fig'],'file'),..
         fname_fig = [sdir1 mouseid '_' expname '_GREEN_mcorr.fig'];
         savefig( fh, fname_fig );
         saveas( fh, fname_fig(1:end-4), 'png' );
-        close( fh );
+        %close( fh );
     end
 
     for ii=0:(Nfiles/nPlot)-1
@@ -122,7 +117,7 @@ end
 
 
 %% Load tracking data for each recording
-sdir2 = [data_locn 'Analysis/' mouseid '/individual_file_comparisons/' mouseid '_' expname '_trajectories/'];
+sdir2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '_' segment_method '_' str_fissa '/indiv_trajectories/'];
     if ~exist(sdir2,'dir'), mkdir(sdir2); end
 
 if force || ~exist([sdir2 mouseid '_' expname '_traj.fig'],'file')
@@ -180,8 +175,7 @@ else
     mode_dim = '1D'; % circular linear track
 end
 
-
-sdir3 = [data_locn 'Analysis/' mouseid '/individual_file_comparisons/' mouseid '_' expname '_PFmaps/'];
+sdir3 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '_' segment_method '_' str_fissa '/indiv_PFmaps/'];
     if ~exist(sdir3,'dir'), mkdir(sdir3); end
 
 if (force || ~exist([sdir3 mouseid '_' expname '_PFmaps.fig'],'file')) && strcmpi(mode_dim,'1D')
@@ -195,7 +189,6 @@ if (force || ~exist([sdir3 mouseid '_' expname '_PFmaps.fig'],'file')) && strcmp
         end
     end
     clear c
-
 
     %% Compare PF maps
     for ii=0:(Nfiles/nPlot)-1
@@ -225,8 +218,9 @@ if (force || ~exist([sdir3 mouseid '_' expname '_PFmaps.fig'],'file')) && strcmp
     end 
 end
 
+
 %% Load ROIs
-sdir4 = [data_locn 'Analysis/' mouseid '/individual_file_comparisons/' mouseid '_' expname '_ROIs/'];
+sdir4 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '_' segment_method '_' str_fissa '/indiv_ROIs/'];
     if ~exist(sdir4,'dir'), mkdir(sdir4); end
 
 if (force || ~exist([sdir4 mouseid '_' expname '_ROIs.fig'],'file')) 

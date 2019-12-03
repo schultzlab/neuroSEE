@@ -1,11 +1,12 @@
 Notes: 
 1. 'file': All file names are in the format yyyymmdd_HH_MM_SS.
 2. 'expname'
-    e.g.    m62_linear_day1-4
-            m62_fam1nov_fam1fam1rev
-            m62_fam1fam1rev
-            m82_open_day1
-            m82_open_day2-3
+    e.g.    fam1fam2-fam1           - the subset of fam1 images in the experiment fam1fam2    
+            fam1_s1-4               - fam1 for all 4 sessions
+            fam1nov_fam1fam1rev     - both fam1nov and fam1fam1rev experiments
+            fam1fam1rev-fam1rev     - the subset of fam1rev images in the experiment fam1fam1rev
+            open_s1                 - open field images for session 1
+            open_s2-3               - open field images for sessions 2-3
     
 
 INDIVIDUAL FILE PROCESSING (single or batch)
@@ -40,22 +41,22 @@ INDIVIDUAL FILE PROCESSING (single or batch)
 
 EXPERIMENT PROCESSING
 - To register a batch of files from the same experiment and then do the pipeline
-1. frun_comparisons_expbatch.m 
-    - function with input arguments 'expname' and 'list.txt' (both char strings)
+1. frun_collate_indivproc_results_batch.m 
+    - function with input arguments 'list.txt' (char string) and force (logical)
     - generates fig with all green channel images of files in 'list.txt'
                              red channel image
                              trajectories
                              rois
                              PFmaps
     - user can choose a reference (template) image from these figures
-    - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Analysis/mouseid/'
-        where mouseid is the first 3 characters of expname (e.g. m62)
+    - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Analysis/m##/'
 
-2. frun_imreg_expbatch.m 
+2. frun_imreg_batch.m 
     - function with input arguments array_id, 'list.txt', 'reffile', slacknotify, force
     - registers the motion corrected file number <array_id> in 'list.txt' to the template 'reffile'
     - slacknotify: set to true to get slack notifications
     - force: set to true to do image registration despite existing registered images
+    - reffile: first file on the list is the default
     - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
     
     * To run through hpc
@@ -63,23 +64,17 @@ EXPERIMENT PROCESSING
 
     Notes: 'list.txt' can include 'reffile'. It will simply be skipped.
 
-3. frun_comparison_imreg_expbatch.m
-    - function with input arguments expname, 'reffile', 'list.txt', force
+3. frun_collate_imreg_results_batch.m
+    - function with input arguments expname, 'reffile', 'list.txt', slacknotify, force
     
-4. frun_CaImAn_expbatch.m
-    - function with input arguments 'expname', 'list.txt', 'reffile',
-    - loads all images in 'list.txt' and performs CaImAn 
-    - processed data are saved in '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
-
-5. frun_fissa2maps_expbatch.m
-    - function with input arguments 'expname', 'envname', 'list.txt', 'reffile'
-        e.g. ('m62_fam1fam1rev', 'fam1rev', 'list_m62_fam1fam1rev-fam1rev.txt', '20181016_09_49_06')
-             ('m82_open_day1', [], 'list_m82_open_day1.txt', '20190406_20_27_07')
-    - does fissa, spike extraction, tracking data loading for each image in 'list.txt'
+4. frun_ROIsegment-to-PFmaps_batch.m
+    - function with input arguments 'list.txt', 'reffile', slacknotify, force
+    - loads all images in 'list.txt' and performs ROI segmentation, fissa, spike extraction, 
+        tracking data loading for each image in 'list.txt'
         then consolidates the data before running PF mapping
-    - processed data from individual fissa, spike extraction, trackind data loading are saved in
-        '...thefarm2/live/CrazyEights/AD_2PCa/Data/'
-    - processed consolidated data (PF maps) are saved in
-        '...thefarm2/live/CrazyEights/AD_2PCa/Analysis/mouseid/'
+    - processed data from individual ROI segmentation, fissa, spike extraction, tracking data loading are saved in
+        '...thefarm2/live/CrazyEights/AD_2PCa/Data/' in the individual file folders
+    - processed consolidated data (masks, fissa output, spikes, tracking data, PF maps) are saved in
+        '...thefarm2/live/CrazyEights/AD_2PCa/Analysis/m##/m##_expname/'
             
 

@@ -1,6 +1,6 @@
 % Written by Ann Go
 
-function frun_imreg_expbatch( array_id, list, reffile, refChannel, slacknotify, force )
+function frun_imreg_batch( array_id, list, reffile, refChannel, slacknotify, force )
 
 if nargin<6, force = false; end
 if nargin<5, slacknotify = false; end
@@ -10,7 +10,7 @@ tic
 
 %% Load module folders and define data directory
 
-test = false;                   % flag to use one of smaller files in test folder)
+test = false;                       % flag to use one of smaller files in test folder)
 mcorr_method = 'normcorre-nr';     % [fftRigid, normcorre, normcorre-nr, normcorre-r]
 
 [data_locn,comp,err] = load_neuroSEEmodules(test);
@@ -42,9 +42,9 @@ file = files(array_id,:);
 params.methods.mcorr_method = mcorr_method;
 params.refChannel = refChannel;
 
-if ~strcmpi(file,reffile)
+if ~strcmpi( file, reffile )
 
-    filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr' mcorr_method '_ref' reffile '/'];
+    filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/'];
     if force || ~exist([filedir file '_imreg_ref' reffile '_output.mat'],'file')
         imG = read_file([ data_locn 'Data/' file(1:8) '/2P/' file '_2P/' file '_2P_XYT_green.tif']);
         imR = read_file([ data_locn 'Data/' file(1:8) '/2P/' file '_2P/' file '_2P_XYT_red.tif']);

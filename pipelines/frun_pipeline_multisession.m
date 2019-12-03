@@ -17,7 +17,7 @@ function frun_pipeline_multisession( list )
 % (8) place field mapping
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% The section labeled "USER-DEFINED SETTINGS" requires user input
+% The section labeled "USER-DEFINED INPUT" requires user input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Matlab version requirement: neuroSEE_neuropilDecon requires at least Matlab R2018
@@ -26,7 +26,7 @@ function frun_pipeline_multisession( list )
 %% SETTINGS
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% USER-DEFINED SETTINGS                         
+% USER-DEFINED INPUT                         
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Basic settings
 default = true;             % flag to use default parameters
@@ -40,7 +40,7 @@ force = [false;...              % (1) motion correction even if motion corrected
          false;...              % (7) spike/tracking data consolidation across images
          false];                % (8) place field mapping
 
-mcorr_method = 'normcorre';    % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
+mcorr_method = 'normcorre-nr';    % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
                                     %   normcorre-r (rigid),
@@ -396,41 +396,7 @@ fname = [fdir  mouseid '_' expname '_ref_' reffile '_spikes_tracking_data.mat'];
 
 if ~exist(fname,'file') || force(7)
     fprintf('%s: concatinating timeseries and tracking data\n',[mouseid '_' expname]);
-    r_all = [];
-    for jj = 1:Nfiles
-        Nt(jj) = size(spikes{jj},2);
-        x = trackData{jj}.x;
-        y = trackData{jj}.y;
-        r = trackData{jj}.r;
-        phi = trackData{jj}.phi;
-        speed = trackData{jj}.speed;
-        tracktime = trackData{jj}.time;
-
-        % Pre-process tracking data
-        t0 = tracktime(1);                  % initial time in tracking data
-
-        % Convert -180:180 to 0:360
-        if min(phi)<0
-           phi(phi<0) = phi(phi<0)+360;
-        end
-
-        % generate imaging timestamps using known image frame rate
-        fr = params.fr;
-        dt = 1/fr;
-        t = (t0:dt:Nt(jj)*dt)';
-        if length(t) ~= Nt(jj)
-            t = (t0:dt:(Nt(jj)+1)*dt)';
-        end
-
-        % Downsample tracking to Ca trace
-        downData{jj}.phi = interp1(tracktime,phi,t,'linear');
-        downData{jj}.x = interp1(tracktime,x,t,'linear');
-        downData{jj}.y = interp1(tracktime,y,t,'linear');
-        downData{jj}.speed = interp1(tracktime,speed,t,'linear'); % mm/s
-        downData{jj}.r = interp1(tracktime,r,t,'linear'); % mm/s
-        downData{jj}.time = t;
-        r_all = [r_all; downData{jj}.r];
-    end
+    [ downData, r_all ] = downsample_trackData( trackData, spikes, params.fr );    
     clear phi x y speed r t
 
     % Initialise cell arrays

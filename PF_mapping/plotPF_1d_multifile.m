@@ -1,4 +1,4 @@
-function plotPF_1d(list, occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, sdir, files, fclose)
+function plotPF_1d_multifile(list, occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, sdir, files, fclose)
     if nargin < 10, fclose = false; end
     if nargin < 9, fsave = false; end
     if nargin < 8, fsave = false; end

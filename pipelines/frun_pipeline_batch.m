@@ -1,9 +1,7 @@
-function frun_pipeline_batch( array_id, list )
-
 % Written by Ann Go
 % 
-% This script runs the complete data processing pipeline for a list of image 
-% files. Processing steps include:
+% This script runs the complete data processing pipeline for a single
+% image file. Processing steps include:
 % (1) motion correction (and dezippering)
 % (2) roi segmentation 
 % (3) neuropil decontamination and timeseries extraction
@@ -11,16 +9,23 @@ function frun_pipeline_batch( array_id, list )
 % (5) tracking data extraction
 % (6) place field mapping
 %
-% The sections labeled "USER:..." require user input
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The section labeled "USER-DEFINED INPUT" requires user input
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Matlab version requirement: neuroSEE_neuropilDecon requires at least Matlab R2018
 
-% clear; % close all;
+function frun_pipeline_batch( array_id, list )
+
 tic
 
-%% USER: Set basic settings
-                            
-test = false;                % flag to use one of smaller files in test folder)
+%% SETTINGS
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% USER-DEFINED INPUT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Basic settings
+test = false;               % flag to use one of smaller files in test folder)
 default = true;             % flag to use default parameters
                             % flag to force
 force = [false;...              % (1) motion correction even if motion corrected images exist
@@ -30,67 +35,68 @@ force = [false;...              % (1) motion correction even if motion corrected
          false;...              % (5) tracking data extraction
          false];                % (6) place field mapping
 
-mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, fft-rigid method (Katie's)
+mcorr_method = 'normcorre-nr';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
+                                    % CaImAn NoRMCorre method: 
+                                    %   normcorre (rigid + nonrigid) 
+                                    %   normcorre-r (rigid),
+                                    %   normcorre-nr (nonrigid), 
+                                    % fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
 dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
+slacknotify = false;            % flag to send Ann slack notifications about processing
 
+            % Not user-defined
+            % Load module folders and define data directory
+            [data_locn,comp,err] = load_neuroSEEmodules(test);
+            if ~isempty(err)
+                beep
+                cprintf('Errors',err);    
+                return
+            end
+            % Some security measures
+            if ~strcmpi(comp,'mac')
+                manually_refine_spikes = false;     % Do not allow gui when running in linuxbox or hpc
+            end
+            if strcmpi(comp,'hpc')
+                maxNumCompThreads(32);      % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
+            end
+            if manually_refine_spikes
+                global spikes params
+            end
 
-%% Load module folders and define data directory
-
-[data_locn,comp,err] = load_neuroSEEmodules(test);
-if ~isempty(err)
-    beep
-    cprintf('Errors',err);    
-    return
-end
-if ~strcmpi(comp,'mac')
-    manually_refine_spikes = false;     % No gui when running in linuxbox or hpc
-end
-if strcmpi(comp,'hpc')
-    maxNumCompThreads(32);      % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
-end
-if manually_refine_spikes
-    global spikes params
-end
-
-% Send Ann slack message 
-if array_id == 1 
-    slacktext = [list(1:end-5) ': processing 1st file'];
-    neuroSEE_slackNotify( slacktext );
-end
-
-%% Image file
-
-listfile = [data_locn 'Digital_Logbook/lists/' list];
-files = extractFilenamesFromTxtfile(listfile);
-
-file = files(array_id,:); 
-
-
-%% USER: Set parameters (if not using default)
-
+% Processing parameters (if not using default)
 if ~default
-    params.fr = 30.9;                                       % imaging frame rate [default: 30.9]
+    params.fr = 30.9;                                % imaging frame rate [default: 30.9]
     % motion correction
-        % neurosee method
+        % Katie's method
         if strcmpi(mcorr_method,'fftRigid')
             params.fftRigid.imscale = 1;             % image downsampling factor                                             [default: 1]
             params.fftRigid.Nimg_ave = 10;           % no. of images to be averaged for calculating pixel shift (zippering)  [default: 10]
             params.fftRigid.refChannel = 'green';    % channel to be used for calculating image shift (green,red)            [default: 'green']
             params.fftRigid.redoT = 300;             % no. of frames at start of file to redo motion correction for after 1st iteration [default: 300]
         end
-        % NoRMCorre
-        if strcmpi(mcorr_method,'normcorre')
+        % NoRMCorre-rigid
+        if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
+            params.rigid = NoRMCorreSetParms(...
+                'd1', 512,...
+                'd2', 512,...
+                'max_shift',20,...          % default: 50
+                'bin_width',200,...         % default: 200
+                'us_fac',50,...             % default: 50
+                'init_batch',200);          % default: 200
+        end
+        % NoRMCorre-nonrigid
+        if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
             params.nonrigid = NoRMCorreSetParms(...
-                'd1',512,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
-                'd2',512,...        % length of image [default: 512] *value from actual image    
-                'grid_size',[32,32],...     % default: [32,32]
-                'overlap_pre',[32,32],...   % default: [32,32]
-                'overlap_post',[32,32],...  % default: [32,32]
+                'd1', 512,...
+                'd2', 512,...
+                'grid_size',[64,64],...     % default: [64,64]
+                'overlap_pre',[64,64],...   % default: [64,64]
+                'overlap_post',[64,64],...  % default: [64,64]
                 'iter',1,...                % default: 1
                 'use_parallel',false,...    % default: false
-                'max_shift',50,...          % default: 50
+                'max_shift',15,...          % default: 50
                 'mot_uf',4,...              % default: 4
                 'bin_width',200,...         % default: 200
                 'max_dev',3,...             % default: 3
@@ -98,48 +104,44 @@ if ~default
                 'init_batch',200);          % default: 200
         end
     % ROI segmentation 
-        params.ROIsegment.df_prctile = 5;          % percentile to be used for estimating baseline [default: 5]
-        params.ROIsegment.df_medfilt1 = 13;        % degree of smoothing for df_f          [default: 23]
+        params.ROIsegment.df_prctile = 5;     % percentile to be used for estimating baseline   [default: 5]
+        params.ROIsegment.df_medfilt1 = 13;   % degree of smoothing for df_f                    [default: 23]
     % neuropil correction
     if dofissa
-        params.fissa.ddf_prctile = 5;         % percentile to be used for estimating baseline [default:5]
-        params.fissa.ddf_medfilt1 = 17;       % degree of smoothing for ddf_f                 [default: 23]
+        params.fissa.ddf_prctile = 5;         % percentile to be used for estimating baseline   [default:5]
+        params.fissa.ddf_medfilt1 = 17;       % degree of smoothing for ddf_f                   [default: 23]
     end
     % spike extraction
-        params.spkExtract.bl_prctile = 85;         % percentile to be used for estimating baseline [default:85]
-        params.spkExtract.spk_SNR = 1;             % spike SNR for min spike value            [default: 1]
-        params.spkExtract.decay_time = 0.4;        % length of a typical transient in seconds [default: 0.4]
-        params.spkExtract.lam_pr = 0.99;           % false positive probability for determing lambda penalty   [default: 0.99]
+        params.spkExtract.bl_prctile = 85;    % percentile to be used for estimating baseline   [default:85]
+        params.spkExtract.spk_SNR = 1;        % spike SNR for min spike value                   [default: 1]
+        params.spkExtract.decay_time = 0.4;   % length of a typical transient in seconds        [default: 0.4]
+        params.spkExtract.lam_pr = 0.99;      % false positive probability for determing lambda penalty   [default: 0.99]
     % PF mapping
-        params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video [default: 1]
+        params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video           [default: 1]
         params.PFmap.histsmoothFac = 7;       % Gaussian smoothing window for histogram extraction        [default: 7]
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                               %                              Neurotar uses 8 mm/s
+        params.PFmap.prctile_thr = 95;        % percentile threshold for filtering nonPCs
 end
-
-
-%% Default and non-user defined parameters
-
-if default
-    params = load( 'default_params.mat' );
-    
-    % Remove irrelevant parameters 
-    if strcmpi(mcorr_method,'normcorre')
-        params = rmfield(params,'fftRigid');
-        fields = {'df_prctile','df_medfilt1'};
-        params.ROIsegment = rmfield(params.ROIsegment,fields);
-    else
-        params = rmfield(params,'nonrigid');
-    end
-    
-    if ~dofissa
-        params = rmfield(params,'fissa');
-    end
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 params.methods.mcorr_method = mcorr_method;
 params.methods.segment_method = segment_method;
 params.methods.dofissa = dofissa;
+
+% Default parameters
+if default
+    params = load_defaultparams(params);
+end
+params = rmfield(params,'ROIreg');
+
+% Image file
+
+listfile = [data_locn 'Digital_Logbook/lists/' list];
+files = extractFilenamesFromTxtfile(listfile);
+file = files(array_id,:); 
+
+% Some auto-defined parameters
 if str2double(file(1:4)) > 2018
     params.FOV = 490;                               % FOV area = FOV x FOV, FOV in um
     params.ROIsegment.cellrad = 6;                  % expected radius of a cell (pixels)    
@@ -147,7 +149,13 @@ if str2double(file(1:4)) > 2018
 else
     params.FOV = 330; 
     params.ROIsegment.cellrad = 9;            
-    params.ROIsegment.maxcells = 200;         
+    params.ROIsegment.maxcells = 200;       
+end
+
+% Send Ann slack message if processing has started
+if slacknotify
+    slacktext = [file ': processing started'];
+    neuroSEE_slackNotify( slacktext );
 end
 
 
@@ -157,15 +165,9 @@ end
 % check(7) checks for existing mat file pooling all processed data for file
 
 check = checkforExistingProcData(data_locn, file, params);
-if force(1)
-    force([2:4,6]) = true; % because redoing motion correction step affects all succeeding steps except step 5
-elseif force(2)
-    force([3:4,6]) = true; 
-elseif force(3)
-    force([4,6]) = true; 
-elseif force(4)>0
-    force(6) = true;
-end
+
+% Some security measures
+force = logicalForce(force);    % Only allow combinations of force values that make sense
 
 
 %% Image files
@@ -189,26 +191,8 @@ end
 %                           col_shift
 %                           params
 
-if any([ any(force(1:2)), ~check(2), ~check(1) ])
-    try
-        [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
-    catch
-        try
-            fprintf('%s: Error in motion correction, changing max_shift to 40\n', file);
-            params.nonrigid.max_shift = 40;
-            [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
-        catch
-            try
-                fprintf('%s: Error in motion correction, changing max_shift to 30\n', file);
-                params.nonrigid.max_shift = 30;
-                [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
-            catch
-                fprintf('%s: Error in motion correction, changing max_shift to 25\n', file);
-                params.nonrigid.max_shift = 25;
-                [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
-            end
-        end
-    end
+if any([ any(force(1:2)), ~check(2), ~check(1) ]) 
+    [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
 else 
     fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
     imG = []; imR = [];
@@ -226,6 +210,7 @@ end
 [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
 clear imG imR
 
+
 %% (3) Run FISSA to extract neuropil-corrected time-series
 % Saved in file folder: mat file with fields {dtsG, ddf_f, masks}
 %                       summary plots of tsG, ddf_f (fig & png)
@@ -237,7 +222,6 @@ if dofissa
         [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
     else
         fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
-        params.methods.dofissa = false;
         dofissa = false;
         dtsG = [];
         ddf_f = [];
@@ -318,15 +302,16 @@ if any(force) || any(~check)
     if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end
     if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
 end
-
-% Send Ann slack message 
-if array_id == size(files,1)
-    slacktext = [list(1:end-5) ': processing LAST file'];
-    neuroSEE_slackNotify( slacktext );
-end
-
+ 
 t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
 cprintf(str)
 
+% Send Ann slack message if processing has finished
+if slacknotify
+    slacktext = [file ': FINISHED in' num2str(round(t/3600,2)) ' hrs. No errors!'];
+    neuroSEE_slackNotify( slacktext );
 end
+
+end
+

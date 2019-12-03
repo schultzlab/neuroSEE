@@ -215,7 +215,7 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Ncells
                 axes(ha(+jj+1));
-                imagesc(normspkMap_pertrial(ii*nPlot+jj+1,:)); 
+                imagesc(normspkMap_pertrial{ii*nPlot+jj+1}); 
                 yticks(ytick_files); yticklabels(ytick_files); % ylabel('Trial #');
                 xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
                 title(['Cell ' num2str(ii*nPlot+jj+1)],'fontsize',15);
@@ -245,7 +245,7 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Npcs
                     axes(ha(+jj+1));
-                    imagesc(hist.spkMap_pertrial(ii*nPlot+jj+1,:)); 
+                    imagesc(hist.spkMap_pertrial{ii*nPlot+jj+1}); 
                     yticks(hist.ytick_files); yticklabels(hist.ytick_files); % ylabel('Trial #');
                     xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
                     title(['PC_h_i_s_t ' num2str(ii*nPlot+jj+1)],'fontsize',15);
@@ -269,7 +269,7 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Npcs
                     axes(ha(+jj+1));
-                    imagesc(hist.normspkMap_pertrial(ii*nPlot+jj+1,:)); 
+                    imagesc(hist.normspkMap_pertrial{ii*nPlot+jj+1}); 
                     yticks(hist.ytick_files); yticklabels(hist.ytick_files); %ylabel('Trial #');
                     xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
                     title(['PC_h_i_s_t ' num2str(ii*nPlot+jj+1)],'fontsize',15);
@@ -299,7 +299,7 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Npcs_asd
                     axes(ha(+jj+1));
-                    imagesc(asd.spkMap_pertrial(ii*nPlot+jj+1,:)); 
+                    imagesc(asd.spkMap_pertrial{ii*nPlot+jj+1}); 
                     yticks(asd.ytick_files); yticklabels(asd.ytick_files); % ylabel('Trial #');
                     xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
                     title(['PC_a_s_d ' num2str(ii*nPlot+jj+1)],'fontsize',15);
@@ -323,7 +323,7 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Npcs_asd
                     axes(ha(+jj+1));
-                    imagesc(asd.normspkMap_pertrial(ii*nPlot+jj+1,:)); 
+                    imagesc(asd.normspkMap_pertrial{ii*nPlot+jj+1}); 
                     yticks(asd.ytick_files); yticklabels(asd.ytick_files); % ylabel('Trial #');
                     xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
                     title(['PC_a_s_d ' num2str(ii*nPlot+jj+1)],'fontsize',15);

@@ -34,7 +34,7 @@
 %   activeData  : downsampled tracking data for when animal was moving, fields are
 %                 x, y, r, phi, speed, t, spikes, spikes_pc 
 
-function [ occMap, hist, asd, downData, activeData ] = generatePFmap_1D( spikes, trackData, params, dsample )
+function [ occMap, hist, asd, activeData ] = generatePFmap_1D( spikes, trackData, params, dsample )
     
 if nargin<5, dsample = false; end
 
@@ -256,32 +256,27 @@ end
 if ~isempty(hist.pcIdx)
     hist.spkMap_pertrial = spkMap_pertrial(hist.pcIdx);
     hist.normspkMap_pertrial = normspkMap_pertrial(hist.pcIdx);
-    hist.ytick_files = ytick_files(hist.pcIdx);
 end
 
 if ~isempty(asd.pcIdx)
     asd.spkMap_pertrial = spkMap_pertrial(asd.pcIdx);
     asd.normspkMap_pertrial = normspkMap_pertrial(asd.pcIdx);
-    asd.ytick_files = ytick_files(asd.pcIdx);
 end
 
 
 % Outputs
-downData.x = downx;
-downData.y = downy;
-downData.r = downr;
-downData.phi = downphi;
-downData.speed = downspeed;
-downData.t = t;
-
 activeData.x = activex;
 activeData.y = activey;
 activeData.r = activer;
 activeData.phi = activephi;
 activeData.speed = activespeed;
 activeData.t = activet;
+activeData.spikes = activespk;
 activeData.spikes_hist = activespk_hist;
 activeData.spikes_asd = activespk_asd; 
+activeData.spkMap_pertrial = spkMap_pertrial;
+activeData.normspkMap_pertrial = normspkMap_pertrial;
+activeData.ytick_files = ytick_files;
 
 end
 

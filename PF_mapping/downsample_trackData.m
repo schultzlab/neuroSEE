@@ -36,8 +36,8 @@ if iscell(trackData)
         downData{jj}.time = t;
         r_all = [r_all; downData{jj}.r];
     end
-    varargout(1) = downData;
-    varargout(2) = r_all;
+    varargout{1} = downData;
+    varargout{2} = r_all;
     
 else
     x = trackData.x;
@@ -71,5 +71,6 @@ else
     downData.r = interp1(tracktime,r,t,'linear'); % mm/s
     downData.time = t;
     
-    varargout(1) = downData;
+    varargout{1} = downData;
+    varargout{2} = [];
 end

@@ -375,7 +375,7 @@ if force || ~exist([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat']
         end
 
         % Make plots
-        plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, true, [sdir 'PFmaps/'], ...
+        plotPF_1d(occMap, hist, asd, activeData.normspkMap_pertrial, activeData.ytick_files, true, [sdir 'PFmaps/'], ...
                   [mouseid '_' expname '_ref' reffile], true)
         
         % Save output

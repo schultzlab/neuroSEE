@@ -11,7 +11,7 @@
 %           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
 %           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
 
-function frun_comparisons_expbatch( list, force )
+function frun_collate_indivproc_results_batch( list, force )
 
 if nargin<2, force = false; end
     

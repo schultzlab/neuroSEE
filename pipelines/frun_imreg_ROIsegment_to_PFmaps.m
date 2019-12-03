@@ -360,7 +360,7 @@ if force || ~exist([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat']
     fprintf('%s: generating PFmaps\n', [mouseid '_' expname]);
     if strcmpi(params.mode_dim,'1D')
         % Generate place field maps
-        [ occMap, hist, asd, ~, activeData ] = generatePFmap_1d( spikes, trackData, params, true );
+        [ occMap, hist, asd, ~, activeData ] = generatePFmap_1D( spikes, trackData, params, true );
         
         % If 1D, sort place field maps 
         [ hist.sort_pfMap, hist.sortIdx ] = sortPFmap_1d( hist.pfMap, hist.infoMap, Nepochs );

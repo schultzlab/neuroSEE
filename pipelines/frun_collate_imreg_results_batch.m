@@ -1,13 +1,13 @@
-function frun_comparison_imreg_expbatch( expname, reffile, list, mcorr_method, force )
+function frun_collate_imreg_results_batch( list, reffile, mcorr_method, force )
 
-% e.g. expname: 'm62_fam1nov_fam1fam1rev'
-%               'm62_fam1fam1rev'
-%               'm70_fam1_s1-5'
-%               'm82_open_s1-2'
-%               'm82_open_s1'
+% e.g. m##_expname: 'm62_fam1nov_fam1fam1rev'
+%                   'm62_fam1fam1rev'
+%                   'm70_fam1_s1-5'
+%                   'm82_open_s1-2'
+%                   'm82_open_s1'
 
-if nargin<5, force = false; end
-if nargin<4, mcorr_method = 'normcorre'; end
+if nargin<4, force = false; end
+if nargin<3, mcorr_method = 'normcorre-nr'; end
 
 %% Load module folders and define data directory
 test = false;                   % flag to use one of smaller files in test folder)
@@ -21,11 +21,15 @@ end
 %% Files
 listfile = [data_locn 'Digital_Logbook/lists/' list];
 files = extractFilenamesFromTxtfile( listfile );
+if nargin<2, reffile = files(1,:); end
 Nfiles = size(files,1);
-mouseid = expname(1:3);
+% Experiment name
+[ mouseid, expname ] = find_mouseIDexpname(list);
 
 [nRow, nCol] = getnRownCol(Nfiles);
 nPlot = nCol*nRow;
+Nfig = (Nfiles/nPlot)-1;
+if Nfig < 0, Nfig = 0; end
 
 % template file
 filedir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_' mcorr_method '/'];
@@ -36,7 +40,7 @@ clear c
 
 
 %% Load image data for each recording
-sdir = [data_locn 'Analysis/' mouseid '/individual_file_comparisons/' expname '_imreg_ref' reffile '/'];
+sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '/indiv_imreg_ref' reffile '/'];
 if ~exist(sdir,'dir'), mkdir(sdir); end
     
 if any([ force, ~exist([sdir expname '_GREEN_imreg_ref' reffile '.fig'],'file'),...
@@ -44,7 +48,7 @@ if any([ force, ~exist([sdir expname '_GREEN_imreg_ref' reffile '.fig'],'file'),
     for i = 1:Nfiles
         file = files(i,:);
         if ~strcmpi(file,reffile)
-            fname = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre_ref' reffile '/'...
+            fname = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/'...
                      file '_imreg_ref' reffile '_output.mat'];
             if exist(fname,'file')
                 c = load(fname);
@@ -67,7 +71,7 @@ if any([ force, ~exist([sdir expname '_GREEN_imreg_ref' reffile '.fig'],'file'),
 
     %% Compare green and red images to see which ones are most similar
 
-    for ii=0:Nfiles/nPlot
+    for ii=0:Nfig
         fh = figure;
         ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
         for jj=0:nPlot-1
@@ -97,7 +101,7 @@ if any([ force, ~exist([sdir expname '_GREEN_imreg_ref' reffile '.fig'],'file'),
         close( fh );
 
     if isfield(M(1),'red')
-        for ii=0:Nfiles/nPlot
+        for ii=0:Nfig
             fh = figure;
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1

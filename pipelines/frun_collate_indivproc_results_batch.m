@@ -40,9 +40,12 @@ Nfiles = size(files,1);
 
 [nRow, nCol] = getnRownCol(Nfiles);
 nPlot = nCol*nRow;
+Nfig = (Nfiles/nPlot)-1;
+if Nfig < 0, Nfig = 0; end
+
 
 %% Load image data for each recording
-sdir1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '_' segment_method '_' str_fissa '/indiv_mcorr/'];
+sdir1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '/indiv_mcorr/'];
     if ~exist(sdir1,'dir'), mkdir(sdir1); end
     
 if any([ force, ~exist([sdir1 mouseid '_' expname '_GREEN_mcorr.fig'],'file'),...
@@ -61,7 +64,7 @@ if any([ force, ~exist([sdir1 mouseid '_' expname '_GREEN_mcorr.fig'],'file'),..
 
     %% Compare green and red images to see which ones are most similar
 
-    for ii=0:(Nfiles/nPlot)-1
+    for ii=0:Nfig
         fh = figure;
         ha = tight_subplot(nRow,nCol,[.04 .01],[.01 .07],[.01 .01]);
         for jj=0:nPlot-1
@@ -85,10 +88,10 @@ if any([ force, ~exist([sdir1 mouseid '_' expname '_GREEN_mcorr.fig'],'file'),..
         fname_fig = [sdir1 mouseid '_' expname '_GREEN_mcorr.fig'];
         savefig( fh, fname_fig );
         saveas( fh, fname_fig(1:end-4), 'png' );
-        %close( fh );
+        close( fh );
     end
 
-    for ii=0:(Nfiles/nPlot)-1
+    for ii=0:Nfig
         fh = figure;
         ha = tight_subplot(nRow,nCol,[.04 .01],[.01 .07],[.01 .01]);
         for jj=0:nPlot-1
@@ -117,7 +120,7 @@ end
 
 
 %% Load tracking data for each recording
-sdir2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '_' segment_method '_' str_fissa '/indiv_trajectories/'];
+sdir2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/indiv_trajectories/'];
     if ~exist(sdir2,'dir'), mkdir(sdir2); end
 
 if force || ~exist([sdir2 mouseid '_' expname '_traj.fig'],'file')
@@ -135,7 +138,7 @@ if force || ~exist([sdir2 mouseid '_' expname '_traj.fig'],'file')
 
 
     %% Compare trajectories
-    for ii=0:(Nfiles/nPlot)-1
+    for ii=0:Nfig
         fh = figure;
         ha = tight_subplot(nRow,nCol,[.04 .01],[.01 .07],[.01 .01]);
         for jj=0:nPlot-1
@@ -175,7 +178,7 @@ else
     mode_dim = '1D'; % circular linear track
 end
 
-sdir3 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '_' segment_method '_' str_fissa '/indiv_PFmaps/'];
+sdir3 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '/indiv_PFmaps/'];
     if ~exist(sdir3,'dir'), mkdir(sdir3); end
 
 if (force || ~exist([sdir3 mouseid '_' expname '_PFmaps.fig'],'file')) && strcmpi(mode_dim,'1D')
@@ -191,7 +194,7 @@ if (force || ~exist([sdir3 mouseid '_' expname '_PFmaps.fig'],'file')) && strcmp
     clear c
 
     %% Compare PF maps
-    for ii=0:(Nfiles/nPlot)-1
+    for ii=0:Nfig
         fh = figure;
         ha = tight_subplot(nRow,nCol,[.04 .01],[.01 .07],[.01 .01]);
         for jj=0:nPlot-1
@@ -220,7 +223,7 @@ end
 
 
 %% Load ROIs
-sdir4 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '_' segment_method '_' str_fissa '/indiv_ROIs/'];
+sdir4 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '/indiv_ROIs/'];
     if ~exist(sdir4,'dir'), mkdir(sdir4); end
 
 if (force || ~exist([sdir4 mouseid '_' expname '_ROIs.fig'],'file')) 
@@ -241,7 +244,7 @@ if (force || ~exist([sdir4 mouseid '_' expname '_ROIs.fig'],'file'))
 
     %% Compare ROIs
     plotopts.plot_ids = 0; % set to 1 to view the ID number of the ROIs on the plot
-    for ii=0:(Nfiles/nPlot)-1
+    for ii=0:Nfig
         fh = figure;
         ha = tight_subplot(nRow,nCol,[.04 .01],[.01 .07],[.01 .01]);
         for jj=0:nPlot-1

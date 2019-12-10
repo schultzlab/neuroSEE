@@ -208,14 +208,16 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
     % per trial spike maps for all cells
     [nRow, nCol] = getnRownCol(Ncells);
     nPlot = nRow*nCol;
+    Nfig = (Ncells/nPlot)-1;
+    if Nfig<0, Nfig = 0; end
     
-    for ii=0:(Ncells/nPlot)-1
+    for ii=0:Nfig
         fh = figure;
         ha = tight_subplot(nRow,nCol,[.02 .015],[.01 .05],[.01 .01]);
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Ncells
                 axes(ha(+jj+1));
-                imagesc(normspkMap_pertrial{ii*nPlot+jj+1}); 
+                imagesc(normspkMap_pertrial(ii*nPlot+jj+1,:)); 
                 yticks(ytick_files); yticklabels(ytick_files); % ylabel('Trial #');
                 xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
                 title(['Cell ' num2str(ii*nPlot+jj+1)],'fontsize',15);
@@ -234,18 +236,20 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
     end 
 
     % per trial spike maps for place cells
-    [nRow, nCol] = getnRownCol(Npcs);
+    [nRow, nCol] = getnRownCol(Ncells);
     nPlot = nRow*nCol;
+    Nfig = (Npcs/nPlot)-1;
+    if Nfig<0, Nfig = 0; end
     
     % histogram
     if Npcs > 0 
-        for ii=0:(Npcs/nPlot)-1
+        for ii=0:Nfig
             fh = figure;
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Npcs
                     axes(ha(+jj+1));
-                    imagesc(hist.spkMap_pertrial{ii*nPlot+jj+1}); 
+                    imagesc(hist.spkMap_pertrial(ii*nPlot+jj+1,:)); 
                     yticks(ytick_files); yticklabels(ytick_files); % ylabel('Trial #');
                     xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
                     title(['PC_h_i_s_t ' num2str(ii*nPlot+jj+1)],'fontsize',15);
@@ -263,13 +267,13 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
             end
         end 
 
-        for ii=0:(Npcs/nPlot)-1
+        for ii=0:Nfig
             fh = figure;
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Npcs
                     axes(ha(+jj+1));
-                    imagesc(hist.normspkMap_pertrial{ii*nPlot+jj+1}); 
+                    imagesc(hist.normspkMap_pertrial(ii*nPlot+jj+1,:)); 
                     yticks(ytick_files); yticklabels(ytick_files); %ylabel('Trial #');
                     xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
                     title(['PC_h_i_s_t ' num2str(ii*nPlot+jj+1)],'fontsize',15);
@@ -289,17 +293,19 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
     end
 
     % asd
-    [nRow, nCol] = getnRownCol(Npcs_asd);
+    [nRow, nCol] = getnRownCol(Ncells);
     nPlot = nRow*nCol;
+    Nfig = (Npcs_asd/nPlot)-1;
+    if Nfig<0, Nfig = 0; end
     
     if Npcs_asd > 0 
-        for ii=0:(Npcs_asd/nPlot)-1
+        for ii=0:Nfig
             fh = figure;
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Npcs_asd
                     axes(ha(+jj+1));
-                    imagesc(asd.spkMap_pertrial{ii*nPlot+jj+1}); 
+                    imagesc(asd.spkMap_pertrial(ii*nPlot+jj+1,:)); 
                     yticks(ytick_files); yticklabels(ytick_files); % ylabel('Trial #');
                     xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
                     title(['PC_a_s_d ' num2str(ii*nPlot+jj+1)],'fontsize',15);
@@ -317,13 +323,13 @@ function plotPF_1d(occMap, hist, asd, normspkMap_pertrial, ytick_files, fsave, s
             end
         end 
 
-        for ii=0:(Npcs_asd/nPlot)-1
+        for ii=0:Nfig
             fh = figure;
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Npcs_asd
                     axes(ha(+jj+1));
-                    imagesc(asd.normspkMap_pertrial{ii*nPlot+jj+1}); 
+                    imagesc(asd.normspkMap_pertrial(ii*nPlot+jj+1,:)); 
                     yticks(ytick_files); yticklabels(ytick_files); % ylabel('Trial #');
                     xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
                     title(['PC_a_s_d ' num2str(ii*nPlot+jj+1)],'fontsize',15);

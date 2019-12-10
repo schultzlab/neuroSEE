@@ -223,6 +223,7 @@ for ii = 1:Ncells
             end
         end
         idx_tr = idx_tr( idx_tr > 0 );
+        if numel(idx_tr)==1, idx_tr = [idx_tr; numel(p_tr)]; end
         
         for k = 1:numel(idx_tr)-1
             phi{Ntrial} = p_tr(idx_tr(k)+1:idx_tr(k+1));

@@ -29,8 +29,9 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
     else
         refChannel = 'green';
     end
+    mcorr_method = params.mcorr_method;
     
-    filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre_ref' reffile '/'];
+    filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/'];
     if ~exist( filedir, 'dir' ), mkdir( filedir ); end
 
     fname_tif_gr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
@@ -40,7 +41,7 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
     fname_fig_red = [filedir file '_red_imreg_ref' reffile '_summary.fig'];
     
     % template file
-    refdir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_normcorre/'];
+    refdir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_' mcorr_method '/'];
     c = load([refdir reffile '_mcorr_output.mat']);
     template_g = c.green.meanregframe;
     template_r = c.red.meanregframe;

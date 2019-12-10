@@ -29,7 +29,7 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
     else
         refChannel = 'green';
     end
-    mcorr_method = params.mcorr_method;
+    mcorr_method = params.methods.mcorr_method;
     
     filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/'];
     if ~exist( filedir, 'dir' ), mkdir( filedir ); end

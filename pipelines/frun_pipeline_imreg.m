@@ -422,8 +422,8 @@ if any(force(3:5)) || ~check(2)
 
     %% Plot and save superset arrays
     % raw timeseries & dF/F
-    if ~exist([sdir mouseid '_' expname '_ref' reffile '_fissa_result.fig'],'file') ||...
-       ~exist([sdir mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],'file') 
+    if ~exist([grp_sdir mouseid '_' expname '_ref' reffile '_fissa_result.fig'],'file') ||...
+       ~exist([grp_sdir mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],'file') 
         fname_fig = [grp_sdir mouseid '_' expname '_ref' reffile];
         plotfissa(SdtsG, Sddf_f, fname_fig);
     end

@@ -15,7 +15,7 @@ test = false;               % flag to use one of smaller files in test folder
 default = true;             % flag to use default parameters
                             % flag to force
 force = [false;...              % (1) image registration even if registered images exist
-         false;...              % (2) roi segmentation
+         true;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
          false;...              % (5) tracking data consolidation
@@ -177,10 +177,11 @@ for n = 1:Nfiles
             [ imG{n}, ~, ~, ~ ] = neuroSEE_imreg( imG, imR, data_locn, file, reffile, params, force );
         else
             if force(2) || ~check(1)
-                fprintf('%s: Found registered image. Loading...', [mouseid '_' expname '_' file])
+                fprintf('%s: Found registered image. Loading...\n', [mouseid '_' expname '_' file])
                 imG{n} = read_file([ imdir file '_2P_XYT_green_imreg_ref' reffile '.tif' ]);
             end
         end
+    else
     end
 end
 
@@ -191,7 +192,7 @@ grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'
 grp_sname = [grp_sdir mouseid '_' expname '_ref_' reffile '_segment_output.mat'];
     
 if force(2) || ~check(1)
-    fprintf('%s: downsampling images', [mouseid '_' expname])
+    fprintf('%s: downsampling images\n', [mouseid '_' expname])
     for n = 1:Nfiles
         Yii = imG{n};
         Y(:,:,(n-1)*size(Yii,3)+1:n*size(Yii,3)) = Yii;
@@ -269,6 +270,9 @@ else
         fprintf('%s: Found ROI segmentation results. Proceeding to FISSA correction\n',[mouseid '_' expname])
         masks = load(grp_sname,'masks');
         masks = masks.masks;
+        corr_image = load(grp_sname,'corr_image');
+        tsG = load(grp_sname,'tsG');
+        df_f = load(grp_sname,'df_f');
     end
 end
 
@@ -459,7 +463,7 @@ else
 end
 
 Nepochs = params.PFmap.Nepochs;
-if force || ~exist([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'file')
+if force(6) || ~check(3)
     fprintf('%s: generating PFmaps\n', [mouseid '_' expname]);
     if strcmpi(params.mode_dim,'1D')
         % Generate place field maps
@@ -487,7 +491,7 @@ if force || ~exist([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat']
         output.asd = asd;
         output.activeData = activeData;
         output.params = params.PFmap;
-        save([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'-struct','output');
+        save([grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'-struct','output');
     
     else % '2D'
         [occMap, spkMap, spkIdx, hist, asd, ~, activeData] = generatePFmap_2d(spikes, [], trackData, params, false);
@@ -503,14 +507,17 @@ if force || ~exist([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat']
         output.asd = asd;
         output.activeData = activeData;
         output.params = params.PFmap;
-        save([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'-struct','output');
+        save([grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'-struct','output');
     end
 end
 
-sname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
+sname_allData = [ grp_sdir mouseid '_' expname '_ref' reffile '_allData.mat'];
 
-save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
-                    'downData','activeData','occMap','hist','asd','params');
+save(sname_allData,'list','corr_image','masks','tsG','df_f','dtsG','ddf_f','spikes',...
+                    'trackData','activeData','occMap','hist','asd','params');
+if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end
+if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
+
 
 % Send Ann slack message if processing has finished
 if slacknotify

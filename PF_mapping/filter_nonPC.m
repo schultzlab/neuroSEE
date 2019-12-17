@@ -2,15 +2,16 @@
 % Function for filtering non place cells 
 % Based on Indersmitten et al 2019, Front Neurosci
 
-function [ pcIdx, pcIdx_asd ] = filter_nonPC( bin_phi, activespikes, infoMap, infoMap_asd, Nbins, prctile_thr, randN )
+function [ pcIdx, pcIdx_asd ] = filter_nonPC( bin_phi, activespikes, infoMap, infoMap_asd, Nbins, prctile_thr, randN, info, info_type )
 
+if nargin<9, info_type = 1; end % 1 for info/sec, 2 for info/spike
+if nargin<8, info = 'MI'; end
 if nargin<7, randN = 1000; end
 if nargin<6, prctile_thr = 99; end
 
 Ncells = size(activespikes,1); % number of cells
-info_type = 1; % 1 for info/sec, 2 for info/spike
 spikeMap = zeros(Ncells,Nbins);
-MI = zeros(1,randN);
+I = zeros(1,randN);
 pcIdx = []; pcIdx_asd = [];
 % prctile_thr = 70;
 
@@ -27,12 +28,12 @@ if iscell(bin_phi)
             occMap = occ(randind);
 
             pcMap = spikeMap(id,:)./occMap;
-            [MI(id,j),~] = infoMeasures(pcMap, occMap, 0);
+            [I(id,j),~] = infoMeasures(pcMap, occMap, 0, info);
         end
-        if infoMap(id,info_type) > prctile(MI(id,:),prctile_thr)
+        if infoMap(id,info_type) > prctile(I(id,:),prctile_thr)
             pcIdx = [pcIdx; id];
         end
-        if infoMap_asd(id,info_type) > prctile(MI(id,:),prctile_thr)
+        if infoMap_asd(id,info_type) > prctile(I(id,:),prctile_thr)
             pcIdx_asd = [pcIdx_asd; id];
         end
     end
@@ -48,12 +49,12 @@ else
             occMap = occ(randind);
 
             pcMap = spikeMap(id,:)./occMap;
-            [MI(id,j),~] = infoMeasures(pcMap, occMap, 0);
+            [I(id,j),~] = infoMeasures(pcMap, occMap, 0, info);
         end
-        if infoMap(id,info_type) > prctile(MI(id,:),prctile_thr)
+        if infoMap(id,info_type) > prctile(I(id,:),prctile_thr)
             pcIdx = [pcIdx; id];
         end
-        if infoMap_asd(id,info_type) > prctile(MI(id,:),prctile_thr)
+        if infoMap_asd(id,info_type) > prctile(I(id,:),prctile_thr)
             pcIdx_asd = [pcIdx_asd; id];
         end
     end

@@ -177,9 +177,15 @@ for n = 1:Nfiles
             [ imG{n}, ~, ~, ~ ] = neuroSEE_imreg( imG, imR, data_locn, file, reffile, params, force );
         else
             if force(2) || ~check(1)
-                fprintf('%s: Found registered image. Loading...', [mouseid '_' expname '_' file])
+                fprintf('%s: Found registered image. Loading...\n', [mouseid '_' expname '_' file])
                 imG{n} = read_file([ imdir file '_2P_XYT_green_imreg_ref' reffile '.tif' ]);
             end
+        end
+    else
+        if force(2) || ~check(1)
+            imdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/'];
+            fprintf('%s: loading reference image\n', [mouseid '_' expname '_' file])
+            imG{n} = read_file([ imdir file '_2P_XYT_green_mcorr.tif' ]);
         end
     end
 end
@@ -188,10 +194,11 @@ end
 grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
         mcorr_method '_' segment_method '_' str_fissa '/'...
         mouseid '_' expname '_imreg_ref' reffile '/'];
+    if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); end
 grp_sname = [grp_sdir mouseid '_' expname '_ref_' reffile '_segment_output.mat'];
     
 if force(2) || ~check(1)
-    fprintf('%s: downsampling images', [mouseid '_' expname])
+    fprintf('%s: downsampling images\n', [mouseid '_' expname])
     for n = 1:Nfiles
         Yii = imG{n};
         Y(:,:,(n-1)*size(Yii,3)+1:n*size(Yii,3)) = Yii;
@@ -216,7 +223,6 @@ if force(2) || ~check(1)
     if strcmpi(segment_method,'CaImAn')
         [df_f, masks, corr_image] = CaImAn( imG, file, maxcells, cellrad );
         df_f = full(df_f);
-        clear imG
         
         % Extract raw timeseries
         [d1,d2,T] = size(imG);
@@ -228,6 +234,8 @@ if force(2) || ~check(1)
                 tsG(ii,t) = mean( imG_reshaped(maskind) );
             end
         end
+        clear imG
+        
         fprintf( '%s: ROI segmentation done. Saving output...\n', [mouseid '_' expname] );
     end
 
@@ -416,7 +424,7 @@ if any(force(3:5)) || ~check(2)
     % raw timeseries & dF/F
     if ~exist([sdir mouseid '_' expname '_ref' reffile '_fissa_result.fig'],'file') ||...
        ~exist([sdir mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],'file') 
-        fname_fig = [sdir mouseid '_' expname '_ref' reffile];
+        fname_fig = [grp_sdir mouseid '_' expname '_ref' reffile];
         plotfissa(SdtsG, Sddf_f, fname_fig);
     end
     clear dtsG ddf_f
@@ -481,7 +489,7 @@ if force(6) || ~check(3)
         end
 
         % Make plots
-        plotPF_1d(occMap, hist, asd, activeData.normspkMap_pertrial, activeData.ytick_files, true, [sdir 'PFmaps/'], ...
+        plotPF_1d(occMap, hist, asd, activeData.normspkMap_pertrial, activeData.ytick_files, true, [grp_sdir 'PFmaps/'], ...
                   [mouseid '_' expname '_ref' reffile], true)
         
         % Save output

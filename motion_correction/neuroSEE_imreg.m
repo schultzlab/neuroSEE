@@ -21,24 +21,22 @@
 %   params      : parameters for specific motion correction method
 
 function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
-                                                imG, imR, data_locn, file, reffile, params, force )
+                                                imG, imR, data_locn, file, reffile, params )
                                             
-    if nargin<7, force = 0; end
-    if isfield(params,'refChannel')
-        refChannel = params.refChannel;
+    if isfield(params.mcorr,'refChannel')
+        refChannel = params.mcorr.refChannel;
     else
         refChannel = 'green';
     end
     mcorr_method = params.methods.mcorr_method;
-    
+   
+    % filenames
     filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/'];
     if ~exist( filedir, 'dir' ), mkdir( filedir ); end
 
     fname_tif_gr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
     fname_tif_red = [filedir file '_2P_XYT_red_imreg_ref' reffile '.tif'];
     fname_mat_mcorr = [filedir file '_imreg_ref' reffile '_output.mat'];
-    fname_fig_gr = [filedir file '_green_imreg_ref' reffile '_summary.fig'];
-    fname_fig_red = [filedir file '_red_imreg_ref' reffile '_summary.fig'];
     
     % template file
     refdir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_' mcorr_method '/'];
@@ -46,59 +44,49 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
     template_g = c.green.meanregframe;
     template_r = c.red.meanregframe;
     
-    if any([ force, ~exist(fname_tif_gr,'file'), ~exist(fname_tif_red,'file'), ~exist(fname_mat_mcorr,'file') ])
-        fprintf( '%s: Starting image registration to %s\n', file, reffile );
-        
-        params.nonrigid = NoRMCorreSetParms(...
-                            'd1', size(imG,1),...         
-                            'd2', size(imG,2),...
-                            'grid_size', params.nonrigid.grid_size,...
-                            'overlap_pre', params.nonrigid.overlap_pre,...
-                            'overlap_post', params.nonrigid.overlap_post,...
-                            'iter', params.nonrigid.iter,...
-                            'use_parallel', params.nonrigid.use_parallel,...
-                            'max_shift', params.nonrigid.max_shift,...
-                            'mot_uf', params.nonrigid.mot_uf,...
-                            'bin_width', params.nonrigid.bin_width,...
-                            'max_dev', params.nonrigid.max_dev,...
-                            'us_fac', params.nonrigid.us_fac,...
-                            'init_batch', params.nonrigid.init_batch);        
-
-        if strcmpi(refChannel,'green')
-            [ imG, imR, out_g, out_r, col_shift, shifts, ~, ~ ] = normcorre_2ch( imG, imR, params.nonrigid, template_g );
-        else
-            [ imR, imG, out_r, out_g, col_shift, shifts, ~, ~ ] = normcorre_2ch( imR, imG, params.nonrigid, template_r );
+    % image registration
+    fprintf( '%s: Starting image registration to %s\n', file, reffile );
+    if strcmpi(refChannel,'green')
+        if strcmpi(mcorr_method,'normcorre-r')
+            [ imG, imR, out_g, out_r, col_shift, shifts, ~, ~ ] = normcorre_2ch( imG, imR, params.mcorr.normcorre_r, template_g );
+        elseif strcmpi(mcorr_method,'normcorre-nr')
+            [ imG, imR, out_g, out_r, col_shift, shifts, ~, ~ ] = normcorre_2ch( imG, imR, params.mcorr.normcorre_nr, template_g );
+        elseif strcmpi(mcorr_method,'normcorre')
+            [ imG, imR, ~, ~, ~, ~, ~, ~ ] = normcorre_2ch( imG, imR, params.mcorr.normcorre_r, template_g );
+            [ imG, imR, out_g, out_r, col_shift, shifts, ~, ~ ] = normcorre_2ch( imG, imR, params.mcorr.normcorre_nr, template_g );
         end
-        
-        % Save summary figure
-        makeplot(out_g,out_r);
-        
-        % Save output
-        mcorr_output.green = out_g;
-        mcorr_output.red = out_r;
-        mcorr_output.shifts = shifts;
-        mcorr_output.col_shift = col_shift;
-        mcorr_output.template_g = template_g;
-        mcorr_output.template_r = template_r;
-        mcorr_output.params = params.nonrigid;
-        save(fname_mat_mcorr,'-struct','mcorr_output');
-
-        % Save motion corrected tif images
-        prevstr = sprintf( '%s: Saving registered tif images...\n', file );
-        cprintf('Text',prevstr);
-        writeTifStack( imG,fname_tif_gr );
-        writeTifStack( imR,fname_tif_red );
-        str = sprintf( '%s: Registered tif images saved\n', file );
-        refreshdisp( str, prevstr );
     else
-        mcorr_output = load(fname_mat_mcorr);
-        if ~exist(fname_fig_gr,'file') || ~exist(fname_fig_red,'file')
-            out_g = mcorr_output.green;
-            out_r = mcorr_output.red;
-            makeplot(out_g,out_r);
+        if strcmpi(mcorr_method,'normcorre-r')
+            [ imR, imG, out_r, out_g, col_shift, shifts, ~, ~ ] = normcorre_2ch( imR, imG, params.mcorr.normcorre_r, template_r );
+        elseif strcmpi(mcorr_method,'normcorre-nr')
+            [ imR, imG, out_r, out_g, col_shift, shifts, ~, ~ ] = normcorre_2ch( imR, imG, params.mcorr.normcorre_nr, template_r );
+        elseif strcmpi(mcorr_method,'normcorre')
+            [ imR, imG, ~, ~, ~, ~, ~, ~ ] = normcorre_2ch( imR, imG, params.mcorr.normcorre_r, template_r );
+            [ imR, imG, out_r, out_g, col_shift, shifts, ~, ~ ] = normcorre_2ch( imR, imG, params.mcorr.normcorre_nr, template_r );
         end
     end
-    
+
+    % Save summary figure
+    makeplot(out_g,out_r);
+
+    % Save output
+    mcorr_output.green = out_g;
+    mcorr_output.red = out_r;
+    mcorr_output.shifts = shifts;
+    mcorr_output.col_shift = col_shift;
+    mcorr_output.template_g = template_g;
+    mcorr_output.template_r = template_r;
+    mcorr_output.params = params.mcorr;
+    save(fname_mat_mcorr,'-struct','mcorr_output');
+
+    % Save motion corrected tif images
+    prevstr = sprintf( '%s: Saving registered tif images...\n', file );
+    cprintf('Text',prevstr);
+    writeTifStack( imG,fname_tif_gr );
+    writeTifStack( imR,fname_tif_red );
+    str = sprintf( '%s: Registered tif images saved\n', file );
+    refreshdisp( str, prevstr );
+
     function makeplot(out_g,out_r)
         fh = figure; 
         subplot(221), 
@@ -123,7 +111,7 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_imreg(...
             savefig( fh, figname );
             saveas( fh, figname, 'png' );
         close( fh );
-        
+
         fh = figure; 
         subplot(221), 
             imagesc( out_r.meanframe ); 

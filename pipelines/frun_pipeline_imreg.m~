@@ -1,10 +1,9 @@
 % Written by Ann Go
 
-function frun_imreg_ROIsegment_to_PFmaps( list, reffile, slacknotify, force )
+function frun_pipeline_imreg( list, reffile, slacknotify )
 
-if nargin<4, force = false; end
 if nargin<3, slacknotify = false; end
-% if nargin<2, see line 81
+% if nargin<2, see line 121
 
 tic
 
@@ -12,9 +11,15 @@ tic
 % USER-DEFINED INPUT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Basic settings
-test = false;               % flag to use one of smaller files in test folder)
+test = false;               % flag to use one of smaller files in test folder
 default = true;             % flag to use default parameters
                             % flag to force
+force = [false;...              % (1) image registration even if registered images exist
+         false;...              % (2) roi segmentation
+         false;...              % (3) neuropil decontamination
+         false;...              % (4) spike extraction
+         false;...              % (5) tracking data consolidation
+         false];                % (6) place field mapping
 mcorr_method = 'normcorre-nr';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
@@ -40,7 +45,44 @@ dofissa = true;                 % flag to implement FISSA (when false, overrides
 
 % Processing parameters (if not using default)
 if ~default
-    params.fr = 30.9;                         % imaging frame rate [default: 30.9]
+    params.fr = 30.9;                                % imaging frame rate [default: 30.9]
+    % motion correction
+        params.mcorr.refChannel = 'green';           % reference channel for motion correction [default: 'green']
+        % Katie's method
+        if strcmpi(mcorr_method,'fftRigid')
+            params.mcorr.fftRigid.imscale = 1;             % image downsampling factor                                             [default: 1]
+            params.mcorr.fftRigid.Nimg_ave = 10;           % no. of images to be averaged for calculating pixel shift (zippering)  [default: 10]
+            params.mcorr.fftRigid.redoT = 300;             % no. of frames at start of file to redo motion correction for after 1st iteration [default: 300]
+        end
+        % NoRMCorre-rigid
+        if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
+            params.mcorr.normcorre_r = NoRMCorreSetParms(...
+                'd1', 512,...
+                'd2', 512,...
+                'max_shift',20,...          % default: 50
+                'bin_width',200,...         % default: 200
+                'us_fac',50,...             % default: 50
+                'init_batch',200);          % default: 200
+            params.mcorr.normcorre_r.print_msg = false;   % default: false
+        end
+        % NoRMCorre-nonrigid
+        if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
+            params.mcorr.normcorre_nr = NoRMCorreSetParms(...
+                'd1', 512,...
+                'd2', 512,...
+                'grid_size',[64,64],...     % default: [64,64]
+                'overlap_pre',[64,64],...   % default: [64,64]
+                'overlap_post',[64,64],...  % default: [64,64]
+                'iter',1,...                % default: 1
+                'use_parallel',false,...    % default: false
+                'max_shift',15,...          % default: 50
+                'mot_uf',4,...              % default: 4
+                'bin_width',200,...         % default: 200
+                'max_dev',3,...             % default: 3
+                'us_fac',50,...             % default: 50
+                'init_batch',200);          % default: 200
+            params.mcorr.normcorre_r.print_msg = false;    % default: false
+        end
     % ROI segmentation 
         params.ROIsegment.df_prctile = 5;     % percentile to be used for estimating baseline   [default: 5]
         params.ROIsegment.df_medfilt1 = 13;   % degree of smoothing for df_f                    [default: 23]
@@ -59,7 +101,7 @@ if ~default
         params.PFmap.histsmoothFac = 7;       % Gaussian smoothing window for histogram extraction        [default: 7]
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                               %                              Neurotar uses 8 mm/s
-        params.PFmap.prctile_thr = 95;        % percentile threshold for filtering nonPCs
+        params.PFmap.prctile_thr = 99;        % percentile threshold for filtering nonPCs       [default: 99]
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -71,25 +113,18 @@ params.methods.dofissa = dofissa;
 if default
     params = load_defaultparams(params);
 end
-if strcmpi(mcorr_method,'normcorre-nr')
-    fields = {'ROIreg','fftRigid','nonrigid'};
-elseif strcmpi(mcorr_method,'normcorre-r')
-    fields = {'ROIreg','fftRigid','rigid'};
-elseif strcmpi(mcorr_method,'normcorre')
-    fields = {'ROIreg','fftRigid','rigid','nonrigid'};
-end
-params = rmfield(params,fields);
 
-% Experiment name
+% Mouseid, Experiment name, files
 [ mouseid, expname ] = find_mouseIDexpname(list);
 listfile = [data_locn 'Digital_Logbook/lists/' list];
 files = extractFilenamesFromTxtfile( listfile );
 if nargin<2, reffile = files(1,:); end
+Nfiles = size(files,1);
 
 % Some auto-defined parameters
 if str2double(files(1,1:4)) > 2018
-    params.FOV = 490;                               % FOV area = FOV x FOV, FOV in um
-    params.ROIsegment.cellrad = 6;                  % expected radius of a cell (pixels)    
+    params.FOV = 490;                     % FOV area = FOV x FOV, FOV in um
+    params.ROIsegment.cellrad = 6;        % expected radius of a cell (pixels)    
     params.ROIsegment.maxcells = 300;     % estimated number of cells in FOV      
 else
     params.FOV = 330; 
@@ -105,60 +140,105 @@ if slacknotify
     neuroSEE_slackNotify( slacktext );
 end
 
-%% Load image files & do ROI segmentation
-sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '_' segment_method '_' str_fissa '/'...
-        'collective_PFmaps_imreg_ref' reffile '/'];
-if ~exist(sdir,'dir'), mkdir(sdir); end
-sname = [sdir mouseid '_' expname '_ref' reffile '_masks.mat'];
 
-if force || ~exist(sname,'file')
-    for i = 1:size(files,1)
-        file = files(i,:);
-        if strcmpi(file,reffile)
-            fname = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' file '_2P_XYT_green_mcorr.tif'];
+%% Check if list has been processed. If not, continue processing unless forced to overwrite 
+% existing processed data
+% check(1:3) check for existing data in processing steps 2-6 
+% check(4) checks for existing mat file pooling all processed data for list
+
+check = checkforExistingProcData(data_locn, list, params, reffile);
+
+% Some security measures
+force = logicalForce(force);    % Only allow combinations of force values that make sense
+
+if ~any(force) && check(6)
+    fprintf('%s: list already processed', list)
+    return
+end
+
+%% Continue with image registration and ROI segmentation if Matlab version is R2017
+if strcmpi(comp,'hpc') && MatlabVer > 2017
+    beep
+    err = sprintf('%s: Lower Matlab version required; skipping processing.\n', [mouseid '_' expname]);
+    cprintf('Errors',err);
+    return
+end
+    
+%% Image registration
+for n = 1:Nfiles
+    file = files(n,:);
+    if ~strcmpi( file, reffile )
+        imdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/'];
+        
+        if force(1) || ~exist([imdir file '_imreg_ref' reffile '_output.mat'],'file')
+            imG = read_file([ data_locn 'Data/' file(1:8) '/2P/' file '_2P/' file '_2P_XYT_green.tif']);
+            imR = read_file([ data_locn 'Data/' file(1:8) '/2P/' file '_2P/' file '_2P_XYT_red.tif']);
+            
+            [ imG{n}, ~, ~, ~ ] = neuroSEE_imreg( imG, imR, data_locn, file, reffile, params, force );
         else
-            fname = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/' file '_2P_XYT_green_imreg_ref' reffile '.tif'];
+            if force(2) || ~check(1)
+                fprintf('%s: Found registered image. Loading...', [mouseid '_' expname '_' file])
+                imG{n} = read_file([ imdir file '_2P_XYT_green_imreg_ref' reffile '.tif' ]);
+            end
         end
-        fprintf('%s: reading %s\n',[mouseid '_' expname],file)
-        Yii = read_file(fname);
-        Y(:,:,(i-1)*size(Yii,3)+1:i*size(Yii,3)) = Yii;
+    end
+end
+
+%% ROI segmentation
+grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+        mcorr_method '_' segment_method '_' str_fissa '/'...
+        mouseid '_' expname '_imreg_ref' reffile '/'];
+grp_sname = [grp_sdir mouseid '_' expname '_ref_' reffile '_segment_output.mat'];
+    
+if force(2) || ~check(1)
+    fprintf('%s: downsampling images', [mouseid '_' expname])
+    for n = 1:Nfiles
+        Yii = imG{n};
+        Y(:,:,(n-1)*size(Yii,3)+1:n*size(Yii,3)) = Yii;
     end
 
-    % Downsample
+    % Downsample images
     if size(files,1) <= 7
-        k = 5;
+        tsub = 5;
     elseif size(files,1) <= 10
-        k = 7;
+        tsub = 7;
     elseif size(files,1) <= 13
-        k = 9;
+        tsub = 9;
     else
-        k = round( size(files,1)*7420/11000 );
+        tsub = round( size(files,1)*7420/11000 );
     end
-    imG = Y(:,:,1:k:end);
-    clear Y
+    imG = Y(:,:,1:tsub:end); % downsampled concatenated image
+    clear Y Yii 
 
-    %% ROI segmentation
-    if str2double(file(1:4)) > 2018
-            cellrad = 6;                    % expnameected radius of a cell (pixels)    
-            maxcells = 300;                 % estimated number of cells in FOV      
-        else
-            cellrad = 9;            
-            maxcells = 200;         
-    end
-
+    % ROI segmentation
+    cellrad = params.ROIsegment.cellrad;
+    maxcells = params.ROIsegment.maxcells;
     if strcmpi(segment_method,'CaImAn')
-        [~, masks, corr_image] = CaImAn( imG, file, maxcells, cellrad );
-        clear imG 
+        [df_f, masks, corr_image] = CaImAn( imG, file, maxcells, cellrad );
+        df_f = full(df_f);
+        clear imG
+        
+        % Extract raw timeseries
+        [d1,d2,T] = size(imG);
+        tsG = zeros(size(df_f));
+        for ii = 1:size(masks,3)
+            maskind = masks(:,:,ii);
+            for t = 1:T
+                imG_reshaped = reshape( imG(:,:,t), d1*d2, 1);
+                tsG(ii,t) = mean( imG_reshaped(maskind) );
+            end
+        end
+        fprintf( '%s: ROI segmentation done. Saving output...\n', [mouseid '_' expname] );
     end
 
     % Output
     % ROIs overlayed on correlation image
     plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
     fig = plotContoursOnSummaryImage(corr_image, masks, plotopts);
-
-    % save masks.mat
-    for i = 1:size(files,1)
-        file = files(i,:);
+    
+    % save masks.mat in individual file folders
+    for n = 1:Nfiles
+        file = files(n,:);
         if strcmpi(file,reffile)
             sdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
             if ~exist(sdir,'dir'), mkdir(sdir); end
@@ -172,20 +252,41 @@ if force || ~exist(sname,'file')
         savefig(fig,[sdir mouseid '_' expname '_ref' reffile '_ROIs']);
         saveas(fig,[sdir mouseid '_' expname '_ref' reffile '_ROIs'],'png');
     end
-    save(sname,'masks','corr_image');
-    savefig(fig,[sdir mouseid '_' expname '_ref' reffile '_ROIs']);
-    saveas(fig,[sdir mouseid '_' expname '_ref' reffile '_ROIs'],'png');
+    
+    % save segmentation output in group analysis folder
+    output.tsG = tsG;
+    output.df_f = df_f;
+    output.masks = masks;
+    output.corr_image = corr_image;
+    output.params = params.ROIsegment;
+    save(grp_sname,'-struct','output');
+        
+    savefig(fig,[grp_sdir mouseid '_' expname '_ref' reffile '_ROIs']);
+    saveas(fig,[grp_sdir mouseid '_' expname '_ref' reffile '_ROIs'],'png');
     close(fig);
 else
-    fprintf('%s: Found ROI segmentation results. Proceeding to FISSA correction\n',[mouseid '_' expname])
-    masks = load(sname,'masks');
-    masks = masks.masks;
+    if force(3) || ~check(2)
+        fprintf('%s: Found ROI segmentation results. Proceeding to FISSA correction\n',[mouseid '_' expname])
+        masks = load(grp_sname,'masks');
+        masks = masks.masks;
+    end
 end
 
+%% Continue with next steps if Matlab version is at least R2018
+if strcmpi(comp,'hpc') && MatlabVer < 2018
+    beep
+    err = sprintf('%s: Higher Matlab version required; skipping FISSA and the rest of processing steps.\n', [mouseid '_' expname]);
+    cprintf('Errors',err);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
+end
+    
 %% FISSA, spike extraction, tracking data loading, PF mapping
-sname = [sdir mouseid '_' expname '_ref' reffile '_fissa_spike_track_data.mat'];
+grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_fissa_spike_track_data.mat'];
 
-if force || ~exist(sname,'file')
+if any(force(3:5)) || ~check(2)
     % initialise matrices
     SdtsG = []; Sddf_f = []; Sspikes = [];
     SdownData.phi = [];
@@ -195,8 +296,8 @@ if force || ~exist(sname,'file')
     SdownData.r = [];
     SdownData.time = [];
 
-    for id = 1:size(files,1)
-        file = files(id,:);
+    for n = 1:Nfiles
+        file = files(n,:);
         if strcmpi(file,reffile)
             tiffile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' file '_2P_XYT_green_mcorr.tif'];
             fissadir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/FISSA/'];
@@ -207,10 +308,10 @@ if force || ~exist(sname,'file')
         if ~exist( fissadir, 'dir' ), mkdir( fissadir ); end
 
         %% FISSA
-        if force || ~exist([fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file')
+        if force(3) || ~exist([fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file')
             fprintf('%s: doing fissa\n',[mouseid '_' expname '_' file]);
             fname_mat_temp = [fissadir 'FISSAout/matlab.mat'];
-            if force || and(~exist([fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file'), ~exist(fname_mat_temp,'file'))
+            if force(3) || and(~exist([fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file'), ~exist(fname_mat_temp,'file'))
                 runFISSA( masks, tiffile, fissadir );
             end
 
@@ -218,21 +319,21 @@ if force || ~exist(sname,'file')
 
             % Convert decontaminated timeseries cell array structure to a matrix
             dtsG = zeros(size(masks,3),size(result.result.cell0.trial0,2));
-            for k = 1:numel(fieldnames(result.result))
-                dtsG(k,:) = result.result.(['cell' num2str(k-1)]).trial0(1,:);
+            for ii = 1:numel(fieldnames(result.result))
+                dtsG(ii,:) = result.result.(['cell' num2str(ii-1)]).trial0(1,:);
             end
 
             % Calculate df_f
             ddf_f = zeros(size(dtsG));
             xddf_prctile = params.fissa.ddf_prctile;
-            for k = 1:size(dtsG,1)
-                x = lowpass( medfilt1(dtsG(k,:),params.fissa.ddf_medfilt1), 1, params.fr );
+            for ii = 1:size(dtsG,1)
+                x = lowpass( medfilt1(dtsG(ii,:),params.fissa.ddf_medfilt1), 1, params.fr );
                 fo = ones(size(x)) * prctile(x,xddf_prctile);
                 while fo == 0
                     fo = ones(size(x)) * prctile(x,xddf_prctile+5);
                     xddf_prctile = xddf_prctile+5;
                 end
-                ddf_f(k,:) = (x - fo) ./ fo;
+                ddf_f(ii,:) = (x - fo) ./ fo;
             end
 
             fname_fig = [fissadir file '_' mouseid '_' expname '_ref' reffile];
@@ -250,23 +351,23 @@ if force || ~exist(sname,'file')
         end
 
         %% Spike extraction
-        if force || ~exist([fissadir file '_' mouseid '_' expname '_ref' reffile '_spikes.mat'],'file')
+        if force(4) || ~exist([fissadir file '_' mouseid '_' expname '_ref' reffile '_spikes.mat'],'file')
             fprintf('%s: extracting spikes\n', [mouseid '_' expname '_' file]);
             C = ddf_f;
             N = size(C,1); T = size(C,2);
 
-            for k = 1:N
-                fo = ones(1,T) * prctile(C(k,:),params.spkExtract.bl_prctile);
-                C(k,:) = (C(k,:) - fo); % ./ fo;
+            for ii = 1:N
+                fo = ones(1,T) * prctile(C(ii,:),params.spkExtract.bl_prctile);
+                C(ii,:) = (C(ii,:) - fo); % ./ fo;
             end
             spikes = zeros(N,T);
-            for k = 1:N
-                spkmin = params.spkExtract.spk_SNR*GetSn(C(k,:));
-                lam = choose_lambda(exp(-1/(params.fr*params.spkExtract.decay_time)),GetSn(C(k,:)),params.spkExtract.lam_pr);
+            for ii = 1:N
+                spkmin = params.spkExtract.spk_SNR*GetSn(C(ii,:));
+                lam = choose_lambda(exp(-1/(params.fr*params.spkExtract.decay_time)),GetSn(C(ii,:)),params.spkExtract.lam_pr);
 
-                [~,spk,~] = deconvolveCa(C(k,:),'ar2','method','thresholded','optimize_pars',true,'maxIter',20,...
+                [~,spk,~] = deconvolveCa(C(ii,:),'ar2','method','thresholded','optimize_pars',true,'maxIter',20,...
                                         'window',150,'lambda',lam,'smin',spkmin);
-                spikes(k,:) = spk(:);
+                spikes(ii,:) = spk(:);
             end
 
             fname_fig = [fissadir file '_' mouseid '_' expname '_ref' reffile];
@@ -283,9 +384,9 @@ if force || ~exist(sname,'file')
 
         %% Tracking data
         fprintf('%s: loading tracking data\n', [mouseid '_' expname '_' file]);
-        if force || ~exist([fissadir file '_' mouseid '_' expname '_ref' reffile '_downData.mat'],'file')
+        if force(5) || ~exist([fissadir file '_' mouseid '_' expname '_ref' reffile '_downData.mat'],'file')
             trackfile = findMatchingTrackingFile(data_locn, file, 0);
-            c = load_trackfile(data_locn, files(id,:), trackfile, 0);
+            c = load_trackfile(data_locn, files(n,:), trackfile, 0);
             downData = downsample_trackData( c, spikes, params.fr );
 
             save([fissadir file '_' mouseid '_' expname '_ref' reffile '_downData.mat'],'downData');
@@ -336,14 +437,16 @@ if force || ~exist(sname,'file')
     trackData = SdownData;
 
     fprintf('%s: saving fissa, spike, track data', [mouseid '_' expname]);
-    save(sname,'dtsG','ddf_f','spikes','trackData');
+    save(grp_sname,'dtsG','ddf_f','spikes','trackData');
 
 else
-    c = load(sname);
-    dtsG = c.dtsG;
-    ddf_f = c.ddf_f;
-    spikes = c.spikes;
-    trackData = c.trackData;
+    if force(6) || ~check(4)
+        c = load(grp_sname);
+        dtsG = c.dtsG;
+        ddf_f = c.ddf_f;
+        spikes = c.spikes;
+        trackData = c.trackData;
+    end
 end
 
 %% PFmapping
@@ -403,6 +506,11 @@ if force || ~exist([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat']
         save([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'-struct','output');
     end
 end
+
+sname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
+
+save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
+                    'downData','activeData','occMap','hist','asd','params');
 
 % Send Ann slack message if processing has finished
 if slacknotify

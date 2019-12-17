@@ -1,4 +1,4 @@
-function [infoSec,infoSpk] = infoMeasures(placemap, OccMap, mask)
+function [infoSec,infoSpk] = infoMeasures(placemap, OccMap, mask, option)
 
 if mask % if an env mask or occupational map is used
     mask = OccMap>0;
@@ -37,7 +37,10 @@ for bini=1:size(OccMapProb, 1)
     end
 end
 
-% infoSec = information;
-infoSec = MI;
+if strcmpi(option,'SI')
+    infoSec = information;
+else
+    infoSec = MI;
+end
 infoSpk = infoSec/meanRate;
 end

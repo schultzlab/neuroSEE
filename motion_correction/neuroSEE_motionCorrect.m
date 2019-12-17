@@ -46,22 +46,22 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
         str = sprintf( '%s: Starting motion correction\n', file );
         cprintf( 'Text', str );
         if strcmpi(mcorr_method,'normcorre')
-            mcorr_output.params.rigid = params.rigid;
-            mcorr_output.params.nonrigid = params.nonrigid;
-            [ imG, imR, ~, ~, ~, ~, ~, ~ ] = normcorre_2ch( imG, imR, params.rigid );
-            [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params.nonrigid );
+            mcorr_output.params.normcorre_r = params.mcorr.normcorre_r;
+            mcorr_output.params.normcorre_nr = params.mcorr.normcorre_nr;
+            [ imG, imR, ~, ~, ~, ~, ~, ~ ] = normcorre_2ch( imG, imR, params.mcorr.normcorre_nr );
+            [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params.mcorr.normcorre_nr );
         elseif strcmpi(mcorr_method,'normcorre-r')
-            mcorr_output.params.rigid = params.rigid;
-            [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params.rigid );
+            mcorr_output.params.normcorre_r = params.mcorr.normcorre_r;
+            [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params.mcorr.normcorre_nr );
         elseif strcmpi(mcorr_method,'normcorre-nr')
-            mcorr_output.params.nonrigid = params.nonrigid;
-            [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params.nonrigid );
+            mcorr_output.params.normcorre_nr = params.mcorr.normcorre_nr;
+            [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params.mcorr.normcorre_nr );
         else
-            mcorr_output.params = params.fftRigid;
-            imscale = params.fftRigid.imscale;
-            Nimg_ave = params.fftRigid.Nimg_ave;
-            refChannel = params.fftRigid.refChannel;
-            redoT = params.fftRigid.redoT;
+            mcorr_output.params.fftRigid = params.mcorr.fftRigid;
+            imscale = params.mcorr.fftRigid.imscale;
+            Nimg_ave = params.mcorr.fftRigid.Nimg_ave;
+            refChannel = params.mcorr.refChannel;
+            redoT = params.mcorr.fftRigid.redoT;
             [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = motionCorrectToNearestPixel( double(imG), double(imR), file, ...
                                                                             imscale, Nimg_ave, refChannel, redoT );
         end
@@ -87,15 +87,11 @@ function [ imG, imR, mcorr_output, params ] = neuroSEE_motionCorrect(...
     else
         [imG, imR] = load_imagefile( data_locn, file, 0, '_mcorr', params );
         mcorr_output = load(fname_mat_mcorr);
-        if strcmpi(mcorr_method,'normcorre')
-            if isfield(mcorr_output,'params') 
-                params.nonrigid = mcorr_output.params;  % applies to proc data from July 2019
-            end
-            if isfield(mcorr_output,'options')
-                params.nonrigid = mcorr_output.options; % applies to proc data prior to July 2019 
-            end
-        else
-            params.fftRigid = mcorr_output.params;            
+        if isfield(mcorr_output,'params') 
+            params.mcorr = mcorr_output.params;  % applies to proc data from July 2019
+        end
+        if isfield(mcorr_output,'options')
+            params.mcorr = mcorr_output.options; % applies to proc data prior to July 2019 
         end
 
         if ~exist_fig

@@ -99,12 +99,12 @@ for id = 1:Ncells
 
     % histogram estimation
     pfMap(id,:) = spkMap(id,:)./occMap;
-    [infoMap(id,1), infoMap(id,2)] = infoMeasures(pfMap(id,:),occMap,0);
+    [infoMap(id,1), infoMap(id,2)] = infoMeasures(pfMap(id,:),occMap,0,'MI');
 
     % ASD estimation
     [pfMap_asd(id,:),~] = runASD_1d(bin_phi,z',Nbins);
     [infoMap_asd(id,1), infoMap_asd(id,2)] =...
-        infoMeasures(pfMap_asd(id,:)',ones(Nbins,1),0);
+        infoMeasures(pfMap_asd(id,:)',ones(Nbins,1),0,'MI');
 end
 
 % Identify place cells

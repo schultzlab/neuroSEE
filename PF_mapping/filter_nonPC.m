@@ -2,12 +2,15 @@
 % Function for filtering non place cells 
 % Based on Indersmitten et al 2019, Front Neurosci
 
-function [ pcIdx, pcIdx_asd ] = filter_nonPC( bin_phi, activespikes, infoMap, infoMap_asd, Nbins, prctile_thr )
+function [ pcIdx, pcIdx_asd ] = filter_nonPC( bin_phi, activespikes, infoMap, infoMap_asd, Nbins, prctile_thr, randN )
+
+if nargin<7, randN = 1000; end
+if nargin<6, prctile_thr = 99; end
 
 Ncells = size(activespikes,1); % number of cells
 info_type = 1; % 1 for info/sec, 2 for info/spike
 spikeMap = zeros(Ncells,Nbins);
-MI = zeros(1,1000);
+MI = zeros(1,randN);
 pcIdx = []; pcIdx_asd = [];
 % prctile_thr = 70;
 
@@ -19,7 +22,7 @@ if iscell(bin_phi)
         for k = 1:Nbins
             spikeMap(id,k) = sum(z(bin_phi{id} == k));
         end
-        for j = 1:1000
+        for j = 1:randN
             randind = randperm(length(occ));
             occMap = occ(randind);
 
@@ -40,7 +43,7 @@ else
         for k = 1:Nbins
             spikeMap(id,k) = sum(activespikes(bin_phi == k));
         end
-        for j = 1:1000
+        for j = 1:randN
             randind = randperm(length(occ));
             occMap = occ(randind);
 

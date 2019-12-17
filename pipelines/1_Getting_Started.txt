@@ -67,7 +67,7 @@ EXPERIMENT PROCESSING
 3. frun_collate_imreg_results_batch.m
     - function with input arguments expname, 'reffile', 'list.txt', slacknotify, force
     
-4. frun_ROIsegment-to-PFmaps_batch.m
+4. frun_imreg_ROIsegment-to-PFmaps_batch.m
     - function with input arguments 'list.txt', 'reffile', slacknotify, force
     - loads all images in 'list.txt' and performs ROI segmentation, fissa, spike extraction, 
         tracking data loading for each image in 'list.txt'

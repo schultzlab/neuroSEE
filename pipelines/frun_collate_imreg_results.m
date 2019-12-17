@@ -1,4 +1,4 @@
-function frun_collate_imreg_results_batch( list, reffile, mcorr_method, force )
+function frun_collate_imreg_results( list, reffile, mcorr_method, force )
 
 % e.g. m##_expname: 'm62_fam1nov_fam1fam1rev'
 %                   'm62_fam1fam1rev'
@@ -40,11 +40,11 @@ clear c
 
 
 %% Load image data for each recording
-sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/' mcorr_method '/indiv_imreg_ref' reffile '/'];
+sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/imreg_' mcorr_method '/indiv_imreg_ref' reffile '/'];
 if ~exist(sdir,'dir'), mkdir(sdir); end
     
-if any([ force, ~exist([sdir expname '_GREEN_imreg_ref' reffile '.fig'],'file'),...
-                ~exist([sdir expname '_RED_imreg_ref' reffile '.fig'],'file') ])
+if any([ force, ~exist([sdir mouseid '_' expname '_GREEN_imreg_ref' reffile '.fig'],'file'),...
+                ~exist([sdir mouseid '_' expname '_RED_imreg_ref' reffile '.fig'],'file') ])
     for i = 1:Nfiles
         file = files(i,:);
         if ~strcmpi(file,reffile)
@@ -89,13 +89,13 @@ if any([ force, ~exist([sdir expname '_GREEN_imreg_ref' reffile '.fig'],'file'),
         end
         axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
             'Visible','off','Units','normalized', 'clipping' , 'off');
-            titletext = [expname ': GREEN channel registered to '...
+            titletext = [mouseid '_' expname ': GREEN channel registered to '...
                              reffile];
             ind = strfind(titletext,'_');
             titletext(ind) = '-';
             text('Position',[0.35 0.99], 'FontSize',14, 'String',titletext);
     end 
-    fname_fig = [sdir expname '_GREEN_imreg_ref' reffile '.fig'];
+    fname_fig = [sdir mouseid '_' expname '_GREEN_imreg_ref' reffile '.fig'];
         savefig( fh, fname_fig );
         saveas( fh, fname_fig(1:end-4), 'png' );
         close( fh );
@@ -119,12 +119,12 @@ if any([ force, ~exist([sdir expname '_GREEN_imreg_ref' reffile '.fig'],'file'),
             end
             axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
                 'Visible','off','Units','normalized', 'clipping' , 'off');
-                titletext = [expname ': RED channel registered to ' reffile];
+                titletext = [mouseid '_' expname ': RED channel registered to ' reffile];
                 ind = strfind(titletext,'_');
                 titletext(ind) = '-';
                 text('Position',[0.35 0.99], 'FontSize',14, 'String',titletext);
         end 
-        fname_fig = [sdir expname '_RED_imreg_ref' reffile '.fig'];
+        fname_fig = [sdir mouseid '_' expname '_RED_imreg_ref' reffile '.fig'];
             savefig( fh, fname_fig );
             saveas( fh, fname_fig(1:end-4), 'png' );
             close( fh );

@@ -70,26 +70,27 @@ slacknotify = false;            % flag to send Ann slack notifications about pro
 if ~default
     params.fr = 30.9;                                % imaging frame rate [default: 30.9]
     % motion correction
+        params.mcorr.refChannel = 'green';           % reference channel for motion correction [default: 'green']
         % Katie's method
         if strcmpi(mcorr_method,'fftRigid')
-            params.fftRigid.imscale = 1;             % image downsampling factor                                             [default: 1]
-            params.fftRigid.Nimg_ave = 10;           % no. of images to be averaged for calculating pixel shift (zippering)  [default: 10]
-            params.fftRigid.refChannel = 'green';    % channel to be used for calculating image shift (green,red)            [default: 'green']
-            params.fftRigid.redoT = 300;             % no. of frames at start of file to redo motion correction for after 1st iteration [default: 300]
+            params.mcorr.fftRigid.imscale = 1;             % image downsampling factor                                             [default: 1]
+            params.mcorr.fftRigid.Nimg_ave = 10;           % no. of images to be averaged for calculating pixel shift (zippering)  [default: 10]
+            params.mcorr.fftRigid.redoT = 300;             % no. of frames at start of file to redo motion correction for after 1st iteration [default: 300]
         end
         % NoRMCorre-rigid
         if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
-            params.rigid = NoRMCorreSetParms(...
+            params.mcorr.normcorre_r = NoRMCorreSetParms(...
                 'd1', 512,...
                 'd2', 512,...
                 'max_shift',20,...          % default: 50
                 'bin_width',200,...         % default: 200
                 'us_fac',50,...             % default: 50
                 'init_batch',200);          % default: 200
+            params.mcorr.normcorre_r.print_msg = false;   % default: false
         end
         % NoRMCorre-nonrigid
         if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
-            params.nonrigid = NoRMCorreSetParms(...
+            params.mcorr.normcorre_nr = NoRMCorreSetParms(...
                 'd1', 512,...
                 'd2', 512,...
                 'grid_size',[64,64],...     % default: [64,64]
@@ -103,6 +104,7 @@ if ~default
                 'max_dev',3,...             % default: 3
                 'us_fac',50,...             % default: 50
                 'init_batch',200);          % default: 200
+            params.mcorr.normcorre_nr.print_msg = false;    % default: false
         end
     % ROI segmentation 
         params.ROIsegment.df_prctile = 5;     % percentile to be used for estimating baseline   [default: 5]
@@ -122,7 +124,7 @@ if ~default
         params.PFmap.histsmoothFac = 7;       % Gaussian smoothing window for histogram extraction        [default: 7]
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                               %                              Neurotar uses 8 mm/s
-        params.PFmap.prctile_thr = 95;        % percentile threshold for filtering nonPCs
+        params.PFmap.prctile_thr = 99;        % percentile threshold for filtering nonPCs       [default: 99]
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -163,6 +165,11 @@ check = checkforExistingProcData(data_locn, file, params);
 
 % Some security measures
 force = logicalForce(force);    % Only allow combinations of force values that make sense
+
+if ~any(force) && check(7)
+    fprintf('%s: file already processed', file)
+    return
+end
 
 
 %% Image files
@@ -288,14 +295,12 @@ else
 end
 fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
 
-if any(force) || any(~check)
-    save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
-                        'downData','activeData','occMap','hist','asd','params');
-    if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
-    if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
-    if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end
-    if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
-end
+save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
+                    'downData','activeData','occMap','hist','asd','params');
+if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
+if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
+if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end
+if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
  
 t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));

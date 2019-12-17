@@ -113,8 +113,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, mean_imR
         if any([~exist(fname_fig1,'file'),~exist(fname_fig2,'file'),~exist(fname_fig3,'file')])
            makeplot(corr_image, masks);
         end
-        str = sprintf('%s: Segmentation output found and loaded\n',file);
-        cprintf(str)
+        fprintf('%s: Segmentation output found and loaded\n',file);
     end
 
     function makeplot(corr_image, masks)

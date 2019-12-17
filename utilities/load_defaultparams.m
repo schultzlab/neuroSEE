@@ -8,13 +8,13 @@ function params_def = load_defaultparams( params )
         fields = {'df_prctile','df_medfilt1'};
         params_def.ROIsegment = rmfield(params_def.ROIsegment,fields);
     elseif strcmpi(params.methods.mcorr_method,'normcorre-r')
-        fields = {'nonrigid','fftRigid'};
+        fields = {'normcorre-nr','fftRigid'};
         params_def = rmfield(params_def.mcorr,fields);
     elseif strcmpi(params.methods.mcorr_method,'normcorre-nr')
-        fields = {'rigid','fftRigid'};
+        fields = {'normcorre-r','fftRigid'};
         params_def = rmfield(params_def.mcorr,fields);
     elseif fftRigid
-        fields = {'rigid','nonrigid'};
+        fields = {'normcorre-r','normcorre-nr'};
         params_def = rmfield(params_def.mcorr,fields);
     end
     

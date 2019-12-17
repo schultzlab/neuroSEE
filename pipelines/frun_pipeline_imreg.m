@@ -15,7 +15,7 @@ test = false;               % flag to use one of smaller files in test folder
 default = true;             % flag to use default parameters
                             % flag to force
 force = [false;...              % (1) image registration even if registered images exist
-         true;...              % (2) roi segmentation
+         false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
          false;...              % (5) tracking data consolidation

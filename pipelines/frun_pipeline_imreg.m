@@ -152,7 +152,7 @@ check = checkforExistingProcData(data_locn, list, params, reffile);
 force = logicalForce(force);    % Only allow combinations of force values that make sense
 
 if ~any(force) && check(4)
-    fprintf('%s: list already processed', list)
+    fprintf('%s: list already processed\n', list)
     return
 end
 

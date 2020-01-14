@@ -273,7 +273,7 @@ if force(2) || ~check(1)
     saveas(fig,[grp_sdir mouseid '_' expname '_ref' reffile '_ROIs'],'png');
     close(fig);
 else
-    if any(force(3), ~check(2), ~check(4))
+    if any([force(3), ~check(2), ~check(4)])
         fprintf('%s: Found ROI segmentation results. Proceeding to FISSA correction\n',[mouseid '_' expname])
         masks = load(grp_sname,'masks');
         masks = masks.masks;

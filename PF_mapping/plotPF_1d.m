@@ -160,6 +160,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
     
     % spike raster plots for NON-place cells 
     Nnonpcs = numel(hist.nonpcIdx_MI);
+    if ~exist([sdir 'hist_MI/'],'dir'), mkdir([sdir 'hist_MI/']); end
     if Nnonpcs > 0
         [nRow, nCol] = getnRownCol(Nnonpcs);
         nPlot = nRow*nCol;
@@ -369,6 +370,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
     
     % spike raster plots for NON-place cells 
     Nnonpcs = numel(hist.nonpcIdx_SIsec);
+    if ~exist([sdir 'hist_SIsec/'],'dir'), mkdir([sdir 'hist_SIsec/']); end
     if Nnonpcs > 0
         [nRow, nCol] = getnRownCol(Nnonpcs);
         nPlot = nRow*nCol;
@@ -579,6 +581,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
     
     % spike raster plots for NON-place cells 
     Nnonpcs = numel(hist.nonpcIdx_SIspk);
+    if ~exist([sdir 'hist_SIspk/'],'dir'), mkdir([sdir 'hist_SIspk/']); end
     if Nnonpcs > 0 
         [nRow, nCol] = getnRownCol(Nnonpcs);
         nPlot = nRow*nCol;
@@ -780,6 +783,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
     
     % spike raster plots for NON-place cells 
     Nnonpcs = numel(asd.nonpcIdx_MI);
+    if ~exist([sdir 'asd_MI/'],'dir'), mkdir([sdir 'asd_MI/']); end
     if Nnonpcs > 0
         [nRow, nCol] = getnRownCol(Nnonpcs);
         nPlot = nRow*nCol;
@@ -980,6 +984,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
     
     % spike raster plots for NON-place cells 
     Nnonpcs = numel(asd.nonpcIdx_SIsec);
+    if ~exist([sdir 'asd_SIsec/'],'dir'), mkdir([sdir 'asd_SIsec/']); end
     if Nnonpcs > 0 
         [nRow, nCol] = getnRownCol(Nnonpcs);
         nPlot = nRow*nCol;
@@ -1180,6 +1185,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
     
     % spike raster plots for NON-place cells 
     Nnonpcs = numel(asd.nonpcIdx_SIspk);
+    if ~exist([sdir 'asd_SIspk/'],'dir'), mkdir([sdir 'asd_SIspk/']); end
     if Nnonpcs > 0
         [nRow, nCol] = getnRownCol(Nnonpcs);
         nPlot = nRow*nCol;

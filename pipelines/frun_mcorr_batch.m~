@@ -28,18 +28,11 @@ if strcmpi(comp,'hpc')
 end
 
 %% Continue with image registration and ROI segmentation if Matlab version is R2017
-MatlabVer = str2double(release(1:4));
 if strcmpi(comp,'hpc') && MatlabVer > 2017
     beep
     err = sprintf('%s: Lower Matlab version required; skipping processing.\n', [mouseid '_' expname]);
     cprintf('Errors',err);
     return
-end
-
-% Send Ann slack message
-if array_id == 1 
-    slacktext = [list(1:end-5) ': processing 1st file'];
-    neuroSEE_slackNotify( slacktext );
 end
 
 %% Image file
@@ -53,36 +46,37 @@ file = files(array_id,:);
 %% USER: Set parameters (if not using default)
 
 if ~default
-    % neurosee method
-    if strcmpi(mcorr_method,'fftRigid')
-        params.fftRigid.imscale = 1;             % image downsampling factor                                             [default: 1]
-        params.fftRigid.Nimg_ave = 10;           % no. of images to be averaged for calculating pixel shift (zippering)  [default: 10]
-        params.fftRigid.refChannel = 'green';    % channel to be used for calculating image shift (green,red)            [default: 'green']
-        params.fftRigid.redoT = 300;             % no. of frames at start of file to redo motion correction for after 1st iteration [default: 300]
-    end
-    % NoRMCorre-rigid
-    if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
-        params.rigid = NoRMCorreSetParms(...
-            'max_shift',20,...          % default: 50
-            'bin_width',200,...         % default: 200
-            'us_fac',50,...             % default: 50
-            'init_batch',200);          % default: 200
-    end
-    % NoRMCorre-nonrigid
-    if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
-        params.nonrigid = NoRMCorreSetParms(...
-            'grid_size',[32,32],...     % default: [32,32]
-            'overlap_pre',[32,32],...   % default: [32,32]
-            'overlap_post',[32,32],...  % default: [32,32]
-            'iter',1,...                % default: 1
-            'use_parallel',false,...    % default: false
-            'max_shift',15,...          % default: 50
-            'mot_uf',4,...              % default: 4
-            'bin_width',200,...         % default: 200
-            'max_dev',3,...             % default: 3
-            'us_fac',50,...             % default: 50
-            'init_batch',200);          % default: 200
-    end
+    % motion correction
+        % neurosee method
+        if strcmpi(mcorr_method,'fftRigid')
+            params.fftRigid.imscale = 1;             % image downsampling factor                                             [default: 1]
+            params.fftRigid.Nimg_ave = 10;           % no. of images to be averaged for calculating pixel shift (zippering)  [default: 10]
+            params.fftRigid.refChannel = 'green';    % channel to be used for calculating image shift (green,red)            [default: 'green']
+            params.fftRigid.redoT = 300;             % no. of frames at start of file to redo motion correction for after 1st iteration [default: 300]
+        end
+        % NoRMCorre-rigid
+        if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
+            params.rigid = NoRMCorreSetParms(...
+                'max_shift',20,...          % default: 50
+                'bin_width',200,...         % default: 200
+                'us_fac',50,...             % default: 50
+                'init_batch',200);          % default: 200
+        end
+        % NoRMCorre-nonrigid
+        if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
+            params.nonrigid = NoRMCorreSetParms(...
+                'grid_size',[32,32],...     % default: [32,32]
+                'overlap_pre',[32,32],...   % default: [32,32]
+                'overlap_post',[32,32],...  % default: [32,32]
+                'iter',1,...                % default: 1
+                'use_parallel',false,...    % default: false
+                'max_shift',15,...          % default: 50
+                'mot_uf',4,...              % default: 4
+                'bin_width',200,...         % default: 200
+                'max_dev',3,...             % default: 3
+                'us_fac',50,...             % default: 50
+                'init_batch',200);          % default: 200
+        end
 end
 
 

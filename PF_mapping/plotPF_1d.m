@@ -160,7 +160,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
     
     % spike raster plots for NON-place cells 
     Nnonpcs = numel(hist.nonpcIdx_MI);
-    if Nnonpics > 0
+    if Nnonpcs > 0
         [nRow, nCol] = getnRownCol(Nnonpcs);
         nPlot = nRow*nCol;
         Nfig = round((Nnonpcs/nPlot))-1;

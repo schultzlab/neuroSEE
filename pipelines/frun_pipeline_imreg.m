@@ -569,6 +569,7 @@ end
 
 sname_allData = [ grp_sdir mouseid '_' expname '_ref' reffile '_allData.mat'];
 
+fprintf('%s: saving all data\n', [mouseid '_' expname]);
 save(sname_allData,'list','corr_image','masks','tsG','df_f','dtsG','ddf_f','spikes',...
                     'trackData','activeData','PFdata','hist','asd','params');
 if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end

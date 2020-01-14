@@ -13,7 +13,6 @@ Ncells = size(activespikes,1); % number of cells
 spikeMap = zeros(Ncells,Nbins);
 I = zeros(1,randN);
 pcIdx = []; pcIdx_asd = [];
-% prctile_thr = 70;
 
 if iscell(bin_phi)
     for id = 1:Ncells
@@ -46,7 +45,7 @@ else
         end
         for j = 1:randN
             randind = randperm(length(occ));
-            occMap = occ(randind);
+            spikeMap(id,k) = occ(randind);
 
             pcMap = spikeMap(id,:)./occMap;
             [I(id,j),~] = infoMeasures(pcMap, occMap, 0, info);

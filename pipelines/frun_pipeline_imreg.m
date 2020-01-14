@@ -19,7 +19,7 @@ force = [false;...              % (1) image registration even if registered imag
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
          false;...              % (5) tracking data consolidation
-         false];                % (6) place field mapping
+         true];                % (6) place field mapping
 mcorr_method = 'normcorre-nr';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
@@ -195,7 +195,7 @@ grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'
         mcorr_method '_' segment_method '_' str_fissa '/'...
         mouseid '_' expname '_imreg_ref' reffile '/'];
     if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); end
-grp_sname = [grp_sdir mouseid '_' expname '_ref_' reffile '_segment_output.mat'];
+grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
     
 if force(2) || ~check(1)
     fprintf('%s: downsampling images\n', [mouseid '_' expname])
@@ -474,26 +474,65 @@ if force(6) || ~check(3)
     fprintf('%s: generating PFmaps\n', [mouseid '_' expname]);
     if strcmpi(params.mode_dim,'1D')
         % Generate place field maps
-        [ occMap, hist, asd, activeData ] = generatePFmap_1D( spikes, trackData, params, false );
+        [ hist, asd, activeData, PFdata ] = generatePFmap_1D( spikes, trackData, params, false );
         
         % If 1D, sort place field maps 
-        [ hist.sort_pfMap, hist.sortIdx ] = sortPFmap_1d( hist.pfMap, hist.infoMap, Nepochs );
-        [ asd.sort_pfMap, asd.sortIdx ] = sortPFmap_1d( asd.pfMap, asd.infoMap, Nepochs );
-        for en = 1:Nepochs
-            hist.sort_pfMap_sm(:,:,en) = hist.pfMap_sm(hist.sortIdx(:,en),:,en);
-            hist.sort_normpfMap(:,:,en) = hist.normpfMap(hist.sortIdx(:,en),:,en);
-            hist.sort_normpfMap_sm(:,:,en) = hist.normpfMap_sm(hist.sortIdx(:,en),:,en);
-
-            asd.sort_pfMap(:,:,en) = asd.pfMap(asd.sortIdx(:,en),:,en);
-            asd.sort_normpfMap(:,:,en) = asd.normpfMap(asd.sortIdx(:,en),:,en);
+        if isfield(hist,'pfMap_MI')
+            [ hist.sort_pfMap_MI, hist.sortIdx_MI ] = sortPFmap_1d( hist.pfMap_MI, hist.infoMap_MI );
+            for en = 1:Nepochs
+                hist.sortIdx_MI_roiNum(:,en) = hist.pcIdx_MI(hist.sortIdx_MI(:,en));
+                hist.sort_pfMap_MI_sm(:,:,en) = hist.pfMap_MI_sm(hist.sortIdx_MI(:,en),:,en);
+                hist.sort_normpfMap_MI(:,:,en) = hist.normpfMap_MI(hist.sortIdx_MI(:,en),:,en);
+                hist.sort_normpfMap_MI_sm(:,:,en) = hist.normpfMap_MI_sm(hist.sortIdx_MI(:,en),:,en);
+            end
+        end
+        if isfield(hist,'pfMap_SIsec')
+            [ hist.sort_pfMap_SIsec, hist.sortIdx_SIsec ] = sortPFmap_1d( hist.pfMap_SIsec, hist.infoMap_SIsec );
+            for en = 1:Nepochs
+                hist.sortIdx_SIsec_roiNum(:,en) = hist.pcIdx_SIsec(hist.sortIdx_SIsec(:,en));
+                hist.sort_pfMap_SIsec_sm(:,:,en) = hist.pfMap_SIsec_sm(hist.sortIdx_SIsec(:,en),:,en);
+                hist.sort_normpfMap_SIsec(:,:,en) = hist.normpfMap_SIsec(hist.sortIdx_SIsec(:,en),:,en);
+                hist.sort_normpfMap_SIsec_sm(:,:,en) = hist.normpfMap_SIsec_sm(hist.sortIdx_SIsec(:,en),:,en);
+            end
+        end
+        if isfield(hist,'pfMap_SIspk')
+            [ hist.sort_pfMap_SIspk, hist.sortIdx_SIspk ] = sortPFmap_1d( hist.pfMap_SIspk, hist.infoMap_SIspk );
+            for en = 1:Nepochs
+                hist.sortIdx_SIspk_roiNum(:,en) = hist.pcIdx_SIspk(hist.sortIdx_SIspk(:,en));
+                hist.sort_pfMap_SI_spk_sm(:,:,en) = hist.pfMap_SIspk_sm(hist.sortIdx_SIspk(:,en),:,en);
+                hist.sort_normpfMap_SIspk(:,:,en) = hist.normpfMap_SIspk(hist.sortIdx_SIspk(:,en),:,en);
+                hist.sort_normpfMap_SIspk_sm(:,:,en) = hist.normpfMap_SIspk_sm(hist.sortIdx_SIspk(:,en),:,en);
+            end
+        end
+        
+        if isfield(asd,'pfMap_MI')
+            [ asd.sort_pfMap_MI, asd.sortIdx_MI ] = sortPFmap_1d( asd.pfMap_MI, asd.infoMap_MI );
+            for en = 1:Nepochs
+                asd.sortIdx_MI_roiNum(:,en) = asd.pcIdx_MI(asd.sortIdx_MI(:,en));
+                asd.sort_normpfMap_MI(:,:,en) = asd.normpfMap_MI(asd.sortIdx_MI(:,en),:,en);
+            end
+        end
+        if isfield(asd,'pfMap_SIsec')
+            [ asd.sort_pfMap_SIsec, asd.sortIdx_SIsec ] = sortPFmap_1d( asd.pfMap_SIsec, asd.infoMap_SIsec );
+            for en = 1:Nepochs
+                asd.sortIdx_SIsec_roiNum(:,en) = asd.pcIdx_SIsec(asd.sortIdx_SIsec(:,en));
+                asd.sort_normpfMap_SIsec(:,:,en) = asd.normpfMap_SIsec(asd.sortIdx_SIsec(:,en),:,en);
+            end
+        end
+        if isfield(asd,'pfMap_SIspk')
+            [ asd.sort_pfMap_SIspk, asd.sortIdx_SIspk ] = sortPFmap_1d( asd.pfMap_SIspk, asd.infoMap_SIspk );
+            for en = 1:Nepochs
+                asd.sortIdx_SIspk_roiNum(:,en) = asd.pcIdx_SIspk(asd.sortIdx_SIspk(:,en));
+                asd.sort_normpfMap_SIspk(:,:,en) = asd.normpfMap_SIspk(asd.sortIdx_SIspk(:,en),:,en);
+            end
         end
 
         % Make plots
-        plotPF_1d(occMap, hist, asd, activeData.normspkMap_pertrial, activeData.ytick_files, true, [grp_sdir 'PFmaps/'], ...
+        plotPF_1d(hist, asd, PFdata, true, [grp_sdir 'PFdata/'], ...
                   [mouseid '_' expname '_ref' reffile], true)
         
         % Save output
-        output.occMap = occMap;
+        output.PFdata = PFdata;
         output.hist = hist;
         output.asd = asd;
         output.activeData = activeData;

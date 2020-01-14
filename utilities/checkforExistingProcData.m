@@ -45,22 +45,22 @@ function check = checkforExistingProcData(data_locn, text, params, reffile)
         check = zeros(1,4);
         if exist(dir_proc,'dir')
             % 1) Check for existing collective roi segmentation output 
-            if exist([dir_proc  mouseid '_' expname '_ref_' reffile '_segment_output.mat'],'file')
+            if exist([dir_proc  mouseid '_' expname '_ref' reffile '_segment_output.mat'],'file')
                 check(1) = 1;
             end
             
             % 2) Check for existing consolidated data for fissa, spikes, tracking
-            if exist([dir_proc  mouseid '_' expname '_ref_' reffile '_fissa_spike_track_data.mat'],'file')
+            if exist([dir_proc  mouseid '_' expname '_ref' reffile '_fissa_spike_track_data.mat'],'file')
                 check(2) = 1;
             end
             
             % 3) Check for existing collective PF mapping output
-            if exist([dir_proc  mouseid '_' expname '_ref_' reffile '_PFmap_output.mat'],'file')
+            if exist([dir_proc  mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'file')
                 check(3) = 1;
             end
             
             % 4) Check if mat file for all proc data for the file exists
-            if exist([dir_proc  mouseid '_' expname '_ref_' reffile '_allData.mat'],'file')
+            if exist([dir_proc  mouseid '_' expname '_ref' reffile '_allData.mat'],'file')
                 check(4) = 1;
             end
         end

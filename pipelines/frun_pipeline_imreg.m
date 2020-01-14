@@ -101,7 +101,7 @@ if ~default
         params.PFmap.histsmoothFac = 7;       % Gaussian smoothing window for histogram extraction        [default: 7]
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                               %                              Neurotar uses 8 mm/s
-        params.PFmap.prctile_thr = 99;        % percentile threshold for filtering nonPCs       [default: 99]
+        params.PFmap.prctile_thr = 5;        % percentile threshold for filtering nonPCs       [default: 99]
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

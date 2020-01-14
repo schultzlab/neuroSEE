@@ -31,7 +31,7 @@ function check = checkforExistingProcData(data_locn, text, params, reffile)
         file = text; tlist = false;
     end
     
-    % if an experiments
+    % if an experiment
     if tlist
         [mouseid,expname] = find_mouseIDexpname(list);
         listfile = [data_locn 'Digital_Logbook/lists/' list];

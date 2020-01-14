@@ -461,8 +461,6 @@ else
 end
 
 %% PFmapping
-grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'];
-
 if any(trackData.r < 100)
     params.mode_dim = '2D';         % open field
     params.PFmap.Nbins = [16, 16];  % number of location bins in [x y]               
@@ -562,8 +560,8 @@ else
         c = load(grp_sname);
         activeData = c.dtsG;
         PFdata = c.ddf_f;
-        hist = c.spikes;
-        asd = c.trackData;
+        spikes = c.spikes;
+        trackData = c.trackData;
     end
 end
 

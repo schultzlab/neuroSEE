@@ -560,7 +560,7 @@ if force(6) || ~check(3)
     end
 else
     if ~check(4)
-        fprintf('%s: loading PF mapping data', [mouseid '_' expname]);
+        fprintf('%s: loading PF mapping data\n', [mouseid '_' expname]);
         c = load(grp_sname);
         activeData = c.activeData;
         PFdata = c.PFdata;

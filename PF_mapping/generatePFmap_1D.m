@@ -257,8 +257,6 @@ end
 if ~isempty(hist.pcIdx_MI)
     hist.spkRaster_MI_pc = spkRaster(hist.pcIdx_MI);
     hist.normspkRaster_MI_pc = normspkRaster(hist.pcIdx_MI);
-    hist.spkRaster_MI_nonpc = spkRaster(hist.nonpcIdx_MI);
-    hist.normspkRaster_MI_nonpc = normspkRaster(hist.nonpcIdx_MI);
     hist.meanspkRaster_MI = meanspkRaster(hist.pcIdx_MI);
     hist.spkMean_MI = spkMean(hist.pcIdx_MI);
     hist.spkPeak_MI = spkPeak(hist.pcIdx_MI);
@@ -273,11 +271,14 @@ if ~isempty(hist.pcIdx_MI)
     hist.centroid_MI = centroid(hist.pcIdx_MI,:);
     hist.fieldsize_MI = fieldsize(hist.pcIdx_MI,:);
 end
+if ~isempty(hist.nonpcIdx_MI)
+    hist.spkRaster_MI_nonpc = spkRaster(hist.nonpcIdx_MI);
+    hist.normspkRaster_MI_nonpc = normspkRaster(hist.nonpcIdx_MI);
+end
+
 if ~isempty(hist.pcIdx_SIsec)
     hist.spkRaster_SIsec_pc = spkRaster(hist.pcIdx_SIsec);
     hist.normspkRaster_SIsec_pc = normspkRaster(hist.pcIdx_SIsec);
-    hist.spkRaster_SIsec_nonpc = spkRaster(hist.nonpcIdx_SIsec);
-    hist.normspkRaster_SIsec_nonpc = normspkRaster(hist.nonpcIdx_SIsec);
     hist.meanspkRaster_SIsec = meanspkRaster(hist.pcIdx_SIsec);
     hist.spkMean_SIsec = spkMean(hist.pcIdx_SIsec);
     hist.spkPeak_SIsec = spkPeak(hist.pcIdx_SIsec);
@@ -292,11 +293,14 @@ if ~isempty(hist.pcIdx_SIsec)
     hist.centroid_SIsec = centroid(hist.pcIdx_SIsec,:);
     hist.fieldsize_SIsec = fieldsize(hist.pcIdx_SIsec,:);
 end
+if ~isempty(hist.nonpcIdx_SIsec)
+    hist.spkRaster_SIsec_nonpc = spkRaster(hist.nonpcIdx_SIsec);
+    hist.normspkRaster_SIsec_nonpc = normspkRaster(hist.nonpcIdx_SIsec);
+end
+
 if ~isempty(hist.pcIdx_SIspk)
     hist.spkRaster_SIspk_pc = spkRaster(hist.pcIdx_SIspk);
     hist.normspkRaster_SIspk_pc = normspkRaster(hist.pcIdx_SIspk);
-    hist.spkRaster_SIspk_nonpc = spkRaster(hist.nonpcIdx_SIspk);
-    hist.normspkRaster_SIspk_nonpc = normspkRaster(hist.nonpcIdx_SIspk);
     hist.meanspkRaster_SIspk = meanspkRaster(hist.pcIdx_SIspk);
     hist.spkMean_SIspk = spkMean(hist.pcIdx_SIspk);
     hist.spkPeak_SIspk = spkPeak(hist.pcIdx_SIspk);
@@ -311,13 +315,15 @@ if ~isempty(hist.pcIdx_SIspk)
     hist.centroid_SIspk = centroid(hist.pcIdx_SIspk,:);
     hist.fieldsize_SIspk = fieldsize(hist.pcIdx_SIspk,:);
 end
+if ~isempty(hist.nonpcIdx_SIspk)
+    hist.spkRaster_SIspk_nonpc = spkRaster(hist.nonpcIdx_SIspk);
+    hist.normspkRaster_SIspk_nonpc = normspkRaster(hist.nonpcIdx_SIspk);
+end
 
 %asd
 if ~isempty(asd.pcIdx_MI)
     asd.spkRaster_MI_pc = spkRaster(asd.pcIdx_MI);
     asd.normspkRaster_MI_pc = normspkRaster(asd.pcIdx_MI);
-    asd.spkRaster_MI_nonpc = spkRaster(asd.nonpcIdx_MI);
-    asd.normspkRaster_MI_nonpc = normspkRaster(asd.nonpcIdx_MI);
     asd.meanspkRaster_MI = meanspkRaster(asd.pcIdx_MI);
     asd.spkMean_MI = spkMean(asd.pcIdx_MI);
     asd.spkPeak_MI = spkPeak(asd.pcIdx_MI);
@@ -330,11 +336,14 @@ if ~isempty(asd.pcIdx_MI)
     asd.centroid_MI = centroid_asd(asd.pcIdx_MI,:);
     asd.fieldsize_MI = fieldsize_asd(asd.pcIdx_MI,:);
 end
+if ~isempty(asd.nonpcIdx_MI)
+    asd.spkRaster_MI_nonpc = spkRaster(asd.nonpcIdx_MI);
+    asd.normspkRaster_MI_nonpc = normspkRaster(asd.nonpcIdx_MI);
+end
+
 if ~isempty(asd.pcIdx_SIsec)
     asd.spkRaster_SIsec_pc = spkRaster(asd.pcIdx_SIsec);
     asd.normspkRaster_SIsec_pc = normspkRaster(asd.pcIdx_SIsec);
-    asd.spkRaster_SIsec_nonpc = spkRaster(asd.nonpcIdx_SIsec);
-    asd.normspkRaster_SIsec_nonpc = normspkRaster(asd.nonpcIdx_SIsec);
     asd.meanspkRaster_SIsec = meanspkRaster(asd.pcIdx_SIsec);
     asd.spkMean_SIsec = spkMean(asd.pcIdx_SIsec);
     asd.spkPeak_SIsec = spkPeak(asd.pcIdx_SIsec);
@@ -347,11 +356,14 @@ if ~isempty(asd.pcIdx_SIsec)
     asd.centroid_SIsec = centroid_asd(asd.pcIdx_SIsec,:);
     asd.fieldsize_SIsec = fieldsize_asd(asd.pcIdx_SIsec,:);
 end
+if ~isempty(asd.nonpcIdx_SIsec)
+    asd.spkRaster_SIsec_nonpc = spkRaster(asd.nonpcIdx_SIsec);
+    asd.normspkRaster_SIsec_nonpc = normspkRaster(asd.nonpcIdx_SIsec);
+end
+
 if ~isempty(asd.pcIdx_SIspk)
     asd.spkRaster_SIspk_pc = spkRaster(asd.pcIdx_SIspk);
     asd.normspkRaster_SIspk_pc = normspkRaster(asd.pcIdx_SIspk);
-    asd.spkRaster_SIspk_nonpc = spkRaster(asd.nonpcIdx_SIspk);
-    asd.normspkRaster_SIspk_nonpc = normspkRaster(asd.nonpcIdx_SIspk);
     asd.meanspkRaster_SIspk = meanspkRaster(asd.pcIdx_SIspk);
     asd.spkMean_SIspk = spkMean(asd.pcIdx_SIspk);
     asd.spkPeak_SIspk = spkPeak(asd.pcIdx_SIspk);
@@ -363,6 +375,10 @@ if ~isempty(asd.pcIdx_SIspk)
     asd.infoMap_SIspk = infoMap_asd(asd.pcIdx_SIspk,3,:);
     asd.centroid_SIspk = centroid_asd(asd.pcIdx_SIspk,:);
     asd.fieldsize_SIspk = fieldsize_asd(asd.pcIdx_SIspk,:);
+end
+if ~isempty(asd.nonpcIdx_SIspk)
+    asd.spkRaster_SIspk_nonpc = spkRaster(asd.nonpcIdx_SIspk);
+    asd.normspkRaster_SIspk_nonpc = normspkRaster(asd.nonpcIdx_SIspk);
 end
 
 % Outputs

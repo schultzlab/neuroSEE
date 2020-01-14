@@ -1100,6 +1100,62 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
             end
         end
         
+        % spike raster plots for NON-place cells 
+        Nnonpcs = numel(asd.nonpcIdx_SIspk);
+        [nRow, nCol] = getnRownCol(Nnonpcs);
+        nPlot = nRow*nCol;
+        Nfig = round((Nnonpcs/nPlot))-1;
+        if Nfig<0, Nfig = 0; end
+
+        for ii=0:Nfig
+            fh = figure;
+            ha = tight_subplot(nRow,nCol,[.02 .015],[.01 .05],[.01 .01]);
+            for jj=0:nPlot-1
+                if (ii*nPlot+jj+1) <= Nnonpcs
+                    axes(ha(+jj+1));
+                    imagesc(asd.normspkRaster_SIspk_nonpc{ii*nPlot+jj+1}); 
+                    yticks(ytick_files); yticklabels(ytick_files); % ylabel('Trial #');
+                    xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
+                    title(['Non-PC ' num2str(ii*nPlot+jj+1)],'fontsize',15);
+                end
+            end
+            if fsave
+                if Nnonpcs/nPlot <= 1
+                    fname_fig = [sdir 'asd_SIspk/' fname_pref '_normspkRaster_nonPCs_asd_SIspk'];
+                else
+                    fname_fig = [sdir 'asd_SIspk/' fname_pref '_normspkRaster_nonPCs_asd_SIspk_' num2str(ii+1)];
+                end
+                savefig( fh, fname_fig );
+                saveas( fh, fname_fig, 'png' );
+                if fclose, close( fh ); end
+            end
+        end 
+    
+        for ii=0:Nfig
+            fh = figure;
+            ha = tight_subplot(nRow,nCol,[.02 .015],[.01 .05],[.01 .01]);
+            for jj=0:nPlot-1
+                if (ii*nPlot+jj+1) <= Nnonpcs
+                    axes(ha(+jj+1));
+                    imagesc(asd.spkRaster_SIspk_nonpc{ii*nPlot+jj+1}); 
+                    yticks(ytick_files); yticklabels(ytick_files); % ylabel('Trial #');
+                    xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
+                    title(['Non-PC ' num2str(ii*nPlot+jj+1)],'fontsize',15);
+                    colorbar;
+                end
+            end
+            if fsave
+                if Nnonpcs/nPlot <= 1
+                    fname_fig = [sdir 'asd_SIspk/' fname_pref '_spkRaster_nonPCs_asd_SIspk'];
+                else
+                    fname_fig = [sdir 'asd_SIspk/' fname_pref '_spkRaster_nonPCs_asd_SIspk_' num2str(ii+1)];
+                end
+                savefig( fh, fname_fig );
+                saveas( fh, fname_fig, 'png' );
+                if fclose, close( fh ); end
+            end
+        end 
+        
         % summary of population data
         for e = 1:Nepochs
             fh = figure;
@@ -1177,63 +1233,4 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
             end
         end
     end
-    
-    % spike raster plots for NON-place cells 
-    Nnonpcs = numel(asd.nonpcIdx_SIspk);
-    if Nnonpcs > 0
-        [nRow, nCol] = getnRownCol(Nnonpcs);
-        nPlot = nRow*nCol;
-        Nfig = round((Nnonpcs/nPlot))-1;
-        if Nfig<0, Nfig = 0; end
-
-        for ii=0:Nfig
-            fh = figure;
-            ha = tight_subplot(nRow,nCol,[.02 .015],[.01 .05],[.01 .01]);
-            for jj=0:nPlot-1
-                if (ii*nPlot+jj+1) <= Nnonpcs
-                    axes(ha(+jj+1));
-                    imagesc(asd.normspkRaster_SIspk_nonpc{ii*nPlot+jj+1}); 
-                    yticks(ytick_files); yticklabels(ytick_files); % ylabel('Trial #');
-                    xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
-                    title(['Non-PC ' num2str(ii*nPlot+jj+1)],'fontsize',15);
-                end
-            end
-            if fsave
-                if Nnonpcs/nPlot <= 1
-                    fname_fig = [sdir 'asd_SIspk/' fname_pref '_normspkRaster_nonPCs_asd_SIspk'];
-                else
-                    fname_fig = [sdir 'asd_SIspk/' fname_pref '_normspkRaster_nonPCs_asd_SIspk_' num2str(ii+1)];
-                end
-                savefig( fh, fname_fig );
-                saveas( fh, fname_fig, 'png' );
-                if fclose, close( fh ); end
-            end
-        end 
-    
-        for ii=0:Nfig
-            fh = figure;
-            ha = tight_subplot(nRow,nCol,[.02 .015],[.01 .05],[.01 .01]);
-            for jj=0:nPlot-1
-                if (ii*nPlot+jj+1) <= Nnonpcs
-                    axes(ha(+jj+1));
-                    imagesc(asd.spkRaster_SIspk_nonpc{ii*nPlot+jj+1}); 
-                    yticks(ytick_files); yticklabels(ytick_files); % ylabel('Trial #');
-                    xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');
-                    title(['Non-PC ' num2str(ii*nPlot+jj+1)],'fontsize',15);
-                    colorbar;
-                end
-            end
-            if fsave
-                if Nnonpcs/nPlot <= 1
-                    fname_fig = [sdir 'asd_SIspk/' fname_pref '_spkRaster_nonPCs_asd_SIspk'];
-                else
-                    fname_fig = [sdir 'asd_SIspk/' fname_pref '_spkRaster_nonPCs_asd_SIspk_' num2str(ii+1)];
-                end
-                savefig( fh, fname_fig );
-                saveas( fh, fname_fig, 'png' );
-                if fclose, close( fh ); end
-            end
-        end 
-    end
-        
 end

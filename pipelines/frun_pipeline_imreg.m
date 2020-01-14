@@ -273,7 +273,7 @@ if force(2) || ~check(1)
     saveas(fig,[grp_sdir mouseid '_' expname '_ref' reffile '_ROIs'],'png');
     close(fig);
 else
-    if any([force(3), ~check(2), ~check(4)])
+    if any([force, ~check(2), ~check(4)])
         fprintf('%s: loading ROI segmentation results\n',[mouseid '_' expname])
         masks = load(grp_sname,'masks');
         masks = masks.masks;

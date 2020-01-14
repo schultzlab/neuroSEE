@@ -274,7 +274,7 @@ if force(2) || ~check(1)
     close(fig);
 else
     if any([force(3), ~check(2), ~check(4)])
-        fprintf('%s: Found ROI segmentation results. Proceeding to FISSA correction\n',[mouseid '_' expname])
+        fprintf('%s: loading ROI segmentation results\n',[mouseid '_' expname])
         masks = load(grp_sname,'masks');
         masks = masks.masks;
         corr_image = load(grp_sname,'corr_image');
@@ -452,6 +452,7 @@ if any(force(3:5)) || ~check(2)
 
 else
     if force(6) || ~check(4)
+        fprintf('%s: loading fissa, spike, track data', [mouseid '_' expname]);
         c = load(grp_sname);
         dtsG = c.dtsG;
         ddf_f = c.ddf_f;
@@ -559,11 +560,12 @@ if force(6) || ~check(3)
     end
 else
     if ~check(4)
+        fprintf('%s: loading PF mapping data', [mouseid '_' expname]);
         c = load(grp_sname);
-        activeData = c.dtsG;
-        PFdata = c.ddf_f;
-        hist = c.spikes;
-        asd = c.trackData;
+        activeData = c.activeData;
+        PFdata = c.PFdata;
+        hist = c.hist;
+        asd = c.asd;
     end
 end
 

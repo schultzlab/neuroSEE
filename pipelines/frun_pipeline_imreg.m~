@@ -273,8 +273,8 @@ if force(2) || ~check(1)
     saveas(fig,[grp_sdir mouseid '_' expname '_ref' reffile '_ROIs'],'png');
     close(fig);
 else
-    if any(force(3), ~check(2), ~check(4))
-        fprintf('%s: Found ROI segmentation results. Proceeding to FISSA correction\n',[mouseid '_' expname])
+    if any([force(3), ~check(2), ~check(4)])
+        fprintf('%s: loading ROI segmentation results\n',[mouseid '_' expname])
         masks = load(grp_sname,'masks');
         masks = masks.masks;
         corr_image = load(grp_sname,'corr_image');
@@ -452,6 +452,7 @@ if any(force(3:5)) || ~check(2)
 
 else
     if force(6) || ~check(4)
+        fprintf('%s: loading fissa, spike, track data', [mouseid '_' expname]);
         c = load(grp_sname);
         dtsG = c.dtsG;
         ddf_f = c.ddf_f;
@@ -461,6 +462,8 @@ else
 end
 
 %% PFmapping
+grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'];
+
 if any(trackData.r < 100)
     params.mode_dim = '2D';         % open field
     params.PFmap.Nbins = [16, 16];  % number of location bins in [x y]               
@@ -558,15 +561,16 @@ if force(6) || ~check(3)
 else
     if ~check(4)
         c = load(grp_sname);
-        activeData = c.dtsG;
-        PFdata = c.ddf_f;
-        spikes = c.spikes;
-        trackData = c.trackData;
+        activeData = c.activeData;
+        PFdata = c.PFdata;
+        hist = c.hist;
+        asd = c.asd;
     end
 end
 
 sname_allData = [ grp_sdir mouseid '_' expname '_ref' reffile '_allData.mat'];
 
+fprintf('%s: saving all data\n', [mouseid '_' expname]);
 save(sname_allData,'list','corr_image','masks','tsG','df_f','dtsG','ddf_f','spikes',...
                     'trackData','activeData','PFdata','hist','asd','params');
 if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end

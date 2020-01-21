@@ -39,7 +39,8 @@ function [ hist, asd, activeData, outData ] = generatePFmap_1D( spikes, trackDat
 if nargin<4, dsample = false; end
 
 fr = params.fr;
-Nposbins = params.PFmap.Nbins;
+Nposbins = params.PFmap.Nposbins;
+Nspikebins = params.PFmap.Nspikebins;
 Nepochs = params.PFmap.Nepochs;
 Vthr = params.PFmap.Vthr;
 histsmoothFac = params.PFmap.histsmoothFac;
@@ -170,6 +171,7 @@ for id = 1:Ncells
     pfMap_sm(id,:) = smoothdata(pfMap(id,:),'gaussian',Nposbins/histsmoothFac);
     normpfMap_sm(id,:) = pfMap_sm(id,:)./max(pfMap_sm(id,:));
     
+    bin_pfMap =
     [infoMap(id,1), infoMap(id,2), infoMap(id,3)] = infoMeasures(pfMap(id,:),occMap,0);
     [~,c,fs] = findpeaks(normpfMap(id,:),'WidthReference','halfheight','SortStr','descend');
     if ~isempty(c), centroid(id) = c(1); else, centroid(id) = NaN; end

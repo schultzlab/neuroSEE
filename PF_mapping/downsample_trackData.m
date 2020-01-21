@@ -52,9 +52,10 @@ else
     Nt = size(spikes,2);                % number of timestamps for spikes
 
     % Convert -180:180 to 0:360
-    if min(phi)<0
-       phi(phi<0) = phi(phi<0)+360;
-    end
+%     if min(phi)<0
+%        phi(phi<0) = phi(phi<0)+360;
+%     end
+    phi = phi + 180;
 
     % generate imaging timestamps using known image frame rate
     dt = 1/fr;
@@ -64,11 +65,11 @@ else
     end
 
     % Downsample tracking to Ca trace
-    downData.phi = interp1(tracktime,phi,t,'linear');
-    downData.x = interp1(tracktime,x,t,'linear');
-    downData.y = interp1(tracktime,y,t,'linear');
-    downData.speed = interp1(tracktime,speed,t,'linear'); % mm/s
-    downData.r = interp1(tracktime,r,t,'linear'); % mm/s
+    downData.phi = interp1(tracktime,phi,t,'nearest');
+    downData.x = interp1(tracktime,x,t,'nearest');
+    downData.y = interp1(tracktime,y,t,'nearest');
+    downData.speed = interp1(tracktime,speed,t,'nearest'); % mm/s
+    downData.r = interp1(tracktime,r,t,'nearest'); % mm/s
     downData.time = t;
     
     varargout{1} = downData;

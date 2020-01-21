@@ -39,7 +39,7 @@ function [ hist, asd, activeData, outData ] = generatePFmap_1D( spikes, trackDat
 if nargin<4, dsample = false; end
 
 fr = params.fr;
-Nposbins = params.PFmap.Nbins;
+Nbins = params.PFmap.Nbins;
 Nepochs = params.PFmap.Nepochs;
 Vthr = params.PFmap.Vthr;
 histsmoothFac = params.PFmap.histsmoothFac;
@@ -74,7 +74,7 @@ activespeed = downspeed(downspeed > Vthr);
 activer     = downr(downspeed > Vthr);
 
 % Bin phi data
-[bin_phi,~] = discretize(activephi,Nposbins);
+[bin_phi,~] = discretize(activephi,Nbins);
 
 
 %% Calculate spike maps per trial
@@ -121,7 +121,7 @@ for ii = 1:Ncells
         phi_tr = phi{tr};
         spike_tr = spike{ii}{tr};
 
-        for n = 1:Nposbins
+        for n = 1:Nbins
             spkRaster{ii}(tr,n) = sum(spike_tr(phi_tr == n));
         end
 
@@ -137,14 +137,14 @@ end
 % (i.e. Nepochs = 1)
 
 % Initialise matrices
-spkMap = zeros(Ncells, Nposbins);           % spike map
-normspkMap = zeros(Ncells, Nposbins);       % normalised spike map
-pfMap = zeros(Ncells, Nposbins);            % place field map
-normpfMap = zeros(Ncells, Nposbins);        % normalised place field map
-pfMap_sm = zeros(Ncells, Nposbins);         % smoothened place field map
-normpfMap_sm = zeros(Ncells, Nposbins);     % smoothened normalised place field map
-pfMap_asd = zeros(Ncells, Nposbins);        % place field map for asd
-normpfMap_asd = zeros(Ncells, Nposbins);    % normalised place field map for asd
+spkMap = zeros(Ncells, Nbins);           % spike map
+normspkMap = zeros(Ncells, Nbins);       % normalised spike map
+pfMap = zeros(Ncells, Nbins);            % place field map
+normpfMap = zeros(Ncells, Nbins);        % normalised place field map
+pfMap_sm = zeros(Ncells, Nbins);         % smoothened place field map
+normpfMap_sm = zeros(Ncells, Nbins);     % smoothened normalised place field map
+pfMap_asd = zeros(Ncells, Nbins);        % place field map for asd
+normpfMap_asd = zeros(Ncells, Nbins);    % normalised place field map for asd
 infoMap = zeros(Ncells, 3);              % info values
 infoMap_asd = zeros(Ncells,32);          % info values for asd
 centroid = zeros(Ncells,1);
@@ -153,12 +153,12 @@ fieldsize = zeros(Ncells,1);
 fieldsize_asd = zeros(Ncells,1);
 
 % Calculate PF maps
-occMap = histcounts(bin_phi,Nposbins);
+occMap = histcounts(bin_phi,Nbins);
 for id = 1:Ncells
     z = activespk(id,:);
 
     % Spike rate maps
-    for n = 1:Nposbins
+    for n = 1:Nbins
         spkMap(id,n) = sum(z(bin_phi == n));
     end
     normspkMap(id,:) = spkMap(id,:)./max(spkMap(id,:));
@@ -167,7 +167,7 @@ for id = 1:Ncells
     pfMap(id,:) = spkMap(id,:)./occMap;
     normpfMap(id,:) = pfMap(id,:)./max(pfMap(id,:));
     
-    pfMap_sm(id,:) = smoothdata(pfMap(id,:),'gaussian',Nposbins/histsmoothFac);
+    pfMap_sm(id,:) = smoothdata(pfMap(id,:),'gaussian',Nbins/histsmoothFac);
     normpfMap_sm(id,:) = pfMap_sm(id,:)./max(pfMap_sm(id,:));
     
     [infoMap(id,1), infoMap(id,2), infoMap(id,3)] = infoMeasures(pfMap(id,:),occMap,0);
@@ -176,10 +176,10 @@ for id = 1:Ncells
     if ~isempty(fs), fieldsize(id) = fs(1); else, fieldsize(id) = NaN; end
     
     % ASD estimation
-    [pfMap_asd(id,:),~] = runASD_1d(bin_phi,z',Nposbins);
+    [pfMap_asd(id,:),~] = runASD_1d(bin_phi,z',Nbins);
     normpfMap_asd(id,:) = pfMap_asd(id,:)./max(pfMap_asd(id,:));
     [infoMap_asd(id,1), infoMap_asd(id,2), infoMap_asd(id,3)] =...
-        infoMeasures(pfMap_asd(id,:)',ones(Nposbins,1),0);
+        infoMeasures(pfMap_asd(id,:)',ones(Nbins,1),0);
     [~,c,fs] = findpeaks(normpfMap_asd(id,:),'WidthReference','halfheight','SortStr','descend');
     if ~isempty(c), centroid_asd(id) = c(1); else, centroid_asd(id) = NaN;  end
     if ~isempty(fs), fieldsize_asd(id) = fs(1); else, fieldsize_asd(id) = NaN; end
@@ -188,28 +188,28 @@ end
 % Identify place cells. The cells are sorted in descending order of info
 % content
 [hist.pcIdx_MI, hist.pcIdx_SIsec, hist.pcIdx_SIspk, hist.nonpcIdx_MI, hist.nonpcIdx_SIsec, hist.nonpcIdx_SIspk] ...
-    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap, Nposbins, prctile_thr);
+    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap, Nbins, prctile_thr);
 [asd.pcIdx_MI, asd.pcIdx_SIsec, asd.pcIdx_SIspk, asd.nonpcIdx_MI, asd.nonpcIdx_SIsec, asd.nonpcIdx_SIspk] ...
-    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap_asd, Nposbins, prctile_thr);
+    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap_asd, Nbins, prctile_thr);
 
 
 %% Finalise place field maps, recalculate if Nepochs > 1
 if Nepochs > 1
     % Initialise matrices
-    occMap = zeros(Nepochs, Nposbins);                         
-    spkMap = zeros(Ncells, Nposbins, Nepochs);
-    normspkMap = zeros(Ncells, Nposbins, Nepochs);   
-    pfMap = zeros(Ncells, Nposbins, Nepochs);               
-    pfMap_sm = zeros(Ncells, Nposbins, Nepochs);            
-    normpfMap = zeros(Ncells, Nposbins, Nepochs);        
-    normpfMap_sm = zeros(Ncells, Nposbins, Nepochs);     
+    occMap = zeros(Nepochs, Nbins);                         
+    spkMap = zeros(Ncells, Nbins, Nepochs);
+    normspkMap = zeros(Ncells, Nbins, Nepochs);   
+    pfMap = zeros(Ncells, Nbins, Nepochs);               
+    pfMap_sm = zeros(Ncells, Nbins, Nepochs);            
+    normpfMap = zeros(Ncells, Nbins, Nepochs);        
+    normpfMap_sm = zeros(Ncells, Nbins, Nepochs);     
     infoMap = zeros(Ncells, 3, Nepochs); 
     infoMap_asd = zeros(Ncells, 3, Nepochs);
     centroid = zeros(Ncells, Nepochs);
     centroid_asd = zeros(Ncells, Nepochs);
     fieldsize = zeros(Ncells, Nepochs);
     fieldsize_asd = zeros(Ncells, Nepochs);
-    bin_phi_e = zeros(Nepochs, Nposbins);
+    bin_phi_e = zeros(Nepochs, Nbins);
     
     % Calculate PF maps
     e_bound = round( linspace(1,size(activespk,2),Nepochs+1) );
@@ -222,8 +222,8 @@ if Nepochs > 1
             spike_e = z(e_bound(e):e_bound(e+1));
 
             % Occupancy and spike rate maps
-            occMap(e,:) = histcounts(bin_phi_e(:,e),Nposbins);
-            for n = 1:Nposbins
+            occMap(e,:) = histcounts(bin_phi_e(:,e),Nbins);
+            for n = 1:Nbins
                 spkMap(id,n,e) = sum(spike_e(bin_phi_e(:,e) == n));
             end
             normspkMap(id,:,e) = spkMap(id,:,e)./max(spkMap(id,:,e));
@@ -231,7 +231,7 @@ if Nepochs > 1
             % histogram estimation
             pfMap(id,:,e) = spkMap(id,:,e)./occMap(e,:);
             pfMap(isnan(pfMap)) = 0;
-            pfMap_sm(id,:,e) = smoothdata(pfMap(id,:,e),'gaussian',Nposbins/histsmoothFac);
+            pfMap_sm(id,:,e) = smoothdata(pfMap(id,:,e),'gaussian',Nbins/histsmoothFac);
 
             normpfMap(id,:,e) = pfMap(id,:,e)./max(pfMap(id,:,e));
             normpfMap_sm(id,:,e) = pfMap_sm(id,:,e)./max(pfMap_sm(id,:,e));
@@ -242,10 +242,10 @@ if Nepochs > 1
             if ~isempty(fs), fieldsize(id,e) = fs(1); else, fieldsize(id,e) = NaN; end
             
             % asd estimation
-            [pfMap_asd(id,:,e),~] = runASD_1d(bin_phi_e(:,e),(spike_e)',Nposbins);
+            [pfMap_asd(id,:,e),~] = runASD_1d(bin_phi_e(:,e),(spike_e)',Nbins);
             normpfMap_asd(id,:,e) = pfMap_asd(id,:,e)./max(pfMap_asd(id,:,e));
             [infoMap_asd(id,1,e), infoMap_asd(id,2,e), infoMap_asd(id,3,e)] = ...
-                infoMeasures(squeeze(pfMap_asd(id,:,e))',ones(Nposbins,1),0);
+                infoMeasures(squeeze(pfMap_asd(id,:,e))',ones(Nbins,1),0);
             [~,c,fs] = findpeaks(normpfMap_asd(id,:,e),'WidthReference','halfheight','SortStr','descend');
             if ~isempty(c), centroid_asd(id,e) = c(1); else, centroid_asd(id,e) = NaN; end
             if ~isempty(fs), fieldsize_asd(id,e) = fs(1); else, fieldsize_asd(id,e) = NaN; end

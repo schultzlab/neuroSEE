@@ -18,7 +18,7 @@ force = [false;...              % (1) image registration even if registered imag
          false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
-         false;...              % (5) tracking data consolidation
+         true;...              % (5) tracking data consolidation
          true];                % (6) place field mapping
 mcorr_method = 'normcorre-nr';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
@@ -452,7 +452,7 @@ if any(force(3:5)) || ~check(2)
 
 else
     if force(6) || ~check(4)
-        fprintf('%s: loading fissa, spike, track data', [mouseid '_' expname]);
+        fprintf('%s: loading fissa, spike, track data\n', [mouseid '_' expname]);
         c = load(grp_sname);
         dtsG = c.dtsG;
         ddf_f = c.ddf_f;
@@ -469,7 +469,12 @@ if any(trackData.r < 100)
     params.PFmap.Nbins = [16, 16];  % number of location bins in [x y]               
 else 
     params.mode_dim = '1D';         % circular linear track
-    params.PFmap.Nbins = 30;        % number of location bins               
+    params.PFmap.Nbins = 30;        % number of location bins       
+    if ~contains(list,'rev') 
+        params.direction = 'CW';
+    else
+        params.direction = 'CCW';
+    end
 end
 
 Nepochs = params.PFmap.Nepochs;

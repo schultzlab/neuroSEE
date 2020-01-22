@@ -101,18 +101,18 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
                 hold on;
                 plot(mean(hist.spkMean_MI),0.08,'kv','markerfacecolor','k','markersize',6); hold off;
                 xlabel('PSD mean');
-                ylabel('Fraction of Cells');
+                ylabel('Cells (%)');
             subplot(244); histogram(hist.infoMap_MI,40,'Normalization','probability');
                 hold on;
                 plot(mean(hist.infoMap_MI),0.12,'kv','markerfacecolor','k','markersize',6); hold off;
                 xlabel('Mutual info (bits)');
-                ylabel('Fraction of Cells');
+                ylabel('Cells (%)');
             subplot(246); histogram(hist.fieldsize_MI(:,e),40,'Normalization','probability');
                 hold on;
                 mean_fieldsize_MI = mean(hist.fieldsize_MI(:,e));
                 plot(mean_fieldsize_MI,0.1,'kv','markerfacecolor','k','markersize',6); hold off;
                 xlabel('Field size(cm)');
-                ylabel('Fraction of Cells');
+                ylabel('Cells (%)');
             subplot(247); histogram(hist.centroid_MI(:,e),30);
                 hold on;
                 mean_centroid_MI = mean(hist.centroid_MI(:,e));
@@ -124,7 +124,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
                 mean_bin_phi = mean(PFdata.bin_phi(:,e));
                 plot(mean_bin_phi,0.04,'kv','markerfacecolor','k','markersize',6); hold off;
                 xlabel('Position (cm)');
-                ylabel('Fraction of Time');
+                ylabel('Time (%)');
             
             if fsave
                 if ~exist(sdir,'dir'), mkdir(sdir); end

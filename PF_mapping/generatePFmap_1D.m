@@ -93,6 +93,7 @@ for ii = 1:Ncells
         p_tr = p(idx_file(jj):idx_file(jj+1)-1);
         s_tr = s(idx_file(jj):idx_file(jj+1)-1);
         idx_tr = find( abs(diff(p_tr)) > dthr );
+        % Remove artefacts
         for k = numel(idx_tr):-1:2
             if (idx_tr(k) - idx_tr(k-1)) <= 20 
                 idx_tr(k) = 0;
@@ -128,9 +129,6 @@ for ii = 1:Ncells
         normspkRaster{ii}(tr,:) = spkRaster{ii}(tr,:)./max(spkRaster{ii}(tr,:));
         normspkRaster{ii}(isnan(normspkRaster{ii})) = 0;
     end
-    meanspkRaster(ii,:) = mean(spkRaster{ii},1);    
-    spkPeak(ii) = max(max(spkRaster{ii}));
-    spkMean(ii) = mean(mean(spkRaster{ii}));
 end
 
 %% Identify place cells by first calculating PF maps for entire session
@@ -188,9 +186,9 @@ end
 % Identify place cells. The cells are sorted in descending order of info
 % content
 [hist.pcIdx_MI, hist.pcIdx_SIsec, hist.pcIdx_SIspk, hist.nonpcIdx_MI, hist.nonpcIdx_SIsec, hist.nonpcIdx_SIspk] ...
-    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap, Nposbins, prctile_thr);
+    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap, Nposbins); %, prctile_thr);
 [asd.pcIdx_MI, asd.pcIdx_SIsec, asd.pcIdx_SIspk, asd.nonpcIdx_MI, asd.nonpcIdx_SIsec, asd.nonpcIdx_SIspk] ...
-    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap_asd, Nposbins, prctile_thr);
+    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap_asd, Nposbins); %, prctile_thr);
 
 
 %% Finalise place field maps, recalculate if Nepochs > 1

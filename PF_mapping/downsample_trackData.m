@@ -16,9 +16,10 @@ if iscell(trackData)
         Nt(jj) = size(spikes{jj},2);
         
         % Convert -180:180 to 0:360
-        if min(phi)<0
-           phi(phi<0) = phi(phi<0)+360;
-        end
+%         if min(phi)<0
+%            phi(phi<0) = phi(phi<0)+360;
+%         end
+        phi = phi + 180;
 
         % generate imaging timestamps using known image frame rate
         dt = 1/fr;
@@ -28,11 +29,11 @@ if iscell(trackData)
         end
 
         % Downsample tracking to Ca trace
-        downData{jj}.phi = interp1(tracktime,phi,t,'linear');
-        downData{jj}.x = interp1(tracktime,x,t,'linear');
-        downData{jj}.y = interp1(tracktime,y,t,'linear');
-        downData{jj}.speed = interp1(tracktime,speed,t,'linear'); % mm/s
-        downData{jj}.r = interp1(tracktime,r,t,'linear'); % mm/s
+        downData{jj}.phi = interp1(tracktime,phi,t,'nearest');
+        downData{jj}.x = interp1(tracktime,x,t,'nearest');
+        downData{jj}.y = interp1(tracktime,y,t,'nearest');
+        downData{jj}.speed = interp1(tracktime,speed,t,'nearest'); % mm/s
+        downData{jj}.r = interp1(tracktime,r,t,'nearest'); % mm/s
         downData{jj}.time = t;
         r_all = [r_all; downData{jj}.r];
     end

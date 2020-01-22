@@ -18,7 +18,7 @@ force = [false;...              % (1) image registration even if registered imag
          false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
-         true;...              % (5) tracking data consolidation
+         false;...              % (5) tracking data consolidation
          true];                % (6) place field mapping
 mcorr_method = 'normcorre-nr';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
@@ -469,12 +469,7 @@ if any(trackData.r < 100)
     params.PFmap.Nbins = [16, 16];  % number of location bins in [x y]               
 else 
     params.mode_dim = '1D';         % circular linear track
-    params.PFmap.Nbins = 30;        % number of location bins       
-    if ~contains(list,'rev') 
-        params.direction = 'CW';
-    else
-        params.direction = 'CCW';
-    end
+    params.PFmap.Nbins = 67;        % number of location bins       
 end
 
 Nepochs = params.PFmap.Nepochs;

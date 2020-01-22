@@ -129,6 +129,9 @@ for ii = 1:Ncells
         normspkRaster{ii}(tr,:) = spkRaster{ii}(tr,:)./max(spkRaster{ii}(tr,:));
         normspkRaster{ii}(isnan(normspkRaster{ii})) = 0;
     end
+    meanspkRaster(ii,:) = mean(spkRaster{ii},1);    
+    spkPeak(ii) = max(max(spkRaster{ii}));
+    spkMean(ii) = mean(mean(spkRaster{ii}));
 end
 
 %% Identify place cells by first calculating PF maps for entire session

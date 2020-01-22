@@ -62,6 +62,7 @@ else
     downr = trackData.r;
     downspeed = trackData.speed;
     t = trackData.time;
+    dt = mean(diff(t));
 end
 
 % Consider only samples when the mouse is active
@@ -165,7 +166,7 @@ for id = 1:Ncells
     normspkMap(id,:) = spkMap(id,:)./max(spkMap(id,:));
 
     % histogram estimation
-    pfMap(id,:) = spkMap(id,:)./occMap;
+    pfMap(id,:) = spkMap(id,:)./(occMap*dt);
     normpfMap(id,:) = pfMap(id,:)./max(pfMap(id,:));
     
     pfMap_sm(id,:) = smoothdata(pfMap(id,:),'gaussian',Nposbins/histsmoothFac);

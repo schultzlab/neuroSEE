@@ -190,9 +190,9 @@ end
 % Identify place cells. The cells are sorted in descending order of info
 % content
 [hist.pcIdx_MI, hist.pcIdx_SIsec, hist.pcIdx_SIspk, hist.nonpcIdx_MI, hist.nonpcIdx_SIsec, hist.nonpcIdx_SIspk] ...
-    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap, Nposbins); %, prctile_thr);
+    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap, Nposbins, prctile_thr);
 [asd.pcIdx_MI, asd.pcIdx_SIsec, asd.pcIdx_SIspk, asd.nonpcIdx_MI, asd.nonpcIdx_SIsec, asd.nonpcIdx_SIspk] ...
-    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap_asd, Nposbins); %, prctile_thr);
+    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap_asd, Nposbins, prctile_thr);
 
 
 %% Finalise place field maps, recalculate if Nepochs > 1

@@ -232,10 +232,10 @@ function plotRaster( Ncells, spkRaster, ytick_files, title_str, fsave, fname, fc
 
     for ii=0:Nfig
         figure;
-        ha = tight_subplot(nRow,nCol,[.02 .015],[.01 .05],[.01 .01]);
+        fh = tight_subplot(nRow,nCol,[.02 .015],[.01 .05],[.01 .01]);
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Ncells
-                axes(ha(+jj+1));
+                axes(fh(+jj+1));
                 imagesc(spkRaster{ii*nPlot+jj+1}); 
                 yticks(ytick_files); yticklabels(ytick_files); % ylabel('Trial #');
                 xticks([]); % xticklabels([1 50 100]); xlabel('Position (cm)');

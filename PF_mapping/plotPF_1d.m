@@ -24,7 +24,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
         
         fname = [sdir 'hist_MI/' fname_pref  '_populSummary'];
         plot_populSummary( hist.sort_normpfMap_MI, hist.spkPeak_MI, hist.spkMean_MI, hist.infoMap_MI,...
-            hist.fieldsize_MI, hist.centroid_MI, PFdata.bin_phi, fsave, fname, fclose, sort_normpfMap_sm );
+            hist.fieldsize_MI, hist.centroid_MI, PFdata.bin_phi, fsave, fname, fclose, hist.sort_normpfMap_sm );
             
         if Nepochs > 1
             fname = [sdir 'hist_MI/' fname_pref '_remapping_hist_MI'];
@@ -60,7 +60,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
         
         fname = [sdir 'asd_MI/' fname_pref  '_populSummary'];
         plot_populSummary( asd.sort_normpfMap_MI, asd.spkPeak_MI, asd.spkMean_MI, asd.infoMap_MI,...
-            asd.fieldsize_MI, asd.centroid_MI, PFdata.bin_phi, fsave, fname, fclose, sort_normpfMap_sm );
+            asd.fieldsize_MI, asd.centroid_MI, PFdata.bin_phi, fsave, fname, fclose, asd.sort_normpfMap_sm );
             
         if Nepochs > 1
             fname = [sdir 'asd_MI/' fname_pref '_remapping_asd_MI'];
@@ -96,7 +96,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
         
         fname = [sdir 'hist_SIsec/' fname_pref  '_populSummary'];
         plot_populSummary( hist.sort_normpfMap_SIsec, hist.spkPeak_SIsec, hist.spkMean_SIsec, hist.infoMap_SIsec,...
-            hist.fieldsize_SIsec, hist.centroid_SIsec, PFdata.bin_phi, fsave, fname, fclose, sort_normpfMap_sm );
+            hist.fieldsize_SIsec, hist.centroid_SIsec, PFdata.bin_phi, fsave, fname, fclose, hist.sort_normpfMap_sm );
             
         if Nepochs > 1
             fname = [sdir 'hist_SIsec/' fname_pref '_remapping_hist_SIsec'];
@@ -132,7 +132,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
         
         fname = [sdir 'asd_SIsec/' fname_pref  '_populSummary'];
         plot_populSummary( asd.sort_normpfMap_SIsec, asd.spkPeak_SIsec, asd.spkMean_SIsec, asd.infoMap_SIsec,...
-            asd.fieldsize_SIsec, asd.centroid_SIsec, PFdata.bin_phi, fsave, fname, fclose, sort_normpfMap_sm );
+            asd.fieldsize_SIsec, asd.centroid_SIsec, PFdata.bin_phi, fsave, fname, fclose, asd.sort_normpfMap_sm );
             
         if Nepochs > 1
             fname = [sdir 'asd_SIsec/' fname_pref '_remapping_asd_SIsec'];
@@ -168,7 +168,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
         
         fname = [sdir 'hist_SIspk/' fname_pref  '_populSummary'];
         plot_populSummary( hist.sort_normpfMap_SIspk, hist.spkPeak_SIspk, hist.spkMean_SIspk, hist.infoMap_SIspk,...
-            hist.fieldsize_SIspk, hist.centroid_SIspk, PFdata.bin_phi, fsave, fname, fclose, sort_normpfMap_sm );
+            hist.fieldsize_SIspk, hist.centroid_SIspk, PFdata.bin_phi, fsave, fname, fclose, hist.sort_normpfMap_sm );
             
         if Nepochs > 1
             fname = [sdir 'hist_SIspk/' fname_pref '_remapping_hist_SIspk'];
@@ -204,7 +204,7 @@ function plotPF_1d(hist, asd, PFdata, fsave, sdir, fname_pref, fclose)
         
         fname = [sdir 'asd_SIspk/' fname_pref  '_populSummary'];
         plot_populSummary( asd.sort_normpfMap_SIspk, asd.spkPeak_SIspk, asd.spkMean_SIspk, asd.infoMap_SIspk,...
-            asd.fieldsize_SIspk, asd.centroid_SIspk, PFdata.bin_phi, fsave, fname, fclose, sort_normpfMap_sm );
+            asd.fieldsize_SIspk, asd.centroid_SIspk, PFdata.bin_phi, fsave, fname, fclose, asd.sort_normpfMap_sm );
             
         if Nepochs > 1
             fname = [sdir 'asd_SIspk/' fname_pref '_remapping_asd_SIspk'];

@@ -1,7 +1,7 @@
 % Written by Ann Go
 % 
-% This script runs the complete data processing pipeline for a single
-% image file. Processing steps include:
+% This script runs the complete data processing pipeline for a batch of
+% image files. Processing steps for EACH include:
 % (1) motion correction (and dezippering)
 % (2) roi segmentation 
 % (3) neuropil decontamination and timeseries extraction

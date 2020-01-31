@@ -1,5 +1,22 @@
 % Written by Ann Go
 
+% This script runs the complete data processing pipeline for a group of
+% image files that have been/have to be REGISTERED. 
+% Processing steps include:
+% (1) motion correction (and dezippering) for EACH file
+% and for the consolidated GROUP data
+% (2) roi segmentation 
+% (3) neuropil decontamination and timeseries extraction
+% (4) spike extraction
+% (5) tracking data extraction
+% (6) place field mapping
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The section labeled "USER-DEFINED INPUT" requires user input
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Matlab version requirement: neuroSEE_neuropilDecon requires at least Matlab R2018
+
 function frun_pipeline_imreg( list, reffile, slacknotify )
 
 if nargin<3, slacknotify = false; end

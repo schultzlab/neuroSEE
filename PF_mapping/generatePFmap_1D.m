@@ -80,51 +80,39 @@ activer     = downr(downspeed > Vthr);
 
 %% Calculate spike maps per trial
 dthr = 10;
-
-% find the time point delineations for each video: find t = 0
-idx_file = find(diff(activet) < 0);
-idx_file = [0; idx_file; numel(activet)] +1; 
-p = bin_phi;
-ytick_files = 1;
-
-Ntrial = 1;  
-for jj = 1:numel(idx_file)-1
-    % find the time point delineations for each trial (i.e. loop)
-    p_tr = p(idx_file(jj):idx_file(jj+1)-1);
-    idx_tr = find( abs(diff(p_tr)) > dthr );
-    % remove artefacts
-    for k = numel(idx_tr):-1:2
-        if (idx_tr(k) - idx_tr(k-1)) <= 20 
-            idx_tr(k) = 0;
-        end
-    end
-    idx_tr = idx_tr( idx_tr > 0 );
-    if numel(idx_tr)==1, idx_tr = [idx_tr; numel(p_tr)]; end
-    Idx_tr{jj} = idx_tr;
-
-    for k = 1:numel(idx_tr)-1
-        phi{Ntrial} = p_tr(idx_tr(k)+1:idx_tr(k+1));
-        Ntrial = Ntrial + 1;
-    end
-
-    Ntrials(jj) = numel(idx_tr)-1;
-    if jj == numel(idx_file)-1
-        ytick_files = [ytick_files; sum(Ntrials(1:jj))];
-    else
-        ytick_files = [ytick_files; sum(Ntrials(1:jj))+1];
-    end
-end
-
 for ii = 1:Ncells
+    % find the delineations for the video: find t = 0
+    idx_file = find(diff(activet) < 0);
+    idx_file = [0; idx_file; numel(activet)] +1; 
+    p = bin_phi;
     s = activespk(ii,:);
     Ntrial = 1;
+    ytick_files = 1;
     
     for jj = 1:numel(idx_file)-1
+        % find the delineations per trial (i.e. loop)
+        p_tr = p(idx_file(jj):idx_file(jj+1)-1);
         s_tr = s(idx_file(jj):idx_file(jj+1)-1);
+        idx_tr = find( abs(diff(p_tr)) > dthr );
+        for k = numel(idx_tr):-1:2
+            if (idx_tr(k) - idx_tr(k-1)) <= 20 
+                idx_tr(k) = 0;
+            end
+        end
+        idx_tr = idx_tr( idx_tr > 0 );
+        if numel(idx_tr)==1, idx_tr = [idx_tr; numel(p_tr)]; end
         
-        for k = 1:numel(Idx_tr{jj})-1
+        for k = 1:numel(idx_tr)-1
+            phi{Ntrial} = p_tr(idx_tr(k)+1:idx_tr(k+1));
             spike{ii}{Ntrial} = s_tr(idx_tr(k)+1:idx_tr(k+1));
             Ntrial = Ntrial + 1;
+        end
+        
+        Ntrials(jj) = numel(idx_tr)-1;
+        if jj == numel(idx_file)-1
+            ytick_files = [ytick_files; sum(Ntrials(1:jj))];
+        else
+            ytick_files = [ytick_files; sum(Ntrials(1:jj))+1];
         end
     end
 end

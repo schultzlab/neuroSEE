@@ -40,7 +40,7 @@ clear c
 
 
 %% Load image data for each recording
-sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/imreg_' mcorr_method '/indiv_imreg_ref' reffile '/'];
+sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/imreg_' mcorr_method '/indiv_imreg_ref' reffile '/'];
 if ~exist(sdir,'dir'), mkdir(sdir); end
     
 if any([ force, ~exist([sdir mouseid '_' expname '_GREEN_imreg_ref' reffile '.fig'],'file'),...

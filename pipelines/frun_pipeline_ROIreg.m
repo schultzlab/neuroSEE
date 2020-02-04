@@ -16,6 +16,10 @@ function frun_pipeline_ROIreg( list )
 % (7) spike/tracking data consolidation
 % (8) place field mapping
 %
+% This script is similar to frun_pipeline_imreg but applies to cases of
+% multiple videos for one environment where the images for different files
+% may not be registered well.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The section labeled "USER-DEFINED INPUT" requires user input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

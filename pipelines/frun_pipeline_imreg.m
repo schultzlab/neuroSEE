@@ -1,10 +1,11 @@
 % Written by Ann Go
 
 % This script runs the complete data processing pipeline for a group of
-% image files that have been/have to be REGISTERED. 
+% image files that have been/have to be REGISTERED (e.g. multiple files for
+% one environment).
 % Processing steps include:
 % (1) motion correction (and dezippering) for EACH file
-% and for the consolidated GROUP data
+% and for the consolidated GROUP image data
 % (2) roi segmentation 
 % (3) neuropil decontamination and timeseries extraction
 % (4) spike extraction
@@ -36,7 +37,7 @@ force = [false;...              % (1) image registration even if registered imag
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
          false;...              % (5) tracking data consolidation
-         true];                % (6) place field mapping
+         false];                % (6) place field mapping
 mcorr_method = 'normcorre-nr';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 

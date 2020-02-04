@@ -38,9 +38,11 @@ SIspk = SIsec/meanRate;
 %         end
 %     end
 % end
-spkRateMap = discretize(placemap,4);
-MI = mutInfo(spkRateMap, occMap);
 
+%spkRateMap = discretize(placemap,4);
+%MI = mutInfo(spkRateMap, occMap);
+
+MI = SIsec;
 end
 
 

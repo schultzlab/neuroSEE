@@ -40,7 +40,7 @@ end
 % image to be registered
 file = files(array_id,:);
 params.methods.mcorr_method = mcorr_method;
-params.refChannel = refChannel;
+params.mcorr.refChannel = refChannel;
 
 if ~strcmpi( file, reffile )
 
@@ -55,7 +55,7 @@ if ~strcmpi( file, reffile )
 
 
     %% Image registration 
-    params.nonrigid = NoRMCorreSetParms(...
+    params.mcorr.normcorre_nr = NoRMCorreSetParms(...
                 'd1',size(imG,1),...
                 'd2',size(imG,2),...
                 'grid_size',[64,64],...

@@ -37,7 +37,6 @@ if iscell(trackData)
         downData{jj}.r = interp1(tracktime,r(ind),t,'nearest'); % mm/s
         downData{jj}.time = t;
         r_all = [r_all; downData{jj}.r];
-        clear ind
     end
     varargout{1} = downData;
     varargout{2} = r_all;
@@ -68,12 +67,11 @@ else
     end
 
     % Downsample tracking to Ca trace
-    [tracktime, ind] = unique(tracktime); 
-    downData.phi = interp1(tracktime,phi(ind),t,'nearest');
-    downData.x = interp1(tracktime,x(ind),t,'nearest');
-    downData.y = interp1(tracktime,y(ind),t,'nearest');
-    downData.speed = interp1(tracktime,speed(ind),t,'nearest'); % mm/s
-    downData.r = interp1(tracktime,r(ind),t,'nearest'); % mm/s
+    downData.phi = interp1(tracktime,phi,t,'nearest');
+    downData.x = interp1(tracktime,x,t,'nearest');
+    downData.y = interp1(tracktime,y,t,'nearest');
+    downData.speed = interp1(tracktime,speed,t,'nearest'); % mm/s
+    downData.r = interp1(tracktime,r,t,'nearest'); % mm/s
     downData.time = t;
     
     varargout{1} = downData;

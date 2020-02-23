@@ -8,10 +8,10 @@
 % The section labeled "USER-DEFINED INPUT" requires user input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function frun_showRemapping_2env( mouseid, env1, ref1, env2, ref2, force, fclose )
+function frun_showRemapping_2env_multiAnimals( mouseid_array, env1, env2, ref1_array, ref2_array, force, figclose )
 
 if nargin<6, force = false; end
-if nargin<7, fclose = true; end
+if nargin<7, figclose = true; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % USER-DEFINED INPUT                         
@@ -246,7 +246,13 @@ if ~exist(fname_remap,'file') || force
            env2PF_env1Sorting(i,:) = PF2.hist.sort_normpfMap_SIsec_sm(matched_ROIs(ind,2),:);
        end
     end
-    env2PF_env1Sorting = [env2PF_env1Sorting; PF2.hist.normpfMap_SIsec_sm(nonmatched_2,:)];
+%     env2PF_env1Sorting = [env2PF_env1Sorting; PF2.hist.normpfMap_SIsec_sm(nonmatched_2,:)];
+%     Nbins = numel(PF1.PFdata.occMap);
+%     env1PF = [PF1.hist.sort_normpfMap_SIsec_sm; zeros(size(nonmatched_2,2),Nbins)];
+%     env2PF = [PF2.hist.sort_normpfMap_SIsec_sm; zeros(size(nonmatched_1,2),Nbins)];
+    
+    env1PF = PF1.hist.sort_normpfMap_SIsec_sm;
+    env2PF = PF2.hist.sort_normpfMap_SIsec_sm;
     
     % save data
     remapping_output.masks = masks_union;
@@ -262,8 +268,9 @@ if ~exist(fname_remap,'file') || force
     remapping_output.im_env1masks = im_env1masks;
     remapping_output.im_env2masks = im_env2masks;
     remapping_output.im_env1env2masks = im_env1env2masks;
-    remapping_output.env1PF = 
+    remapping_output.env1PF = env1PF;
     remapping_output.env2PF_env1Sorting = env2PF_env1Sorting;
+    remapping_output.env2PF = env2PF;
     
     fprintf('%s: saving remapping data\n',[mouseid '_' env1 env2]);
     save(fname_remap, '-struct', 'remapping_output')
@@ -276,7 +283,9 @@ else
         im_env1masks = c.im_env1masks;
         im_env2masks = c.im_env2masks;
         im_env1env2masks = c.im_env1env2masks;
+        env1PF = c.env1PF;
         env2PF_env1Sorting = c.env2PF_env1Sorting;
+        env2PF = c.env2PF;
         clear c
     end
 end
@@ -284,6 +293,7 @@ end
 if ~exist(fname_remapfig,'file')
     fh = figure;
     fontsize = 16;
+    Nbins = size(env1PF,2);
     subplot(231);
         imshow(im_env1masks); title(env1,'Fontweight','normal','Fontsize',fontsize);    
     subplot(232);
@@ -291,9 +301,8 @@ if ~exist(fname_remapfig,'file')
     subplot(233);
         imshow(im_env1env2masks); title([env1 ' \cap ' env2],'Fontweight','normal','Fontsize',fontsize);
     subplot(234);
-        Nbins = numel(PF1.PFdata.occMap);
         cmap = jet(256);
-        imagesc(); 
+        imagesc(env1PF); 
         colormap(cmap(1:225,:)); %colorbar
         title(env1,'Fontweight','normal','Fontsize',fontsize);
         yticks([]); %yticks([1 159]); yticklabels([159 1]);
@@ -301,21 +310,21 @@ if ~exist(fname_remapfig,'file')
         xlabel('Position (cm)'); %ylabel('Cell no.');
     subplot(235);
         imagesc(env2PF_env1Sorting); 
-        title(env2','Fontweight','normal','Fontsize',fontsize);
+        title(env2,'Fontweight','normal','Fontsize',fontsize);
         yticks([]);
         xticks([1 Nbins]); xticklabels([1 100]);
         xlabel('Position (cm)');
     subplot(236);
-        imagesc([PF2.hist.sort_normpfMap_SIsec_sm; zeros(size(nonmatched_1,2),Nbins)]); 
-        title(env2','Fontweight','normal','Fontsize',fontsize); 
+        imagesc(env2PF); 
+        title(env2,'Fontweight','normal','Fontsize',fontsize); 
         yticks([]);
         xticks([1 Nbins]); xticklabels([1 100]);
         xlabel('Position (cm)');
         
     fprintf('%s: saving remapping summary figure\n',[mouseid '_' env1 env2]);
-    savefig( fh, fname_remapfig );
-    saveas( fh, fname_remapfig, 'png' );
-    if fclose, close( fh ); end   
+    savefig( fh, fname_remapfig(1:end-4) );
+    saveas( fh, fname_remapfig(1:end-4), 'png' );
+    if figclose, close( fh ); end   
 end
 
     

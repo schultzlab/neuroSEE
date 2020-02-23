@@ -29,7 +29,8 @@ if iscell(trackData)
         end
 
         % Downsample tracking to Ca trace
-        downData{jj}.phi = interp1(tracktime,phi,t,'nearest');
+        [tracktime, ind] = unique(tracktime); 
+        downData{jj}.phi = interp1(tracktime,phi(ind),t,'nearest');
         downData{jj}.x = interp1(tracktime,x,t,'nearest');
         downData{jj}.y = interp1(tracktime,y,t,'nearest');
         downData{jj}.speed = interp1(tracktime,speed,t,'nearest'); % mm/s

@@ -232,7 +232,7 @@ if (force || ~exist([sdir3 mouseid '_' expname '_PFmaps.fig'],'file')) && strcmp
             close( fh );
         end 
     else
-        fprintf('%s: PF maps not found',list)
+        fprintf('%s: PF maps not found\n',list)
     end
 end
 

@@ -63,7 +63,7 @@ if ~default
     % NoRMCorre-rigid
     if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
         params.rigid = NoRMCorreSetParms(...
-            'max_shift',20,...          % default: 50
+            'max_shift',30,...          % default: 30
             'bin_width',200,...         % default: 200
             'us_fac',50,...             % default: 50
             'init_batch',200);          % default: 200
@@ -76,7 +76,7 @@ if ~default
             'overlap_post',[32,32],...  % default: [32,32]
             'iter',1,...                % default: 1
             'use_parallel',false,...    % default: false
-            'max_shift',15,...          % default: 50
+            'max_shift',20,...          % default: 20
             'mot_uf',4,...              % default: 4
             'bin_width',200,...         % default: 200
             'max_dev',3,...             % default: 3

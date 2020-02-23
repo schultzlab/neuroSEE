@@ -1,4 +1,4 @@
-function [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A1,A2,options,template1,template2,options_mc,fname_fig,fsave)
+function [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A1,A2,options,template1,template2,options_mc,fname_fig,fsave,fclose)
 % REGISTER_ROIs - register ROIs from two different recording sessions
 %
 %   [MATCHED_ROIS, NONMATCHED_1, NONMATCHED_2, A2] = REGISTER_ROIS( ...
@@ -36,6 +36,7 @@ function [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A
 % Ann's addition:
 if nargin < 8, fsave = true; end
 if nargin < 7, fsave = false; end
+if nargin < 9, fclose = true; end
 
 defoptions = CNMFSetParms;
 if ~exist('options','var'); options = defoptions; end
@@ -155,5 +156,8 @@ if options.plot_reg
         % save figure
         savefig( fh, fname_fig );
         saveas( fh, fname_fig, 'png' );
+    end
+    if fclose
+        close(fh);
     end
 end

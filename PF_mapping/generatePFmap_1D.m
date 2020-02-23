@@ -62,8 +62,8 @@ else
     downr = trackData.r;
     downspeed = trackData.speed;
     t = trackData.time;
-    dt = mean(diff(t));
 end
+dt = mean(diff(t));
 
 % Consider only samples when the mouse is active
 activex     = downx(downspeed > Vthr);
@@ -183,7 +183,7 @@ for id = 1:Ncells
         infoMeasures(pfMap_asd(id,:)',ones(Nposbins,1),0);
     [~,c,fs] = findpeaks(normpfMap_asd(id,:),'WidthReference','halfheight','SortStr','descend');
     if ~isempty(c), centroid_asd(id) = c(1); else, centroid_asd(id) = NaN;  end
-    if ~isempty(fs), fieldsize_asd(id) = fs(1); else, fieldsize_asd(id) = NaN; end
+    if ~isempty(fs), fieldsize_asd(id) = fs(1)*103/Nposbins; else, fieldsize_asd(id) = NaN; end
 end
 
 % Identify place cells. The cells are sorted in descending order of info
@@ -230,7 +230,7 @@ if Nepochs > 1
             normspkMap(id,:,e) = spkMap(id,:,e)./max(spkMap(id,:,e));
             
             % histogram estimation
-            pfMap(id,:,e) = spkMap(id,:,e)./occMap(e,:);
+            pfMap(id,:,e) = spkMap(id,:,e)./(occMap(e,:)*dt);
             pfMap(isnan(pfMap)) = 0;
             pfMap_sm(id,:,e) = smoothdata(pfMap(id,:,e),'gaussian',Nposbins/histsmoothFac);
 

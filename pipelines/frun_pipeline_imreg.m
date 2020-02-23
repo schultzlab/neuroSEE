@@ -30,14 +30,14 @@ tic
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Basic settings
 test = false;               % flag to use one of smaller files in test folder
-default = true;             % flag to use default parameters
+default = false;             % flag to use default parameters
                             % flag to force
 force = [false;...              % (1) image registration even if registered images exist
          false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
          false;...              % (5) tracking data consolidation
-         false];                % (6) place field mapping
+         true];                % (6) place field mapping
 mcorr_method = 'normcorre-nr';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
@@ -77,7 +77,7 @@ if ~default
             params.mcorr.normcorre_r = NoRMCorreSetParms(...
                 'd1', 512,...
                 'd2', 512,...
-                'max_shift',20,...          % default: 50
+                'max_shift',30,...          % default: 30
                 'bin_width',200,...         % default: 200
                 'us_fac',50,...             % default: 50
                 'init_batch',200);          % default: 200
@@ -93,7 +93,7 @@ if ~default
                 'overlap_post',[64,64],...  % default: [64,64]
                 'iter',1,...                % default: 1
                 'use_parallel',false,...    % default: false
-                'max_shift',15,...          % default: 50
+                'max_shift',20,...          % default: 20
                 'mot_uf',4,...              % default: 4
                 'bin_width',200,...         % default: 200
                 'max_dev',3,...             % default: 3
@@ -119,7 +119,7 @@ if ~default
         params.PFmap.histsmoothFac = 7;       % Gaussian smoothing window for histogram extraction        [default: 7]
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                               %                              Neurotar uses 8 mm/s
-        params.PFmap.prctile_thr = 5;        % percentile threshold for filtering nonPCs       [default: 99]
+        params.PFmap.prctile_thr = 99;        % percentile threshold for filtering nonPCs       [default: 99]
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -183,6 +183,11 @@ if strcmpi(comp,'hpc') && MatlabVer > 2017
 end
     
 %% Image registration
+grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+            mcorr_method '_' segment_method '_' str_fissa '/'...
+            mouseid '_' expname '_imreg_ref' reffile '/'];
+    if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); end
+
 for n = 1:Nfiles
     file = files(n,:);
     if ~strcmpi( file, reffile )
@@ -201,18 +206,25 @@ for n = 1:Nfiles
         end
     else
         if force(2) || ~check(1)
-            imdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/'];
-            fprintf('%s: loading reference image\n', [mouseid '_' expname '_' file])
+             imdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/'];
+            fprintf('%s: loading reference image\n', [mouseid '_' expname '_' file]);
             imG{n} = read_file([ imdir file '_2P_XYT_green_mcorr.tif' ]);
+            
+            c = load([imdir reffile '_mcorr_output.mat']);
+            template_g = c.green.meanregframe;
+            template_r = c.red.meanregframe;
+            fig = figure; 
+            subplot(121); imagesc(template_g); title('GCaMP6');
+            subplot(122); imagesc(template_r); title('mRuby');
+            save([grp_sdir mouseid '_' expname '_ref' reffile '_mcorr_template.mat'],'template_g','template_r')
+            savefig(fig,[grp_sdir mouseid '_' expname '_ref' reffile '_mcorr_template']);
+            saveas(fig,[grp_sdir mouseid '_' expname '_ref' reffile '_mcorr_template'],'png');
+            close(fig);
         end
     end
 end
 
 %% ROI segmentation
-grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
-        mcorr_method '_' segment_method '_' str_fissa '/'...
-        mouseid '_' expname '_imreg_ref' reffile '/'];
-    if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); end
 grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
     
 if force(2) || ~check(1)
@@ -487,7 +499,7 @@ if any(trackData.r < 100)
     params.PFmap.Nbins = [16, 16];  % number of location bins in [x y]               
 else 
     params.mode_dim = '1D';         % circular linear track
-    params.PFmap.Nbins = 50;        % number of location bins       
+    params.PFmap.Nbins = 30;        % number of location bins       
 end
 
 Nepochs = params.PFmap.Nepochs;

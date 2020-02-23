@@ -10,13 +10,12 @@ function [ pcIdx_MI, pcIdx_SIsec, pcIdx_SIspk, nonpcIdx_MI, nonpcIdx_SIsec, nonp
 if nargin<8, randN = 1000; end
 if nargin<7, prctile_thr = 95; end
 
+dt = 1/30.9;
 Ncells = size(activespikes,1); % number of cells
 spikeMap = zeros(1,Nbins);
 MI = zeros(1,randN);     
 SIsec = zeros(1,randN); 
 SIspk = zeros(1,randN); 
-
-occMap = histcounts(bin_phi,Nbins);
 
 % remove cells 
 % 1) with peak PSD > 10 
@@ -34,16 +33,40 @@ for id = 1:Ncells
         if activeTr >= 0.5*size(spkRaster{id},1)
             z = activespikes(id,:);
             
-            for k = 1:Nbins
-                spikeMap(k) = sum(z(bin_phi == k));
-            end
+%             a = 618;
+%             b = numel(bin_phi) - a;
+%             r = round((b-a)*rand(randN,1) + a);
+%             zs = zeros(size(z));
             
             for j = 1:randN
-                randind = randperm(length(spikeMap));
-                spikeMap = spikeMap(randind);
-%                 randind = randperm(length(occMap));
-%                 occMap = occMap(randind);
-                pcMap = spikeMap./occMap;
+                % shuffling method 1
+%                 for k = r(j)+1:numel(bin_phi)
+%                     zs(k) = z(k-r(j)); 
+%                 end
+%                 for k = 1:r(j)
+%                     zs(k) = z(numel(bin_phi)-r(j)+k);
+%                 end
+%                 for k = 1:Nbins
+%                     spikeMap(k) = sum(zs(bin_phi == k));
+%                 end
+                
+                % shuffling method 2    
+                randind = randperm(length(z));
+                z = z(randind);
+                for k = 1:Nbins
+                    spikeMap(k) = sum(z(bin_phi == k));
+                end
+                
+                % shuffling method 3
+%                 randind = randperm(length(spikeMap));
+%                 spikeMap = spikeMap(randind);
+
+                % shuffling method 4
+%                 randind = randperm(length(bin_phi));
+%                 bin_phi = bin_phi(randind);
+
+                occMap = histcounts(bin_phi,Nbins);
+                pcMap = spikeMap./(occMap*dt);
                 [MI(j),SIsec(j),SIspk(j)] = infoMeasures(pcMap, occMap, 0);
             end
             

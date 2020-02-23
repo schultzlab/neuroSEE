@@ -6,7 +6,7 @@ function [ pcIdx, pcIdx_asd ] = filter_nonPC( bin_phi, activespikes, infoMap, in
 
 if nargin<9, info_type = 1; end % 1 for info/sec, 2 for info/spike
 if nargin<8, info = 'MI'; end
-if nargin<7, randN = 1000; end
+if nargin<7, randN = 2000; end
 if nargin<6, prctile_thr = 99; end
 
 Ncells = size(activespikes,1); % number of cells

@@ -34,7 +34,7 @@ function [ sorted_pfMap, sortIdx ] = sortPFmap_1d( pfMap, infoMap )
         for i = 1:length(idx_info)
             [~,maxloc(i)] = max(pf_info(i,:));
         end
-        [~,sIdx] = sort(maxloc);                                        % sort according to phi of max info
+        [~,sIdx] = sort(maxloc);                                        % sort according to phi of max value
         sorted_pfMap(:,:,e) = [ pf_info(sIdx,:); mat(flip(idx_no),:) ]; % cat 2 sorted subsamples
         
         sortIdx(:,e) = [idx_info(sIdx); flip(idx_no)];

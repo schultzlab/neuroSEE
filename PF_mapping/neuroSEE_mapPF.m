@@ -153,6 +153,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
         % summary of occMap, spkMaps, pfMaps
         for e = 1:Nepochs
             fh = figure('Position',[1087 648 800 800]);
+            map = viridisMap; colormap(map);
             subplot(10,8,2:4); imagesc(occMap(e,:));
                 xticks([]); yticks([]); ylabel('Occ');
                 title('Histogram estimation'); colorbar;
@@ -210,6 +211,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
         % summary of occMap, spkMaps, normpfMaps
         for e = 1:Nepochs
             fh = figure('Position',[1087 648 800 800]);
+            map = viridisMap; colormap(map);
             subplot(10,8,2:4); imagesc(occMap(e,:));
                 xticks([]); yticks([]); ylabel('Occ');
                 title('Histogram estimation'); colorbar;
@@ -272,6 +274,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
         Ntrials = size(hist.spkMap_pertrial,1);
         for ii=0:Npcs/nPlot
             fh = figure;
+            map = viridisMap; colormap(map);
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Npcs
@@ -294,6 +297,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
 
         for ii=0:Npcs/nPlot
             fh = figure;
+            map = viridisMap; colormap(map);
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Npcs
@@ -321,6 +325,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
         Ntrials = size(asd.spkMap_pertrial,1);
         for ii=0:Npcs_asd/nPlot
             fh = figure;
+            map = viridisMap; colormap(map);
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Npcs_asd
@@ -343,6 +348,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
 
         for ii=0:Npcs_asd/nPlot
             fh = figure;
+            map = viridisMap; colormap(map);
             ha = tight_subplot(nRow,nCol,[.01 .01],[.01 .05],[.01 .01]);
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Npcs_asd
@@ -366,6 +372,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
         % remapping within a session
         if Nepochs > 1
             fh = figure;
+            map = viridisMap; colormap(map);
             for ei = 1:Nepochs % rows: sorting
                 for ej = 1:Nepochs % cols: epochs 
                     subplot(Nepochs, Nepochs, (ei-1)*Nepochs + ej); imagesc(hist.normpfMap(hist.sortIdx(:,ei),:,ej)); 
@@ -378,6 +385,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
             close( fh );
             
             fh = figure;
+            map = viridisMap; colormap(map);
             for ei = 1:Nepochs % rows: sorting
                 for ej = 1:Nepochs % cols: epochs 
                     subplot(Nepochs, Nepochs, (ei-1)*Nepochs + ej); imagesc(asd.normpfMap(asd.sortIdx(:,ei),:,ej)); 
@@ -397,6 +405,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
         for e = 1:Nepochs
             for ii=0:(Nspk/nPlot)-1 
                 fh = figure; 
+                map = viridisMap; colormap(map);
                 ha = tight_subplot(nPlot,4,[.01 .005],[.01 .07],[.01 .01]);
                 for jj=0:3
                     if (ii*nPlot+jj) <= Nspk

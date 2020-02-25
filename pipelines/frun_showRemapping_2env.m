@@ -251,8 +251,10 @@ if ~exist(fname_remap,'file') || force
 %     env1PF = [PF1.hist.sort_normpfMap_SIsec_sm; zeros(size(nonmatched_2,2),Nbins)];
 %     env2PF = [PF2.hist.sort_normpfMap_SIsec_sm; zeros(size(nonmatched_1,2),Nbins)];
     
-    env1PF = PF1.hist.sort_normpfMap_SIsec_sm;
-    env2PF = PF2.hist.sort_normpfMap_SIsec_sm;
+    env1PF = PF1.hist.sort_normpfMap_SIsec;
+    env1PF_sm = PF1.hist.sort_normpfMap_SIsec_sm;
+    env2PF = PF2.hist.sort_normpfMap_SIsec;
+    env2PF_sm = PF2.hist.sort_normpfMap_SIsec_sm;
     
     % save data
     remapping_output.masks = masks_union;
@@ -269,8 +271,10 @@ if ~exist(fname_remap,'file') || force
     remapping_output.im_env2masks = im_env2masks;
     remapping_output.im_env1env2masks = im_env1env2masks;
     remapping_output.env1PF = env1PF;
+    remapping_output.env1PF_sm = env1PF_sm;
     remapping_output.env2PF_env1Sorting = env2PF_env1Sorting;
     remapping_output.env2PF = env2PF;
+    remapping_output.env2PF_sm = env2PF_sm;
     
     fprintf('%s: saving remapping data\n',[mouseid '_' env1 env2]);
     save(fname_remap, '-struct', 'remapping_output')
@@ -283,9 +287,9 @@ else
         im_env1masks = c.im_env1masks;
         im_env2masks = c.im_env2masks;
         im_env1env2masks = c.im_env1env2masks;
-        env1PF = c.env1PF;
+        env1PF_sm = c.env1PF;
         env2PF_env1Sorting = c.env2PF_env1Sorting;
-        env2PF = c.env2PF;
+        env2PF_sm = c.env2PF;
         clear c
     end
 end
@@ -293,7 +297,7 @@ end
 if ~exist(fname_remapfig,'file')
     fh = figure;
     fontsize = 16;
-    Nbins = size(env1PF,2);
+    Nbins = size(env1PF_sm,2);
     subplot(231);
         imshow(im_env1masks); title(env1,'Fontweight','normal','Fontsize',fontsize);    
     subplot(232);
@@ -301,9 +305,9 @@ if ~exist(fname_remapfig,'file')
     subplot(233);
         imshow(im_env1env2masks); title([env1 ' \cap ' env2],'Fontweight','normal','Fontsize',fontsize);
     subplot(234);
-        cmap = jet(256);
-        imagesc(env1PF); 
-        colormap(cmap(1:225,:)); %colorbar
+        cmap = viridisMap;
+        imagesc(env1PF_sm); 
+        colormap(cmap); %colorbar
         title(env1,'Fontweight','normal','Fontsize',fontsize);
         yticks([]); %yticks([1 159]); yticklabels([159 1]);
         xticks([1 Nbins]); xticklabels([1 100]);
@@ -315,7 +319,7 @@ if ~exist(fname_remapfig,'file')
         xticks([1 Nbins]); xticklabels([1 100]);
         xlabel('Position (cm)');
     subplot(236);
-        imagesc(env2PF); 
+        imagesc(env2PF_sm); 
         title(env2,'Fontweight','normal','Fontsize',fontsize); 
         yticks([]);
         xticks([1 Nbins]); xticklabels([1 100]);

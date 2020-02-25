@@ -237,6 +237,7 @@ function plotRaster( Ncells, spkRaster, ytick_files, title_str, fsave, fname, fc
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Ncells
                 axes(ha(+jj+1));
+                map = viridisMap; colormap(map);
                 imagesc(spkRaster{ii*nPlot+jj+1}); colormap('jet');
                 yticks(ytick_files); yticklabels(ytick_files); 
                 xticks([]); 
@@ -263,6 +264,7 @@ function plot_populSummary(sort_normpfMap, spkPeak, spkMean, infoMap, fieldsize,
     Ncells = size(sort_normpfMap,1);
     for e = 1:Nepochs
         fh = figure;
+        map = viridisMap; colormap(map);
         subplot(241); imagesc(sort_normpfMap(:,:,e)); colormap('jet');
             xticks([1 Nposbins/2 Nposbins]); xticklabels([1 50 100]); xlabel('Position (cm)');
             if Ncells>1 
@@ -341,6 +343,7 @@ end
 function plotRemapping(normpfMap, sortIdx, fname)
     % remapping within a session
     fh = figure;
+    map = viridisMap; colormap(map);
     for ei = 1:Nepochs % rows: sorting
         for ej = 1:Nepochs % cols: epochs 
             subplot(Nepochs, Nepochs, (ei-1)*Nepochs + ej); imagesc(normpfMap(sortIdx(:,ei),:,ej)); colormap('jet');

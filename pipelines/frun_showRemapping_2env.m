@@ -1,17 +1,30 @@
 % Written by Ann Go
 % 
-% This script registers the ROIs from two environments ( list1, list2) and
-% plots the place field tuning for each sorted according to their own cells
-% and according to the cells of the other environment.
-
+% This script registers the ROIs from two environments and plots the place
+% field tuning for each sorted according to their own cells and according
+% to the cells of the other environment.
+%
+% INPUTS
+% mouseid   : 'm##' e.g. 'm62'
+% env1      : environment 1
+% env2      : environment 2
+%   e.g. 'fam1', 'fam2', 'nov', 'fam1rev'
+% ref1      : image registration template file for env1
+% ref2      : image registration template file for env2
+%   format: 'YYYYMMDD_hh_mm_ss'
+% force     : flag to force generation of comparison figures even though they
+%               already exist
+% figclose    : flag to close figures that will be generated (they are
+%               automatically saved)
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The section labeled "USER-DEFINED INPUT" requires user input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function frun_showRemapping_2env( mouseid, env1, ref1, env2, ref2, force, fclose )
+function frun_showRemapping_2env( mouseid, env1, ref1, env2, ref2, force, figclose )
 
 if nargin<6, force = false; end
-if nargin<7, fclose = true; end
+if nargin<7, figclose = true; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % USER-DEFINED INPUT                         
@@ -246,10 +259,16 @@ if ~exist(fname_remap,'file') || force
            env2PF_env1Sorting(i,:) = PF2.hist.sort_normpfMap_SIsec_sm(matched_ROIs(ind,2),:);
        end
     end
-%     env2PF_env1Sorting = [env2PF_env1Sorting; PF2.hist.normpfMap_SIsec_sm(nonmatched_2,:)];
-%     Nbins = numel(PF1.PFdata.occMap);
-%     env1PF = [PF1.hist.sort_normpfMap_SIsec_sm; zeros(size(nonmatched_2,2),Nbins)];
-%     env2PF = [PF2.hist.sort_normpfMap_SIsec_sm; zeros(size(nonmatched_1,2),Nbins)];
+    clear matched ind
+    
+    % PF maps for fam2 in fam1 sorting
+    env1PF_env2Sorting = zeros(size([PF2.hist.sort_normpfMap_SIsec_sm]));
+    for i = 1:size(masks2,3)
+       [matched,ind] = ismember(PF2.hist.sortIdx_SIsec(i),matched_ROIs(:,2));
+       if matched
+           env1PF_env2Sorting(i,:) = PF1.hist.sort_normpfMap_SIsec_sm(matched_ROIs(ind,1),:);
+       end
+    end
     
     env1PF = PF1.hist.sort_normpfMap_SIsec;
     env1PF_sm = PF1.hist.sort_normpfMap_SIsec_sm;
@@ -273,6 +292,7 @@ if ~exist(fname_remap,'file') || force
     remapping_output.env1PF = env1PF;
     remapping_output.env1PF_sm = env1PF_sm;
     remapping_output.env2PF_env1Sorting = env2PF_env1Sorting;
+    remapping_output.env1PF_env2Sorting = env1PF_env2Sorting;
     remapping_output.env2PF = env2PF;
     remapping_output.env2PF_sm = env2PF_sm;
     
@@ -289,46 +309,54 @@ else
         im_env1env2masks = c.im_env1env2masks;
         env1PF_sm = c.env1PF;
         env2PF_env1Sorting = c.env2PF_env1Sorting;
+        env1PF_env2Sorting = c.env1PF_env2Sorting;
         env2PF_sm = c.env2PF;
         clear c
     end
 end
 
-if ~exist(fname_remapfig,'file')
+if ~exist(fname_remapfig,'file') || force
     fh = figure;
     fontsize = 16;
     Nbins = size(env1PF_sm,2);
-    subplot(231);
+    subplot(2,12,1:4);
         imshow(im_env1masks); title(env1,'Fontweight','normal','Fontsize',fontsize);    
-    subplot(232);
+    subplot(2,12,5:8);
         imshow(im_env2masks); title(env2,'Fontweight','normal','Fontsize',fontsize);
-    subplot(233);
+    subplot(2,12,9:12);
         imshow(im_env1env2masks); title([env1 ' \cap ' env2],'Fontweight','normal','Fontsize',fontsize);
-    subplot(234);
+    subplot(2,12,13:15);
         cmap = viridisMap;
         imagesc(env1PF_sm); 
         colormap(cmap); %colorbar
         title(env1,'Fontweight','normal','Fontsize',fontsize);
-        yticks([]); %yticks([1 159]); yticklabels([159 1]);
+        yticks([1 size(env1PF_sm,1)]); yticklabels([1 size(env1PF_sm,1)]);
         xticks([1 Nbins]); xticklabels([1 100]);
         xlabel('Position (cm)'); %ylabel('Cell no.');
-    subplot(235);
+    subplot(2,12,16:18);
         imagesc(env2PF_env1Sorting); 
         title(env2,'Fontweight','normal','Fontsize',fontsize);
         yticks([]);
         xticks([1 Nbins]); xticklabels([1 100]);
         xlabel('Position (cm)');
-    subplot(236);
+    subplot(2,12,19:21);
+        imagesc(env1PF_env2Sorting); 
+        title(env1,'Fontweight','normal','Fontsize',fontsize); 
+        yticks([1 size(env2PF_sm,1)]); yticklabels([1 size(env2PF_sm,1)]);
+        xticks([1 Nbins]); xticklabels([1 100]);
+        xlabel('Position (cm)');
+    subplot(2,12,22:24);
         imagesc(env2PF_sm); 
         title(env2,'Fontweight','normal','Fontsize',fontsize); 
         yticks([]);
         xticks([1 Nbins]); xticklabels([1 100]);
         xlabel('Position (cm)');
+
         
     fprintf('%s: saving remapping summary figure\n',[mouseid '_' env1 env2]);
     savefig( fh, fname_remapfig(1:end-4) );
     saveas( fh, fname_remapfig(1:end-4), 'png' );
-    if fclose, close( fh ); end   
+    if figclose, close( fh ); end   
 end
 
     

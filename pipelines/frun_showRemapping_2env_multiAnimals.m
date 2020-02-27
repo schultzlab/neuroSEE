@@ -1,8 +1,21 @@
 % Written by Ann Go
 % 
-% This script registers the ROIs from two environments ( list1, list2) and
-% plots the place field tuning for each sorted according to their own cells
-% and according to the cells of the other environment.
+% This script registers the ROIs from two environments and plots the place
+% field tuning for each sorted according to their own cells and according
+% to the cells of the other environment.
+%
+% INPUTS
+% mouseid   : 'm##' e.g. 'm62'
+% env1      : environment 1
+% env2      : environment 2
+%   e.g. 'fam1', 'fam2', 'nov', 'fam1rev'
+% ref1      : image registration template file for env1
+% ref2      : image registration template file for env2
+%   format: 'YYYYMMDD_hh_mm_ss'
+% force     : flag to force generation of comparison figures even though they
+%               already exist
+% figclose    : flag to close figures that will be generated (they are
+%               automatically saved)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The section labeled "USER-DEFINED INPUT" requires user input

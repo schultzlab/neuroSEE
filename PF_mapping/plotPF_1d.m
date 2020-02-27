@@ -237,8 +237,8 @@ function plotRaster( Ncells, spkRaster, ytick_files, title_str, fsave, fname, fc
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Ncells
                 axes(ha(+jj+1));
-                map = viridisMap; colormap(map);
-                imagesc(spkRaster{ii*nPlot+jj+1}); colormap('jet');
+                map = viridisMap; 
+                imagesc(spkRaster{ii*nPlot+jj+1}); colormap(map);
                 yticks(ytick_files); yticklabels(ytick_files); 
                 xticks([]); 
                 title([title_str ' ' num2str(ii*nPlot+jj+1)],'fontsize',12);
@@ -264,8 +264,8 @@ function plot_populSummary(sort_normpfMap, spkPeak, spkMean, infoMap, fieldsize,
     Ncells = size(sort_normpfMap,1);
     for e = 1:Nepochs
         fh = figure;
-        map = viridisMap; colormap(map);
-        subplot(241); imagesc(sort_normpfMap(:,:,e)); colormap('jet');
+        map = viridisMap; 
+        subplot(241); imagesc(sort_normpfMap(:,:,e)); colormap(map);
             xticks([1 Nposbins/2 Nposbins]); xticklabels([1 50 100]); xlabel('Position (cm)');
             if Ncells>1 
                 yticks([1 Ncells]); yticklabels([1 Ncells]);
@@ -275,7 +275,7 @@ function plot_populSummary(sort_normpfMap, spkPeak, spkMean, infoMap, fieldsize,
             ylabel('Cell #'); 
             title('PF map'); colorbar;
         if nargin > 10
-            subplot(245); imagesc(sort_normpfMap_sm(:,:,e)); colormap('jet');
+            subplot(245); imagesc(sort_normpfMap_sm(:,:,e)); colormap(map);
             xticks([1 Nposbins/2 Nposbins]); xticklabels([1 50 100]); xlabel('Position (cm)');
             if Ncells>1 
                 yticks([1 Ncells]); yticklabels([1 Ncells ]);
@@ -343,10 +343,10 @@ end
 function plotRemapping(normpfMap, sortIdx, fname)
     % remapping within a session
     fh = figure;
-    map = viridisMap; colormap(map);
+    map = viridisMap; 
     for ei = 1:Nepochs % rows: sorting
         for ej = 1:Nepochs % cols: epochs 
-            subplot(Nepochs, Nepochs, (ei-1)*Nepochs + ej); imagesc(normpfMap(sortIdx(:,ei),:,ej)); colormap('jet');
+            subplot(Nepochs, Nepochs, (ei-1)*Nepochs + ej); imagesc(normpfMap(sortIdx(:,ei),:,ej)); colormap(map);
             title(['Epoch ' num2str(ej)]); ylabel(['Epoch' num2str(ei) ' sorting']);
         end
     end

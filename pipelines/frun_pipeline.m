@@ -9,6 +9,9 @@
 % (5) tracking data extraction
 % (6) place field mapping
 %
+% INPUT
+% file : filename in the format 'YYYYMMDD_hh_mm_ss'
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The section labeled "USER-DEFINED INPUT" requires user input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

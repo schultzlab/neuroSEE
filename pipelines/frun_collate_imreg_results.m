@@ -1,3 +1,24 @@
+% Written by Ann Go
+%
+% This script collates the image registration results for the files in
+% 'list'. Comparison figures are saved in
+%   /...thefarm2/CrazyEights/AD_2PCa/Analysis/m##/m##_expname/individual_proc/
+%
+% INPUTS
+% list      : name of text file containing filenames of files to be compared.
+%               Typically in the format 'list_m##_expname.txt'.
+%   e.g.    'list_m62_fam1nov-fam1.txt'         - all fam1 files in fam1nov experiment
+%           'list_m62_fam1nov.txt'              - all files in fam1nov experiments
+%           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
+%           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
+% reffile   : file used as registration template
+% mcorr_method : motion correction method
+%   e.g.    'normcorre-nr'                      - non-rigid normcorre
+%           'normcorre-r'                       - rigid normcorre
+%           'fftRigid'                          - Katie's method
+% force     : flag to force generation of comparison figures even though they
+%               already exist
+
 function frun_collate_imreg_results( list, reffile, mcorr_method, force )
 
 % e.g. m##_expname: 'm62_fam1nov_fam1fam1rev'

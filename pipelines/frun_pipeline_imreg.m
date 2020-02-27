@@ -5,12 +5,26 @@
 % one environment).
 % Processing steps include:
 % (1) motion correction (and dezippering) for EACH file
-% and for the consolidated GROUP image data
+%
+% For the consolidated GROUP image data, processing steps include
 % (2) roi segmentation 
 % (3) neuropil decontamination and timeseries extraction
 % (4) spike extraction
 % (5) tracking data extraction
 % (6) place field mapping
+%
+% INPUTS
+% list   : name of text file containing filenames of files to be compared.
+%           Typically in the format 'list_m##_expname.txt'.
+%   e.g.    'list_m62_fam1nov-fam1.txt'         - all fam1 files in fam1nov experiment
+%           'list_m62_fam1nov.txt'              - all files in fam1nov experiments
+%           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
+%           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
+% reffile   : file to be used as registration template. This file is
+%               usually part of 'list' but does not have to be. This file
+%               must have already been motion corrected.
+% slacknotify : flag to send Slack notification when processing is started
+%               or has ended
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The section labeled "USER-DEFINED INPUT" requires user input

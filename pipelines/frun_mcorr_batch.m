@@ -1,11 +1,22 @@
+% Written by Ann Go
+%
+% This script runs motion correction on all files in 'list'. This script is
+% designed to be run on the hpc server where array_id loops through values
+% specified in the hpc script.
+%
+% INPUTS
+% array_id  : number which serves as array index for files in 'list'
+% list      : name of text file containing filenames of files to be compared.
+%           Typically in the format 'list_m##_expname.txt'.
+%   e.g.    'list_m62_fam1nov-fam1.txt'         - all fam1 files in fam1nov experiment
+%           'list_m62_fam1nov.txt'              - all files in fam1nov experiments
+%           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
+%           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
+% force  : flag to force generation of comparison figures even though they
+%           already exist
+
 function frun_mcorr_batch( array_id, list, force )
 
-% Written by Ann Go
-% 
-% This script runs the motion correction algorithm for a list of image 
-% files. 
-
-% clear; % close all;
 tic
 
 if nargin<3, force = false; end

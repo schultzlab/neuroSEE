@@ -172,9 +172,9 @@ for id = 1:Ncells
     normpfMap_sm(id,:) = pfMap_sm(id,:)./max(pfMap_sm(id,:));
     
     [infoMap(id,1), infoMap(id,2), infoMap(id,3)] = infoMeasures(pfMap(id,:),occMap,0);
-    [~,c,fs] = findpeaks(normpfMap(id,:),'WidthReference','halfheight','SortStr','descend');
+    [~,c,fs] = findpeaks(normpfMap_sm(id,:),'WidthReference','halfheight','SortStr','descend');
     if ~isempty(c), centroid(id) = c(1); else, centroid(id) = NaN; end
-    if ~isempty(fs), fieldsize(id) = fs(1); else, fieldsize(id) = NaN; end
+    if ~isempty(fs), fieldsize(id) = fs(1)*103/Nposbins; else, fieldsize(id) = NaN; end
     
     % ASD estimation
     [pfMap_asd(id,:),~] = runASD_1d(bin_phi,z',Nposbins);

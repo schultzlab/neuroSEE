@@ -1,5 +1,3 @@
-function frun_pipeline_ROIreg( list )
-
 % Written by Ann Go
 % 
 % This script runs the complete data processing pipeline for a list of
@@ -18,14 +16,23 @@ function frun_pipeline_ROIreg( list )
 %
 % This script is similar to frun_pipeline_imreg but applies to cases of
 % multiple videos for one environment where the images for different files
-% may not be registered well.
-
+% may not have been registered well.
+%
+% INPUT
+% list   : name of text file containing filenames of files to be compared.
+%           Typically in the format 'list_m##_expname.txt'.
+%   e.g.    'list_m62_fam1nov-fam1.txt'         - all fam1 files in fam1nov experiment
+%           'list_m62_fam1nov.txt'              - all files in fam1nov experiments
+%           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
+%           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The section labeled "USER-DEFINED INPUT" requires user input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Matlab version requirement: neuroSEE_neuropilDecon requires at least Matlab R2018
 
+function frun_pipeline_ROIreg( list )
 
 %% SETTINGS
 

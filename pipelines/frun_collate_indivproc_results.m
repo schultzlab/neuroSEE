@@ -1,15 +1,21 @@
 % Written by Ann Go
-% list   :  name of text file containing filenames of files to be compared.
-%           Typically in the format 'list_m##_expname.txt' or 'list_m##.txt'
-%           (when wanting to include all files for mouse).
 %
-% Comparison figures will be saved in
-%           /...thefarm2/CrazyEights/AD_2PCa/Analysis/m##/m##_expname/
+% This script collates the results for the complete pipeline processing of
+% the individual files in 'list'. Figures comparing average motion
+% corrected frames, PF maps, ROIs and trajectories are generated and saved
+% in
+%   /...thefarm2/CrazyEights/AD_2PCa/Analysis/m##/m##_expname/individual_proc/
+%
+% INPUTS
+% list   : name of text file containing filenames of files to be compared.
+%           Typically in the format 'list_m##_expname.txt'.
 %   e.g.    'list_m62_fam1nov-fam1.txt'         - all fam1 files in fam1nov experiment
-%           'list_m62_fam1nov_fam1fam1rev.txt'  - all files in fam1nov and
-%                                                   fam1fam1rev experiments
+%           'list_m62_fam1nov.txt'              - all files in fam1nov experiments
 %           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
 %           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
+%
+% force  : flag to force generation of comparison figures even though they
+%           already exist
 
 function frun_collate_indivproc_results( list, force )
 

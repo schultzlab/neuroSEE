@@ -208,7 +208,8 @@ end
 %                           params
 
 if any([ any(force(1:2)), ~check(2), ~check(1) ]) 
-    [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params.mcorr, force(1) );
+    params_mcorr = params.mcorr;
+    [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params_mcorr, force(1) );
 else 
     fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
     imG = []; imR = [];

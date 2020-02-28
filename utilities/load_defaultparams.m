@@ -4,7 +4,7 @@ function params_def = load_defaultparams( params )
     
     % Remove irrelevant parameters 
     if strcmpi(params.methods.mcorr_method,'normcorre')
-        params_def = rmfield(params_def.mcorr,'fftRigid');
+        params_def.mcorr = rmfield(params_def.mcorr,'fftRigid');
     elseif strcmpi(params.methods.mcorr_method,'normcorre-r')
         fields = {'normcorre_nr','fftRigid'};
         params_def.mcorr = rmfield(params_def.mcorr,fields);

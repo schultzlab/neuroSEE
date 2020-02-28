@@ -177,20 +177,11 @@ end
 % Load original image files if forced to do motion correction or if motion corrected files don't exist 
 
 if force(1) || ~check(1)
-    if strcmpi(mcorr_method,'normcorre') 
-        filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-r/' ];
-        fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
-        fname_tif_red_mcorr = [filedir file '_2P_XYT_red_mcorr.tif'];
-        % If mcorr_method is 'normcorre' and the rigid correction has been done,
-        % no need to load original image file
-        if exist(fname_tif_gr_mcorr,'file') && exist(fname_tif_red_mcorr,'file')
-            imG = []; imR = [];
-        else
-            [ imG, imR ] = load_imagefile( data_locn, file, force(1) );
-        end
-    else
-        [ imG, imR ] = load_imagefile( data_locn, file, force(1) );
-    end
+    filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ];
+    fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
+    fname_tif_red_mcorr = [filedir file '_2P_XYT_red_mcorr.tif'];
+    if strcmpi(mcorr_method,'normcorre') && exist()
+    [ imG, imR ] = load_imagefile( data_locn, file, force(1) );
 else
     imG = []; imR = [];
 end

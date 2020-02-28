@@ -86,7 +86,7 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
             end
             
             if any([ force, ~exist(fname_tif_gr_mcorr,'file'), ~exist(fname_tif_red_mcorr,'file'), ~exist(fname_mat_mcorr,'file') ])
-                fprintf( '\tFirst doing rigid correction\n' )
+                
                 % first do rigid correction
                 if strcmpi(refChannel,'green')
                     [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params_mcorr.normcorre_r, template );
@@ -103,7 +103,6 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
             end
 
             % then do non-rigid correction
-            fprintf( '\tNow doing non-rigid correction\n' )
             if strcmpi(refChannel,'green')
                 [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params_mcorr.normcorre_nr, template );
             else

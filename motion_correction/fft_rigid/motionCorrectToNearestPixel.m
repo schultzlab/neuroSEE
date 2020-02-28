@@ -32,12 +32,12 @@
 % Written by Katie Davey
 % Edit by Ann: 
 
-function [stack_g, stack_r, out_g, out_r, col_shift, shifts, template, fh] = motionCorrectToNearestPixel(stack_g, stack_r, file, scale, Nimg_ave, refChannel, redoT, doplot)
-   if nargin<8, doplot = 0; end
-   if nargin<7, redoT = 300; end
-   if nargin<6, refChannel = 'green'; end
-   if nargin<5, Nimg_ave = 14; end
-   if nargin<4, scale  = 1;    end
+function [stack_g, stack_r, out_g, out_r, col_shift, shifts, template, fh] = motionCorrectToNearestPixel(stack_g, stack_r, scale, Nimg_ave, refChannel, redoT, doplot)
+   if nargin<7, doplot = true; end
+   if nargin<6, redoT = 300; end
+   if nargin<5, refChannel = 'green'; end
+   if nargin<4, Nimg_ave = 14; end
+   if nargin<3, scale  = 1;    end
 
    tempfn = @(x) mean(x,3); % fn to convert buffer to template with - can try using median or mode (mode is bad!)
    initT  = 200; % use this many frames to make initial buffer with
@@ -48,7 +48,7 @@ function [stack_g, stack_r, out_g, out_r, col_shift, shifts, template, fh] = mot
    
    % first dezipper images
    [ stack_g, stack_r, col_shift ] = doDezippering( stack_g, stack_r, Nimg_ave );
-   str = sprintf( '%s: Dezippering done\n', file );
+   str = sprintf( '\tDezippering done\n' );
    cprintf( 'Text', str );
 
    % gotta register for green & for red
@@ -59,17 +59,17 @@ function [stack_g, stack_r, out_g, out_r, col_shift, shifts, template, fh] = mot
    % green channel is non-stationary while the red channel is supposed to
    % be stationary 
    if strcmpi(refChannel,'green')
-       str = sprintf( '%s: Registering green channel\n', file );
+       str = sprintf( '\tRegistering green channel\n' );
        cprintf( 'Text', str );
        [stack_g, out_g, shifts, template] = registerChannel( initT, redoT, stack_g, tempfn, scale, usememmap  );
-       str = sprintf( '%s: Registering red channel\n', file );
+       str = sprintf( '\tRegistering red channel\n' );
        cprintf( 'Text', str );
        [stack_r, out_r, ~, ~] = registerChannel( initT, redoT, stack_r, tempfn, scale, usememmap, shifts );
    else % refChannel = 'red'
-       str = sprintf( '%s: Registering red channel\n', file );
+       str = sprintf( '\tRegistering red channel\n' );
        cprintf( 'Text', str );
        [stack_r, out_r, shifts, template] = registerChannel( initT, redoT, stack_r, tempfn, scale, usememmap  );
-       str = sprintf( '%s: Registering green channel\n', file );
+       str = sprintf( '\tRegistering green channel\n' );
        cprintf( 'Text', str );
        [stack_g, out_g, ~, ~] = registerChannel( initT, redoT, stack_g, tempfn, scale, usememmap, shifts );
    end

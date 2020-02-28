@@ -4,34 +4,23 @@
 %   data_locn : directory where GCaMP6 data is
 %   file      : part of filename of 2P image in the format
 %               yyyymmdd_HH_MM_SS
-%   force     : set to 1 to overwrite existing tif files (not motion corrected)
-%   suffix    : =[]          to load original raw or tif files
+%   forceRaw  : flag to overwrite existing tif files (not motion corrected)
+%               and read raw file
+%   suffix    : = []         to load original raw or tif files
 %               ='_mcorr'    to load motion corrected tif files   
-%   params.mcorr_method: ['normcorre' or 'fftRigid'] motion correction method
+%   mcorr_method : ['normcorre' or 'fftRigid'] motion correction method
 %                       * CaImAn NoRMCorre method OR fft-rigid method (Katie's)
-%   params.segment_method: ['CaImAn' or 'ABLE'] roi segmentation method
+%   load_imR  : flag to load imR
 
 % OUTPUTS
 %   imG       : matrix of green channel image stack
 %   imR       : matrix of red channel image stack
 
-function [ imG, imR ] = load_imagefile( data_locn, file, force, suffix, params )
-    
-    if nargin < 5 
-        mcorr_method  = 'normcorre'; 
-        segment_method  = 'CaImAn'; 
-    else
-        mcorr_method  = params.methods.mcorr_method;
-        if isfield(params.methods,'segment_method')
-            segment_method  = params.methods.segment_method;
-        else
-            segment_method = 'CaImAn';
-        end
-    end
-    if nargin < 4, suffix  = [];    end
-    if nargin < 3, force  = 0;    end
-    if strcmpi(segment_method,'CaImAn'), load_imR = false; else, load_imR = true; end
-    err = 1;
+function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr_method, load_imR )
+    if nargin < 6, load_imR = true; end
+    if nargin < 5, mcorr_method  = 'normcorre-nr'; end
+    if nargin < 4, suffix  = []; end
+    if nargin < 3, forceRaw = false; end
 
     str = sprintf( '%s: Loading %s images...\n', file, suffix );
     cprintf( str )
@@ -48,21 +37,21 @@ function [ imG, imR ] = load_imagefile( data_locn, file, force, suffix, params )
             fname_raw = [ dir_2P file '_2P_XYTZ.raw' ];
         end
         
-        if ~any([ force, ~exist(fname_tif_gr,'file'), ~exist(fname_tif_red,'file') ])
+        if ~any([ forceRaw, ~exist(fname_tif_gr,'file'), ~exist(fname_tif_red,'file') ])
             imG = read_file( fname_tif_gr );
             imR = read_file( fname_tif_red ); 
             if any( size(imG) ~= size(imR) )
-                force = true;
+                forceRaw = true;
             else
                 err = 0;
             end
         end
         
-        if any([ force, ~exist(fname_tif_gr,'file'), ~exist(fname_tif_red,'file') ]) 
+        if any([ forceRaw, ~exist(fname_tif_gr,'file'), ~exist(fname_tif_red,'file') ]) 
             % load raw and create tif stacks
             if exist( fname_raw, 'file' )
                 options.skipN = 2; %skip every other frame
-                if force 
+                if forceRaw 
                     imG = read_file( fname_raw, 1, Inf, options );
                     writeTifStack( imG, fname_tif_gr );
                     imR = read_file( fname_raw, 2, Inf, options );
@@ -100,6 +89,10 @@ function [ imG, imR ] = load_imagefile( data_locn, file, force, suffix, params )
         % motion corrected tif stacks are in the Processed directory
         if strcmpi(mcorr_method,'normcorre')
             dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_normcorre/' );
+        elseif strcmpi(mcorr_method,'normcorre-r')
+            dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_normcorre-r/' );
+        elseif strcmpi(mcorr_method,'normcorre-nr')
+            dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_normcorre-nr/' );
         else
             dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_fftRigid/' );
         end

@@ -7,7 +7,7 @@ function [M_final_y, M_final_x, Y_out, X_out, col_shift, shifts, template, optio
 % Based on the dftregistration.m function from Manuel Guizar and Jim Fienup
 
 % INPUTS
-% Y:                Input data (green channel), can be already loaded in memory as a 3D
+% Y:                Input data (reference channel), can be already loaded in memory as a 3D
 %                   tensor, a memory mapped file, or a pointer to a tiff stack
 % X:                red channel data
 % options:          options structure for motion correction (optional, rigid registration is performed if not provided)
@@ -450,11 +450,11 @@ function [M_final_y, M_final_x, Y_out, X_out, col_shift, shifts, template, optio
                    flag_interp = max([gx;gy;gz;0])<0.5;      % detect possible smearing
 
                    if flag_interp    
-                       Mf_y = cell2mat_ov_sum(M_fin_y,xx_us,xx_uf,yy_us,yy_uf,zz_us,zz_uf,overlap_post,sizY,Bs) - add_value;
-                       Mf_x = cell2mat_ov_sum(M_fin_x,xx_us,xx_uf,yy_us,yy_uf,zz_us,zz_uf,overlap_post,sizY,Bs) - add_value; %%%green channel
+                       Mf_y = cell2mat_ov_sum(M_fin_y,xx_us,xx_uf,yy_us,yy_uf,zz_us,zz_uf,overlap_post,sizY,Bs) - add_value; %%%ref channel
+                       Mf_x = cell2mat_ov_sum(M_fin_x,xx_us,xx_uf,yy_us,yy_uf,zz_us,zz_uf,overlap_post,sizY,Bs) - add_value; 
                    else            
-                       Mf_y = cell2mat_ov(M_fin_y,xx_us,xx_uf,yy_us,yy_uf,zz_us,zz_uf,overlap_post,sizY) - add_value;
-                       Mf_x = cell2mat_ov(M_fin_x,xx_us,xx_uf,yy_us,yy_uf,zz_us,zz_uf,overlap_post,sizY) - add_value; %%% green channel
+                       Mf_y = cell2mat_ov(M_fin_y,xx_us,xx_uf,yy_us,yy_uf,zz_us,zz_uf,overlap_post,sizY) - add_value; %%%ref channel
+                       Mf_x = cell2mat_ov(M_fin_x,xx_us,xx_uf,yy_us,yy_uf,zz_us,zz_uf,overlap_post,sizY) - add_value; 
                    end                             
 
                otherwise
@@ -473,13 +473,13 @@ function [M_final_y, M_final_x, Y_out, X_out, col_shift, shifts, template, optio
                            for dm = 1:3; shifts_up(:,:,:,dm) = shifts_temp(dm); end
                        end
                        shifts_up(2:2:end,:,:,2) = shifts_up(2:2:end,:,:,2) + col_shift;
-                       Mf_y = imwarp(Yt,-cat(4,shifts_up(:,:,:,2),shifts_up(:,:,:,1),shifts_up(:,:,:,3)),options.shifts_method,'FillValues',fill_value); 
-                       Mf_x = imwarp(Xt,-cat(4,shifts_up(:,:,:,2),shifts_up(:,:,:,1),shifts_up(:,:,:,3)),options.shifts_method,'FillValues',fill_value); %%%green channel 
+                       Mf_y = imwarp(Yt,-cat(4,shifts_up(:,:,:,2),shifts_up(:,:,:,1),shifts_up(:,:,:,3)),options.shifts_method,'FillValues',fill_value); %%%ref channel
+                       Mf_x = imwarp(Xt,-cat(4,shifts_up(:,:,:,2),shifts_up(:,:,:,1),shifts_up(:,:,:,3)),options.shifts_method,'FillValues',fill_value);  
                    else
                        shifts_up = imresize(shifts_temp,[options.d1,options.d2]);
                        shifts_up(2:2:end,:,2) = shifts_up(2:2:end,:,2) + col_shift;
-                       Mf_y = imwarp(Yt,-cat(3,shifts_up(:,:,2),shifts_up(:,:,1)),options.shifts_method,'FillValues',fill_value); 
-                       Mf_x = imwarp(Xt,-cat(3,shifts_up(:,:,2),shifts_up(:,:,1)),options.shifts_method,'FillValues',fill_value); %%%green channel
+                       Mf_y = imwarp(Yt,-cat(3,shifts_up(:,:,2),shifts_up(:,:,1)),options.shifts_method,'FillValues',fill_value); %%%ref channel
+                       Mf_x = imwarp(Xt,-cat(3,shifts_up(:,:,2),shifts_up(:,:,1)),options.shifts_method,'FillValues',fill_value); 
                    end    
 
                 Mf_y(Mf_y<minY) = minY;

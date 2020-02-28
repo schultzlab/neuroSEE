@@ -52,14 +52,21 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
         if isempty(reffile)
             str = sprintf( '%s: Starting motion correction\n', file );
             template = [];
+            if strcmpi(refChannel,'green')
+                template_r = [];
+            else
+                template_g = [];
+            end
         else
             str = sprintf( '%s: Starting image registration to %s\n', file, reffile );
             refdir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_' mcorr_method '/'];
             c = load([refdir reffile '_mcorr_output.mat']);
             if strcmpi(refChannel,'green')
                 template = c.green.meanregframe;
+                template_r = c.red.meanregframe;
             else
                 template = c.red.meanregframe;
+                template_g = c.green.meanregframe;
             end
         end
         cprintf( 'Text', str );
@@ -95,7 +102,7 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
                 end
                 % Save summary figure, tif images, motion correction/registration output matrix
                 if force || ~exist(fname_fig,'file'), makeplot(out_g,out_r); end
-                saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR);
+                saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r);
             else
                 % read motion corrected tif files for normcorre-r
                 imG = read_file( fname_tif_gr_mcorr );
@@ -111,14 +118,14 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
             end
             % Save summary figure, tif images, motion correction/registration output matrix
             if isempty(reffile)
-                filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-nr/' ];
+                filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/' ];
                     if ~exist( filedir, 'dir' ), mkdir( filedir ); end
                 fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
                 fname_tif_red_mcorr = [filedir file '_2P_XYT_red_mcorr.tif'];
                 fname_mat_mcorr = [filedir file '_mcorr_output.mat'];
                 fname_fig = [filedir file '_mcorr_summary.fig'];
             else
-                filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-nr_ref' reffile '/' ];
+                filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre_ref' reffile '/' ];
                     if ~exist( filedir, 'dir' ), mkdir( filedir ); end
                 fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
                 fname_tif_red_mcorr = [filedir file '_2P_XYT_red_imreg_ref' reffile '.tif'];
@@ -126,7 +133,7 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
                 fname_fig = [filedir file '_imreg_ref' reffile '_summary.fig'];
             end
             makeplot(out_g,out_r);
-            saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR)
+            saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r)
         
         elseif strcmpi(mcorr_method,'normcorre-r')
             mcorr_output.params.normcorre_r = params_mcorr.normcorre_r;
@@ -137,7 +144,7 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
             end
             % Save summary figure, tif images, motion corrections/registration output matrix
             makeplot(out_g,out_r);
-            saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR)
+            saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r)
         
         elseif strcmpi(mcorr_method,'normcorre-nr')
             mcorr_output.params.normcorre_nr = params_mcorr.normcorre_nr;
@@ -148,11 +155,11 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
             end
             % Save summary figure, tif images, motion corrections/registration output matrix
             makeplot(out_g,out_r);
-            saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR)
+            saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r)
         
         else
             if ~isempty(template)
-                str = sprintf('%s: Image registration cannot be done with fftRigid motion correction method.', file);
+                str = sprintf('%s: Canoot do image registration with fftRigid method. Choose another method.', file);
                 cprintf('Errors',str);    
             else
                 mcorr_output.params.fftRigid = params_mcorr.fftRigid;
@@ -161,7 +168,7 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
                                                                                 refChannel, params_mcorr.fftRigid.redoT );
                 % Save summary figure, tif images, motion corrections/registration output matrix
                 makeplot(out_g,out_r);
-                saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR)
+                saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r)
             end
         end
     else
@@ -183,40 +190,61 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
     end
     
     function makeplot(out_g,out_r)
-        fh = figure; 
-        subplot(221), 
-            imagesc( out_g.meanframe ); 
-            axis image; colorbar; axis off;
-            title( 'Mean frame for raw green' );
-        subplot(222), 
-            imagesc( out_g.meanregframe ); 
-            axis image; colorbar; axis off; 
-            title( 'Mean frame for corrected green' );
-        subplot(223), 
-            imagesc( out_r.meanframe ); 
-            axis image; colorbar; axis off; 
-            title( 'Mean frame for raw red' );
-        subplot(224), 
-            imagesc( out_r.meanregframe ); 
-            axis image; colorbar; axis off;
-            title( 'Mean frame for corrected red' );
-        axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
-            'Visible','off','Units','normalized', 'clipping' , 'off');
-            titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17)];
-            text(0.5, 0.98,titletext);
+        fh = figure;
+        if isempty(template)
+            subplot(221), 
+                imagesc( out_g.meanframe ); 
+                axis image; colorbar; axis off;
+                title( 'Mean frame for raw green' );
+            subplot(222), 
+                imagesc( out_g.meanregframe ); 
+                axis image; colorbar; axis off; 
+                title( 'Mean frame for corrected green' );
+            subplot(223), 
+                imagesc( out_r.meanframe ); 
+                axis image; colorbar; axis off; 
+                title( 'Mean frame for raw red' );
+            subplot(224), 
+                imagesc( out_r.meanregframe ); 
+                axis image; colorbar; axis off;
+                title( 'Mean frame for corrected red' );
+            axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off',...
+                'Visible','off','Units','normalized', 'clipping' , 'off');
+                titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17)];
+                text(0.5, 0.98,titletext);
+        else
+            subplot(221), 
+                C1 = imfuse( out_g.meanframe, template_g, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
+                imshow(C1);  
+                title( 'Green: Before registration' );
+            subplot(222), 
+                C2 = imfuse(out_g.meanregframe,template_g,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
+                imshow(C2); 
+                title( 'Green: After registration' );
+            subplot(223), 
+                C1 = imfuse( out_r.meanframe, template_r, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
+                imshow(C1);  
+                title( 'Red: Before registration' );
+            subplot(224), 
+                C2 = imfuse(out_r.meanregframe,template_r,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
+                imshow(C2); 
+                title( 'Red: After registration' );
+        end
         fname_fig = [filedir file '_mcorr_summary'];
             savefig( fh, fname_fig );
             saveas( fh, fname_fig, 'png' );
         close( fh );
     end
 
-    function saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR)
+    function saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r)
         % Save output
         mcorr_output.green = out_g;
         mcorr_output.red = out_r;
         mcorr_output.shifts = shifts;
         mcorr_output.col_shift = col_shift;
         mcorr_output.template = template;
+        if ~isemtpy(template_g), mcorr_output.template_g = template_g; end
+        if ~isemtpy(template_r), mcorr_output.template_r = template_r; end
         save(fname_mat_mcorr,'-struct','mcorr_output');
 
         % Save motion corrected tif images

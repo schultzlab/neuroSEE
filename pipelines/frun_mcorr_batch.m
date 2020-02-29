@@ -26,7 +26,7 @@
 %               or has ended. Default: false
 
 
-function frun_imreg_batch( array_id, list, force, reffile, refChannel, slacknotify )
+function frun_mcorr_batch( array_id, list, force, reffile, refChannel, slacknotify )
 
 if nargin<6, slacknotify = false; end
 if nargin<5, refChannel = 'green'; end

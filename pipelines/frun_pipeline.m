@@ -235,8 +235,8 @@ end
 %                       summary plots of tsG, df_f (fig, png)
 %                       mat with fields {tsG, df_f, masks, corr_image, params}
 
-[tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
-clear imG imR
+% [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
+% clear imG imR
 
 
 % %% (3) Run FISSA to extract neuropil-corrected time-series

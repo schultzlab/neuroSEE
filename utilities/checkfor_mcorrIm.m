@@ -10,13 +10,11 @@ function check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile )
     
     if isempty(reffile)
         filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ];
-            if ~exist( filedir, 'dir' ), mkdir( filedir ); end
         fname_tif_gr = [filedir file '_2P_XYT_green_mcorr.tif'];
         fname_tif_red = [filedir file '_2P_XYT_red_mcorr.tif'];
         fname_mat = [filedir file '_mcorr_output.mat'];
     else
         filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/' ];
-            if ~exist( filedir, 'dir' ), mkdir( filedir ); end
         fname_tif_gr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
         fname_tif_red = [filedir file '_2P_XYT_red_imreg_ref' reffile '.tif'];
         fname_mat = [filedir file '_imreg_ref' reffile '_output.mat'];

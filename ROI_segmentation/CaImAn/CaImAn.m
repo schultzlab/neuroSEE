@@ -3,15 +3,11 @@
 % This function extracts ROIs and their decontaminated signals from a green
 % channel image stack using CaImAn
 
-function [df_f, masks, corr_image] = CaImAn( imG, file, maxcells, cellrad, display )
+function [df_f, masks, corr_image] = CaImAn( imG, maxcells, cellrad, display )
 
 if nargin<5, display = 0; end
 
-str = sprintf('%s: Extracting ROIs with CaImAn\n', file);
-cprintf(str);
-
-% nam = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/' file '_2P_XYT_green_mcorr.tif'];
-% imG = read_file(nam);
+fprintf('\tExtracting ROIs with CaImAn\n');
 
 % imG = imG - min(imG(:)); 
 if ~isa(imG,'single');    imG = single(imG);  end     % convert to single

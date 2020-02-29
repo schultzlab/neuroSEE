@@ -22,14 +22,14 @@
 %   corr_image  : correlation image from green channel
 %   params      : parameters for specific roi segmentation method
 
-function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, data_locn, file, params, force, list, mean_imR )
+function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, data_locn, file, params, force)
 
-    if nargin<6, mean_imR = []; end
-    if nargin<5, force = false; end
+    if nargin<6, force = false; end
 
     mcorr_method = params.methods.mcorr_method;
     segment_method = params.methods.segment_method;
-    filedir = [ data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_', mcorr_method , '/', segment_method, '/' ];
+    filedir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/'];
+    if ~exist( filedir, 'dir' ), mkdir( filedir ); end
 
     fname_mat = [filedir file '_segment_output.mat'];
     fname_fig1 = [filedir file '_ROIs.fig'];
@@ -81,7 +81,6 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, data_loc
         output.masks = masks;
         output.corr_image = corr_image;
         output.params = params.ROIsegment;
-        if ~exist( filedir, 'dir' ), mkdir( filedir ); end
         save(fname_mat,'-struct','output');
 
         % Plot masks on correlation image and save plot

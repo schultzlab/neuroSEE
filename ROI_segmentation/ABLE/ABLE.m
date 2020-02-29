@@ -28,10 +28,9 @@
 
 %function [tsG, tsR, masks, mean_imratio] = ABLE( stack_g, mean_r, cellrad, maxcells )
 
-function [tsG, masks, corr_g] = ABLE( stack_g, mean_r, file, maxcells, cellrad ) % by Ann
+function [tsG, masks, corr_g] = ABLE( stack_g, mean_r, maxcells, cellrad ) % by Ann
 
-   str = sprintf('%s: Extracting ROIs with ABLE\n', file);
-   cprintf(str);
+   fprintf('\tExtracting ROIs with ABLE\n');
 
 %% Initialise the summary images
    szsmooth = [5 5];
@@ -165,13 +164,5 @@ function [tsG, masks, corr_g] = ABLE( stack_g, mean_r, file, maxcells, cellrad )
    % Plot masks on summary image and save plot
 %    plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
 %    fig = plotContoursOnSummaryImage(mean_imratio, masks, plotopts);
-%    fname_fig = [filedir file '_2P_ROIs'];
-%    savefig(fig,fname_fig,'compact');
-%    saveas(fig,fname_fig,'pdf');
-%    close(fig);
-%    
-%    % Save masks in a mat file
-%    fname_masks = [filedir file '_2P_segment_output.mat'];
-%    save(fname_masks,'cell_tsG','cell_tsR','masks','mean_imratio');
 
 end 

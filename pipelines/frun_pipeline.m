@@ -152,12 +152,6 @@ else
     params.ROIsegment.maxcells = 200;       
 end
 
-% Send Ann slack message if processing has started
-if slacknotify
-    slacktext = [file ': processing started'];
-    neuroSEE_slackNotify( slacktext );
-end
-
 
 %% Check if file has been processed. If not, continue processing unless forced to overwrite 
 % existing processed data
@@ -185,6 +179,12 @@ if force(1) || ~check(1)
         err = sprintf('%s: Lower Matlab version required; skipping processing.\n', [mouseid '_' expname]);
         cprintf('Errors',err);
         return
+    end
+    
+    % Send Ann slack message if processing has started
+    if slacknotify
+        slacktext = [file ': processing started'];
+        neuroSEE_slackNotify( slacktext );
     end
 
     if strcmpi(mcorr_method,'normcorre') 
@@ -235,8 +235,8 @@ end
 %                       summary plots of tsG, df_f (fig, png)
 %                       mat with fields {tsG, df_f, masks, corr_image, params}
 
-% [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
-% clear imG imR
+[tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force(2), mean(imR,3) );
+clear imG imR
 
 
 % %% (3) Run FISSA to extract neuropil-corrected time-series

@@ -33,7 +33,6 @@ function varargout = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_me
     
     if isempty(reffile)
         filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ];
-            if ~exist( filedir, 'dir' ), mkdir( filedir ); end
         fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
         fname_tif_red_mcorr = [filedir file '_2P_XYT_red_mcorr.tif'];
         fname_mat_mcorr = [filedir file '_mcorr_output.mat'];
@@ -45,7 +44,6 @@ function varargout = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_me
             return
         end
         filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/' ];
-            if ~exist( filedir, 'dir' ), mkdir( filedir ); end
         fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
         fname_tif_red_mcorr = [filedir file '_2P_XYT_red_imreg_ref' reffile '.tif'];
         fname_mat_mcorr = [filedir file '_imreg_ref' reffile '_output.mat'];
@@ -79,14 +77,12 @@ function varargout = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_me
             % rename variables to check if normcorre-r has been done
             if isempty(reffile)
                 filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-r/' ];
-                    if ~exist( filedir, 'dir' ), mkdir( filedir ); end
                 fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
                 fname_tif_red_mcorr = [filedir file '_2P_XYT_red_mcorr.tif'];
                 fname_mat_mcorr = [filedir file '_mcorr_output.mat'];
                 fname_fig = [filedir file '_mcorr_summary.fig'];
             else
                 filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-r_ref' reffile '/' ];
-                    if ~exist( filedir, 'dir' ), mkdir( filedir ); end
                 fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
                 fname_tif_red_mcorr = [filedir file '_2P_XYT_red_imreg_ref' reffile '.tif'];
                 fname_mat_mcorr = [filedir file '_imreg_ref' reffile '_output.mat'];
@@ -120,14 +116,12 @@ function varargout = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_me
             % Save summary figure, tif images, motion correction/registration output matrix
             if isempty(reffile)
                 filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre/' ];
-                    if ~exist( filedir, 'dir' ), mkdir( filedir ); end
                 fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
                 fname_tif_red_mcorr = [filedir file '_2P_XYT_red_mcorr.tif'];
                 fname_mat_mcorr = [filedir file '_mcorr_output.mat'];
                 fname_fig = [filedir file '_mcorr_summary.fig'];
             else
                 filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre_ref' reffile '/' ];
-                    if ~exist( filedir, 'dir' ), mkdir( filedir ); end
                 fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
                 fname_tif_red_mcorr = [filedir file '_2P_XYT_red_imreg_ref' reffile '.tif'];
                 fname_mat_mcorr = [filedir file '_imreg_ref' reffile '_output.mat'];
@@ -241,6 +235,7 @@ function varargout = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_me
                 title( 'Red: After registration' );
         end
         fname_fig = [filedir file '_mcorr_summary'];
+            if ~exist( filedir, 'dir' ), mkdir( filedir ); end
             savefig( fh, fname_fig );
             saveas( fh, fname_fig, 'png' );
         close( fh );
@@ -253,8 +248,8 @@ function varargout = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_me
         mcorr_output.shifts = shifts;
         mcorr_output.col_shift = col_shift;
         mcorr_output.template = template;
-        if ~isemtpy(template_g), mcorr_output.template_g = template_g; end
-        if ~isemtpy(template_r), mcorr_output.template_r = template_r; end
+        if ~isempty(template_g), mcorr_output.template_g = template_g; end
+        if ~isempty(template_r), mcorr_output.template_r = template_r; end
         save(fname_mat_mcorr,'-struct','mcorr_output');
 
         % Save motion corrected tif images

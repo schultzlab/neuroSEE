@@ -168,12 +168,6 @@ end
 release = version('-release'); % Find out what Matlab release version is running
 MatlabVer = str2double(release(1:4));
 
-% Send Ann slack message if processing has started
-if slacknotify
-    slacktext = [mouseid '_' expname ': starting CaImAn'];
-    neuroSEE_slackNotify( slacktext );
-end
-
 
 %% Check if list has been processed. If not, continue processing unless forced to overwrite 
 % existing processed data
@@ -182,12 +176,12 @@ end
 % check(3)                                       step  6
 % check(4) checks for existing mat file pooling all processed data for list
 
-check = checkforExistingProcData(data_locn, list, params, reffile);
+check_list = checkforExistingProcData(data_locn, list, params, reffile);
 
 % Some security measures
 force = logicalForce(force);    % Only allow combinations of force values that make sense
 
-if ~any(force) && check(4)
+if ~any(force) && check_list(4)
     fprintf('%s: list already processed\n', list)
     return
 end
@@ -201,103 +195,103 @@ if strcmpi(comp,'hpc') && MatlabVer > 2017
     return
 end
 
+% Send Ann slack message if processing has started
+if slacknotify
+    slacktext = [mouseid '_' expname ': processing started'];
+    neuroSEE_slackNotify( slacktext );
+end
+
+
 %% Location of processed group data for list
 grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
             mcorr_method '_' segment_method '_' str_fissa '/'...
             mouseid '_' expname '_imreg_ref' reffile '/'];
-    if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); end
+    if ~exist(grp_sdir,'dir'), mkdir(dir); end
+
 
 %% Image registration
+% Load images and do registration if forced to do so or if ROI segmentation data doesn't exist 
 
-for n = 1:Nfiles
-    file = files(n,:);
+if any([ force(1:2), ~check_list(1) ])
+    for n = 1:Nfiles
+        file = files(n,:);
 
-    if ~strcmpi( file, reffile )
-        % Check if file has been registered to reffile.
-        check = 0;
-        filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/' ];
-            if ~exist( filedir, 'dir' ), mkdir( filedir ); end
-        fname_tif_gr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
-        fname_tif_red = [filedir file '_2P_XYT_red_imreg_ref' reffile '.tif'];
-        fname_mat = [filedir file '_imreg_ref' reffile '_output.mat'];
+        if ~strcmpi( file, reffile )
+            % Check if file has been registered to reffile.
+            check_file = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile );
 
-        if all( [exist(fname_tif_gr,'file'),...
-                 exist(fname_tif_red,'file'),...
-                 exist(fname_mat,'file')] )
-            check = 1;
-        end
+            if force(1) || ~check_file    
+                [fileG,fileR] = load_imagefile( data_locn, file );
 
-        if force(1) || ~check    
-            if ~isempty(reffile) && strcmpi(file,reffile)
-                fprintf('%s: Same as reference file. Skipping image registration\n', file);    
-                return
-            end
-
-            [imG,imR] = load_imagefile( data_locn, file );
-
-            %% Motion correction/Image registration 
-            neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force );
-
-            if slacknotify
-                if array_id == size(files,1)
-                    slacktext = [list(6:end-4) ': done registering ' num2str(size(files,1)) ' of ' num2str(size(files,1)) 'files'];
-                    neuroSEE_slackNotify( slacktext );
+                % Send Ann slack message
+                if slacknotify
+                    if array_id == 1
+                        slacktext = [mouseid '_' expname ': registering 1 of ' num2str(size(files,1)) 'files'];
+                        neuroSEE_slackNotify( slacktext );
+                    end
+                end
+                
+                if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
+                    imG{n} = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, mcorr_method, params.mcorr, reffile, force(1) );
+                    imR = [];
+                else
+                    [ imG{n}, ~, ~, imR{n} ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, mcorr_method, params.mcorr, reffile, force(1) );
+                end
+            else 
+                if force(2) || ~check_list(1)
+                    fprintf('%s: Found registered image. Loading...\n', [mouseid '_' expname '_' file])
+                    imdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/'];
+                    imG{n} = read_file([ imdir file '_2P_XYT_green_imreg_ref' reffile '.tif' ]);
+                    if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
+                        imR = [];
+                    else
+                        imR{n} = read_file([ imdir file '_2P_XYT_red_imreg_ref' reffile '.tif' ]);
+                    end
                 end
             end
-
-        else 
-            if isempty(reffile)
-                fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
-            else
-                fprintf('%s: Registered images found. Skipping image registration to %s\n', file, reffile);
-            end
-        end
-    end
-    
-    if ~strcmpi( file, reffile )
-        imdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/'];
-        
-        if force(1) || ~exist([imdir file '_imreg_ref' reffile '_output.mat'],'file')
-            imG = read_file([ data_locn 'Data/' file(1:8) '/2P/' file '_2P/' file '_2P_XYT_green.tif']);
-            imR = read_file([ data_locn 'Data/' file(1:8) '/2P/' file '_2P/' file '_2P_XYT_red.tif']);
-            
-            [ imG{n}, ~, ~, ~ ] = neuroSEE_imreg( imG, imR, data_locn, file, reffile, params, force );
         else
-            if force(2) || ~check(1)
-                fprintf('%s: Found registered image. Loading...\n', [mouseid '_' expname '_' file])
-                imG{n} = read_file([ imdir file '_2P_XYT_green_imreg_ref' reffile '.tif' ]);
+            if force(2) || ~check_list(1)
+                imdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/'];
+                fprintf('%s: Loading reference image\n', [mouseid '_' expname '_' file]);
+                imG{n} = read_file([ imdir file '_2P_XYT_green_mcorr.tif' ]);
+                if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
+                    imR = [];
+                else
+                    imR{n} = read_file([ imdir file '_2P_XYT_red_mcorr.tif' ]);
+                end
+                
+                c = load([imdir reffile '_mcorr_output.mat']);
+                template_g = c.green.meanregframe;
+                template_r = c.red.meanregframe;
+                fig = figure; 
+                subplot(121); imagesc(template_g); title('GCaMP6');
+                subplot(122); imagesc(template_r); title('mRuby');
+                save([grp_sdir mouseid '_' expname '_ref' reffile '_mcorr_template.mat'],'template_g','template_r')
+                savefig(fig,[grp_sdir mouseid '_' expname '_ref' reffile '_mcorr_template']);
+                saveas(fig,[grp_sdir mouseid '_' expname '_ref' reffile '_mcorr_template'],'png');
+                close(fig);
             end
-        end
-    else
-        if force(2) || ~check(1)
-             imdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/'];
-            fprintf('%s: loading reference image\n', [mouseid '_' expname '_' file]);
-            imG{n} = read_file([ imdir file '_2P_XYT_green_mcorr.tif' ]);
-            
-            c = load([imdir reffile '_mcorr_output.mat']);
-            template_g = c.green.meanregframe;
-            template_r = c.red.meanregframe;
-            fig = figure; 
-            subplot(121); imagesc(template_g); title('GCaMP6');
-            subplot(122); imagesc(template_r); title('mRuby');
-            save([grp_sdir mouseid '_' expname '_ref' reffile '_mcorr_template.mat'],'template_g','template_r')
-            savefig(fig,[grp_sdir mouseid '_' expname '_ref' reffile '_mcorr_template']);
-            saveas(fig,[grp_sdir mouseid '_' expname '_ref' reffile '_mcorr_template'],'png');
-            close(fig);
         end
     end
 end
 
-%% ROI segmentation
-grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
-    
-if force(2) || ~check(1)
+
+%% ROI segmentation    
+if force(2) || ~check_list(1)
     fprintf('%s: downsampling images\n', [mouseid '_' expname])
     for n = 1:Nfiles
         Yii = imG{n};
         Y(:,:,(n-1)*size(Yii,3)+1:n*size(Yii,3)) = Yii;
     end
 
+    if ~strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
+        for n = 1:Nfiles
+            Xii = imR{n};
+            X(:,:,(n-1)*size(Xii,3)+1:n*size(Xii,3)) = Xii;
+        end
+        clear Xii
+    end
+    
     % Downsample images
     if size(files,1) <= 7
         tsub = 5;
@@ -309,7 +303,11 @@ if force(2) || ~check(1)
         tsub = round( size(files,1)*7420/11000 );
     end
     imG = Y(:,:,1:tsub:end); % downsampled concatenated image
-    clear Y Yii 
+    clear Y Yii
+    if ~strcmpi(segment_method,'CaImAn')
+        imR = X(:,:,1:tsub:end);
+        clear X
+    end
 
     % ROI segmentation
     cellrad = params.ROIsegment.cellrad;
@@ -367,10 +365,11 @@ if force(2) || ~check(1)
     saveas(fig,[grp_sdir mouseid '_' expname '_ref' reffile '_ROIs'],'png');
     close(fig);
 else
-    if any([any(force), ~check(2), ~check(4)])
+    if any([any(force), ~check_list(2), ~check_list(4)])
         fprintf('%s: loading ROI segmentation results\n',[mouseid '_' expname])
         masks = load(grp_sname,'masks');
         masks = masks.masks;
+        grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
         corr_image = load(grp_sname,'corr_image');
         tsG = load(grp_sname,'tsG');
         df_f = load(grp_sname,'df_f');
@@ -391,7 +390,7 @@ end
 %% FISSA, spike extraction, tracking data loading, PF mapping
 grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_fissa_spike_track_data.mat'];
 
-if any(force(3:5)) || ~check(2)
+if any(force(3:5)) || ~check_list(2)
     % initialise matrices
     SdtsG = []; Sddf_f = []; Sspikes = [];
     SdownData.phi = [];
@@ -545,7 +544,7 @@ if any(force(3:5)) || ~check(2)
     save(grp_sname,'dtsG','ddf_f','spikes','trackData');
 
 else
-    if force(6) || ~check(4)
+    if force(6) || ~check_list(4)
         fprintf('%s: loading fissa, spike, track data\n', [mouseid '_' expname]);
         c = load(grp_sname);
         dtsG = c.dtsG;
@@ -567,7 +566,7 @@ else
 end
 
 Nepochs = params.PFmap.Nepochs;
-if force(6) || ~check(3)
+if force(6) || ~check_list(3)
     fprintf('%s: generating PFmaps\n', [mouseid '_' expname]);
     if strcmpi(params.mode_dim,'1D')
         % Generate place field maps
@@ -653,7 +652,7 @@ if force(6) || ~check(3)
         save([grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'-struct','output');
     end
 else
-    if ~check(4)
+    if ~check_list(4)
         fprintf('%s: loading PF mapping data\n', [mouseid '_' expname]);
         c = load(grp_sname);
         activeData = c.activeData;

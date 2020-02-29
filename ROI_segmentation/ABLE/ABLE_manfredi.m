@@ -28,10 +28,9 @@
 
 
 
-function [tsG, masks, overl_corr] = ABLE_manfredi( stack_g, mean_r, file, cellrad, maxcells )
+function [tsG, masks, overl_corr] = ABLE_manfredi( stack_g, mean_r, cellrad, maxcells )
    tic;
-   str = sprintf('%s: Extracting ROIs with ABLE\n', file);
-   cprintf(str);
+   fprintf('\tExtracting ROIs with ABLE\n');
 
 %% Initialise the summary images
    szsmooth = [3 3];   % higher values could end up into merging differnet cells into once
@@ -145,15 +144,5 @@ function [tsG, masks, overl_corr] = ABLE_manfredi( stack_g, mean_r, file, cellra
    % Plot masks on summary image and save plot
   % plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
    %fig = plotContoursOnSummaryImage(mean_imratio, masks, plotopts);
-   %fname_fig = [filedir file '_2P_ROIs'];
-   %savefig(fig,fname_fig,'compact');
-%    saveas(fig,fname_fig,'pdf');
-%  close(fig);
-%
-%    % Save masks in a mat file
-%%fname_masks = [filedir file '_2P_segment_output.mat'];
-%
-% fname_masks = [file '_2P_segment_output.mat'];
-% save(fname_masks,'tsG','masks','corr');
 
 end

@@ -22,19 +22,32 @@
 %   corr_image  : correlation image from green channel
 %   params      : parameters for specific roi segmentation method
 
-function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, data_locn, file, params, force, list, mean_imR )
+function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force, mean_imR, list, reffile )
 
+    if nargin<7, list = []; end
     if nargin<6, mean_imR = []; end
     if nargin<5, force = false; end
 
     mcorr_method = params.methods.mcorr_method;
     segment_method = params.methods.segment_method;
-    filedir = [ data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_', mcorr_method , '/', segment_method, '/' ];
+    dofissa = params.methods.dofissa; 
+        if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
 
-    fname_mat = [filedir file '_segment_output.mat'];
-    fname_fig1 = [filedir file '_ROIs.fig'];
-    fname_fig2 = [filedir file '_raw_timeseries.fig'];
-    fname_fig3 = [filedir file '_df_f.fig'];
+    if isempty(list)
+        filedir = [ data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_', mcorr_method , '/', segment_method, '/' ];
+        fname_mat = [filedir file '_segment_output.mat'];
+        fname_fig1 = [filedir file '_ROIs.fig'];
+        fname_fig2 = [filedir file '_raw_timeseries.fig'];
+        fname_fig3 = [filedir file '_df_f.fig'];
+    else
+        [ mouseid, expname ] = find_mouseIDexpname(list);
+        filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' mcorr_method '_' segment_method '_'...
+                    str_fissa '/' mouseid '_' expname '_imreg_ref' reffile '/'];
+        fname_mat = [filedir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
+        fname_fig1 = [filedir mouseid '_' expname '_ref' reffile '_ROIs.fig'];
+        fname_fig2 = [filedir mouseid '_' expname '_ref' reffile '_raw_timeseries.fig'];
+        fname_fig3 = [filedir mouseid '_' expname '_ref' reffile '_df_f.fig'];
+    end
 
     if force || ~exist(fname_mat,'file')
         maxcells = params.ROIsegment.maxcells;
@@ -45,7 +58,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, data_loc
             df_medfilt1 = params.ROIsegment.df_medfilt1;
             fr = params.fr;
 
-            [tsG, masks, corr_image] = ABLE_manfredi( imG, mean_imR, file, maxcells, cellrad );
+            [tsG, masks, corr_image] = ABLE_manfredi( imG, mean_imR, maxcells, cellrad );
 
             % Calculate df_f
             df_f = zeros(size(tsG));
@@ -60,7 +73,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, data_loc
             end
 
         else
-            [df_f, masks, corr_image] = CaImAn( imG, file, maxcells, cellrad );
+            [df_f, masks, corr_image] = CaImAn( imG, maxcells, cellrad );
             df_f = full(df_f);
 
             % Extract raw timeseries
@@ -121,24 +134,24 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, data_loc
         % ROIs overlayed on correlation image
         plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
         fig = plotContoursOnSummaryImage(corr_image, masks, plotopts);
-        savefig(fig,[filedir file '_ROIs']);
-        saveas(fig,[filedir file '_ROIs'],'png');
+        savefig(fig, fname_fig1(1:end-4));
+        saveas(fig, fname_fig1(1:end-4), 'png');
         close(fig);
         
         % raw timeseries
         fig = figure;
         iosr.figures.multiwaveplot(1:size(tsG,2),1:size(tsG,1),tsG,'gain',5); yticks([]); xticks([]); 
         title('Raw timeseries','Fontweight','normal','Fontsize',12); 
-        savefig(fig,[filedir file '_raw_timeseries']);
-        saveas(fig,[filedir file '_raw_timeseries'],'png');
+        savefig(fig, fname_fig2(1:end-4));
+        saveas(fig, fname_fig2(1:end-4), 'png');
         close(fig);
         
         % dF/F
         fig = figure;
         iosr.figures.multiwaveplot(1:size(df_f,2),1:size(df_f,1),df_f,'gain',5); yticks([]); xticks([]); 
         title('dF/F','Fontweight','normal','Fontsize',12); 
-        savefig(fig,[filedir file '_df_f']);
-        saveas(fig,[filedir file '_df_f'],'png');
+        savefig(fig, fname_fig3(1:end-4));
+        saveas(fig, fname_fig3(1:end-4), 'png');
         close(fig);
     end
 end

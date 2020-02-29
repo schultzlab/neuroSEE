@@ -5,20 +5,36 @@
 %   dtsG    : decontaminated raw timeseries
 %   ddf_f   : (decontaminated) df_f
 
-function [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force )
+function [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force, list, reffile )
 
-if nargin<5, force = 0;      end
+if nargin<7, reffile = []; end
+if nargin<6, list = []; end
+if nargin<5, force = 0; end
 
 mcorr_method = params.methods.mcorr_method;
 segment_method = params.methods.segment_method;
-tiffile = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',file,'_2P_XYT_green_mcorr.tif'];
-fissadir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/FISSA/'];
-if ~exist( fissadir, 'dir' ), mkdir( fissadir ); end
 
-fname_mat = [fissadir file '_fissa_output.mat'];
-fname_mat_temp = [fissadir 'FISSAout/matlab.mat'];
-fname_fig1 = [fissadir file '_fissa_result.fig'];
-fname_fig2 = [fissadir file '_fissa_df_f.fig'];
+if isempty(list)
+    tiffile = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',file,'_2P_XYT_green_mcorr.tif'];
+    fissadir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/FISSA/'];
+    
+    fname_mat = [fissadir file '_fissa_output.mat'];
+    fname_mat_temp = [fissadir 'FISSAout/matlab.mat'];
+    fname_fig1 = [fissadir file '_fissa_result.fig'];
+    fname_fig2 = [fissadir file '_fissa_df_f.fig'];
+else
+    if strcmpi(file, reffile)
+        tiffile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' file '_2P_XYT_green_mcorr.tif'];
+        fissadir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/FISSA/'];
+    else
+        tiffile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/' file '_2P_XYT_green_imreg_ref' reffile '.tif'];
+        fissadir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/' segment_method '_' mouseid '_' expname '/FISSA/'];
+    end
+    fname_mat = [fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
+    fname_mat_temp = [fissadir 'FISSAout/matlab.mat'];
+    fname_fig1 = [fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_result.fig'];
+    fname_fig2 = [fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'];
+end
 
 prevstr = [];
 if force || ~exist(fname_mat,'file')
@@ -57,10 +73,12 @@ if force || ~exist(fname_mat,'file')
         ddf_f(i,:) = (x - fo) ./ fo;
     end
     
+    % Save output
     output.tsG = tsG;
     output.dtsG = dtsG;
     output.ddf_f = ddf_f;
     output.params = params.fissa;
+    if ~exist( fissadir, 'dir' ), mkdir( fissadir ); end
     save(fname_mat,'-struct','output');
     str = sprintf('%s: FISSA correction done\n',file);
     refreshdisp(str, prevstr);

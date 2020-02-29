@@ -1,6 +1,6 @@
 % Written by Ann Go
 
-% This function extracts spikes from df_f
+% This function extracts spikes from df_f or ddf_f if it exists
 
 % INPUTS
 %   df_f
@@ -30,7 +30,6 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
         str_fissa = 'noFISSA';
     end
     filedir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/',str_fissa,'/'];
-        if ~exist(filedir,'dir'), mkdir(filedir); end
     fname_mat = [filedir file '_spikes_output.mat'];
     fname_fig = [filedir file '_spikes.fig'];
 
@@ -59,7 +58,16 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
             spikes(i,:) = spk(:);
 
         end
-
+        
+        % Save output
+        spike_output.spikes = spikes;
+        if ~isempty(df_f), spike_output.df_f = df_f; end
+        if ~isempty(ddf_f), spike_output.ddf_f = ddf_f; end
+        if ~exist(filedir,'dir'), mkdir(filedir); end
+        spike_output.params = params.spkExtract;
+        save(fname_mat,'-struct','spike_output');
+        
+        % plot
         makeplot(spikes);
         
         currstr = sprintf( '%s: Spike extraction done\n', file );

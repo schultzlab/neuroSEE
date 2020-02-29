@@ -5,7 +5,7 @@
 
 function [df_f, masks, corr_image] = CaImAn( imG, maxcells, cellrad, display )
 
-if nargin<5, display = 0; end
+if nargin<5, display = false; end
 
 fprintf('\tExtracting ROIs with CaImAn\n');
 

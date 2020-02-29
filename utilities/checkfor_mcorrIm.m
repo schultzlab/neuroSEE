@@ -23,7 +23,7 @@ function check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile )
     if all( [exist(fname_tif_gr,'file'),...
             exist(fname_tif_red,'file'),...
             exist(fname_mat,'file')] )
-        check = 1;
+        check = true;
     else
-        check = 0;
+        check = false;
     end

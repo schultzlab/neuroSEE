@@ -152,12 +152,6 @@ else
     params.ROIsegment.maxcells = 200;       
 end
 
-% Send Ann slack message if processing has started
-if slacknotify
-    slacktext = [file ': processing started'];
-    neuroSEE_slackNotify( slacktext );
-end
-
 
 %% Check if file has been processed. If not, continue processing unless forced to overwrite 
 % existing processed data
@@ -185,6 +179,12 @@ if force(1) || ~check(1)
         err = sprintf('%s: Lower Matlab version required; skipping processing.\n', [mouseid '_' expname]);
         cprintf('Errors',err);
         return
+    end
+    
+    % Send Ann slack message if processing has started
+    if slacknotify
+        slacktext = [file ': processing started'];
+        neuroSEE_slackNotify( slacktext );
     end
 
     if strcmpi(mcorr_method,'normcorre') 
@@ -218,11 +218,11 @@ end
 %                           params
 
 if any([ any(force(1:2)), ~check(2), ~check(1) ]) 
-    if ~strcmpi(segment_method,'CaImAn')
-        [ imG, ~, params.mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
-    else
+    if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
         [ imG, ~, params.mcorr ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
         imR = [];
+    else
+        [ imG, ~, params.mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
     end
 else 
     fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
@@ -235,54 +235,54 @@ end
 %                       summary plots of tsG, df_f (fig, png)
 %                       mat with fields {tsG, df_f, masks, corr_image, params}
 
-[tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
+[tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force(2), mean(imR,3) );
 clear imG imR
 
 
-% %% (3) Run FISSA to extract neuropil-corrected time-series
-% % Saved in file folder: mat file with fields {dtsG, ddf_f, masks}
-% %                       summary plots of tsG, ddf_f (fig & png)
-% 
-% if dofissa
-%     release = version('-release'); % Find out what Matlab release version is running
-%     MatlabVer = str2double(release(1:4));
-%     if MatlabVer > 2017
-%         [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
-%     else
-%         fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
-%         dofissa = false;
-%         dtsG = [];
-%         ddf_f = [];
-%     end
-% else
-%     dtsG = [];
-%     ddf_f = [];
-% end
-% 
-% 
-% %% (4) Estimate spikes
-% % Saved in file folder: mat with fields {tsG, dtsG, df_f, ddf_f, spikes, params}
-% %                       summary plot of spikes (fig & png)
-% 
-% [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
-% 
-% % Save spike output if required
-% if any([ ~check(4), any(force([1,2,4])), and(force(3), dofissa) ])
-%     spike_output.spikes = spikes;
-%     spike_output.tsG = tsG;
-%     spike_output.df_f = df_f;
-%     if ~isempty(dtsG), spike_output.dtsG = dtsG; end
-%     if ~isempty(ddf_f), spike_output.ddf_f = ddf_f; end
-%     spike_output.params = params.spkExtract;
-%     save(fname_mat,'-struct','spike_output');
-% end
-% 
-% if manually_refine_spikes
-%     GUI_manually_refine_spikes( spikes, tsG, dtsG, df_f, ddf_f, data_locn, file, params, corr_image, masks );
-%     uiwait 
-% end
-% 
-% 
+%% (3) Run FISSA to extract neuropil-corrected time-series
+% Saved in file folder: mat file with fields {dtsG, ddf_f, masks}
+%                       summary plots of tsG, ddf_f (fig & png)
+
+if dofissa
+    release = version('-release'); % Find out what Matlab release version is running
+    MatlabVer = str2double(release(1:4));
+    if MatlabVer > 2017
+        [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+    else
+        fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
+        dofissa = false;
+        dtsG = [];
+        ddf_f = [];
+    end
+else
+    dtsG = [];
+    ddf_f = [];
+end
+
+
+%% (4) Estimate spikes
+% Saved in file folder: mat with fields {tsG, dtsG, df_f, ddf_f, spikes, params}
+%                       summary plot of spikes (fig & png)
+
+[spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
+
+% Save spike output if required
+if any([ ~check(4), any(force([1,2,4])), and(force(3), dofissa) ])
+    spike_output.spikes = spikes;
+    spike_output.tsG = tsG;
+    spike_output.df_f = df_f;
+    if ~isempty(dtsG), spike_output.dtsG = dtsG; end
+    if ~isempty(ddf_f), spike_output.ddf_f = ddf_f; end
+    spike_output.params = params.spkExtract;
+    save(fname_mat,'-struct','spike_output');
+end
+
+if manually_refine_spikes
+    GUI_manually_refine_spikes( spikes, tsG, dtsG, df_f, ddf_f, data_locn, file, params, corr_image, masks );
+    uiwait 
+end
+
+
 % %% (5) Find tracking file then load it
 % % Saved in file folder: trajectory plot (fig & png)
 % %                       mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}

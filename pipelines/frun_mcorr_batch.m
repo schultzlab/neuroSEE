@@ -13,6 +13,7 @@
 %           'list_m62_fam1nov.txt'              - all files in fam1nov experiments
 %           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
 %           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
+% mcorr_method : [fftRigid, normcorre, normcorre-nr, normcorre-r]
 % force     : (optional) flag to force generation of comparison figures even though they
 %               already exist. Default: false
 % reffile   : (optional) file to be used as registration template. When empty, motion 
@@ -26,19 +27,20 @@
 %               or has ended. Default: false
 
 
-function frun_mcorr_batch( array_id, list, force, reffile, refChannel, slacknotify )
+function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, refChannel, slacknotify )
 
-if nargin<6, slacknotify = false; end
-if nargin<5, refChannel = 'green'; end
-if nargin<4, reffile = []; end
-if nargin<3, force = false; end
+if nargin<7, slacknotify = false; end
+if nargin<6, refChannel = 'green'; end
+if nargin<5, reffile = []; end
+if nargin<4, force = false; end
+if nargin<3, mcorr_method = 'normcorre'; end     
+
 tic
 
 %% Load module folders and define data directory
 
 test = false;                      % flag to use one of smaller files in test folder)
 default = true;                    % flag to use default motion correction parameters
-mcorr_method = 'normcorre';     % [fftRigid, normcorre, normcorre-nr, normcorre-r]
 
 [data_locn,comp,err] = load_neuroSEEmodules(test);
 if ~isempty(err)

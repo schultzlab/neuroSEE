@@ -218,11 +218,11 @@ end
 %                           params
 
 if any([ any(force(1:2)), ~check(2), ~check(1) ]) 
-    if ~strcmpi(segment_method,'CaImAn')
-        [ imG, ~, params.mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
-    else
+    if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
         [ imG, ~, params.mcorr ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
         imR = [];
+    else
+        [ imG, ~, params.mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
     end
 else 
     fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
@@ -239,65 +239,62 @@ end
 clear imG imR
 
 
-% %% (3) Run FISSA to extract neuropil-corrected time-series
-% % Saved in file folder: mat file with fields {dtsG, ddf_f, masks}
-% %                       summary plots of tsG, ddf_f (fig & png)
-% 
-% if dofissa
-%     release = version('-release'); % Find out what Matlab release version is running
-%     MatlabVer = str2double(release(1:4));
-%     if MatlabVer > 2017
-%         [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
-%     else
-%         fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
-%         dofissa = false;
-%         dtsG = [];
-%         ddf_f = [];
-%     end
-% else
-%     dtsG = [];
-%     ddf_f = [];
-% end
-% 
-% 
-% %% (4) Estimate spikes
-% % Saved in file folder: mat with fields {tsG, dtsG, df_f, ddf_f, spikes, params}
-% %                       summary plot of spikes (fig & png)
-% 
-% [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
-% 
-% % Save spike output if required
-% if any([ ~check(4), any(force([1,2,4])), and(force(3), dofissa) ])
-%     spike_output.spikes = spikes;
-%     spike_output.tsG = tsG;
-%     spike_output.df_f = df_f;
-%     if ~isempty(dtsG), spike_output.dtsG = dtsG; end
-%     if ~isempty(ddf_f), spike_output.ddf_f = ddf_f; end
-%     spike_output.params = params.spkExtract;
-%     save(fname_mat,'-struct','spike_output');
-% end
-% 
-% if manually_refine_spikes
-%     GUI_manually_refine_spikes( spikes, tsG, dtsG, df_f, ddf_f, data_locn, file, params, corr_image, masks );
-%     uiwait 
-% end
-% 
-% 
-% %% (5) Find tracking file then load it
-% % Saved in file folder: trajectory plot (fig & png)
-% %                       mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
-% 
-% fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
-% trackData = load_trackfile( data_locn,file, fname_track, force(5) );
-% if any(trackData.r < 100)
-%     params.mode_dim = '2D'; % open field
-%     params.PFmap.Nbins = [16, 16]; % number of location bins in [x y]               
-% else 
-%     params.mode_dim = '1D'; % circular linear track
-%     params.PFmap.Nbins = 30;      % number of location bins               
-% end
-% 
-% 
+%% (3) Run FISSA to extract neuropil-corrected time-series
+% Saved in file folder: mat file with fields {dtsG, ddf_f, masks}
+%                       summary plots of tsG, ddf_f (fig & png)
+
+if dofissa
+    release = version('-release'); % Find out what Matlab release version is running
+    MatlabVer = str2double(release(1:4));
+    if MatlabVer > 2017
+        [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+    else
+        fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
+        dofissa = false;
+        dtsG = [];
+        ddf_f = [];
+    end
+else
+    dtsG = [];
+    ddf_f = [];
+end
+
+
+%% (4) Estimate spikes
+% Saved in file folder: mat with fields {tsG, dtsG, df_f, ddf_f, spikes, params}
+%                       summary plot of spikes (fig & png)
+
+[spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
+
+% Save spike output if required
+if any([ ~check(4), any(force([1,2,4])), and(force(3), dofissa) ])
+    spike_output = load(fname_mat);
+    spike_output.tsG = tsG;
+    if ~isempty(dtsG), spike_output.dtsG = dtsG; end
+    save(fname_mat,'-struct','spike_output');
+end
+
+if manually_refine_spikes
+    GUI_manually_refine_spikes( spikes, tsG, dtsG, df_f, ddf_f, data_locn, file, params, corr_image, masks );
+    uiwait 
+end
+
+
+%% (5) Find tracking file then load it
+% Saved in file folder: trajectory plot (fig & png)
+%                       mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
+
+fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
+trackData = load_trackfile( data_locn,file, fname_track, force(5) );
+if any(trackData.r < 100)
+    params.mode_dim = '2D'; % open field
+    params.PFmap.Nbins = [16, 16]; % number of location bins in [x y]               
+else 
+    params.mode_dim = '1D'; % circular linear track
+    params.PFmap.Nbins = 30;      % number of location bins               
+end
+
+
 % %% (6) Generate place field maps
 % % Saved: fig & png of several figures showing occMap, spkMap, pfMap, remapping and spkMap_pertrial
 % %        mat file with fields {occMap, hist, asd, downData, activeData}

@@ -25,8 +25,8 @@
 %                   template
 %   params_mcorr: parameters for specific motion correction method
 
-function varargout = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force )
-    
+function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force )    
+
     if nargin<8, force = false; end
     if nargin<7, reffile = []; end
     refChannel = params_mcorr.refChannel;
@@ -167,10 +167,9 @@ function varargout = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_me
             end
         end
     else
-        if nargout>1
-            if nargout>3, load_imR = true; else, load_imR = false; end
-            [imG, imR] = load_imagefile( data_locn, file, false, '_mcorr', mcorr_method, load_imR );
-        end
+        if nargout>3, load_imR = true; else, load_imR = false; end
+        [imG, imR] = load_imagefile( data_locn, file, false, '_mcorr', mcorr_method, load_imR );
+        
         mcorr_output = load(fname_mat_mcorr);
         if isfield(mcorr_output,'params') 
             params_mcorr = mcorr_output.params;  % applies to proc data from July 2019
@@ -186,12 +185,6 @@ function varargout = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_me
             makeplot(out_g,out_r);
         end
     end
-    
-    % OUTPUTS
-    varargout(1) = imG;
-    varargout(2) = mcorr_output;
-    varargout(3) = params_mcorr;
-    varargout(4) = imR;
     
     function makeplot(out_g,out_r)
         fh = figure;

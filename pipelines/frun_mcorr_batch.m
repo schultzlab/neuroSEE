@@ -140,7 +140,7 @@ end
 
 %% Check if file has been processed. 
 
-check = 0;
+check = false;
 if isempty(reffile)
     filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ];
         if ~exist( filedir, 'dir' ), mkdir( filedir ); end
@@ -158,7 +158,7 @@ end
 if all( [exist(fname_tif_gr,'file'),...
          exist(fname_tif_red,'file'),...
          exist(fname_mat,'file')] )
-    check = 1;
+    check = true;
 end
 
 if force || ~check    

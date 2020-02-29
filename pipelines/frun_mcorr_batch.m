@@ -52,6 +52,7 @@ end
 
 
 %% Continue with motion correction or image registration if Matlab version is R2017
+release = version('-release'); % Find out what Matlab release version is running
 MatlabVer = str2double(release(1:4));
 if strcmpi(comp,'hpc') && MatlabVer > 2017
     beep

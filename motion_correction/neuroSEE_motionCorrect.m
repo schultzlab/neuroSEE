@@ -25,8 +25,7 @@
 %                   template
 %   params_mcorr: parameters for specific motion correction method
 
-function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
-                                                imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force )
+function varargout = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force )
     
     if nargin<8, force = false; end
     if nargin<7, reffile = []; end
@@ -40,6 +39,11 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
         fname_mat_mcorr = [filedir file '_mcorr_output.mat'];
         fname_fig = [filedir file '_mcorr_summary.fig'];
     else
+        if strcmpi(file,reffile)
+            beep
+            cprintf('Errors','File to be processed is the same as template!');    
+            return
+        end
         filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/' ];
             if ~exist( filedir, 'dir' ), mkdir( filedir ); end
         fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
@@ -52,22 +56,19 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
         if isempty(reffile)
             str = sprintf( '%s: Starting motion correction\n', file );
             template = [];
-            if strcmpi(refChannel,'green')
-                template_r = [];
-            else
-                template_g = [];
-            end
+            template_g = [];
+            template_r = [];
         else
             str = sprintf( '%s: Starting image registration to %s\n', file, reffile );
             refdir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_' mcorr_method '/'];
             c = load([refdir reffile '_mcorr_output.mat']);
             if strcmpi(refChannel,'green')
                 template = c.green.meanregframe;
-                template_r = c.red.meanregframe;
             else
                 template = c.red.meanregframe;
-                template_g = c.green.meanregframe;
             end
+            template_g = c.green.meanregframe;
+            template_r = c.red.meanregframe;
         end
         cprintf( 'Text', str );
         
@@ -172,7 +173,10 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
             end
         end
     else
-        [imG, imR] = load_imagefile( data_locn, file, 0, '_mcorr', params_mcorr );
+        if nargout>1
+            if nargout>3, load_imR = true; else, load_imR = false; end
+            [imG, imR] = load_imagefile( data_locn, file, false, '_mcorr', mcorr_method, load_imR );
+        end
         mcorr_output = load(fname_mat_mcorr);
         if isfield(mcorr_output,'params') 
             params_mcorr = mcorr_output.params;  % applies to proc data from July 2019
@@ -188,6 +192,12 @@ function [ imG, imR, mcorr_output, params_mcorr ] = neuroSEE_motionCorrect(...
             makeplot(out_g,out_r);
         end
     end
+    
+    % OUTPUTS
+    varargout(1) = imG;
+    varargout(2) = mcorr_output;
+    varargout(3) = params_mcorr;
+    varargout(4) = imR;
     
     function makeplot(out_g,out_r)
         fh = figure;

@@ -1,34 +1,46 @@
 % Written by Ann Go
 %
-% This script runs motion correction on all files in 'list'. This script is
-% designed to be run on the hpc server where array_id loops through values
-% specified in the hpc script.
+% This script implements motion correction of a single file or the
+% registration of a file to a reference file (if reference file is specified). 
+% This script is designed to be run on the hpc server where array_id 
+% loops through values specified in the hpc script.
 %
 % INPUTS
 % array_id  : number which serves as array index for files in 'list'
 % list      : name of text file containing filenames of files to be compared.
-%           Typically in the format 'list_m##_expname.txt'.
+%      Typically in the format 'list_m##_expname.txt'.
 %   e.g.    'list_m62_fam1nov-fam1.txt'         - all fam1 files in fam1nov experiment
 %           'list_m62_fam1nov.txt'              - all files in fam1nov experiments
 %           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
 %           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
-% force  : flag to force generation of comparison figures even though they
-%           already exist
+% force     : (optional) flag to force generation of comparison figures even though they
+%               already exist. Default: false
+% reffile   : (optional) file to be used as registration template. When empty, motion 
+%               correction of file is done, with a template computed from first 200 frames.
+%               This file is usually part of 'list' (i.e. for best results, choose a 
+%               reference file from the same experiment) but does not have to be. This 
+%               file must have already been motion corrected.
+% refChannel : (optional) channel (red or green) to be used as registation
+%               template. Default: 'green'
+% slacknotify : (optional) flag to send Slack notification when processing is started
+%               or has ended. Default: false
 
-function frun_mcorr_batch( array_id, list, force )
 
-tic
+function frun_imreg_batch( array_id, list, force, reffile, refChannel, slacknotify )
 
+if nargin<6, slacknotify = false; end
+if nargin<5, refChannel = 'green'; end
+if nargin<4, reffile = []; end
 if nargin<3, force = false; end
-
-%% USER: Set basic settings
-                            
-default = true;                 % flag to use default parameters
-mcorr_method = 'normcorre';     % [normcorre,fftRigid] CaImAn NoRMCorre method, fft-rigid method (Katie's)
+tic
 
 %% Load module folders and define data directory
 
-[data_locn,comp,err] = load_neuroSEEmodules;
+test = false;                      % flag to use one of smaller files in test folder)
+default = true;                    % flag to use default motion correction parameters
+mcorr_method = 'normcorre-nr';     % [fftRigid, normcorre, normcorre-nr, normcorre-r]
+
+[data_locn,comp,err] = load_neuroSEEmodules(test);
 if ~isempty(err)
     beep
     cprintf('Errors',err);    
@@ -38,53 +50,39 @@ if strcmpi(comp,'hpc')
     maxNumCompThreads(32);      % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
 end
 
-%% Continue with image registration and ROI segmentation if Matlab version is R2017
+
+%% Continue with motion correction or image registration if Matlab version is R2017
 MatlabVer = str2double(release(1:4));
 if strcmpi(comp,'hpc') && MatlabVer > 2017
     beep
-    err = sprintf('%s: Lower Matlab version required; skipping processing.\n', [mouseid '_' expname]);
+    err = sprintf('%s: Lower Matlab version required; skipping processing.\n', list);
     cprintf('Errors',err);
     return
 end
 
-% Send Ann slack message
-if array_id == 1 
-    slacktext = [list(1:end-5) ': processing 1st file'];
-    neuroSEE_slackNotify( slacktext );
-end
-
-%% Image file
-
-listfile = [data_locn 'Digital_Logbook/lists/' list];
-files = extractFilenamesFromTxtfile(listfile);
-
-file = files(array_id,:); 
-
 
 %% USER: Set parameters (if not using default)
-
 if ~default
-    % neurosee method
-    if strcmpi(mcorr_method,'fftRigid')
-        params.fftRigid.imscale = 1;             % image downsampling factor                                             [default: 1]
-        params.fftRigid.Nimg_ave = 10;           % no. of images to be averaged for calculating pixel shift (zippering)  [default: 10]
-        params.fftRigid.refChannel = 'green';    % channel to be used for calculating image shift (green,red)            [default: 'green']
-        params.fftRigid.redoT = 300;             % no. of frames at start of file to redo motion correction for after 1st iteration [default: 300]
-    end
+    params_mcorr.refChannel = 'green';           % reference channel for motion correction [default: 'green']
     % NoRMCorre-rigid
     if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
-        params.rigid = NoRMCorreSetParms(...
+        params_mcorr.normcorre_r = NoRMCorreSetParms(...
+            'd1', 512,...
+            'd2', 512,...
             'max_shift',30,...          % default: 30
             'bin_width',200,...         % default: 200
             'us_fac',50,...             % default: 50
             'init_batch',200);          % default: 200
+        params_mcorr.normcorre_r.print_msg = false;   % default: false
     end
     % NoRMCorre-nonrigid
     if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
-        params.nonrigid = NoRMCorreSetParms(...
-            'grid_size',[32,32],...     % default: [32,32]
-            'overlap_pre',[32,32],...   % default: [32,32]
-            'overlap_post',[32,32],...  % default: [32,32]
+        params_mcorr.normcorre_nr = NoRMCorreSetParms(...
+            'd1', 512,...
+            'd2', 512,...
+            'grid_size',[64,64],...     % default: [64,64]
+            'overlap_pre',[64,64],...   % default: [64,64]
+            'overlap_post',[64,64],...  % default: [64,64]
             'iter',1,...                % default: 1
             'use_parallel',false,...    % default: false
             'max_shift',20,...          % default: 20
@@ -93,86 +91,102 @@ if ~default
             'max_dev',3,...             % default: 3
             'us_fac',50,...             % default: 50
             'init_batch',200);          % default: 200
+        params_mcorr.normcorre_nr.print_msg = false;    % default: false
     end
 end
-
-
-%% Default and non-user defined parameters
-
 if default
-    params = load( 'default_params.mat', 'fftRigid', 'nonrigid', 'rigid' );
-    
-    % Remove irrelevant parameters 
+    c = load('default_params.mat');
     if strcmpi(mcorr_method,'normcorre')
-        params = rmfield(params,'fftRigid');
+        params_mcorr.normcorre_r = c.mcorr.normcorre_r;
+        params_mcorr.normcorre_nr = c.mcorr.normcorre_nr;
     elseif strcmpi(mcorr_method,'normcorre-r')
-        fields = {'fftRigid','nonrigid'};
-        params = rmfield(params,fields);
+        params_mcorr.normcorre_r = c.mcorr.normcorre_r;
     elseif strcmpi(mcorr_method,'normcorre-nr')
-        fields = {'fftRigid','rigid'};
-        params = rmfield(params,fields);
+        params_mcorr.normcorre_nr = c.mcorr.normcorre_nr; 
     elseif strcmpi(mcorr_method,'fftRigid')
-        fields = {'rigid','nonrigid'};
-        params = rmfield(params,fields);
+        if ~isempty(reffile)
+            str = sprintf('%s: Cannot do image registration with fftRigid method. Choose another method.', list);
+            beep
+            cprintf('Errors',str);    
+            return;
+        else
+            params_mcorr.fftRigid = c.mcorr.fftRigid;
+        end
     else
         beep
         cprintf('Errors','Invalid motion correction method.');    
         return
     end
 end
+params_mcorr.refChannel = refChannel;
+
+
+%% Files
+listfile = [data_locn 'Digital_Logbook/lists/' list];
+files = extractFilenamesFromTxtfile( listfile );
+
+% image to be registered
+file = files(array_id,:);
+
+% Send Ann slack message
+if slacknotify
+    if array_id == 1
+        slacktext = [list(6:end-4) ': registering 1 of ' num2str(size(files,1)) 'files'];
+        neuroSEE_slackNotify( slacktext );
+    end
+end
 
 
 %% Check if file has been processed. 
 
-dir_proc = [data_locn 'Data/' file(1:8) '/Processed/' file '/'];
-        
 check = 0;
-if exist(dir_proc,'dir')
-    dir_mcorr = [dir_proc 'mcorr_' mcorr_method '/'];
-    if all( [exist([dir_mcorr file '_2P_XYT_green_mcorr.tif'],'file'),...
-             exist([dir_mcorr file '_2P_XYT_red_mcorr.tif'],'file'),...
-             exist([dir_mcorr file '_mcorr_output.mat'],'file')] )
-        check = 1;
-    end
+if isempty(reffile)
+    filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ];
+        if ~exist( filedir, 'dir' ), mkdir( filedir ); end
+    fname_tif_gr = [filedir file '_2P_XYT_green_mcorr.tif'];
+    fname_tif_red = [filedir file '_2P_XYT_red_mcorr.tif'];
+    fname_mat = [filedir file '_mcorr_output.mat'];
+else
+    filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/' ];
+        if ~exist( filedir, 'dir' ), mkdir( filedir ); end
+    fname_tif_gr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
+    fname_tif_red = [filedir file '_2P_XYT_red_imreg_ref' reffile '.tif'];
+    fname_mat = [filedir file '_imreg_ref' reffile '_output.mat'];
 end
 
+if all( [exist(fname_tif_gr,'file'),...
+         exist(fname_tif_red,'file'),...
+         exist(fname_mat,'file')] )
+    check = 1;
+end
 
-%% Motion correction
-% Saved in file folder: motion corrected tif files
-%                       summary fig & png, 
-%                       mat with fields 
-%                           green.[ meanframe, meanregframe ]
-%                           red.[ meanframe, meanregframe ]
-%                           template
-%                           shifts
-%                           col_shift
-%                           params
+if force || ~check    
+    if ~isempty(reffile) && strcmpi(file,reffile)
+        fprintf('%s: Same as reference file. Skipping image registration\n', file);    
+        return
+    end
 
-if force || ~check(1)
     [imG,imR] = load_imagefile( data_locn, file );
-    params.methods.mcorr_method = mcorr_method;
-    if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
-        params.rigid.d1 = size(imG,1);
-        params.rigid.d2 = size(imG,2);
-        params.rigid.grid_size = [params.rigid.d1, params.rigid.d2, 1];
+    
+    %% Motion correction/Image registration 
+    neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force );
+    
+    if slacknotify
+        if array_id == size(files,1)
+            slacktext = [list(6:end-4) ': done registering ' num2str(size(files,1)) ' of ' num2str(size(files,1)) 'files'];
+            neuroSEE_slackNotify( slacktext );
+        end
     end
-    if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr'))
-        params.nonrigid.d1 = size(imG,1);
-        params.nonrigid.d2 = size(imG,2);
-    end
-    [~, ~, ~, ~] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force );
-else 
-    fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
-end
 
-%% Send Ann slack message 
-if array_id == size(files,1)
-    slacktext = [list(1:end-5) ': processing LAST file'];
-    neuroSEE_slackNotify( slacktext );
+else 
+    if isempty(reffile)
+        fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
+    else
+        fprintf('%s: Registered images found. Skipping image registration to %s\n', file, reffile);
+    end
 end
 
 t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
 cprintf(str)
-
 end

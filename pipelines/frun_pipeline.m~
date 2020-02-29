@@ -177,11 +177,20 @@ end
 % Load original image files if forced to do motion correction or if motion corrected files don't exist 
 
 if force(1) || ~check(1)
-    filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ];
-    fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
-    fname_tif_red_mcorr = [filedir file '_2P_XYT_red_mcorr.tif'];
-    if strcmpi(mcorr_method,'normcorre') && exist()
-    [ imG, imR ] = load_imagefile( data_locn, file, force(1) );
+    if strcmpi(mcorr_method,'normcorre') 
+        filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-r/' ];
+        fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
+        fname_tif_red_mcorr = [filedir file '_2P_XYT_red_mcorr.tif'];
+        % If mcorr_method is 'normcorre' and the rigid correction has been done,
+        % no need to load original image file
+        if exist(fname_tif_gr_mcorr,'file') && exist(fname_tif_red_mcorr,'file')
+            imG = []; imR = [];
+        else
+            [ imG, imR ] = load_imagefile( data_locn, file, force(1) );
+        end
+    else
+        [ imG, imR ] = load_imagefile( data_locn, file, force(1) );
+    end
 else
     imG = []; imR = [];
 end
@@ -199,25 +208,25 @@ end
 %                           params
 
 if any([ any(force(1:2)), ~check(2), ~check(1) ]) 
-    [imG, imR, ~, params] = neuroSEE_motionCorrect( imG, imR, data_locn, file, params, force(1) );
+    if ~strcmpi(segment_method,'CaImAn')
+        [imG, ~, params.mcorr, imR] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
+        el
+        [imG, ~, params.mcorr, imR] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
 else 
     fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
     imG = []; imR = [];
 end
 
 
-% %% (2) ROI segmentation
-% % Saved in file folder: correlation image with ROIs (fig, png) 
-% %                       summary plots of tsG, df_f (fig, png)
-% %                       mat with fields {tsG, df_f, masks, corr_image, params}
-% 
-% if strcmpi(segment_method,'CaImAn')
-%     clear imR; imR = [];
-% end
-% [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
-% clear imG imR
-% 
-% 
+%% (2) ROI segmentation
+% Saved in file folder: correlation image with ROIs (fig, png) 
+%                       summary plots of tsG, df_f (fig, png)
+%                       mat with fields {tsG, df_f, masks, corr_image, params}
+
+[tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
+clear imG imR
+
+
 % %% (3) Run FISSA to extract neuropil-corrected time-series
 % % Saved in file folder: mat file with fields {dtsG, ddf_f, masks}
 % %                       summary plots of tsG, ddf_f (fig & png)

@@ -19,7 +19,7 @@
 % force     : flag to force generation of comparison figures even though they
 %               already exist
 
-function frun_collate_imreg_results( list, reffile, mcorr_method, force )
+function frun_collate_imreg_results( list, reffile, force, mcorr_method )
 
 % e.g. m##_expname: 'm62_fam1nov_fam1fam1rev'
 %                   'm62_fam1fam1rev'
@@ -27,8 +27,8 @@ function frun_collate_imreg_results( list, reffile, mcorr_method, force )
 %                   'm82_open_s1-2'
 %                   'm82_open_s1'
 
-if nargin<4, force = false; end
-if nargin<3, mcorr_method = 'normcorre-nr'; end
+if nargin<4, mcorr_method = 'normcorre-nr'; end
+if nargin<3, force = false; end
 
 %% Load module folders and define data directory
 test = false;                   % flag to use one of smaller files in test folder)

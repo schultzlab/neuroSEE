@@ -122,11 +122,11 @@ end
 params_mcorr.refChannel = refChannel;
 
 
-%% Files
+%% Motion correction/Image registration 
 listfile = [data_locn 'Digital_Logbook/lists/' list];
 files = extractFilenamesFromTxtfile( listfile );
 
-% image to be registered
+% Image to be registered
 file = files(array_id,:);
 
 % Send Ann slack message
@@ -137,29 +137,8 @@ if slacknotify
     end
 end
 
-
-%% Check if file has been processed. 
-
-check = 0;
-if isempty(reffile)
-    filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ];
-        if ~exist( filedir, 'dir' ), mkdir( filedir ); end
-    fname_tif_gr = [filedir file '_2P_XYT_green_mcorr.tif'];
-    fname_tif_red = [filedir file '_2P_XYT_red_mcorr.tif'];
-    fname_mat = [filedir file '_mcorr_output.mat'];
-else
-    filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/' ];
-        if ~exist( filedir, 'dir' ), mkdir( filedir ); end
-    fname_tif_gr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
-    fname_tif_red = [filedir file '_2P_XYT_red_imreg_ref' reffile '.tif'];
-    fname_mat = [filedir file '_imreg_ref' reffile '_output.mat'];
-end
-
-if all( [exist(fname_tif_gr,'file'),...
-         exist(fname_tif_red,'file'),...
-         exist(fname_mat,'file')] )
-    check = 1;
-end
+% Check if file has been processed 
+check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile );
 
 if force || ~check    
     if ~isempty(reffile) && strcmpi(file,reffile)
@@ -169,7 +148,6 @@ if force || ~check
 
     [imG,imR] = load_imagefile( data_locn, file );
     
-    %% Motion correction/Image registration 
     neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force );
     
     if slacknotify

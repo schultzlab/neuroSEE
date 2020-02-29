@@ -16,7 +16,9 @@
 % The section labeled "USER-DEFINED INPUT" requires user input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Matlab version requirement: neuroSEE_neuropilDecon requires at least Matlab R2018
+% Matlab version requirement for running on hpc: 
+%   normcorre and CaImAn only work with Matlab R2017a. 
+%   FISSA requires at least Matlab R2018
 
 function frun_pipeline( file )
 
@@ -162,7 +164,7 @@ end
 % check(1:6) check for existing data in processing steps 1-6
 % check(7) checks for existing mat file pooling all processed data for file
 
-check = checkforExistingProcData(data_locn, file, params);
+check = checkforExistingProcData(data_locn, file, params.methods);
 
 % Some security measures
 force = logicalForce(force);    % Only allow combinations of force values that make sense
@@ -177,6 +179,14 @@ end
 % Load original image files if forced to do motion correction or if motion corrected files don't exist 
 
 if force(1) || ~check(1)
+    % Continue only if Matlab version is R2017
+    if strcmpi(comp,'hpc') && MatlabVer > 2017
+        beep
+        err = sprintf('%s: Lower Matlab version required; skipping processing.\n', [mouseid '_' expname]);
+        cprintf('Errors',err);
+        return
+    end
+
     if strcmpi(mcorr_method,'normcorre') 
         filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-r/' ];
         fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
@@ -225,8 +235,8 @@ end
 %                       summary plots of tsG, df_f (fig, png)
 %                       mat with fields {tsG, df_f, masks, corr_image, params}
 
-% [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
-% clear imG imR
+[tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, mean(imR,3), data_locn, file, params, force(2) );
+clear imG imR
 
 
 % %% (3) Run FISSA to extract neuropil-corrected time-series

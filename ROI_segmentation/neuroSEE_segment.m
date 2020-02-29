@@ -24,7 +24,7 @@
 
 function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment(imG, mean_imR, data_locn, file, params, force)
 
-    if nargin<6, force = 0;      end
+    if nargin<6, force = false; end
 
     mcorr_method = params.methods.mcorr_method;
     segment_method = params.methods.segment_method;

@@ -5,7 +5,7 @@
 % This can be used to check for processed data for individual files OR for
 % processed data for different experiments of a mouse.
 
-function check = checkforExistingProcData(data_locn, text, params, reffile)
+function check = checkforExistingProcData(data_locn, text, params_methods, reffile)
 
     %if nargin<4, see line 39
     if nargin<3 
@@ -13,9 +13,9 @@ function check = checkforExistingProcData(data_locn, text, params, reffile)
         segment_method = 'CaImAn';
         dofissa = true;
     else
-        mcorr_method = params.methods.mcorr_method;
-        segment_method = params.methods.segment_method;
-        dofissa = params.methods.dofissa;
+        mcorr_method = params_methods.mcorr_method;
+        segment_method = params_methods.segment_method;
+        dofissa = params_methods.dofissa;
     end
     
     if dofissa
@@ -31,7 +31,7 @@ function check = checkforExistingProcData(data_locn, text, params, reffile)
         file = text; tlist = false;
     end
     
-    % if an experiment
+    % if an experiment (i.e. list of files)
     if tlist
         [mouseid,expname] = find_mouseIDexpname(list);
         listfile = [data_locn 'Digital_Logbook/lists/' list];

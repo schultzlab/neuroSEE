@@ -38,7 +38,7 @@ tic
 
 test = false;                      % flag to use one of smaller files in test folder)
 default = true;                    % flag to use default motion correction parameters
-mcorr_method = 'normcorre-nr';     % [fftRigid, normcorre, normcorre-nr, normcorre-r]
+mcorr_method = 'normcorre';     % [fftRigid, normcorre, normcorre-nr, normcorre-r]
 
 [data_locn,comp,err] = load_neuroSEEmodules(test);
 if ~isempty(err)
@@ -140,7 +140,7 @@ end
 
 %% Check if file has been processed. 
 
-check = false;
+check = 0;
 if isempty(reffile)
     filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ];
         if ~exist( filedir, 'dir' ), mkdir( filedir ); end
@@ -158,7 +158,7 @@ end
 if all( [exist(fname_tif_gr,'file'),...
          exist(fname_tif_red,'file'),...
          exist(fname_mat,'file')] )
-    check = true;
+    check = 1;
 end
 
 if force || ~check    

@@ -1,12 +1,13 @@
 % Written by Ann Go
 %
 % This function generates place field maps if they don't yet exist and then
-% sorts them according to location of maximum Skagg's information. It then
+% sorts them according to location of maximum Skagg's information (or mutual 
+% information if this is the chosen metric). It then
 % saves the data into a mat file and generates summary plots.
 %
 %% INPUTS
 %   spikes      : ncell rows 
-%   trackData   : cell of tracking data with fields x, y, phi, speed, time
+%   downTrackdata   : cell of downsampled tracking data with fields x, y, phi, speed, time
 %   data_locn   : repository of GCaMP data
 %   file        : part of filename of video to be processed in the format
 %                   yyyymmdd_hh_MM_ss
@@ -16,10 +17,8 @@
 %   occMap      : occupancy map
 %   spikeMap    : spike map (Ncells rows x Nbins columns)
 %   infoMap     : information map 
-%   downData    : tracking data downsampled to imaging frequency, fields are
-%                   x, y, phi, speed, time
-%   activeData  : downsampled tracking data for when animal was moving, fields are
-%                   x, y, phi, speed, time, spikes, spikes_pc
+%   activeTrackdata  : downsampled tracking data for when animal was moving; fields are
+%                       x, y, phi, speed, time, spikes, spikes_pc
 
 % place field maps
 %   pfMap       : place field map obtained with histogram estimation (same size as spikeMap)
@@ -32,12 +31,12 @@
 %   params
 
 %% OUTPUTS for '1D' only 
-% sorted according to location of maximum mutual information
+% sorted according to location of maximum information
 %   sorted_pfMap          
 %   sorted_pfMap_sm  
 %   sorted_pfMap_asd    
 
-% normalised and sorted according to location of maximum mutual information
+% normalised and sorted according to location of maximum information
 %   sorted_normpfMap          
 %   sorted_normpMap_sm  
 %   sorted_normpfMap_asd    
@@ -49,8 +48,9 @@
 %   pcIdx   : row indices of spikes corresponding to place cells
 %   sortIdx : sorted row indices corresponding to sorted_pfMap
 
-function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force)
-    
+function [ occMap, hist, asd, activeTrackdata, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force, list, reffile)
+    if nargin<8, reffile = []; end
+    if nargin<7, list = []; end
     if nargin<6, force = 0; end
 
     mcorr_method = params.methods.mcorr_method;
@@ -61,6 +61,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
     else
         str_fissa = 'noFISSA';
     end
+    
     filedir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/',str_fissa,'/PFmaps/'];
     if ~exist(filedir,'dir'), mkdir(filedir); end
     fname_mat = [filedir file '_PFmap_output.mat'];
@@ -81,7 +82,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
         Nepochs = params.PFmap.Nepochs;
         if strcmpi(params.mode_dim,'1D')
             % Generate place field maps
-            [occMap, hist, asd, downData, activeData] = generatePFmap_1d(spikes, imtime, trackData, params);
+            [occMap, hist, asd, downData, activeData] = generatePFmap_1d(spikes, imtime, downTrackdata, params);
            
             % If 1D, sort place field maps 
             [ hist.sort_pfMap, hist.sortIdx ] = sortPFmap_1d( hist.pfMap, hist.infoMap, Nepochs );
@@ -107,7 +108,7 @@ function [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = n
             output.params = params.PFmap;
             save(fname_mat,'-struct','output');
         else % '2D'
-            [occMap, spkMap, spkIdx, hist, asd, downData, activeData] = generatePFmap_2d(spikes, imtime, trackData, params);
+            [occMap, spkMap, spkIdx, hist, asd, downData, activeData] = generatePFmap_2d(spikes, imtime, downTrackdata, params);
             
              % Make plots
             makeplot_2d(spkMap, activeData, hist, asd);

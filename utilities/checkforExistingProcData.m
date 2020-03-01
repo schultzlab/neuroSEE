@@ -95,9 +95,7 @@ function check = checkforExistingProcData(data_locn, text, params_methods, reffi
             end
 
             % 5) Check for tracking data
-            dir_track = [dir_proc 'behaviour/'];
-            matfiles = dir(fullfile(dir_track,['*.','mat']));
-            if numel(matfiles) > 0
+            if exist([dir_proc 'behaviour/' file '_downTrackdata.mat'],'file')
                 check(5) = 1;
             end
 

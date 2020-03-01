@@ -129,6 +129,8 @@ if ~default
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                               %                              Neurotar uses 8 mm/s
         params.PFmap.prctile_thr = 99;        % percentile threshold for filtering nonPCs       [default: 99]
+        params_PFmap.Nbins_1D = 30;           % no. of position bins in 103-cm linear track
+        params_PFmap.Nbins_2D = [16 16];      % position bins in 325-mm diameter open field arena
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -139,6 +141,8 @@ params.methods.dofissa = dofissa;
 % Default parameters
 if default
     params = load_defaultparams(params);
+    params_PFmap.Nbins_1D = 30;
+    params_PFmap.Nbins_2D = [16 16];
 end
 
 % Some auto-defined parameters
@@ -284,32 +288,40 @@ end
 % Saved in file folder: trajectory plot (fig & png)
 %                       mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
 
-fname_track = findMatchingTrackingFile( data_locn, file, force(5) );
-trackData = load_trackfile( data_locn,file, fname_track, force(5) );
-if any(trackData.r < 100)
-    params.mode_dim = '2D'; % open field
-    params.PFmap.Nbins = [16, 16]; % number of location bins in [x y]               
-else 
-    params.mode_dim = '1D'; % circular linear track
-    params.PFmap.Nbins = 30;      % number of location bins               
+trackfile = findMatchingTrackingFile( data_locn, file, force(5) );
+if force(5) || ~check(5)
+    Trackdata = load_trackfile(data_locn, file, trackfile, force(5));
+    downTrackdata = downsample_trackData( Trackdata, spikes, params.fr );
+    save([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat'],'downTrackdata');
+else
+    M = load([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat']);
+    downTrackdata = M.downTrackdata;
 end
 
 
-% %% (6) Generate place field maps
-% % Saved: fig & png of several figures showing occMap, spkMap, pfMap, remapping and spkMap_pertrial
-% %        mat file with fields {occMap, hist, asd, downData, activeData}
-% 
-% if manually_refine_spikes
-%     force(6) = true;
-% end
-% 
-% if strcmpi(params.mode_dim,'1D')
-%     [ occMap, hist, asd, downData, activeData, params ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
-% else
-%     [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
-% end
-% 
-% 
+%% (6) Generate place field maps
+% Saved: fig & png of several figures showing occMap, spkMap, pfMap, remapping and spkMap_pertrial
+%        mat file with fields {occMap, hist, asd, downData, activeData}
+
+if manually_refine_spikes
+    force(6) = true;
+end
+
+if any(downTrackdata.r < 100)
+    params.mode_dim = '2D'; % open field
+    params.PFmap.Nbins = params_PFmap.Nbins_2D; % number of location bins in [x y]               
+else 
+    params.mode_dim = '1D'; % circular linear track
+    params.PFmap.Nbins = params_PFmap.Nbins_1D;      % number of location bins               
+end
+
+if strcmpi(params.mode_dim,'1D')
+    [ occMap, hist, asd, downData, activeData, params ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+else
+    [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+end
+
+
 % %% Save output. These are all the variables needed for viewing data with GUI
 % 
 % if dofissa
@@ -320,7 +332,7 @@ end
 % fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
 % 
 % save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
-%                     'downData','activeData','occMap','hist','asd','params');
+%                     'downTrackdata','activeData','occMap','hist','asd','params');
 % if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
 % if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
 % if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end

@@ -136,6 +136,8 @@ if ~default
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                               %                              Neurotar uses 8 mm/s
         params.PFmap.prctile_thr = 99;        % percentile threshold for filtering nonPCs       [default: 99]
+        params_PFmap.Nbins_1D = 30;           % no. of position bins in 103-cm linear track
+        params_PFmap.Nbins_2D = [16 16];      % position bins in 325-mm diameter open field arena
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -146,6 +148,8 @@ params.methods.dofissa = dofissa;
 % Default parameters
 if default
     params = load_defaultparams(params);
+    params_PFmap.Nbins_1D = 30;
+    params_PFmap.Nbins_2D = [16 16];
 end
 
 % Mouseid, Experiment name, files
@@ -307,11 +311,9 @@ end
     end
 
     % ROI segmentation
-    cellrad = params.ROIsegment.cellrad;
-    maxcells = params.ROIsegment.maxcells;
     prevstr = sprintf( '%s: doing ROI segmentation...\n', [mouseid '_' expname] );
     cprintf('Text',prevstr);
-    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force(2), mean(imR,3), list, reffile );
+    [~, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force(2), mean(imR,3), list, reffile );
     str = sprintf( '%s: ROI segmentation done.\n', [mouseid '_' expname] );
     refreshdisp( str, prevstr );
 
@@ -328,94 +330,104 @@ if strcmpi(comp,'hpc') && MatlabVer < 2018
 end
     
 
-%% FISSA 
-if dofissa
-    for n = 1:Nfiles
-        file = files(n,:);
-        [tsG{n}, dtsG{n}, ddf_f{n}, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3), list, reffile );
-    end
-end
-    
-
-%% Spike extraction
+%% FISSA, Spike estimation, Tracking data 
 for n = 1:Nfiles
     file = files(n,:);
-    [ spikes{n}, params ] = neuroSEE_extractSpikes( [], ddf_f{n}, data_locn, file, params, force(4), list, reffile );
+    if dofissa
+        [~, dtsG{n}, ddf_f{n}, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3), list, reffile );
+        [ spikes{n}, params ] = neuroSEE_extractSpikes( [], ddf_f{n}, data_locn, file, params, force(4), list, reffile );
+    end
+
+    fprintf('%s: loading tracking data\n', [mouseid '_' expname '_' file]);
+    if force(5) || ~exist([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat'],'file')
+        trackfile = findMatchingTrackingFile(data_locn, file, force(5));
+        Trackdata = load_trackfile(data_locn, files(n,:), trackfile, force(5));
+        downTrackdata{n} = downsample_trackData( Trackdata, spikes, params.fr );
+        save([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat'],'downData');
+    else
+        M = load([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat']);
+        downTrackdata{n} = M.downTrackdata;
+    end
 end
-    
 
-%% Tracking data
-        fprintf('%s: loading tracking data\n', [mouseid '_' expname '_' file]);
-        if force(5) || ~exist([fissadir file '_' mouseid '_' expname '_ref' reffile '_downData.mat'],'file')
-            trackfile = findMatchingTrackingFile(data_locn, file, force(5));
-            c = load_trackfile(data_locn, files(n,:), trackfile, force(5));
-            downData = downsample_trackData( c, spikes, params.fr );
+if ~dofissa
+    [ spikes, params ] = neuroSEE_extractSpikes( df_f, [], data_locn, file, params, force(4), list, reffile );
+end
 
-            save([fissadir file '_' mouseid '_' expname '_ref' reffile '_downData.mat'],'downData');
-        else
-            M = load([fissadir file '_' mouseid '_' expname '_ref' reffile '_downData.mat']);
-            downData = M.downData;
-        end
-
-        % Superset arrays
-                    % initialise matrices
+%% Concatenate data
+% initialise matrices
+if dofissa
     SdtsG = []; Sddf_f = []; 
+    Sspikes = [];
+end
+SdownTrackdata.phi = [];
+SdownTrackdata.x = [];
+SdownTrackdata.y = [];
+SdownTrackdata.speed = [];
+SdownTrackdata.r = [];
+SdownTrackdata.time = [];
 
-Sspikes = [];
-    SdownData.phi = [];
-    SdownData.x = [];
-    SdownData.y = [];
-    SdownData.speed = [];
-    SdownData.r = [];
-    SdownData.time = [];
+for n = 1:Nfiles
+    if dofissa
+        SdtsG = [SdtsG dtsG{n}];
+        Sddf_f = [Sddf_f ddf_f{n}];
+        Sspikes = [Sspikes spikes{n}];
+    end
+    SdownTrackdata.phi = [SdownTrackdata.phi; downTrackdata{n}.phi];
+    SdownTrackdata.x = [SdownTrackdata.x; downTrackdata{n}.x];
+    SdownTrackdata.y = [SdownTrackdata.y; downTrackdata{n}.y];
+    SdownTrackdata.speed = [SdownTrackdata.speed; downTrackdata{n}.speed];
+    SdownTrackdata.r = [SdownTrackdata.r; downTrackdata{n}.r];
+    SdownTrackdata.time = [SdownTrackdata.time; downTrackdata{n}.time];
+end
 
-        Sspikes = [Sspikes spikes];
-                SdtsG = [SdtsG dtsG];
-        Sddf_f = [Sddf_f ddf_f];
-        SdownData.phi = [SdownData.phi; downData.phi];
-        SdownData.x = [SdownData.x; downData.x];
-        SdownData.y = [SdownData.y; downData.y];
-        SdownData.speed = [SdownData.speed; downData.speed];
-        SdownData.r = [SdownData.r; downData.r];
-        SdownData.time = [SdownData.time; downData.time];
-
-
-    %% Plot and save superset arrays
-    % raw timeseries & dF/F
+% Plot and save superset arrays
+% raw timeseries & dF/F
+if dofissa
     if ~exist([grp_sdir mouseid '_' expname '_ref' reffile '_fissa_result.fig'],'file') ||...
        ~exist([grp_sdir mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],'file') 
         fname_fig = [grp_sdir mouseid '_' expname '_ref' reffile];
         plotfissa(SdtsG, Sddf_f, fname_fig);
     end
     clear dtsG ddf_f
+end
 
-    % spikes
-    % NOTE: plotting spikes results in fatal segmentation fault (core dumped)
-    % if ~exist([sdir expname str_env '_ref' reffile '_spikes.fig'],'file')
-    %     fig = figure;
-    %     iosr.figures.multiwaveplot(1:size(Sspikes,2),1:size(Sspikes,1),Sspikes,'gain',5); yticks([]); xticks([]);
-    %     title('Spikes','Fontweight','normal','Fontsize',12);
-    %     savefig(fig,[sdir expname str_env '_ref' reffile '_spikes']);
-    %     saveas(fig,[sdir expname str_env '_ref' reffile '_spikes'],'png');
-    %     close(fig);
-    % end
+% spikes
+% NOTE: plotting spikes results in fatal segmentation fault (core dumped)
+% if ~exist([sdir expname str_env '_ref' reffile '_spikes.fig'],'file')
+%     if dofissa
+%         plotspikes(Sspikes, fname_fig);
+%     else
+%         plotspikes(spikes, fname_fig);
+%     end
+% end
+if dofissa
     clear spikes
+end
 
-    % Concatenated data
+% Concatenated data
+if dofissa
     dtsG = SdtsG;
     ddf_f = Sddf_f;
     spikes = Sspikes;
-    trackData = SdownData;
+end
+downTrackdata = SdownTrackdata;
 
-    fprintf('%s: saving fissa, spike, track data', [mouseid '_' expname]);
+if dofissa
+    fprintf('%s: saving fissa, spike, downsampled track data', [mouseid '_' expname]);
     grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_fissa_spike_track_data.mat'];
-    save(grp_sname,'dtsG','ddf_f','spikes','trackData');
+    save(grp_sname,'dtsG','ddf_f','spikes','downTrackdata');
+else
+    fprintf('%s: saving raw timeseries, spike, downsampled track data', [mouseid '_' expname]);
+    grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_raw_df_f_spike_track_data.mat'];
+    save(grp_sname,'tsG','df_f','spikes','downTrackdata');
+end
 
 
 %% PFmapping
 grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'];
 
-if any(trackData.r < 100)
+if any(downTrackdata.r < 100)
     params.mode_dim = '2D';         % open field
     params.PFmap.Nbins = [16, 16];  % number of location bins in [x y]               
 else 
@@ -428,7 +440,7 @@ if force(6) || ~check_list(3)
     fprintf('%s: generating PFmaps\n', [mouseid '_' expname]);
     if strcmpi(params.mode_dim,'1D')
         % Generate place field maps
-        [ hist, asd, activeData, PFdata ] = generatePFmap_1D( spikes, trackData, params, false );
+        [ hist, asd, activeData, PFdata ] = generatePFmap_1D( spikes, downTrackdata, params, false );
         
         % If 1D, sort place field maps 
         if isfield(hist,'pfMap_MI')
@@ -494,7 +506,7 @@ if force(6) || ~check_list(3)
         save([grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'-struct','output');
     
     else % '2D'
-        [occMap, spkMap, spkIdx, hist, asd, ~, activeData] = generatePFmap_2d(spikes, [], trackData, params, false);
+        [occMap, spkMap, spkIdx, hist, asd, ~, activeData] = generatePFmap_2d(spikes, [], downTrackdata, params, false);
 
          % Make plots
         plotPF_2d(spkMap, activeData, hist, asd);

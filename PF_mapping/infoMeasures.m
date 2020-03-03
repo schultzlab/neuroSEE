@@ -1,4 +1,4 @@
-function [MI,SIsec,SIspk] = infoMeasures(placemap, occMap, mask)
+function [ SIsec, SIspk, MI ] = infoMeasures( placemap, occMap, mask )
 
 if mask % if an env mask or occupational map is used
     mask = occMap>0;

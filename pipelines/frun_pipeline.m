@@ -112,11 +112,11 @@ if ~default
         end
     % ROI segmentation 
         params.ROIsegment.df_prctile = 5;     % percentile to be used for estimating baseline   [default: 5]
-        params.ROIsegment.df_medfilt1 = 13;   % degree of smoothing for df_f                    [default: 23]
+        params.ROIsegment.df_medfilt1 = 13;   % degree of smoothing for df_f                    [default: 13]
     % neuropil correction
     if dofissa
         params.fissa.ddf_prctile = 5;         % percentile to be used for estimating baseline   [default:5]
-        params.fissa.ddf_medfilt1 = 17;       % degree of smoothing for ddf_f                   [default: 23]
+        params.fissa.ddf_medfilt1 = 17;       % degree of smoothing for ddf_f                   [default: 17]
     end
     % spike extraction
         params.spkExtract.bl_prctile = 85;    % percentile to be used for estimating baseline   [default:85]

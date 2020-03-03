@@ -256,9 +256,6 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
             writeTifStack( imR,fname_tif_red_mcorr );
         if isempty(reffile)
             str = sprintf( '%s: Motion corrected tif images saved\n', file );
-        else
-            str = sprintf( '%s: Registered tif images saved\n', file );
-        end
         refreshdisp( str, prevstr );
     end
 end

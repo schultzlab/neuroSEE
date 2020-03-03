@@ -164,10 +164,9 @@ for id = 1:Ncells
     pfMap_sm(id,:) = smoothdata(pfMap(id,:),'gaussian',Nbins/histsmoothFac);
     normpfMap_sm(id,:) = pfMap_sm(id,:)./max(pfMap_sm(id,:));
     
-    [infoMap(id,1), infoMap(id,2), infoMap(id,3)] = infoMeasures(pfMap_sm(id,:),occMap,0);
-    centroid = calc_vecAve( pfMap );
+    [infoMap(id,1), infoMap(id,2), infoMap(id,3)] = infoMeasures(pfMap(id,:),occMap,0);
     [~,c,fs] = findpeaks(normpfMap_sm(id,:),'WidthReference','halfheight','SortStr','descend');
-    if ~isempty(c), (id) = c(1); else, centroid(id) = NaN; end
+    if ~isempty(c), centroid(id) = c(1); else, centroid(id) = NaN; end
     if ~isempty(fs), fieldsize(id) = fs(1)*103/Nbins; else, fieldsize(id) = NaN; end
     
     % ASD estimation
@@ -187,8 +186,8 @@ end
 % [hist.MI.pcIdx, hist.SIsec.pcIdx, hist.SIspk.pcIdx, hist.MI.nonpcIdx, hist.SIsec.nonpcIdx, hist.SIspk.nonpcIdx] ...
 [~, hist.SIsec.pcIdx, hist.SIspk.pcIdx, ~, hist.SIsec.nonpcIdx, hist.SIspk.nonpcIdx] ...
 = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap, Nbins, prctile_thr);
-% [asd.MI.pcIdx, asd.SIsec.pcIdx, asd.SIspk.pcIdx, asd.MI.nonpcIdx, asd.SIsec.nonpcIdx, asd.SIspk.nonpcIdx] ...
-[~, asd.SIsec.pcIdx, asd.SIspk.pcIdx, ~, asd.SIsec.nonpcIdx, asd.SIspk.nonpcIdx] ...
+% [asd.MI.pcIdx, asd.SIsec.pcIdx, asd.pcIdx_SIspk, asd.nonpcIdx_MI, asd.nonpcIdx_SIsec, asd.nonpcIdx_SIspk] ...
+[~, asd.pcIdx_SIsec, asd.pcIdx_SIspk, ~, asd.nonpcIdx_SIsec, asd.nonpcIdx_SIspk] ...
     = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap_asd, Nbins, prctile_thr);
 
 

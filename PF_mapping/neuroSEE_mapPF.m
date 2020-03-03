@@ -76,13 +76,13 @@ function [ occMap, hist, asd, activeTrackdata, params, spkMap, spkIdx ] = neuroS
 %         if exist(dir_timestamps,'dir')
 %             imtime = extractImtime(dir_timestamps);
 %         else
-            imtime = [];
+%            imtime = [];
 %         end
         
         Nepochs = params.PFmap.Nepochs;
         if strcmpi(params.mode_dim,'1D')
             % Generate place field maps
-            [occMap, hist, asd, downData, activeData] = generatePFmap_1d(spikes, imtime, downTrackdata, params);
+            [occMap, hist, asd, downData, activeData] = generatePFmap_1d( spikes, downTrackdata, params );
            
             % If 1D, sort place field maps 
             [ hist.sort_pfMap, hist.sortIdx ] = sortPFmap_1d( hist.pfMap, hist.infoMap, Nepochs );

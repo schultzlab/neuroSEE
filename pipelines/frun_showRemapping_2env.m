@@ -176,7 +176,7 @@ if ~exist(fname_remap,'file') || force
     params.ROIreg_mc = NoRMCorreSetParms(...
                 'd1',params.ROIreg.d1,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
                 'd2',params.ROIreg.d2,...        % length of image [default: 512] *value from actual image    
-                'grid_size',[64,64],...     % default: [64,64]
+                'grid_size',[128,128],...     % default: [64,64]
                 'overlap_pre',[64,64],...   % default: [64,64]
                 'overlap_post',[64,64],...  % default: [64,64]
                 'iter',1,...                % default: 1

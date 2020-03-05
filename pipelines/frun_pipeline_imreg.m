@@ -4,7 +4,7 @@
 % image files that have been/have to be REGISTERED (e.g. multiple files for
 % one environment).
 % Processing steps include:
-% (1) motion correction (and dezippering) for EACH file
+% (1) image registration for EACH file
 % The images are then concatenated.
 % For the consolidated GROUP image data, processing steps include
 % (2) roi segmentation 

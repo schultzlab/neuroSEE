@@ -144,10 +144,10 @@ Values = [
     {[]}
     {1}
     % patches
-    {[128,128,1]}         % size of non-overlapping regions (default: [d1,d2,d3])
-    {[32,32,16]}          % size of overlapping region (default: [32,32,16])
-    {[32,32,16]}          % minimum size of patch (default: [32,32,16])    
-    {[16,16,5]}           % minimum difference between patches (default: [16,16,5])
+    {[512,512,1]}         % size of non-overlapping regions (default: [d1,d2,d3])
+    {[64,64,16]}          % size of overlapping region (default: [32,32,16])
+    {[64,64,16]}           % minimum size of patch (default: [32,32,16])    
+    {[32,32,5]}           % minimum difference between patches (default: [16,16,5])
     {50}                  % upsampling factor for subpixel registration (default: 50)
     {[4,4,1]}             % degree of patches upsampling (default: [4,4,1])
     {[3,3,1]}             % maximum deviation of patch shift from rigid shift (default: [3,3,1])

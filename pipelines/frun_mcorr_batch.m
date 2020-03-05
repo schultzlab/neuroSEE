@@ -27,10 +27,17 @@
 %               or has ended. Default: false
 
 
-function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, refChannel, slacknotify )
+function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, imreg_method, refChannel, slacknotify )
 
-if nargin<7, slacknotify = false; end
-if nargin<6, refChannel = 'green'; end
+if nargin<8, slacknotify = false; end
+if nargin<7, refChannel = 'green'; end
+if nargin<6 || isempty(imreg_method)
+    if ~isempty(mcorr_method)
+        imreg_method = mcorr_method; 
+    else
+        imreg_method = 'normcorre';
+    end
+end
 if nargin<5, reffile = []; end
 if nargin<4, force = false; end
 if nargin<3, mcorr_method = 'normcorre'; end     
@@ -72,10 +79,7 @@ if ~default
         params_mcorr.normcorre_r = NoRMCorreSetParms(...
             'd1', 512,...
             'd2', 512,...
-            'max_shift',30,...          % default: 30
-            'bin_width',200,...         % default: 200
-            'us_fac',50,...             % default: 50
-            'init_batch',200);          % default: 200
+            'max_shift',30);          % default: 20
         params_mcorr.normcorre_r.print_msg = false;   % default: false
     end
     % NoRMCorre-nonrigid
@@ -83,17 +87,10 @@ if ~default
         params_mcorr.normcorre_nr = NoRMCorreSetParms(...
             'd1', 512,...
             'd2', 512,...
-            'grid_size',[64,64],...     % default: [64,64]
+            'grid_size',[128,128],...     % default: [128,128]
             'overlap_pre',[64,64],...   % default: [64,64]
             'overlap_post',[64,64],...  % default: [64,64]
-            'iter',1,...                % default: 1
-            'use_parallel',false,...    % default: false
-            'max_shift',20,...          % default: 20
-            'mot_uf',4,...              % default: 4
-            'bin_width',200,...         % default: 200
-            'max_dev',3,...             % default: 3
-            'us_fac',50,...             % default: 50
-            'init_batch',200);          % default: 200
+            'max_shift',20);          % default: 20
         params_mcorr.normcorre_nr.print_msg = false;    % default: false
     end
 end
@@ -140,7 +137,7 @@ if slacknotify
 end
 
 % Check if file has been processed 
-check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile );
+check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile, imreg_method );
 
 if force || ~check    
     if ~isempty(reffile) && strcmpi(file,reffile)
@@ -150,7 +147,7 @@ if force || ~check
 
     [imG,imR] = load_imagefile( data_locn, file );
     
-    neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force );
+    neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, imreg_method, force );
     
     if slacknotify
         if array_id == size(files,1)

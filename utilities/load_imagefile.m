@@ -16,16 +16,24 @@
 %   imG       : matrix of green channel image stack
 %   imR       : matrix of red channel image stack
 
-function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr_method, load_imR )
+function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr_method, load_imR, reffile, imreg_method )
+    if nargin < 8, imreg_method = mcorr_method; end
+    if nargin < 7, reffile = []; imreg_method = []; end
     if nargin < 6, load_imR = true; end
     if nargin < 5, mcorr_method  = 'normcorre-nr'; end
     if nargin < 4, suffix  = []; end
     if nargin < 3, forceRaw = false; end
 
+    if strcmpi(suffix, '_imreg') && isempty(reffile)
+        beep
+        cprintf('Errors','Reference file for registered image required!\n');
+        return
+    end
     str = sprintf( '%s: Loading %s images...\n', file, suffix );
     cprintf( str )
     
     % Define file names
+    % NON-MOTION-CORRECTED
     if isempty( suffix )
         % original tif files are in the 2P directory
         dir_2P = [ data_locn 'Data/' file(1:8) '/2P/' file '_2P/' ];
@@ -85,7 +93,8 @@ function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr
                 imG = []; imR = [];
             end
         end
-    else % if there's a suffix '_mcorr'
+    elseif strcmpi(suffix, '_mcorr')  
+        % MOTION-CORRECTED
         % motion corrected tif stacks are in the Processed directory
         if strcmpi(mcorr_method,'normcorre')
             dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_normcorre/' );
@@ -97,11 +106,33 @@ function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr
             dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_fftRigid/' );
         end
         fname_tif_gr = [ dir_processed file '_2P_XYT_green' suffix '.tif' ];
-        
+
         imG = read_file( fname_tif_gr );
-       
+
         if load_imR
             fname_tif_red = [ dir_processed file '_2P_XYT_red' suffix '.tif' ];
+            imR = read_file( fname_tif_red );
+        else
+            imR = [];
+        end
+        err = 0;
+    elseif strcmpi(suffix, '_imreg')
+        % REGISTERED TO A REFERENCE FILE
+        if strcmpi(imreg_method,'normcorre')
+            dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/imreg_normcorre_', reffile, '/' );
+        elseif strcmpi(imreg_method,'normcorre-r')
+            dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/imreg_normcorre-r_', reffile, '/' );
+        elseif strcmpi(imreg_method,'normcorre-nr')
+            dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/imreg_normcorre-nr_', reffile, '/' );
+        else
+            dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/imreg_fftRigid_', reffile, '/' );
+        end
+        fname_tif_gr = [ dir_processed file '_2P_XYT_green' suffix '_' reffile '.tif' ];
+
+        imG = read_file( fname_tif_gr );
+
+        if load_imR
+            fname_tif_red = [ dir_processed file '_2P_XYT_red' suffix '_' reffile '.tif' ];
             imR = read_file( fname_tif_red );
         else
             imR = [];
@@ -110,6 +141,6 @@ function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr
     end
 
     if ~err
-        newstr = sprintf('%s: %s Images loaded\n',file,suffix);
+        newstr = sprintf('%s: %s Images loaded\n', file, suffix);
         refreshdisp(  newstr,str );
     end

@@ -4,7 +4,12 @@
 % template has been done for a file. The check only returns true if the tif
 % images and the output data matrix exist.
 
-function check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile )
+function check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile, imreg_method )
+    if nargin<5 || isempty(imreg_method)
+        if ~isempty(reffile)
+            imreg_method = mcorr_method;
+        end
+    end
     if nargin<4, reffile = []; end
     if nargin<3, mcorr_method = 'normcorre-nr'; end
     
@@ -14,7 +19,11 @@ function check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile )
         fname_tif_red = [filedir file '_2P_XYT_red_mcorr.tif'];
         fname_mat = [filedir file '_mcorr_output.mat'];
     else
-        filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/' ];
+        if strcmpi(imreg_method, mcorr_method)
+            filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '/' ];
+        else
+            filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '_' mcorr_method '/' ];
+        end
         fname_tif_gr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
         fname_tif_red = [filedir file '_2P_XYT_red_imreg_ref' reffile '.tif'];
         fname_mat = [filedir file '_imreg_ref' reffile '_output.mat'];

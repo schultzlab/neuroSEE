@@ -37,11 +37,12 @@ function [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A
 if nargin < 8, fsave = true; end
 if nargin < 7, fsave = false; end
 if nargin < 9, fclose = true; end
+if isempty(fname_fig), fsave = false; end
 
 defoptions = CNMFSetParms;
 if ~exist('options','var'); options = defoptions; end
 
-if ~exist('template1','var') || ~exist('template2','var') || ~exist('options_mc','var');
+if ~exist('template1','var') || ~exist('template2','var') || ~exist('options_mc','var')
     warning('Some required inputs for aligning ROIs before registering are missing. Skipping alignment');
     align_flag = false;
 else
@@ -141,7 +142,7 @@ if options.plot_reg
     h(4) = plot(NaN,NaN,'k');
     legend(h,'Matched #1','Matched #2','Mismatched #1','Mismatched # 2'); hold off;
 
-    if nargin>6
+    if ~isempty(fname_fig)
         ind = strfind(fname_fig,'/');
         titletext = fname_fig(ind(end)+1:end);
     

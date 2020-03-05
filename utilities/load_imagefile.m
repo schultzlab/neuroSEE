@@ -21,7 +21,7 @@ function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr
         if ~isempty(mcorr_method)
             imreg_method = mcorr_method; 
         else
-            imreg_method = 'normcorre';
+            imreg_method = [];
         end
     end
     if nargin < 7, reffile = []; imreg_method = []; end

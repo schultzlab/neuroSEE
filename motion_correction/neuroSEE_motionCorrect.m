@@ -27,7 +27,8 @@
 
 function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, imreg_method, force )    
 
-    if nargin<9, force = false; end
+    if isempty(mcorr_method), mcorr_method = 'normcorre-nr'; end
+    if nargin<7, reffile = []; end
     if nargin<8 || isempty(imreg_method)
         if ~isempty(mcorr_method)
             imreg_method = mcorr_method; 
@@ -35,8 +36,8 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
             imreg_method = 'normcorre';
         end
     end
-    if nargin<7, reffile = []; end
-    if isempty(mcorr_method), mcorr_method = 'normcorre-nr'; end
+    if nargin<9, force = false; end
+    
     refChannel = params_mcorr.refChannel;
     
     if isempty(reffile)

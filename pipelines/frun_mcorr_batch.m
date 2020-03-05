@@ -27,10 +27,11 @@
 %               or has ended. Default: false
 
 
-function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, imreg_method, refChannel, slacknotify )
+function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, imreg_method, refChannel, maxshift_r, slacknotify )
 
-if nargin<8, slacknotify = false; end
-if nargin<7, refChannel = 'green'; end
+if nargin<3, mcorr_method = 'normcorre'; end
+if nargin<4, force = false; end
+if nargin<5, reffile = []; end
 if nargin<6 || isempty(imreg_method)
     if ~isempty(mcorr_method)
         imreg_method = mcorr_method; 
@@ -38,16 +39,15 @@ if nargin<6 || isempty(imreg_method)
         imreg_method = 'normcorre';
     end
 end
-if nargin<5, reffile = []; end
-if nargin<4, force = false; end
-if nargin<3, mcorr_method = 'normcorre'; end     
-
+if nargin<7, refChannel = 'green'; end
+if nargin<8, maxshift_r = 50; end
+if nargin<9, slacknotify = false; end
 tic
 
 %% Load module folders and define data directory
 
 test = false;                      % flag to use one of smaller files in test folder)
-default = true;                    % flag to use default motion correction parameters
+default = false;                    % flag to use default motion correction parameters
 
 [data_locn,comp,err] = load_neuroSEEmodules(test);
 if ~isempty(err)
@@ -79,7 +79,7 @@ if ~default
         params_mcorr.normcorre_r = NoRMCorreSetParms(...
             'd1', 512,...
             'd2', 512,...
-            'max_shift',30);          % default: 20
+            'max_shift',maxshift_r);          % default: 30
         params_mcorr.normcorre_r.print_msg = false;   % default: false
     end
     % NoRMCorre-nonrigid

@@ -145,7 +145,7 @@ if force || ~check
         return
     end
 
-    [imG,imR] = load_imagefile( data_locn, file, [] );
+    [imG,imR] = load_imagefile( data_locn, file, false, [] );
     
     neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, imreg_method, force );
     

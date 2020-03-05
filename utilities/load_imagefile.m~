@@ -17,7 +17,7 @@
 %   imR       : matrix of red channel image stack
 
 function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr_method, load_imR, reffile, imreg_method )
-    if nargin < 8 || isempty(imreg_method)
+    if nargin <8 || isempty(imreg_method)
         if ~isempty(mcorr_method)
             imreg_method = mcorr_method; 
         else

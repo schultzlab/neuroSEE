@@ -17,6 +17,11 @@
 %   imR       : matrix of red channel image stack
 
 function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr_method, load_imR, reffile, imreg_method )
+    if nargin < 3, forceRaw = false; end
+    if nargin < 4, suffix  = []; end
+    if nargin < 5, mcorr_method  = 'normcorre-nr'; end
+    if nargin < 6, load_imR = true; end
+    if nargin < 7, reffile = []; imreg_method = []; end
     if nargin < 8 || isempty(imreg_method)
         if ~isempty(mcorr_method)
             imreg_method = mcorr_method; 
@@ -24,11 +29,6 @@ function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr
             imreg_method = [];
         end
     end
-    if nargin < 7, reffile = []; imreg_method = []; end
-    if nargin < 6, load_imR = true; end
-    if nargin < 5, mcorr_method  = 'normcorre-nr'; end
-    if nargin < 4, suffix  = []; end
-    if nargin < 3, forceRaw = false; end
 
     if strcmpi(suffix, '_imreg') && isempty(reffile)
         beep

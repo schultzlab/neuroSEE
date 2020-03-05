@@ -257,7 +257,11 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
                 imshow(C2); 
                 title( 'Red: After registration' );
         end
-        fname_fig = [filedir file '_mcorr_summary'];
+        if isempty(reffile)
+            fname_fig = [filedir file '_mcorr_summary'];
+        else
+            fname_fig = [filedir file '_imreg_ref' reffile 'summary'];
+        end
             if ~exist( filedir, 'dir' ), mkdir( filedir ); end
             savefig( fh, fname_fig );
             saveas( fh, fname_fig, 'png' );

@@ -40,7 +40,7 @@ if nargin<6 || isempty(imreg_method)
     end
 end
 if nargin<7, refChannel = 'green'; end
-if nargin<8, maxshift_r = 50; end
+if nargin<8, maxshift_r = 30; end
 if nargin<9, slacknotify = false; end
 tic
 

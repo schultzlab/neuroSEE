@@ -1,4 +1,6 @@
-function varargout = downsample_trackData( trackData, spikes, fr )
+function varargout = downsample_trackData( trackData, spikes, fr, imtime )
+
+if nargin<4, imtime = []; end
 
 if iscell(trackData)
     r_all = [];
@@ -9,17 +11,19 @@ if iscell(trackData)
         r = trackData{jj}.r;
         phi = trackData{jj}.phi;
         speed = trackData{jj}.speed;
-        tracktime = trackData{jj}.time;
+        if isempty(imtime)
+            tracktime = trackData{jj}.time;
+        else
+            tracktime = imtime{jj};
+        end        
 
         % Pre-process tracking data
         t0 = tracktime(1);                  % initial time in tracking data
         Nt(jj) = size(spikes{jj},2);
         
         % Convert -180:180 to 0:360
-%         if min(phi)<0
-%            phi(phi<0) = phi(phi<0)+360;
-%         end
-        phi = phi + 180;
+        phi(phi<0) = phi(phi<0)+360;
+        % phi = phi + 180;
 
         % generate imaging timestamps using known image frame rate
         dt = 1/fr;

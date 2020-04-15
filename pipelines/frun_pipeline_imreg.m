@@ -132,7 +132,7 @@ if ~default
         params.spkExtract.lam_pr = 0.99;      % false positive probability for determing lambda penalty   [default: 0.99]
     % PF mapping
         params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video           [default: 1]
-        params.PFmap.histsmoothFac = 7;       % Gaussian smoothing window for histogram extraction        [default: 7]
+        params.PFmap.histsmoothWin = 3;       % smoothing window for histogram method           [default: 3]
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                               %                              Neurotar uses 8 mm/s
         params.PFmap.prctile_thr = 99;        % percentile threshold for filtering nonPCs       [default: 99]
@@ -180,7 +180,7 @@ MatlabVer = str2double(release(1:4));
 % check(3)                                       step  6
 % check(4) checks for existing mat file pooling all processed data for list
 
-check_list = checkforExistingProcData(data_locn, list, params, reffile);
+check_list = checkforExistingProcData(data_locn, list, params.methods, reffile);
 
 % Some security measures
 force = logicalForce(force);    % Only allow combinations of force values that make sense
@@ -210,13 +210,13 @@ end
 grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
             mcorr_method '_' segment_method '_' str_fissa '/'...
             mouseid '_' expname '_imreg_ref' reffile '/'];
-    if ~exist(grp_sdir,'dir'), mkdir(dir); end
+    if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); end
 
 
 %% Image registration
 % Load images and do registration if forced to do so or if ROI segmentation data doesn't exist 
 
-if any([ force(1:2), ~check_list(1) ])
+if any([ force(1), force(2), ~check_list(1) ])
     for n = 1:Nfiles
         file = files(n,:);
 
@@ -224,7 +224,7 @@ if any([ force(1:2), ~check_list(1) ])
             % Check if file has been registered to reffile.
             check_file = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile );
 
-            if any([ force(1:2), ~check_file, ~check_list(1) ])   
+            if any([ force(1), force(2), ~check_file, ~check_list(1) ])   
                 [fileG,fileR] = load_imagefile( data_locn, file );
 
                 % Send Ann slack message
@@ -428,105 +428,22 @@ end
 grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'];
 
 if any(downTrackdata.r < 100)
-    params.mode_dim = '2D';         % open field
-    params.PFmap.Nbins = [16, 16];  % number of location bins in [x y]               
+    params.mode_dim = '2D';                     % open field
+    params.PFmap.Nbins = params_PFmap.Nbins_2D; % number of location bins in [x y]               
 else 
-    params.mode_dim = '1D';         % circular linear track
-    params.PFmap.Nbins = 30;        % number of location bins       
+    params.mode_dim = '1D';                     % circular linear track
+    params.PFmap.Nbins = params_PFmap.Nbins_1D; % number of location bins               
 end
 
-Nepochs = params.PFmap.Nepochs;
 if force(6) || ~check_list(3)
     fprintf('%s: generating PFmaps\n', [mouseid '_' expname]);
-    if strcmpi(params.mode_dim,'1D')
-        % Generate place field maps
-        [ hist, asd, activeData, PFdata ] = generatePFmap_1D( spikes, downTrackdata, params, false );
-        
-        % If 1D, sort place field maps 
-        if isfield(hist,'pfMap_MI')
-            [ hist.sort_pfMap_MI, hist.sortIdx_MI ] = sortPFmap_1d( hist.pfMap_MI, hist.infoMap_MI );
-            for en = 1:Nepochs
-                hist.sortIdx_MI_roiNum(:,en) = hist.pcIdx_MI(hist.sortIdx_MI(:,en));
-                hist.sort_pfMap_MI_sm(:,:,en) = hist.pfMap_MI_sm(hist.sortIdx_MI(:,en),:,en);
-                hist.sort_normpfMap_MI(:,:,en) = hist.normpfMap_MI(hist.sortIdx_MI(:,en),:,en);
-                hist.sort_normpfMap_MI_sm(:,:,en) = hist.normpfMap_MI_sm(hist.sortIdx_MI(:,en),:,en);
-            end
-        end
-        if isfield(hist,'pfMap_SIsec')
-            [ hist.sort_pfMap_SIsec, hist.sortIdx_SIsec ] = sortPFmap_1d( hist.pfMap_SIsec, hist.infoMap_SIsec );
-            for en = 1:Nepochs
-                hist.sortIdx_SIsec_roiNum(:,en) = hist.pcIdx_SIsec(hist.sortIdx_SIsec(:,en));
-                hist.sort_pfMap_SIsec_sm(:,:,en) = hist.pfMap_SIsec_sm(hist.sortIdx_SIsec(:,en),:,en);
-                hist.sort_normpfMap_SIsec(:,:,en) = hist.normpfMap_SIsec(hist.sortIdx_SIsec(:,en),:,en);
-                hist.sort_normpfMap_SIsec_sm(:,:,en) = hist.normpfMap_SIsec_sm(hist.sortIdx_SIsec(:,en),:,en);
-            end
-        end
-        if isfield(hist,'pfMap_SIspk')
-            [ hist.sort_pfMap_SIspk, hist.sortIdx_SIspk ] = sortPFmap_1d( hist.pfMap_SIspk, hist.infoMap_SIspk );
-            for en = 1:Nepochs
-                hist.sortIdx_SIspk_roiNum(:,en) = hist.pcIdx_SIspk(hist.sortIdx_SIspk(:,en));
-                hist.sort_pfMap_SI_spk_sm(:,:,en) = hist.pfMap_SIspk_sm(hist.sortIdx_SIspk(:,en),:,en);
-                hist.sort_normpfMap_SIspk(:,:,en) = hist.normpfMap_SIspk(hist.sortIdx_SIspk(:,en),:,en);
-                hist.sort_normpfMap_SIspk_sm(:,:,en) = hist.normpfMap_SIspk_sm(hist.sortIdx_SIspk(:,en),:,en);
-            end
-        end
-        
-        if isfield(asd,'pfMap_MI')
-            [ asd.sort_pfMap_MI, asd.sortIdx_MI ] = sortPFmap_1d( asd.pfMap_MI, asd.infoMap_MI );
-            for en = 1:Nepochs
-                asd.sortIdx_MI_roiNum(:,en) = asd.pcIdx_MI(asd.sortIdx_MI(:,en));
-                asd.sort_normpfMap_MI(:,:,en) = asd.normpfMap_MI(asd.sortIdx_MI(:,en),:,en);
-            end
-        end
-        if isfield(asd,'pfMap_SIsec')
-            [ asd.sort_pfMap_SIsec, asd.sortIdx_SIsec ] = sortPFmap_1d( asd.pfMap_SIsec, asd.infoMap_SIsec );
-            for en = 1:Nepochs
-                asd.sortIdx_SIsec_roiNum(:,en) = asd.pcIdx_SIsec(asd.sortIdx_SIsec(:,en));
-                asd.sort_normpfMap_SIsec(:,:,en) = asd.normpfMap_SIsec(asd.sortIdx_SIsec(:,en),:,en);
-            end
-        end
-        if isfield(asd,'pfMap_SIspk')
-            [ asd.sort_pfMap_SIspk, asd.sortIdx_SIspk ] = sortPFmap_1d( asd.pfMap_SIspk, asd.infoMap_SIspk );
-            for en = 1:Nepochs
-                asd.sortIdx_SIspk_roiNum(:,en) = asd.pcIdx_SIspk(asd.sortIdx_SIspk(:,en));
-                asd.sort_normpfMap_SIspk(:,:,en) = asd.normpfMap_SIspk(asd.sortIdx_SIspk(:,en),:,en);
-            end
-        end
-
-        % Make plots
-        plotPF_1d(hist, asd, PFdata, true, [grp_sdir 'PFdata/'], ...
-                  [mouseid '_' expname '_ref' reffile], true)
-        
-        % Save output
-        output.PFdata = PFdata;
-        output.hist = hist;
-        output.asd = asd;
-        output.activeData = activeData;
-        output.params = params.PFmap;
-        save([grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'-struct','output');
-    
-    else % '2D'
-        [occMap, spkMap, spkIdx, hist, asd, ~, activeData] = generatePFmap_2d(spikes, [], downTrackdata, params, false);
-
-         % Make plots
-        plotPF_2d(spkMap, activeData, hist, asd);
-
-        % Save output
-        output.occMap = occMap;
-        output.spkMap = spkMap;
-        output.spkIdx = spkIdx;
-        output.hist = hist;
-        output.asd = asd;
-        output.activeData = activeData;
-        output.params = params.PFmap;
-        save([grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'-struct','output');
-    end
+    [ hist, asd, pfData, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force(6), list, reffile);
 else
     if ~check_list(4)
         fprintf('%s: loading PF mapping data\n', [mouseid '_' expname]);
         c = load(grp_sname);
         activeData = c.activeData;
-        PFdata = c.PFdata;
+        pfData = c.pfData;
         hist = c.hist;
         asd = c.asd;
     end
@@ -536,9 +453,9 @@ sname_allData = [ grp_sdir mouseid '_' expname '_ref' reffile '_allData.mat'];
 
 fprintf('%s: saving all data\n', [mouseid '_' expname]);
 save(sname_allData,'list','corr_image','masks','tsG','df_f','dtsG','ddf_f','spikes',...
-                    'trackData','activeData','PFdata','hist','asd','params');
-if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end
-if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
+                    'trackData','activeData','pfData','hist','asd','params');
+if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
+if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
 
 
 % Send Ann slack message if processing has finished

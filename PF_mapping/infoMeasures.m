@@ -1,4 +1,4 @@
-function [ SIsec, SIspk, MI ] = infoMeasures( placemap, occMap, mask )
+function [ SIbitspersec, SIbitsperspk ] = infoMeasures( placemap, occMap, mask )
 
 if mask % if an env mask or occupational map is used
     mask = occMap>0;
@@ -17,8 +17,8 @@ for bini=1:size(OccMapProb, 1)
         end
     end
 end
-SIsec = information;
-SIspk = SIsec/meanRate;
+SIbitspersec = information;
+SIbitsperspk = SIbitspersec/meanRate;
 
 % mutual info calculations
 % pR = 0; % p(r)
@@ -42,7 +42,6 @@ SIspk = SIsec/meanRate;
 %spkRateMap = discretize(placemap,4);
 %MI = mutInfo(spkRateMap, occMap);
 
-MI = SIsec;
 end
 
 

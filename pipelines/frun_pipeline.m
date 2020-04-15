@@ -40,7 +40,7 @@ force = [false;...              % (1) motion correction even if motion corrected
          false;...              % (5) tracking data extraction
          false];                % (6) place field mapping
 
-mcorr_method = 'normcorre';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
+mcorr_method = 'normcorre-nr';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
                                     %   normcorre-r (rigid),
@@ -125,7 +125,7 @@ if ~default
         params.spkExtract.lam_pr = 0.99;      % false positive probability for determing lambda penalty   [default: 0.99]
     % PF mapping
         params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video           [default: 1]
-        params.PFmap.histsmoothFac = 7;       % Gaussian smoothing window for histogram extraction        [default: 7]
+        params.PFmap.histsmoothWin = 3;       % smoothing window for histogram method           [default: 3]
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                               %                              Neurotar uses 8 mm/s
         params.PFmap.prctile_thr = 99;        % percentile threshold for filtering nonPCs       [default: 99]
@@ -308,45 +308,42 @@ if manually_refine_spikes
 end
 
 if any(downTrackdata.r < 100)
-    params.mode_dim = '2D'; % open field
+    params.mode_dim = '2D';                     % open field
     params.PFmap.Nbins = params_PFmap.Nbins_2D; % number of location bins in [x y]               
 else 
-    params.mode_dim = '1D'; % circular linear track
-    params.PFmap.Nbins = params_PFmap.Nbins_1D;      % number of location bins               
+    params.mode_dim = '1D';                     % circular linear track
+    params.PFmap.Nbins = params_PFmap.Nbins_1D; % number of location bins               
 end
 
 if strcmpi(params.mode_dim,'1D')
-    [ occMap, hist, asd, downData, activeData, params ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+    [ hist, asd, pfData, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force(6));
 else
     [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
 end
 
+%% Save output. These are all the variables needed for viewing data with GUI
 
-% %% Save output. These are all the variables needed for viewing data with GUI
-% 
-% if dofissa
-%     str_fissa = 'FISSA';
-% else
-%     str_fissa = 'noFISSA';
-% end
-% fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
-% 
-% save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
-%                     'downTrackdata','activeData','occMap','hist','asd','params');
-% if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
-% if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
-% if exist('spkMap','var'), save(fname_allData,'-append','spkMap'); end
-% if exist('spkIdx','var'), save(fname_allData,'-append','spkIdx'); end
-%  
-% t = toc;
-% str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
-% cprintf(str)
-% 
-% % Send Ann slack message if processing has finished
-% if slacknotify
-%     slacktext = [file ': FINISHED in' num2str(round(t/3600,2)) ' hrs. No errors!'];
-%     neuroSEE_slackNotify( slacktext );
-% end
+if dofissa
+    str_fissa = 'FISSA';
+else
+    str_fissa = 'noFISSA';
+end
+fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
+
+save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
+                    'downTrackdata','activeData','pfData','hist','asd','params');
+if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
+if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
+ 
+t = toc;
+str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+cprintf(str)
+
+% Send Ann slack message if processing has finished
+if slacknotify
+    slacktext = [file ': FINISHED in' num2str(round(t/3600,2)) ' hrs. No errors!'];
+    neuroSEE_slackNotify( slacktext );
+end
 
 end
 

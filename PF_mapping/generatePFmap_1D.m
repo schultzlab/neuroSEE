@@ -34,14 +34,12 @@
 %   activeData  : downsampled tracking data for when animal was moving, fields are
 %                 x, y, r, phi, speed, t, spikes, spikes_pc 
 
-function [ hist, asd, activeData, outData ] = generatePFmap_1D( spikes, downTrackdata, params, imtime )
+function [ hist, asd, activeData, pfData ] = generatePFmap_1d( spikes, downTrackdata, params )
     
-if nargin<4, imtime = []; end
-
 Nbins = params.PFmap.Nbins;
 Nepochs = params.PFmap.Nepochs;
 Vthr = params.PFmap.Vthr;
-histsmoothFac = params.PFmap.histsmoothFac;
+histsmoothWin = params.PFmap.histsmoothWin;
 prctile_thr = params.PFmap.prctile_thr;
 Ncells = size(spikes,1);
 
@@ -51,10 +49,7 @@ y = downTrackdata.y;
 phi = downTrackdata.phi;
 r = downTrackdata.r;
 speed = downTrackdata.speed;
-
-if isempty(imtime)
-    t = downTrackdata.time;
-end
+t = downTrackdata.time;
 dt = mean(diff(t));
 
 % Consider only samples when the mouse is active
@@ -65,6 +60,7 @@ activespk   = spikes(:,speed > Vthr);
 activet     = t(speed > Vthr);
 activespeed = speed(speed > Vthr);
 activer     = r(speed > Vthr);
+clear x y phi r speed t
 
 % Bin phi data
 [bin_phi,~] = discretize(activephi,Nbins);
@@ -110,6 +106,9 @@ for ii = 1:Ncells
     end
 end
 
+meanspkRaster = zeros(Ncells,Nbins);
+spkPeak = zeros(Ncells);
+spkMean = zeros(Ncells);
 for ii = 1:Ncells
     for tr = 1:numel(phi)
         phi_tr = phi{tr};
@@ -131,20 +130,21 @@ end
 % (i.e. Nepochs = 1)
 
 % Initialise matrices
-spkMap = zeros(Ncells, Nbins);           % spike map
-normspkMap = zeros(Ncells, Nbins);       % normalised spike map
-pfMap = zeros(Ncells, Nbins);            % place field map
-normpfMap = zeros(Ncells, Nbins);        % normalised place field map
-pfMap_sm = zeros(Ncells, Nbins);         % smoothened place field map
-normpfMap_sm = zeros(Ncells, Nbins);     % smoothened normalised place field map
-pfMap_asd = zeros(Ncells, Nbins);        % place field map for asd
-normpfMap_asd = zeros(Ncells, Nbins);    % normalised place field map for asd
-infoMap = zeros(Ncells, 3);              % info values
-infoMap_asd = zeros(Ncells,32);          % info values for asd
-centroid = zeros(Ncells,1);
-centroid_asd = zeros(Ncells,1);
-fieldsize = zeros(Ncells,1);
-fieldsize_asd = zeros(Ncells,1);
+spkMap = zeros(Ncells, Nbins);              % spike map
+normspkMap = zeros(Ncells, Nbins);          % normalised spike map
+
+hist.rMap = zeros(Ncells, Nbins);          % place field map
+hist.rMap_sm = zeros(Ncells, Nbins);       % smoothened place field map
+hist.normrMap_sm = zeros(Ncells, Nbins);   % smoothened normalised place field map
+hist.infoMap = zeros(Ncells,2);             % info values
+hist.maxLoc = zeros(Ncells,1);
+hist.fwhm = zeros(Ncells,1);
+
+asd.rMap = zeros(Ncells, Nbins);           % place field map for asd
+asd.rMap = zeros(Ncells, Nbins);       % normalised place field map for asd
+asd.infoMap = zeros(Ncells,2);              % info values
+asd.maxLoc = zeros(Ncells,1);
+asd.fwhm = zeros(Ncells,1);
 
 % Calculate PF maps
 occMap = histcounts(bin_phi,Nbins);
@@ -158,38 +158,29 @@ for id = 1:Ncells
     normspkMap(id,:) = spkMap(id,:)./max(spkMap(id,:));
 
     % histogram estimation
-    pfMap(id,:) = spkMap(id,:)./(occMap*dt);
-    normpfMap(id,:) = pfMap(id,:)./max(pfMap(id,:));
-    
-    pfMap_sm(id,:) = smoothdata(pfMap(id,:),'gaussian',Nbins/histsmoothFac);
-    normpfMap_sm(id,:) = pfMap_sm(id,:)./max(pfMap_sm(id,:));
-    
-    [infoMap(id,1), infoMap(id,2), infoMap(id,3)] = infoMeasures(pfMap_sm(id,:),occMap,0);
-    centroid = calc_vecAve( pfMap );
-    [~,c,fs] = findpeaks(normpfMap_sm(id,:),'WidthReference','halfheight','SortStr','descend');
-    if ~isempty(c), (id) = c(1); else, centroid(id) = NaN; end
-    if ~isempty(fs), fieldsize(id) = fs(1)*103/Nbins; else, fieldsize(id) = NaN; end
+    hist.rMap(id,:) = spkMap(id,:)./(occMap*dt);    
+    hist.rMap_sm(id,:) = circularSmooth(hist.rMap(id,:),histsmoothWin);
+    hist.normrMap_sm(id,:) = hist.rMap_sm(id,:)./max(hist.rMap_sm(id,:));
+    [hist.infoMap(id,1), hist.infoMap(id,2)] = infoMeasures(hist.rMap_sm(id,:),occMap,0);
     
     % ASD estimation
-    [pfMap_asd(id,:),~] = runASD_1d(bin_phi,z',Nbins);
-    normpfMap_asd(id,:) = pfMap_asd(id,:)./max(pfMap_asd(id,:));
-    [infoMap_asd(id,1), infoMap_asd(id,2), infoMap_asd(id,3)] =...
-        infoMeasures(pfMap_asd(id,:)',ones(Nbins,1),0);
-    [~,c,fs] = findpeaks(normpfMap_asd(id,:),'WidthReference','halfheight','SortStr','descend');
-    if ~isempty(c), centroid_asd(id) = c(1); else, centroid_asd(id) = NaN;  end
-    if ~isempty(fs), fieldsize_asd(id) = fs(1)*103/Nbins; else, fieldsize_asd(id) = NaN; end
+    [asd.rMap(id,:),~] = runASD_1d(bin_phi,z',Nbins);
+    asd.normrMap(id,:) = asd.rMap(id,:)./max(asd.rMap(id,:));
+    [asd.infoMap(id,1), asd.infoMap(id,2)] = infoMeasures(asd.rMap(id,:)',ones(Nbins,1),0);
 end
+[~, hist.maxLoc] = prefLoc( hist.rMap_sm );
+hist.fwhm = fieldSize( hist.rMap_sm );
+
+[~, asd.maxLoc] = prefLoc( asd.rMap );
+asd.fwhm = fieldSize( asd.rMap );
 
 
 %% PLACE CELLS
-% Identify place cells. The cells are sorted in descending order of info
-% content
-% [hist.MI.pcIdx, hist.SIsec.pcIdx, hist.SIspk.pcIdx, hist.MI.nonpcIdx, hist.SIsec.nonpcIdx, hist.SIspk.nonpcIdx] ...
-[~, hist.SIsec.pcIdx, hist.SIspk.pcIdx, ~, hist.SIsec.nonpcIdx, hist.SIspk.nonpcIdx] ...
-= identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap, Nbins, prctile_thr);
-% [asd.MI.pcIdx, asd.SIsec.pcIdx, asd.SIspk.pcIdx, asd.MI.nonpcIdx, asd.SIsec.nonpcIdx, asd.SIspk.nonpcIdx] ...
-[~, asd.SIsec.pcIdx, asd.SIspk.pcIdx, ~, asd.SIsec.nonpcIdx, asd.SIspk.nonpcIdx] ...
-    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, infoMap_asd, Nbins, prctile_thr);
+% Identify place cells. The cells are sorted in descending order of info content
+[hist.SIsec.pcIdx, hist.SIspk.pcIdx, hist.SIsec.nonpcIdx, hist.SIspk.nonpcIdx] ...
+    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, hist.infoMap, Nbins, prctile_thr);
+[asd.SIsec.pcIdx, asd.SIspk.pcIdx, asd.SIsec.nonpcIdx, asd.SIspk.nonpcIdx] ...
+    = identifyPCs( spkRaster, spkPeak, bin_phi, activespk, asd.infoMap, Nbins, prctile_thr);
 
 
 %% Finalise place field maps, recalculate if Nepochs > 1
@@ -198,17 +189,22 @@ if Nepochs > 1
     occMap = zeros(Nepochs, Nbins);                         
     spkMap = zeros(Ncells, Nbins, Nepochs);
     normspkMap = zeros(Ncells, Nbins, Nepochs);   
-    pfMap = zeros(Ncells, Nbins, Nepochs);               
-    pfMap_sm = zeros(Ncells, Nbins, Nepochs);            
-    normpfMap = zeros(Ncells, Nbins, Nepochs);        
-    normpfMap_sm = zeros(Ncells, Nbins, Nepochs);     
-    infoMap = zeros(Ncells, 3, Nepochs); 
-    infoMap_asd = zeros(Ncells, 3, Nepochs);
-    centroid = zeros(Ncells, Nepochs);
-    centroid_asd = zeros(Ncells, Nepochs);
-    fieldsize = zeros(Ncells, Nepochs);
-    fieldsize_asd = zeros(Ncells, Nepochs);
     bin_phi_e = zeros(Nepochs, Nbins);
+    
+    hist.rMap = zeros(Ncells, Nbins, Nepochs);               
+    hist.rMap_sm = zeros(Ncells, Nbins, Nepochs);            
+    hist.normrMap_sm = zeros(Ncells, Nbins, Nepochs);     
+    hist.infoMap = zeros(Ncells, 2, Nepochs); 
+    hist.maxLoc = zeros(Ncells, Nepochs);
+    hist.fwhm = zeros(Ncells, Nepochs);
+    
+    asd.rMap = zeros(Ncells, Nbins, Nepochs);               
+    asd.rMap_sm = zeros(Ncells, Nbins, Nepochs);            
+    asd.normrMap_sm = zeros(Ncells, Nbins, Nepochs);     
+    asd.infoMap = zeros(Ncells, 2, Nepochs); 
+    asd.maxLoc = zeros(Ncells, Nepochs);
+    asd.fwhm = zeros(Ncells, Nepochs);
+    
     
     % Calculate PF maps
     e_bound = round( linspace(1,size(activespk,2),Nepochs+1) );
@@ -228,159 +224,141 @@ if Nepochs > 1
             normspkMap(id,:,e) = spkMap(id,:,e)./max(spkMap(id,:,e));
             
             % histogram estimation
-            pfMap(id,:,e) = spkMap(id,:,e)./(occMap(e,:)*dt);
-            pfMap(isnan(pfMap)) = 0;
-            pfMap_sm(id,:,e) = smoothdata(pfMap(id,:,e),'gaussian',Nbins/histsmoothFac);
-
-            normpfMap(id,:,e) = pfMap(id,:,e)./max(pfMap(id,:,e));
-            normpfMap_sm(id,:,e) = pfMap_sm(id,:,e)./max(pfMap_sm(id,:,e));
-            
-            [infoMap(id,1,e), infoMap(id,2,e), infoMap(id,3,e)] = infoMeasures(pfMap(id,:,e),occMap(e,:),0);
-            [~,c,fs] = findpeaks(normpfMap(id,:,e),'WidthReference','halfheight','SortStr','descend');
-            if ~isempty(c), centroid(id,e) = c(1); else, centroid(id,e) = NaN; end
-            if ~isempty(fs), fieldsize(id,e) = fs(1); else, fieldsize(id,e) = NaN; end
+            hist.rMap(id,:,e) = spkMap(id,:,e)./(occMap(e,:)*dt);
+            hist.rMap(isnan(hist.rMap)) = 0;
+            hist.rMap_sm(id,:,e) = circularSmooth(hist.rMap(id,:,e),histsmoothWin);
+            hist.normrMap_sm(id,:,e) = hist.rMap_sm(id,:,e)./max(hist.rMap_sm(id,:,e));
+            [hist.infoMap(id,1,e), hist.infoMap(id,2,e)] = infoMeasures(hist.rMap(id,:,e),occMap(e,:),0);
+            [~, hist.maxLoc(id,e)] = prefLoc( hist.rMap_sm(id,:,e) );
+            hist.fwhm(id,e) = fieldSize( hist.rMap_sm(id,:,e) );
             
             % asd estimation
-            [pfMap_asd(id,:,e),~] = runASD_1d(bin_phi_e(:,e),(spike_e)',Nbins);
-            normpfMap_asd(id,:,e) = pfMap_asd(id,:,e)./max(pfMap_asd(id,:,e));
-            [infoMap_asd(id,1,e), infoMap_asd(id,2,e), infoMap_asd(id,3,e)] = ...
-                infoMeasures(squeeze(pfMap_asd(id,:,e))',ones(Nbins,1),0);
-            [~,c,fs] = findpeaks(normpfMap_asd(id,:,e),'WidthReference','halfheight','SortStr','descend');
-            if ~isempty(c), centroid_asd(id,e) = c(1); else, centroid_asd(id,e) = NaN; end
-            if ~isempty(fs), fieldsize_asd(id,e) = fs(1); else, fieldsize_asd(id,e) = NaN; end
+            [asd.rMap(id,:,e),~] = runASD_1d(bin_phi_e(:,e),(spike_e)',Nbins);
+            asd.normrMap(id,:,e) = asd.rMap(id,:,e)./max(asd.rMap(id,:,e));
+            [asd.infoMap(id,1,e), asd.infoMap(id,2,e)] = infoMeasures(squeeze(asd.rMap(id,:,e))',ones(Nbins,1),0);
+            [~, asd.maxLoc(id,e)] = prefLoc( asd.rMap(id,:,e) );
+            asd.fwhm(id,e) = fieldSize( asd.rMap(id,:,e) );
+
         end
     end
 end
 
 % histogram estimation
-if ~isempty(hist.pcIdx_MI)
-    hist.spkRaster_MI_pc = spkRaster(hist.pcIdx_MI);
-    hist.normspkRaster_MI_pc = normspkRaster(hist.pcIdx_MI);
-    hist.meanspkRaster_MI = meanspkRaster(hist.pcIdx_MI);
-    hist.spkMean_MI = spkMean(hist.pcIdx_MI);
-    hist.spkPeak_MI = spkPeak(hist.pcIdx_MI);
+if ~isempty(hist.SIsec.pcIdx)
+    hist.SIsec.spkRaster_pc = spkRaster(hist.SIsec.pcIdx);
+    hist.SIsec.normspkRaster_pc = normspkRaster(hist.SIsec.pcIdx);
+    hist.SIsec.meanspkRaster = meanspkRaster(hist.SIsec.pcIdx);
+    hist.SIsec.spkMean = spkMean(hist.SIsec.pcIdx);
+    hist.SIsec.spkPeak = spkPeak(hist.SIsec.pcIdx);
     
-    hist.spkMap_MI = spkMap(hist.pcIdx_MI,:,:);
-    hist.normspkMap_MI = normspkMap(hist.pcIdx_MI,:,:);
-    hist.pfMap_MI = pfMap(hist.pcIdx_MI,:,:);
-    hist.normpfMap_MI = normpfMap(hist.pcIdx_MI,:,:);
-    hist.pfMap_MI_sm = pfMap_sm(hist.pcIdx_MI,:,:);
-    hist.normpfMap_MI_sm = normpfMap_sm(hist.pcIdx_MI,:,:);
-    hist.infoMap_MI = infoMap(hist.pcIdx_MI,1,:);
-    hist.centroid_MI = centroid(hist.pcIdx_MI,:);
-    hist.fieldsize_MI = fieldsize(hist.pcIdx_MI,:);
+    hist.SIsec.spkMap = spkMap(hist.SIsec.pcIdx,:,:);
+    hist.SIsec.normspkMap = normspkMap(hist.SIsec.pcIdx,:,:);
+    hist.SIsec.pfMap = hist.rMap(hist.SIsec.pcIdx,:,:);
+    hist.SIsec.pfMap_sm = hist.rMap_sm(hist.SIsec.pcIdx,:,:);
+    hist.SIsec.normpfMap_sm = hist.normrMap_sm(hist.SIsec.pcIdx,:,:);
+    hist.SIsec.infoMap = hist.infoMap(hist.SIsec.pcIdx,1,:);
+    hist.SIsec.pfLoc = hist.maxLoc(hist.SIsec.pcIdx,:);
+    hist.SIsec.pfSize = hist.fwhm(hist.SIsec.pcIdx,:);
 end
-if ~isempty(hist.nonpcIdx_MI)
-    hist.spkRaster_MI_nonpc = spkRaster(hist.nonpcIdx_MI);
-    hist.normspkRaster_MI_nonpc = normspkRaster(hist.nonpcIdx_MI);
+if ~isempty(hist.SIsec.nonpcIdx)
+    hist.SIsec.spkRaster_nonpc = spkRaster(hist.SIsec.nonpcIdx);
+    hist.SIsec.normspkRaster_nonpc = normspkRaster(hist.SIsec.nonpcIdx);
 end
 
-if ~isempty(hist.pcIdx_SIsec)
-    hist.spkRaster_SIsec_pc = spkRaster(hist.pcIdx_SIsec);
-    hist.normspkRaster_SIsec_pc = normspkRaster(hist.pcIdx_SIsec);
-    hist.meanspkRaster_SIsec = meanspkRaster(hist.pcIdx_SIsec);
-    hist.spkMean_SIsec = spkMean(hist.pcIdx_SIsec);
-    hist.spkPeak_SIsec = spkPeak(hist.pcIdx_SIsec);
+if ~isempty(hist.SIspk.pcIdx)
+    hist.SIspk.spkRaster_pc = spkRaster(hist.SIspk.pcIdx);
+    hist.SIspk.normspkRaster_pc = normspkRaster(hist.SIspk.pcIdx);
+    hist.SIspk.meanspkRaster = meanspkRaster(hist.SIspk.pcIdx);
+    hist.SIspk.spkMean = spkMean(hist.SIspk.pcIdx);
+    hist.SIspk.spkPeak = spkPeak(hist.SIspk.pcIdx);
     
-    hist.spkMap_SIsec = spkMap(hist.pcIdx_SIsec,:,:);
-    hist.normspkMap_SIsec = normspkMap(hist.pcIdx_SIsec,:,:);
-    hist.pfMap_SIsec = pfMap(hist.pcIdx_SIsec,:,:);
-    hist.normpfMap_SIsec = normpfMap(hist.pcIdx_SIsec,:,:);
-    hist.pfMap_SIsec_sm = pfMap_sm(hist.pcIdx_SIsec,:,:);
-    hist.normpfMap_SIsec_sm = normpfMap_sm(hist.pcIdx_SIsec,:,:);
-    hist.infoMap_SIsec = infoMap(hist.pcIdx_SIsec,2,:);
-    hist.centroid_SIsec = centroid(hist.pcIdx_SIsec,:);
-    hist.fieldsize_SIsec = fieldsize(hist.pcIdx_SIsec,:);
+    hist.SIspk.spkMap = spkMap(hist.SIspk.pcIdx,:,:);
+    hist.SIspk.normspkMap = normspkMap(hist.SIspk.pcIdx,:,:);
+    hist.SIspk.pfMap = hist.rMap(hist.SIspk.pcIdx,:,:);
+    hist.SIspk.pfMap_sm = hist.rMap_sm(hist.SIspk.pcIdx,:,:);
+    hist.SIspk.normpfMap_sm = hist.normrMap_sm(hist.SIspk.pcIdx,:,:);
+    hist.SIspk.infoMap = hist.infoMap(hist.SIspk.pcIdx,2,:);
+    hist.SIspk.pfLoc = hist.maxLoc(hist.SIspk.pcIdx,:);
+    hist.SIspk.pfSize = hist.fwhm(hist.SIspk.pcIdx,:);
 end
-if ~isempty(hist.nonpcIdx_SIsec)
-    hist.spkRaster_SIsec_nonpc = spkRaster(hist.nonpcIdx_SIsec);
-    hist.normspkRaster_SIsec_nonpc = normspkRaster(hist.nonpcIdx_SIsec);
-end
-
-if ~isempty(hist.pcIdx_SIspk)
-    hist.spkRaster_SIspk_pc = spkRaster(hist.pcIdx_SIspk);
-    hist.normspkRaster_SIspk_pc = normspkRaster(hist.pcIdx_SIspk);
-    hist.meanspkRaster_SIspk = meanspkRaster(hist.pcIdx_SIspk);
-    hist.spkMean_SIspk = spkMean(hist.pcIdx_SIspk);
-    hist.spkPeak_SIspk = spkPeak(hist.pcIdx_SIspk);
-    
-    hist.spkMap_SIspk = spkMap(hist.pcIdx_SIspk,:,:);
-    hist.normspkMap_SIspk = normspkMap(hist.pcIdx_SIspk,:,:);
-    hist.pfMap_SIspk = pfMap(hist.pcIdx_SIspk,:,:);
-    hist.normpfMap_SIspk = normpfMap(hist.pcIdx_SIspk,:,:);
-    hist.pfMap_SIspk_sm = pfMap_sm(hist.pcIdx_SIspk,:,:);
-    hist.normpfMap_SIspk_sm = normpfMap_sm(hist.pcIdx_SIspk,:,:);
-    hist.infoMap_SIspk = infoMap(hist.pcIdx_SIspk,3,:);
-    hist.centroid_SIspk = centroid(hist.pcIdx_SIspk,:);
-    hist.fieldsize_SIspk = fieldsize(hist.pcIdx_SIspk,:);
-end
-if ~isempty(hist.nonpcIdx_SIspk)
-    hist.spkRaster_SIspk_nonpc = spkRaster(hist.nonpcIdx_SIspk);
-    hist.normspkRaster_SIspk_nonpc = normspkRaster(hist.nonpcIdx_SIspk);
+if ~isempty(hist.SIspk.nonpcIdx)
+    hist.SIspk.spkRaster_nonpc = spkRaster(hist.SIspk.nonpcIdx);
+    hist.SIspk.normspkRaster_nonpc = normspkRaster(hist.SIspk.nonpcIdx);
 end
 
 %asd
-if ~isempty(asd.pcIdx_MI)
-    asd.spkRaster_MI_pc = spkRaster(asd.pcIdx_MI);
-    asd.normspkRaster_MI_pc = normspkRaster(asd.pcIdx_MI);
-    asd.meanspkRaster_MI = meanspkRaster(asd.pcIdx_MI);
-    asd.spkMean_MI = spkMean(asd.pcIdx_MI);
-    asd.spkPeak_MI = spkPeak(asd.pcIdx_MI);
+if ~isempty(asd.SIsec.pcIdx)
+    asd.SIsec.spkRaster_pc = spkRaster(asd.SIsec.pcIdx);
+    asd.SIsec.normspkRaster_pc = normspkRaster(asd.SIsec.pcIdx);
+    asd.SIsec.meanspkRaster = meanspkRaster(asd.SIsec.pcIdx);
+    asd.SIsec.spkMean = spkMean(asd.SIsec.pcIdx);
+    asd.SIsec.spkPeak = spkPeak(asd.SIsec.pcIdx);
     
-    asd.spkMap_MI = spkMap(asd.pcIdx_MI,:,:);
-    asd.normspkMap_MI = normspkMap(asd.pcIdx_MI,:,:);
-    asd.pfMap_MI = pfMap_asd(asd.pcIdx_MI,:,:);
-    asd.normpfMap_MI = normpfMap_asd(asd.pcIdx_MI,:,:);
-    asd.infoMap_MI = infoMap_asd(asd.pcIdx_MI,1,:);
-    asd.centroid_MI = centroid_asd(asd.pcIdx_MI,:);
-    asd.fieldsize_MI = fieldsize_asd(asd.pcIdx_MI,:);
+    asd.SIsec.spkMap = spkMap(asd.SIsec.pcIdx,:,:);
+    asd.SIsec.normspkMap = normspkMap(asd.SIsec.pcIdx,:,:);
+    asd.SIsec.pfMap = asd.rMap(asd.SIsec.pcIdx,:,:);
+    asd.SIsec.normpfMap = asd.normrMap(asd.SIsec.pcIdx,:,:);
+    asd.SIsec.infoMap = asd.infoMap(asd.SIsec.pcIdx,1,:);
+    asd.SIsec.pfLoc = asd.maxLoc(asd.SIsec.pcIdx,:);
+    asd.SIsec.pfSize = asd.fwhm(asd.SIsec.pcIdx,:);
 end
-if ~isempty(asd.nonpcIdx_MI)
-    asd.spkRaster_MI_nonpc = spkRaster(asd.nonpcIdx_MI);
-    asd.normspkRaster_MI_nonpc = normspkRaster(asd.nonpcIdx_MI);
+if ~isempty(asd.SIsec.nonpcIdx)
+    asd.SIsec.spkRaster_nonpc = spkRaster(asd.SIsec.nonpcIdx);
+    asd.SIsec.normspkRaster_nonpc = normspkRaster(asd.SIsec.nonpcIdx);
 end
 
-if ~isempty(asd.pcIdx_SIsec)
-    asd.spkRaster_SIsec_pc = spkRaster(asd.pcIdx_SIsec);
-    asd.normspkRaster_SIsec_pc = normspkRaster(asd.pcIdx_SIsec);
-    asd.meanspkRaster_SIsec = meanspkRaster(asd.pcIdx_SIsec);
-    asd.spkMean_SIsec = spkMean(asd.pcIdx_SIsec);
-    asd.spkPeak_SIsec = spkPeak(asd.pcIdx_SIsec);
+if ~isempty(asd.SIspk.pcIdx)
+    asd.SIspk.spkRaster_pc = spkRaster(asd.SIspk.pcIdx);
+    asd.SIspk.normspkRaster_pc = normspkRaster(asd.SIspk.pcIdx);
+    asd.SIspk.meanspkRaster = meanspkRaster(asd.SIspk.pcIdx);
+    asd.SIspk.spkMean = spkMean(asd.SIspk.pcIdx);
+    asd.SIspk.spkPeak = spkPeak(asd.SIspk.pcIdx);
     
-    asd.spkMap_SIsec = spkMap(asd.pcIdx_SIsec,:,:);
-    asd.normspkMap_SIsec = normspkMap(asd.pcIdx_SIsec,:,:);
-    asd.pfMap_SIsec = pfMap_asd(asd.pcIdx_SIsec,:,:);
-    asd.normpfMap_SIsec = normpfMap_asd(asd.pcIdx_SIsec,:,:);
-    asd.infoMap_SIsec = infoMap_asd(asd.pcIdx_SIsec,2,:);
-    asd.centroid_SIsec = centroid_asd(asd.pcIdx_SIsec,:);
-    asd.fieldsize_SIsec = fieldsize_asd(asd.pcIdx_SIsec,:);
+    asd.SIspk.spkMap = spkMap(asd.SIspk.pcIdx,:,:);
+    asd.SIspk.normspkMap = normspkMap(asd.SIspk.pcIdx,:,:);
+    asd.SIspk.pfMap = asd.rMap(asd.SIspk.pcIdx,:,:);
+    asd.SIspk.normpfMap = asd.normrMap(asd.SIspk.pcIdx,:,:);
+    asd.SIspk.infoMap = asd.infoMap(asd.SIspk.pcIdx,2,:);
+    asd.SIspk.pfLoc = asd.maxLoc(asd.SIspk.pcIdx,:);
+    asd.SIspk.pfSize = asd.fwhm(asd.SIspk.pcIdx,:);
 end
-if ~isempty(asd.nonpcIdx_SIsec)
-    asd.spkRaster_SIsec_nonpc = spkRaster(asd.nonpcIdx_SIsec);
-    asd.normspkRaster_SIsec_nonpc = normspkRaster(asd.nonpcIdx_SIsec);
+if ~isempty(asd.SIspk.nonpcIdx)
+    asd.SIspk.spkRaster_nonpc = spkRaster(asd.SIspk.nonpcIdx);
+    asd.SIspk.normspkRaster_nonpc = normspkRaster(asd.SIspk.nonpcIdx);
 end
 
-if ~isempty(asd.pcIdx_SIspk)
-    asd.spkRaster_SIspk_pc = spkRaster(asd.pcIdx_SIspk);
-    asd.normspkRaster_SIspk_pc = normspkRaster(asd.pcIdx_SIspk);
-    asd.meanspkRaster_SIspk = meanspkRaster(asd.pcIdx_SIspk);
-    asd.spkMean_SIspk = spkMean(asd.pcIdx_SIspk);
-    asd.spkPeak_SIspk = spkPeak(asd.pcIdx_SIspk);
-    
-    asd.spkMap_SIspk = spkMap(asd.pcIdx_SIspk,:,:);
-    asd.normspkMap_SIspk = normspkMap(asd.pcIdx_SIspk,:,:);
-    asd.pfMap_SIspk = pfMap_asd(asd.pcIdx_SIspk,:,:);
-    asd.normpfMap_SIspk = normpfMap_asd(asd.pcIdx_SIspk,:,:);
-    asd.infoMap_SIspk = infoMap_asd(asd.pcIdx_SIspk,3,:);
-    asd.centroid_SIspk = centroid_asd(asd.pcIdx_SIspk,:);
-    asd.fieldsize_SIspk = fieldsize_asd(asd.pcIdx_SIspk,:);
-end
-if ~isempty(asd.nonpcIdx_SIspk)
-    asd.spkRaster_SIspk_nonpc = spkRaster(asd.nonpcIdx_SIspk);
-    asd.normspkRaster_SIspk_nonpc = normspkRaster(asd.nonpcIdx_SIspk);
+
+%% Sort place field maps
+for en = 1:Nepochs
+    if ~isempty(hist.SIsec.pcIdx)
+        [ ~, hist.SIsec.sortIdx(:,en) ] = sort( hist.SIsec.pfLoc(:,en) );
+        hist.SIsec.sort_pfMap(:,:,en) = hist.SIsec.pfMap(hist.SIsec.sortIdx(:,en),:,en);
+        hist.SIsec.sort_pfMap_sm(:,:,en) = hist.SIsec.pfMap_sm(hist.SIsec.sortIdx(:,en),:,en);
+        hist.SIsec.sort_normpfMap_sm(:,:,en) = hist.SIsec.normpfMap_sm(hist.SIsec.sortIdx(:,en),:,en);
+    end
+
+    if ~isempty(hist.SIspk.pcIdx)
+        [ ~, hist.SIspk.sortIdx(:,en) ] = sort( hist.SIspk.pfLoc(:,en) );
+        hist.SIspk.sort_pfMap(:,:,en) = hist.SIspk.pfMap(hist.SIspk.sortIdx(:,en),:,en);
+        hist.SIspk.sort_pfMap_sm(:,:,en) = hist.SIspk.pfMap_sm(hist.SIspk.sortIdx(:,en),:,en);
+        hist.SIspk.sort_normpfMap_sm(:,:,en) = hist.SIspk.normpfMap_sm(hist.SIspk.sortIdx(:,en),:,en);
+    end
+
+    if ~isempty(asd.SIsec.pcIdx)
+        [ ~, asd.SIsec.sortIdx(:,en) ] = sort( asd.SIsec.pfLoc(:,en) );
+        asd.SIsec.sort_pfMap(:,:,en) = asd.SIsec.pfMap(asd.SIsec.sortIdx(:,en),:,en);
+        asd.SIsec.sort_normpfMap(:,:,en) = asd.SIsec.normpfMap(asd.SIsec.sortIdx(:,en),:,en);
+    end
+
+    if ~isempty(asd.SIspk.pcIdx)
+        [ ~, asd.SIspk.sortIdx(:,en) ] = sort( asd.SIspk.pfLoc(:,en) );
+        asd.SIspk.sort_pfMap(:,:,en) = asd.SIspk.pfMap(asd.SIspk.sortIdx(:,en),:,en);
+        asd.SIspk.sort_normpfMap(:,:,en) = asd.SIspk.normpfMap(asd.SIspk.sortIdx(:,en),:,en);
+    end
 end
 
-% Outputs
+
+%% Outputs
 activeData.x = activex;
 activeData.y = activey;
 activeData.r = activer;
@@ -389,17 +367,17 @@ activeData.speed = activespeed;
 activeData.t = activet;
 activeData.spikes = activespk;
 
-outData.occMap = occMap;
-outData.spkRaster = spkRaster;
-outData.normspkRaster = normspkRaster;
-outData.ytick_files = ytick_files;
-outData.meanspkRaster = meanspkRaster;
-outData.spkMean = spkMean;
-outData.spkPeak = spkPeak;
+pfData.occMap = occMap;
+pfData.spkRaster = spkRaster;
+pfData.normspkRaster = normspkRaster;
+pfData.ytick_files = ytick_files;
+pfData.meanspkRaster = meanspkRaster;
+pfData.spkMean = spkMean;
+pfData.spkPeak = spkPeak;
 if exist('bin_phi_e','var')
-    outData.bin_phi = bin_phi_e;
+    pfData.bin_phi = bin_phi_e;
 else
-    outData.bin_phi = bin_phi;
+    pfData.bin_phi = bin_phi;
 end
 
 end

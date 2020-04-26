@@ -48,7 +48,7 @@
 %   pcIdx   : row indices of spikes corresponding to place cells
 %   sortIdx : sorted row indices corresponding to sorted_pfMap
 
-function [ hist, asd, pfData, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force, list, reffile)
+function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force, list, reffile)
     if nargin<8, reffile = []; end
     if nargin<7, list = []; end
     if nargin<6, force = 0; end
@@ -63,20 +63,31 @@ function [ hist, asd, pfData, activeData, params ] = neuroSEE_mapPF( spikes, dow
     end
     
     if isempty(list)
-        sdir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/',str_fissa,'/PFmaps/'];
+        fig_sdir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/',str_fissa,'/PFdata/'];
         fname_pref = file;
-        fname_mat = [sdir fname_pref '_PFmap_output.mat'];
+        fname_mat = [fig_sdir fname_pref '_PFmap_output.mat'];
     else
         [ mouseid, expname ] = find_mouseIDexpname(list);
-        filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' mcorr_method '_' segment_method '_'...
-                    str_fissa '/' mouseid '_' expname '_imreg_ref' reffile '/'];
+        groupreg_method = params.methods.groupreg_method;
+        imreg_method = params.methods.imreg_method;
+        if strcmpi(imreg_method, mcorr_method)
+            filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' imreg_method '_' segment_method '_'...
+                        str_fissa '/' mouseid '_' expname '_imreg_ref' reffile '/'];
+        else
+            filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' imreg_method '_' segment_method '_'...
+                        str_fissa '/' mouseid '_' expname '_imreg_ref' reffile '_' mcorr_method '/'];
+        end
         fname_pref = [mouseid '_' expname '_ref' reffile];
         fname_mat = [filedir fname_pref '_PFmap_output.mat'];
-        sdir = [filedir '/PFdata/'];
+        fig_sdir = [filedir '/PFdata/'];
     end
     
     if force || ~exist(fname_mat,'file')
-        str = sprintf( '%s: Generating place field maps\n', file );
+        if isempty(list)
+            str = sprintf( '%s: Generating place field maps\n', file );
+        else
+            str = sprintf( '%s: Generating place field maps\n', [mouseid '_' expname] );
+        end
         cprintf(str)
 
         % If imaging timestamps exist, use them. If not, generate timestamps from
@@ -91,15 +102,16 @@ function [ hist, asd, pfData, activeData, params ] = neuroSEE_mapPF( spikes, dow
         Nepochs = params.PFmap.Nepochs;
         if strcmpi(params.mode_dim,'1D')
             % Generate place field maps
-            [hist, asd, activeData, pfData] = generatePFmap_1d( spikes, downTrackdata, params );
+            [hist, asd, activeData, PFdata] = generatePFmap_1d( spikes, downTrackdata, params );
            
             % Make plots
-            plotPF_1d(hist, asd, PFdata, true, true, sdir, fname_pref)
+            if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); end
+            plotPF_1d(hist, asd, PFdata, true, true, fig_sdir, fname_pref)
         
             % Save output
             output.hist = hist;
             output.asd = asd;
-            output.pfData = pfData;
+            output.pfData = PFdata;
             output.activeData = activeData;
             output.params = params.PFmap;
             save(fname_mat,'-struct','output');
@@ -120,70 +132,28 @@ function [ hist, asd, pfData, activeData, params ] = neuroSEE_mapPF( spikes, dow
             output.params = params.PFmap;
             save(fname_mat,'-struct','output');
         end
-              
-        currstr = sprintf( '%s: Place field maps generated\n', file );
+        
+        if isempty(list)
+            currstr = sprintf( '%s: Place field maps generated\n', file );
+        else
+            currstr = sprintf( '%s: Place field maps generated\n', [mouseid '_' expname] );
+        end
         refreshdisp(currstr,str)
     else
         m = load(fname_mat);
         hist = m.hist;
         asd = m.asd;
-        pfData = m.pfData;
+        PFdata = m.pfData;
         activeData = m.activeData;
         params.PFmap = m.params;
         Nepochs = params.PFmap.Nepochs;
         
-        str = sprintf( '%s: Place field map data loaded\n', file );
-        cprintf(str)
-    end
-    
-
-    function makeplot_2d(spkMap, activeData, hist, asd)
-        Nspk = size(spkMap,3);
-        nPlot = 4;
-        for e = 1:Nepochs
-            for ii=0:(Nspk/nPlot)-1 
-                fh = figure; 
-                map = viridisMap; colormap(map);
-                ha = tight_subplot(nPlot,4,[.01 .005],[.01 .07],[.01 .01]);
-                for jj=0:3
-                    if (ii*nPlot+jj) <= Nspk
-                        axes(ha(jj*nPlot+1));
-                        z = activeData.spikes(spkIdx(ii*nPlot+jj+1),:);
-                        hold on; axis off;
-                        plot(activeData.x,-activeData.y); plot(activeData.x(z>0),-activeData.y(z>0),'r.','markersize',10);
-                        title(['Cell ',num2str(ii*nPlot+jj+1)],'fontsize',15);
-                        axes(ha(jj*nPlot+2));
-                        imagesc(squeeze(hist.pfMap(:,:,ii*nPlot+jj+1,e))');
-                        axis off; colorbar; % caxis([0 0.06]);
-                        if Nepochs >1 
-                            title(['Epoch ',num2str(e)],'fontsize',15);
-                        end
-                        axes(ha(jj*nPlot+3)); 
-                        imagesc(squeeze(hist.pfMap_sm(:,:,ii*nPlot+jj+1,e))');
-                        axis off; colorbar; % caxis([0 0.005]);
-                        axes(ha(jj*nPlot+4));
-                        imagesc(squeeze(asd.pfMap(:,:,ii*nPlot+jj+1,e))');
-                        axis off; colorbar; % caxis([0 0.003]);
-                    end
-                end
-                if Nspk/nPlot <= 1
-                    if Nepochs == 1
-                        fname_fig = [filedir file '_PFmaps'];
-                    else
-                        fname_fig = [filedir file '_PFmaps_' num2str(e) 'of' num2str(Nepochs) 'ep' ];
-                    end
-                else
-                    if Nepochs == 1
-                        fname_fig = [filedir file '_PFmaps_' num2str(ii+1)];
-                    else
-                        fname_fig = [filedir file '_PFmaps_' num2str(ii+1) '_' num2str(e) 'of' num2str(Nepochs) 'ep' ];
-                    end
-                end
-                savefig( fh, fname_fig );
-                saveas( fh, fname_fig, 'png' );
-                close( fh );
-            end 
+        if isempty(list)
+            str = sprintf( '%s: Place field map data loaded\n', file );
+        else
+            str = sprintf( '%s: Place field map data loaded\n', [mouseid '_' expname] );
         end
+        cprintf(str)
     end
 end % function
 

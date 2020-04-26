@@ -34,7 +34,7 @@
 %   activeData  : downsampled tracking data for when animal was moving, fields are
 %                 x, y, r, phi, speed, t, spikes, spikes_pc 
 
-function [ hist, asd, activeData, pfData ] = generatePFmap_1d( spikes, downTrackdata, params )
+function [ hist, asd, activeData, PFdata ] = generatePFmap_1d( spikes, downTrackdata, params )
     
 Nbins = params.PFmap.Nbins;
 Nepochs = params.PFmap.Nepochs;
@@ -50,7 +50,12 @@ phi = downTrackdata.phi;
 r = downTrackdata.r;
 speed = downTrackdata.speed;
 t = downTrackdata.time;
-dt = mean(diff(t));
+ind = find(abs(diff(t))>200);
+    if numel(ind)>1
+        dt = mean(diff(t(1:ind(1))));
+    else
+        dt = mean(diff(t));
+    end
 
 % Consider only samples when the mouse is active
 activex     = x(speed > Vthr);
@@ -68,7 +73,7 @@ clear x y phi r speed t
 
 %% ALL CELLS
 % Calculate spike maps per trial
-dthr = 10;
+dthr = 20;
 for ii = 1:Ncells
     % find the delineations for the video: find t = 0
     idx_file = find(diff(activet) < 0);
@@ -367,17 +372,17 @@ activeData.speed = activespeed;
 activeData.t = activet;
 activeData.spikes = activespk;
 
-pfData.occMap = occMap;
-pfData.spkRaster = spkRaster;
-pfData.normspkRaster = normspkRaster;
-pfData.ytick_files = ytick_files;
-pfData.meanspkRaster = meanspkRaster;
-pfData.spkMean = spkMean;
-pfData.spkPeak = spkPeak;
+PFdata.occMap = occMap;
+PFdata.spkRaster = spkRaster;
+PFdata.normspkRaster = normspkRaster;
+PFdata.ytick_files = ytick_files;
+PFdata.meanspkRaster = meanspkRaster;
+PFdata.spkMean = spkMean;
+PFdata.spkPeak = spkPeak;
 if exist('bin_phi_e','var')
-    pfData.bin_phi = bin_phi_e;
+    PFdata.bin_phi = bin_phi_e;
 else
-    pfData.bin_phi = bin_phi;
+    PFdata.bin_phi = bin_phi;
 end
 
 end

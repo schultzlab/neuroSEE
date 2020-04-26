@@ -23,12 +23,20 @@ if isempty(list)
     fname_fig1 = [fissadir file '_fissa_result.fig'];
     fname_fig2 = [fissadir file '_fissa_df_f.fig'];
 else
+    [ mouseid, expname ] = find_mouseIDexpname(list);
     if strcmpi(file, reffile)
         tiffile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' file '_2P_XYT_green_mcorr.tif'];
-        fissadir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/FISSA/'];
+        fissadir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ...
+                    segment_method '_' mouseid '_' expname '/FISSA/'];
     else
-        tiffile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/' file '_2P_XYT_green_imreg_ref' reffile '.tif'];
-        fissadir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '_ref' reffile '/' segment_method '_' mouseid '_' expname '/FISSA/'];
+        imreg_method = params.methods.imreg_method;
+        if strcmpi(imreg_method, mcorr_method)
+            tifdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '/'];
+        else
+            tifdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '_' mcorr_method '/'];
+        end
+        tiffile = [tifdir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
+        fissadir = [tifdir segment_method '_' mouseid '_' expname '/FISSA/'];
     end
     fname_mat = [fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
     fname_mat_temp = [fissadir 'FISSAout/matlab.mat'];
@@ -38,7 +46,11 @@ end
 
 prevstr = [];
 if force || ~exist(fname_mat,'file')
-    str = sprintf('%s: Doing FISSA correction...\n',file);
+    if isempty(list)
+        str = sprintf('%s: Doing FISSA correction...\n',file);
+    else
+        str = sprintf('%s: Doing FISSA correction...\n',[mouseid '_' expname '_' file]);
+    end
     refreshdisp(str, prevstr);
     prevstr = str;
     
@@ -80,7 +92,11 @@ if force || ~exist(fname_mat,'file')
     output.params = params.fissa;
     if ~exist( fissadir, 'dir' ), mkdir( fissadir ); end
     save(fname_mat,'-struct','output');
-    str = sprintf('%s: FISSA correction done\n',file);
+    if isempty(list)
+        str = sprintf('%s: FISSA correction done\n',file);
+    else
+        str = sprintf('%s: FISSA correction done\n',[mouseid '_' expname  '_' file]);
+    end
     refreshdisp(str, prevstr);
     
     % plot 
@@ -88,7 +104,7 @@ if force || ~exist(fname_mat,'file')
 else
     % If it exists, load it 
     fissa_output = load(fname_mat);
-    tsG = fissa_output.tsG;
+    if isfield(fissa_output,'tsG'), tsG = fissa_output.tsG; end
     dtsG = fissa_output.dtsG;
     ddf_f = fissa_output.ddf_f;
     params.fissa = fissa_output.params;
@@ -96,7 +112,11 @@ else
     if ~exist(fname_fig1,'file') || ~exist(fname_fig2,'file')
         makeplot(dtsG, ddf_f);
     end
-    fprintf('%s: Neuropil decontamination output found and loaded\n',file);
+    if isempty(list)
+        fprintf('%s: Neuropil decontamination output found and loaded\n',file);
+    else
+        fprintf('%s: Neuropil decontamination output found and loaded\n',[mouseid '_' expname  '_' file]);
+    end
 end
 
 function makeplot(dtsG, ddf_f)
@@ -104,16 +124,16 @@ function makeplot(dtsG, ddf_f)
     fig = figure;
     iosr.figures.multiwaveplot(1:size(dtsG,2),1:size(dtsG,1),dtsG,'gain',5); yticks([]); xticks([]); 
     title('Fissa-corrected raw timeseries','Fontweight','normal','Fontsize',12); 
-    savefig(fig,[fissadir file '_fissa_result']);
-    saveas(fig,[fissadir file '_fissa_result'],'png');
+    savefig(fig, fname_fig1(1:end-4));
+    saveas(fig, fname_fig1(1:end-4),'png');
     close(fig);
 
     % dF/F
     fig = figure;
     iosr.figures.multiwaveplot(1:size(ddf_f,2),1:size(ddf_f,1),ddf_f,'gain',5); yticks([]); xticks([]); 
     title('Fissa-corrected dF/F','Fontweight','normal','Fontsize',12); 
-    savefig(fig,[fissadir file '_fissa_df_f']);
-    saveas(fig,[fissadir file '_fissa_df_f'],'png');
+    savefig(fig, fname_fig2(1:end-4));
+    saveas(fig, fname_fig2(1:end-4),'png');
     close(fig);
 end
 

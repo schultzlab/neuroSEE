@@ -47,7 +47,7 @@ tic
 %% Load module folders and define data directory
 
 test = false;                      % flag to use one of smaller files in test folder)
-default = false;                    % flag to use default motion correction parameters
+default = true;                    % flag to use default motion correction parameters
 
 [data_locn,comp,err] = load_neuroSEEmodules(test);
 if ~isempty(err)

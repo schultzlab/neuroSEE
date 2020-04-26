@@ -50,111 +50,43 @@ segment_method = 'CaImAn';      % [ABLE,CaImAn]
 dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
 slacknotify = false;            % flag to send Ann slack notifications about processing
-
-            % Not user-defined
-            % Load module folders and define data directory
-            [data_locn,comp,err] = load_neuroSEEmodules(test);
-            if ~isempty(err)
-                beep
-                cprintf('Errors',err);    
-                return
-            end
-            % Some security measures
-            if ~strcmpi(comp,'mac')
-                manually_refine_spikes = false;     % Do not allow gui when running in linuxbox or hpc
-            end
-            if strcmpi(comp,'hpc')
-                maxNumCompThreads(32);      % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
-            end
-            if manually_refine_spikes
-                global spikes params
-            end
-
-% Processing parameters (if not using default)
-if ~default
-    params.fr = 30.9;                                % imaging frame rate [default: 30.9]
-    % motion correction
-        params.mcorr.refChannel = 'green';           % reference channel for motion correction [default: 'green']
-        % Katie's method
-        if strcmpi(mcorr_method,'fftRigid')
-            params.mcorr.fftRigid.imscale = 1;             % image downsampling factor                                             [default: 1]
-            params.mcorr.fftRigid.Nimg_ave = 10;           % no. of images to be averaged for calculating pixel shift (zippering)  [default: 10]
-            params.mcorr.fftRigid.redoT = 300;             % no. of frames at start of file to redo motion correction for after 1st iteration [default: 300]
-        end
-        % NoRMCorre-rigid
-        if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
-            params.mcorr.normcorre_r = NoRMCorreSetParms(...
-                'd1', 512,...
-                'd2', 512,...
-                'max_shift',30,...          % default: 30
-                'bin_width',200,...         % default: 200
-                'us_fac',50,...             % default: 50
-                'init_batch',200);          % default: 200
-            params.mcorr.normcorre_r.print_msg = false;   % default: false
-        end
-        % NoRMCorre-nonrigid
-        if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
-            params.mcorr.normcorre_nr = NoRMCorreSetParms(...
-                'd1', 512,...
-                'd2', 512,...
-                'grid_size',[64,64],...     % default: [64,64]
-                'overlap_pre',[64,64],...   % default: [64,64]
-                'overlap_post',[64,64],...  % default: [64,64]
-                'iter',1,...                % default: 1
-                'use_parallel',false,...    % default: false
-                'max_shift',20,...          % default: 20
-                'mot_uf',4,...              % default: 4
-                'bin_width',200,...         % default: 200
-                'max_dev',3,...             % default: 3
-                'us_fac',50,...             % default: 50
-                'init_batch',200);          % default: 200
-            params.mcorr.normcorre_nr.print_msg = false;    % default: false
-        end
-    % ROI segmentation 
-        params.ROIsegment.df_prctile = 5;     % percentile to be used for estimating baseline   [default: 5]
-        params.ROIsegment.df_medfilt1 = 13;   % degree of smoothing for df_f                    [default: 13]
-    % neuropil correction
-    if dofissa
-        params.fissa.ddf_prctile = 5;         % percentile to be used for estimating baseline   [default:5]
-        params.fissa.ddf_medfilt1 = 17;       % degree of smoothing for ddf_f                   [default: 17]
-    end
-    % spike extraction
-        params.spkExtract.bl_prctile = 85;    % percentile to be used for estimating baseline   [default:85]
-        params.spkExtract.spk_SNR = 1;        % spike SNR for min spike value                   [default: 1]
-        params.spkExtract.decay_time = 0.4;   % length of a typical transient in seconds        [default: 0.4]
-        params.spkExtract.lam_pr = 0.99;      % false positive probability for determing lambda penalty   [default: 0.99]
-    % PF mapping
-        params.PFmap.Nepochs = 1;             % number of epochs for each 4 min video           [default: 1]
-        params.PFmap.histsmoothWin = 3;       % smoothing window for histogram method           [default: 3]
-        params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
-                                              %                              Neurotar uses 8 mm/s
-        params.PFmap.prctile_thr = 99;        % percentile threshold for filtering nonPCs       [default: 99]
-        params_PFmap.Nbins_1D = 30;           % no. of position bins in 103-cm linear track
-        params_PFmap.Nbins_2D = [16 16];      % position bins in 325-mm diameter open field arena
-end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Load module folders and define data directory
+[data_locn,comp,err] = load_neuroSEEmodules(test);
+if ~isempty(err)
+    beep
+    cprintf('Errors',err);    
+    return
+end
+
+% Some security measures
+if strcmpi(comp,'hpc')
+    maxNumCompThreads(32);        % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
+end
+
+% Processing parameters
+params = neuroSEE_setparams(mcorr_method, dofissa, default);
+
+% Auto-defined 
+if str2double(file(1,1:4)) > 2018
+    params.FOV = 490;                                                   % FOV area = FOV x FOV, FOV in um
+    params.ROIsegment.cellrad = params.ROIsegment.cellrad_FOV490;       % expected radius of a cell (pixels)    
+    params.ROIsegment.maxcells = params.ROIsegment.maxcells_FOV490;     % estimated number of cells in FOV  
+else
+    params.FOV = 330; 
+    params.ROIsegment.cellrad = params.ROIsegment.cellrad_FOV330;            
+    params.ROIsegment.maxcells = params.ROIsegment.maxcells_FOV330;
+end
+fields = {'cellrad_FOV490','maxcells_FOV490','cellrad_FOV330','maxcells_FOV330'};
+params.ROIsegment = rmfield(params.ROIsegment,fields);
 
 params.methods.mcorr_method = mcorr_method;
 params.methods.segment_method = segment_method;
 params.methods.dofissa = dofissa;
 
-% Default parameters
-if default
-    params = load_defaultparams(params);
-    params_PFmap.Nbins_1D = 30;
-    params_PFmap.Nbins_2D = [16 16];
-end
-
-% Some auto-defined parameters
-if str2double(file(1:4)) > 2018
-    params.FOV = 490;                               % FOV area = FOV x FOV, FOV in um
-    params.ROIsegment.cellrad = 6;                  % expected radius of a cell (pixels)    
-    params.ROIsegment.maxcells = 300;     % estimated number of cells in FOV      
-else
-    params.FOV = 330; 
-    params.ROIsegment.cellrad = 9;            
-    params.ROIsegment.maxcells = 200;       
-end
+release = version('-release'); % Find out what Matlab release version is running
+MatlabVer = str2double(release(1:4));
 
 
 %% Check if file has been processed. If not, continue processing unless forced to overwrite 
@@ -168,7 +100,7 @@ check = checkforExistingProcData(data_locn, file, params.methods);
 force = logicalForce(force);    % Only allow combinations of force values that make sense
 
 if ~any(force) && check(7)
-    fprintf('%s: file already processed\n', file)
+    fprintf('%s: File already processed\n', file)
     return
 end
 
@@ -187,7 +119,7 @@ if force(1) || ~check(1)
     
     % Send Ann slack message if processing has started
     if slacknotify
-        slacktext = [file ': processing started'];
+        slacktext = [file ': Processing started'];
         neuroSEE_slackNotify( slacktext );
     end
 
@@ -221,7 +153,7 @@ end
 %                           col_shift
 %                           params
 
-if any([ any(force(1:2)), ~check(2), ~check(1) ]) 
+if any([ force(2), ~check(2), ~check(1) ]) 
     if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
         [ imG, ~, params.mcorr ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
         imR = [];
@@ -268,15 +200,7 @@ end
 % Saved in file folder: mat with fields {tsG, dtsG, df_f, ddf_f, spikes, params}
 %                       summary plot of spikes (fig & png)
 
-[spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
-
-% Save spike output if required
-if any([ ~check(4), any(force([1,2,4])), and(force(3), dofissa) ])
-    spike_output = load(fname_mat);
-    spike_output.tsG = tsG;
-    if ~isempty(dtsG), spike_output.dtsG = dtsG; end
-    save(fname_mat,'-struct','spike_output');
-end
+[spikes, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
 
 if manually_refine_spikes
     GUI_manually_refine_spikes( spikes, tsG, dtsG, df_f, ddf_f, data_locn, file, params, corr_image, masks );
@@ -309,11 +233,13 @@ end
 
 if any(downTrackdata.r < 100)
     params.mode_dim = '2D';                     % open field
-    params.PFmap.Nbins = params_PFmap.Nbins_2D; % number of location bins in [x y]               
+    params.PFmap.Nbins = params.PFmap.Nbins_2D; % number of location bins in [x y]               
 else 
     params.mode_dim = '1D';                     % circular linear track
-    params.PFmap.Nbins = params_PFmap.Nbins_1D; % number of location bins               
+    params.PFmap.Nbins = params.PFmap.Nbins_1D; % number of location bins               
 end
+fields = {'Nbins_1D','Nbins_2D'};
+params.PFmap = rmfield(params.PFmap,fields);
 
 if strcmpi(params.mode_dim,'1D')
     [ hist, asd, pfData, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force(6));

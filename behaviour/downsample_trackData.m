@@ -1,45 +1,40 @@
-function varargout = downsample_trackData( trackData, spikes, fr, imtime )
+function varargout = downsample_trackData( trackData, Nt, fr, imtime )
 
 if nargin<4, imtime = []; end
+Nfiles = numel(trackData); 
 
 if iscell(trackData)
     r_all = [];
-    Nfiles = numel(spikes);
     for jj = 1:Nfiles
         x = trackData{jj}.x;
         y = trackData{jj}.y;
         r = trackData{jj}.r;
         phi = trackData{jj}.phi;
         speed = trackData{jj}.speed;
-        if isempty(imtime)
-            tracktime = trackData{jj}.time;
-        else
-            tracktime = imtime{jj};
-        end        
+        tracktime = trackData{jj}.time;
 
         % Pre-process tracking data
         t0 = tracktime(1);                  % initial time in tracking data
-        Nt(jj) = size(spikes{jj},2);
-        
+
         % Convert -180:180 to 0:360
-        phi(phi<0) = phi(phi<0)+360;
-        % phi = phi + 180;
+        if min(phi)<0
+            phi(phi<0) = phi(phi<0)+360;
+        end
+%         phi = phi + 180;
 
         % generate imaging timestamps using known image frame rate
-        dt = 1/fr;
-        t = (t0:dt:Nt(jj)*dt)';
-        if length(t) ~= Nt(jj)
-            t = (t0:dt:(Nt(jj)+1)*dt)';
+        if isempty(imtime)
+            dt = 1/fr;
+            imtime = t0+(0:dt:(Nt-1)*dt)';
         end
 
         % Downsample tracking to Ca trace
-        [tracktime, ind] = unique(tracktime); 
-        downData{jj}.phi = interp1(tracktime,phi(ind),t,'nearest');
-        downData{jj}.x = interp1(tracktime,x(ind),t,'nearest');
-        downData{jj}.y = interp1(tracktime,y(ind),t,'nearest');
-        downData{jj}.speed = interp1(tracktime,speed(ind),t,'nearest'); % mm/s
-        downData{jj}.r = interp1(tracktime,r(ind),t,'nearest'); % mm/s
-        downData{jj}.time = t;
+        downData{jj}.phi = interp1( tracktime, phi, imtime, 'nearest' );
+        downData{jj}.x = interp1( tracktime, x, imtime, 'nearest' );
+        downData{jj}.y = interp1( tracktime, y, imtime, 'nearest' );
+        downData{jj}.speed = interp1( tracktime, speed, imtime, 'nearest' ); % mm/s
+        downData{jj}.r = interp1( tracktime, r, imtime, 'nearest' ); % mm/s
+        downData{jj}.time = imtime;
         r_all = [r_all; downData{jj}.r];
         clear ind
     end
@@ -56,29 +51,28 @@ else
 
     % Pre-process tracking data
     t0 = tracktime(1);                  % initial time in tracking data
-    Nt = size(spikes,2);                % number of timestamps for spikes
 
     % Convert -180:180 to 0:360
-%     if min(phi)<0
-%        phi(phi<0) = phi(phi<0)+360;
-%     end
-    phi = phi + 180;
+    if min(phi)<0
+       phi(phi<0) = phi(phi<0)+360;
+    end
+%     phi = phi + 180;
 
     % generate imaging timestamps using known image frame rate
-    dt = 1/fr;
-    t = (t0:dt:Nt*dt)';
-    if length(t) ~= Nt
-        t = (t0:dt:(Nt+1)*dt)';
+    if isempty(imtime)
+        dt = 1/fr;
+        imtime = t0+(0:dt:(Nt-1)*dt)';
     end
 
     % Downsample tracking to Ca trace
-    [tracktime, ind] = unique(tracktime); 
-    downData.phi = interp1(tracktime,phi(ind),t,'nearest');
-    downData.x = interp1(tracktime,x(ind),t,'nearest');
-    downData.y = interp1(tracktime,y(ind),t,'nearest');
-    downData.speed = interp1(tracktime,speed(ind),t,'nearest'); % mm/s
-    downData.r = interp1(tracktime,r(ind),t,'nearest'); % mm/s
-    downData.time = t;
+    % [tracktime, ind] = unique(tracktime); 
+    downData.phi = interp1( tracktime, phi, imtime, 'nearest');
+    downData.x = interp1( tracktime, x, imtime, 'nearest');
+    downData.y = interp1( tracktime, y, imtime, 'nearest');
+    downData.speed = interp1( tracktime, speed, imtime, 'nearest'); % mm/s
+    downData.r = interp1( tracktime, r, imtime, 'nearest'); % mm/s
+    downData.time = imtime;
+    % downData.time = interp1( tracktime, tracktime, imtime, 'nearest' );
     
     varargout{1} = downData;
     varargout{2} = [];

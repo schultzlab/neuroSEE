@@ -41,8 +41,15 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         fname_fig3 = [filedir file '_df_f.fig'];
     else
         [ mouseid, expname ] = find_mouseIDexpname(list);
-        filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' mcorr_method '_' segment_method '_'...
-                    str_fissa '/' mouseid '_' expname '_imreg_ref' reffile '/'];
+        groupreg_method = params.methods.groupreg_method;
+        imreg_method = params.methods.imreg_method;
+        if strcmpi(imreg_method, mcorr_method)
+            filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' imreg_method '_' segment_method '_'...
+                        str_fissa '/' mouseid '_' expname '_imreg_ref' reffile '/'];
+        else
+            filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' imreg_method '_' segment_method '_'...
+                        str_fissa '/' mouseid '_' expname '_imreg_ref' reffile '_' mcorr_method '/'];
+        end
         fname_mat = [filedir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
         fname_fig1 = [filedir mouseid '_' expname '_ref' reffile '_ROIs.fig'];
         fname_fig2 = [filedir mouseid '_' expname '_ref' reffile '_raw_timeseries.fig'];
@@ -50,6 +57,11 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
     end
 
     if force || ~exist(fname_mat,'file')
+        if isempty(reffile)
+            fprintf( '%s: Starting ROI segmentation\n', file );
+        else
+            fprintf( '%s: Starting ROI segmentation\n', [mouseid '_' expname] );
+        end
         maxcells = params.ROIsegment.maxcells;
         cellrad = params.ROIsegment.cellrad;
 
@@ -103,6 +115,13 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         fprintf('%s: ROI segmentation done\n',file);
 
     else
+        if isempty(reffile)
+            prevstr = sprintf( '%s: Segmentation output found. Loading...\n', file );
+        else
+            prevstr = sprintf( '%s: Segmentation output found. Loading...\n', [mouseid '_' expname] );
+        end
+        cprintf(prevstr)
+        
         % If it exists, load it
         segmentOutput = load(fname_mat);
         masks = segmentOutput.masks;
@@ -127,7 +146,12 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         if any([~exist(fname_fig1,'file'),~exist(fname_fig2,'file'),~exist(fname_fig3,'file')])
            makeplot(corr_image, masks);
         end
-        fprintf('%s: Segmentation output found and loaded\n',file);
+        if isempty(reffile)
+            newstr = sprintf( '%s: Segmentation output found and loaded\n', file );
+        else
+            newstr = sprintf( '%s: Segmentation output found and loaded\n', [mouseid '_' expname] );
+        end
+        refreshdisp(newstr, prevstr)
     end
 
     function makeplot(corr_image, masks)

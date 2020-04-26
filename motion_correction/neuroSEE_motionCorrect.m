@@ -83,7 +83,8 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
         end
         cprintf( 'Text', str );
         
-        if strcmpi(mcorr_method,'normcorre')
+        if and(isempty(reffile), strcmpi(mcorr_method,'normcorre')) || ...
+           and(~isempty(reffile), strcmpi(imreg_method,'normcorre'))     
             % rename variables to check if normcorre-r has been done
             if isempty(reffile)
                 filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-r/' ];
@@ -156,7 +157,8 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
             makeplot(out_g,out_r);
             saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr);
         
-        elseif strcmpi(mcorr_method,'normcorre-r')
+        elseif  and(isempty(reffile), strcmpi(mcorr_method,'normcorre-r')) || ...
+                and(~isempty(reffile), strcmpi(imreg_method,'normcorre-r'))     
             mcorr_output.params.normcorre_r = params_mcorr.normcorre_r;
             if strcmpi(refChannel,'green')
                 [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params_mcorr.normcorre_r, template );
@@ -167,7 +169,8 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
             makeplot(out_g,out_r);
             saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.normcorre_r);
         
-        elseif strcmpi(mcorr_method,'normcorre-nr')
+        elseif  and(isempty(reffile), strcmpi(mcorr_method,'normcorre-nr')) || ...
+                and(~isempty(reffile), strcmpi(imreg_method,'normcorre-nr'))
             mcorr_output.params.normcorre_nr = params_mcorr.normcorre_nr;
             if strcmpi(refChannel,'green')
                 [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params_mcorr.normcorre_nr, template );

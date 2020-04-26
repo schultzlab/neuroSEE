@@ -34,34 +34,48 @@ function check = checkforExistingProcData(data_locn, text, params_methods, reffi
     % if an experiment (i.e. list of files)
     if tlist
         [mouseid,expname] = find_mouseIDexpname(list);
-        listfile = [data_locn 'Digital_Logbook/lists/' list];
-        files = extractFilenamesFromTxtfile(listfile);
-        if nargin<4, reffile = files(1,:); end
+        if nargin<4 
+            listfile = [data_locn 'Digital_Logbook/lists/' list];
+            files = extractFilenamesFromTxtfile(listfile);
+            reffile = files(1,:); 
+        end
         
+        groupreg_method = params_methods.groupreg_method;
         dir_proc = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
-                    mcorr_method '_' segment_method '_' str_fissa '/'...
+                    groupreg_method '_' mcorr_method '_' segment_method '_' str_fissa '/'...
                     mouseid '_' expname '_imreg_ref' reffile '/'];
         
-        check = zeros(1,4);
+        check = zeros(1,6);
         if exist(dir_proc,'dir')
             % 1) Check for existing collective roi segmentation output 
             if exist([dir_proc  mouseid '_' expname '_ref' reffile '_segment_output.mat'],'file')
                 check(1) = 1;
             end
             
-            % 2) Check for existing consolidated data for fissa, spikes, tracking
-            if exist([dir_proc  mouseid '_' expname '_ref' reffile '_fissa_spike_track_data.mat'],'file')
+            % 2) Check for existing consolidated fissa data 
+            if exist([dir_proc  mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file')
                 check(2) = 1;
             end
             
-            % 3) Check for existing collective PF mapping output
-            if exist([dir_proc  mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'file')
+            % 3) Check for existing consolidated spike data 
+            if exist([dir_proc  mouseid '_' expname '_ref' reffile '_spikes.mat'],'file')
                 check(3) = 1;
             end
             
-            % 4) Check if mat file for all proc data for the file exists
-            if exist([dir_proc  mouseid '_' expname '_ref' reffile '_allData.mat'],'file')
+            % 4) Check for existing consolidated tracking data 
+            if exist([data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+                      mouseid '_' expname '_downTrackdata.mat'],'file')
                 check(4) = 1;
+            end
+            
+            % 5) Check for existing collective PF mapping output
+            if exist([dir_proc  mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'file')
+                check(5) = 1;
+            end
+            
+            % 6) Check if mat file for all proc data for the file exists
+            if exist([dir_proc  mouseid '_' expname '_ref' reffile '_allData.mat'],'file')
+                check(6) = 1;
             end
         end
     else % individual file 
@@ -90,7 +104,8 @@ function check = checkforExistingProcData(data_locn, text, params_methods, reffi
             end
 
             % 4) Check for existing spike estimation output
-            if exist([dir_fissa file '_spikes_output.mat'],'file')
+            if exist([dir_fissa file '_spikes_output.mat'],'file') || ...
+               exist([dir_fissa file '_spikes.mat'],'file') 
                 check(4) = 1;
             end
 

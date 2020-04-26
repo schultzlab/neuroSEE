@@ -209,9 +209,9 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
         else
             if ~isempty(list)
                 [mouseid,expname] = find_mouseIDexpname( list );
-                str = sprintf('%s: Loading registered images...', [mouseid '_' expname '_' file]);
+                str = sprintf('%s: Loading registered images...\n', [mouseid '_' expname '_' file]);
             else
-                str = sprintf('%s: Loading registered images...', [file '_' reffile]);
+                str = sprintf('%s: Loading registered images...\n', [file '_' reffile]);
             end
             cprintf( 'Text', str )
             
@@ -223,9 +223,9 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
             end
             
             if ~isempty(list)
-                newstr = sprintf('%s: Registered images loaded', [mouseid '_' expname '_' file]);
+                newstr = sprintf('%s: Registered images loaded\n', [mouseid '_' expname '_' file]);
             else
-                newstr = sprintf('%s: Registered images loaded', [file '_' reffile]);
+                newstr = sprintf('%s: Registered images loaded\n', [file '_' reffile]);
             end
             refreshdisp( newstr, str )
         end
@@ -239,7 +239,13 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
         end
 
         if ~exist(fname_fig,'file')
-            % If summary fig doesn't exist, create it   
+            % If summary fig doesn't exist, create it
+            if ~isempty(reffile)
+                refdir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_' mcorr_method '/'];
+                c = load([refdir reffile '_mcorr_output.mat']);
+                template_g = c.green.meanregframe;
+                template_r = c.red.meanregframe;
+            end
             out_g = mcorr_output.green;
             out_r = mcorr_output.red;
             makeplot(out_g,out_r);
@@ -290,7 +296,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
         if isempty(reffile)
             fname_fig = [filedir file '_mcorr_summary'];
         else
-            fname_fig = [filedir file '_imreg_ref' reffile 'summary'];
+            fname_fig = [filedir file '_imreg_ref' reffile '_summary'];
         end
             if ~exist( filedir, 'dir' ), mkdir( filedir ); end
             savefig( fh, fname_fig );

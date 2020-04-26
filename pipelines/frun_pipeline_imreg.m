@@ -191,14 +191,17 @@ if force(2) || ~check_list(1)
             end
         else
             imdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/'];
-            fprintf('%s: Loading reference image\n', [mouseid '_' expname '_' file]);
+            str = sprintf('%s: Loading reference image\n', [mouseid '_' expname '_' file]);
+            cprintf('Text',str)
             imG{n} = read_file([ imdir file '_2P_XYT_green_mcorr.tif' ]);
             if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
                 imR = [];
             else
                 imR{n} = read_file([ imdir file '_2P_XYT_red_mcorr.tif' ]);
             end
-
+            newstr = sprintf('%s: Reference image loaded\n', [mouseid '_' expname '_' file]);
+            refreshdisp(newstr, str)
+            
             fname_mat = [grp_sdir mouseid '_' expname '_ref' reffile '_mcorr_template.mat'];
             fname_fig = [grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template.fig'];
             if ~exist(fname_mat, 'file') || ~exist(fname_fig, 'file')

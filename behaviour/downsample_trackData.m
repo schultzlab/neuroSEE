@@ -29,11 +29,12 @@ if iscell(trackData)
         end
 
         % Downsample tracking to Ca trace
-        downData{jj}.phi = interp1( tracktime, phi, imtime, 'nearest' );
-        downData{jj}.x = interp1( tracktime, x, imtime, 'nearest' );
-        downData{jj}.y = interp1( tracktime, y, imtime, 'nearest' );
-        downData{jj}.speed = interp1( tracktime, speed, imtime, 'nearest' ); % mm/s
-        downData{jj}.r = interp1( tracktime, r, imtime, 'nearest' ); % mm/s
+        [tracktime, ind] = unique(tracktime); 
+        downData{jj}.phi = interp1( tracktime, phi(ind), imtime, 'nearest' );
+        downData{jj}.x = interp1( tracktime, x(ind), imtime, 'nearest' );
+        downData{jj}.y = interp1( tracktime, y(ind), imtime, 'nearest' );
+        downData{jj}.speed = interp1( tracktime, speed(ind), imtime, 'nearest' ); % mm/s
+        downData{jj}.r = interp1( tracktime, r(ind), imtime, 'nearest' ); % mm/s
         downData{jj}.time = imtime;
         r_all = [r_all; downData{jj}.r];
         clear ind
@@ -65,12 +66,12 @@ else
     end
 
     % Downsample tracking to Ca trace
-    % [tracktime, ind] = unique(tracktime); 
-    downData.phi = interp1( tracktime, phi, imtime, 'nearest');
-    downData.x = interp1( tracktime, x, imtime, 'nearest');
-    downData.y = interp1( tracktime, y, imtime, 'nearest');
-    downData.speed = interp1( tracktime, speed, imtime, 'nearest'); % mm/s
-    downData.r = interp1( tracktime, r, imtime, 'nearest'); % mm/s
+    [tracktime, ind] = unique(tracktime); 
+    downData.phi = interp1( tracktime, phi(ind), imtime, 'nearest');
+    downData.x = interp1( tracktime, x(ind), imtime, 'nearest');
+    downData.y = interp1( tracktime, y(ind), imtime, 'nearest');
+    downData.speed = interp1( tracktime, speed(ind), imtime, 'nearest'); % mm/s
+    downData.r = interp1( tracktime, r(ind), imtime, 'nearest'); % mm/s
     downData.time = imtime;
     % downData.time = interp1( tracktime, tracktime, imtime, 'nearest' );
     

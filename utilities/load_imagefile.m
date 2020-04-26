@@ -125,20 +125,20 @@ function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr
     elseif strcmpi(suffix, '_imreg')
         % REGISTERED TO A REFERENCE FILE
         if strcmpi(imreg_method,'normcorre')
-            dir_processed = [ data_locn  'Data/'  file(1:8)  '/Processed/'  file  '/imreg_normcorre_' reffile  '/' ];
+            dir_processed = [ data_locn  'Data/'  file(1:8)  '/Processed/'  file  '/imreg_normcorre_ref' reffile  '/' ];
         elseif strcmpi(imreg_method,'normcorre-r')
-            dir_processed = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_normcorre-r_' reffile '/' ];
+            dir_processed = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_normcorre-r_ref' reffile '/' ];
         elseif strcmpi(imreg_method,'normcorre-nr')
-            dir_processed = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_normcorre-nr_' reffile '/' ];
+            dir_processed = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_normcorre-nr_ref' reffile '/' ];
         else
-            dir_processed = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_fftRigid_' reffile '/' ];
+            dir_processed = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_fftRigid_ref' reffile '/' ];
         end
-        fname_tif_gr = [ dir_processed file '_2P_XYT_green' suffix '_' reffile '.tif' ];
+        fname_tif_gr = [ dir_processed file '_2P_XYT_green' suffix '_ref' reffile '.tif' ];
 
         imG = read_file( fname_tif_gr );
 
         if load_imR
-            fname_tif_red = [ dir_processed file '_2P_XYT_red' suffix '_' reffile '.tif' ];
+            fname_tif_red = [ dir_processed file '_2P_XYT_red' suffix '_ref' reffile '.tif' ];
             imR = read_file( fname_tif_red );
         else
             imR = [];

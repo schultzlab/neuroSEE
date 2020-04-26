@@ -27,7 +27,7 @@
 
 function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, imreg_method, force )    
 
-    if isempty(mcorr_method), mcorr_method = 'normcorre-nr'; end
+    if isempty(mcorr_method), mcorr_method = 'normcorre'; end
     if nargin<7, reffile = []; end
     if nargin<8 || isempty(imreg_method)
         if ~isempty(mcorr_method)
@@ -211,7 +211,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
             params_mcorr = mcorr_output.options; % applies to proc data prior to July 2019 
         end
 
-        if ~exist_fig
+        if ~exist(fname_fig,'file')
             % If summary fig doesn't exist, create it   
             out_g = mcorr_output.green;
             out_r = mcorr_output.red;

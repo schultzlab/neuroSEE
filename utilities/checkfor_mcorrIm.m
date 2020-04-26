@@ -11,7 +11,7 @@ function check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile, imreg
         end
     end
     if nargin<4, reffile = []; end
-    if nargin<3, mcorr_method = 'normcorre-nr'; end
+    if nargin<3, mcorr_method = 'normcorre'; end
     
     if isempty(reffile)
         filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ];

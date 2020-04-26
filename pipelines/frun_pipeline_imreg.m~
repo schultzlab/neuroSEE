@@ -178,40 +178,52 @@ if force(2) || ~check_list(1)
             if force(1) || ~check_file   
                 [fileG,fileR] = load_imagefile( data_locn, file );
             else
-                fileG = []; fileR = [];
-            end
 
-            if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
-                [ imG{n}, ~, params.mcorr ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
-                                                        mcorr_method, params.mcorr, reffile, imreg_method, force(1) );
-                imR = [];
-            else
-                [ imG{n}, ~, params.mcorr, imR{n} ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
-                                                        mcorr_method, params.mcorr, reffile, imreg_method, force(1) );
+                % Send Ann slack message
+                if slacknotify
+                    if array_id == 1
+                        slacktext = [mouseid '_' expname ': Registering 1 of ' num2str(size(files,1)) 'files'];
+                        neuroSEE_slackNotify( slacktext );
+                    end
+                end
+                
+                if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
+                    [ imG{n}, ~, params.mcorr ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
+                                                            mcorr_method, params.mcorr, reffile, imreg_method, force(1) );
+                    imR = [];
+                else
+                    [ imG{n}, ~, params.mcorr, imR{n} ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
+                                                            mcorr_method, params.mcorr, reffile, imreg_method, force(1) );
+                end
+            else 
+                fprintf( '%s: Registered images found. Skipping registration\n', [mouseid '_' expname '_' file] );
+                imG = []; imR = [];
             end
         else
-            imdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/'];
-            fprintf('%s: Loading reference image\n', [mouseid '_' expname '_' file]);
-            imG{n} = read_file([ imdir file '_2P_XYT_green_mcorr.tif' ]);
-            if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
-                imR = [];
-            else
-                imR{n} = read_file([ imdir file '_2P_XYT_red_mcorr.tif' ]);
-            end
-
-            fname_mat = [grp_sdir mouseid '_' expname '_ref' reffile '_mcorr_template.mat'];
-            fname_fig = [grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template.fig'];
-            if ~exist(fname_mat, 'file') || ~exist(fname_fig, 'file')
-                c = load([imdir reffile '_mcorr_output.mat']);
-                template_g = c.green.meanregframe;
-                template_r = c.red.meanregframe;
-                fig = figure; 
-                subplot(121); imagesc(template_g); title('GCaMP6');
-                subplot(122); imagesc(template_r); title('mRuby');
-                save(fname_mat,'template_g','template_r')
-                savefig(fig, fname_fig(1:end-4));
-                saveas(fig, fname_fig(1:end-4),'png');
-                close(fig);
+            if force(2) || ~check_list(1)
+                imdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/'];
+                fprintf('%s: Loading reference image\n', [mouseid '_' expname '_' file]);
+                imG{n} = read_file([ imdir file '_2P_XYT_green_mcorr.tif' ]);
+                if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
+                    imR = [];
+                else
+                    imR{n} = read_file([ imdir file '_2P_XYT_red_mcorr.tif' ]);
+                end
+                
+                fname_mat = [grp_sdir mouseid '_' expname '_ref' reffile '_mcorr_template.mat'];
+                fname_fig = [grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template.fig'];
+                if ~exist(fname_mat, 'file') || ~exist(fname_fig, 'file')
+                    c = load([imdir reffile '_mcorr_output.mat']);
+                    template_g = c.green.meanregframe;
+                    template_r = c.red.meanregframe;
+                    fig = figure; 
+                    subplot(121); imagesc(template_g); title('GCaMP6');
+                    subplot(122); imagesc(template_r); title('mRuby');
+                    save(fname_mat,'template_g','template_r')
+                    savefig(fig, fname_fig(1:end-4));
+                    saveas(fig, fname_fig(1:end-4),'png');
+                    close(fig);
+                end
             end
         end
     end

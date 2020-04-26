@@ -25,7 +25,7 @@
 %                   template
 %   params_mcorr: parameters for specific motion correction method
 
-function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, imreg_method, force )    
+function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, imreg_method, force, list )    
 
     if isempty(mcorr_method), mcorr_method = 'normcorre'; end
     if nargin<7, reffile = []; end
@@ -37,6 +37,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
         end
     end
     if nargin<9, force = false; end
+    if nargin<10, list = []; end
     
     refChannel = params_mcorr.refChannel;
     
@@ -195,12 +196,38 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
                 saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.fftRigid);
             end
         end
+        
+        if isempty(reffile)
+            fprintf( '%s: Motion correction done\n', file );
+        else
+            fprintf( '%s: Image registration to %s done\n', file, reffile );
+        end
     else
         if nargout>3, load_imR = true; else, load_imR = false; end
         if isempty(reffile)
             [imG, imR] = load_imagefile( data_locn, file, false, '_mcorr', mcorr_method, load_imR );
         else
-            [imG, imR] = load_imagefile( data_locn, file, false, '_imreg', mcorr_method, load_imR, reffile, imreg_method );
+            if ~isempty(list)
+                [mouseid,expname] = find_mouseIDexpname( list );
+                str = sprintf('%s: Loading registered images...', [mouseid '_' expname '_' file]);
+            else
+                str = sprintf('%s: Loading registered images...', [file '_' reffile]);
+            end
+            cprintf( 'Text', str )
+            
+            imG = read_file(fname_tif_gr_mcorr);
+            if load_imR
+                imR = read_file(fname_tif_red_mcorr);
+            else
+                imR = [];
+            end
+            
+            if ~isempty(list)
+                newstr = sprintf('%s: Registered images loaded', [mouseid '_' expname '_' file]);
+            else
+                newstr = sprintf('%s: Registered images loaded', [file '_' reffile]);
+            end
+            refreshdisp( newstr, str )
         end
         
         mcorr_output = load(fname_mat_mcorr);

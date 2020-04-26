@@ -7,5 +7,5 @@ L = length(x);
 postpend = x(1:w);
 prepend = x(end-w+1:end);
 x_widened = [prepend x postpend];
-x_sm = smooth(x_widened,w);
+x_sm = smoothdata(x_widened, 'movmean', w);
 y = x_sm(w+1:w+L);

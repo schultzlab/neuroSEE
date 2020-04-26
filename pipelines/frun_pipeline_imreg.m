@@ -176,7 +176,7 @@ if any([ force(2), ~check_list(1) ])
             check_file = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile );
 
             if any([ force(1), force(2), ~check_file, ~check_list(1) ])   
-                [fileG,fileR] = load_imagefile( data_locn, file );
+                [fileG,fileR] = load_imagefile( data_locn, file, false, '_imreg', mcorr_method, false, reffile, imreg_method );
 
                 % Send Ann slack message
                 if slacknotify

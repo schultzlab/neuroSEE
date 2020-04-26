@@ -19,7 +19,7 @@
 function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr_method, load_imR, reffile, imreg_method )
     if nargin < 3, forceRaw = false; end
     if nargin < 4, suffix  = []; end
-    if nargin < 5, mcorr_method  = 'normcorre-nr'; end
+    if nargin < 5, mcorr_method  = 'normcorre'; end
     if nargin < 6, load_imR = true; end
     if nargin < 7, reffile = []; imreg_method = []; end
     if nargin < 8 || isempty(imreg_method)

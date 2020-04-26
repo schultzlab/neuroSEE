@@ -129,9 +129,9 @@ function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr
         elseif strcmpi(imreg_method,'normcorre-r')
             dir_processed = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_normcorre-r_' reffile '/' ];
         elseif strcmpi(imreg_method,'normcorre-nr')
-            dir_processed = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_normcorre-nr_' reffile '/' ];
+            dir_processed = [ data_locn 'Data/', file(1:8), '/Processed/', file, '/imreg_normcorre-nr_', reffile, '/' );
         else
-            dir_processed = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_fftRigid_' reffile '/' ];
+            dir_processed = fullfile( data_locn, 'Data/', file(1:8), '/Processed/', file, '/imreg_fftRigid_', reffile, '/' );
         end
         fname_tif_gr = [ dir_processed file '_2P_XYT_green' suffix '_' reffile '.tif' ];
 

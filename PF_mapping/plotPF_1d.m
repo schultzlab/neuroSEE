@@ -2,7 +2,7 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
     if nargin < 7, fsave = false; fname_pref = '_'; sdir = '_'; end
     if nargin < 6, fsave = false; end
     if nargin < 5, fsave = false; end
-    if nargin < 4, fclose = true; fsave = false; end
+    if nargin < 4, fclose = false; fsave = false; end
 
     plotNon_norm = true;
     Nepochs = size(PFdata.occMap,3);
@@ -57,47 +57,48 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
 
     % asd
     % plots for PLACE cells 
-    if fsave
-        if ~exist([sdir 'asd_SI_bitspersec/'],'dir'), mkdir([sdir 'asd_SI_bitspersec/']); end
-    end
-    if ~isempty(asd.SIsec.pcIdx)
-        Npcs = numel(asd.SIsec.pcIdx);
-        fname = [sdir 'asd_SI_bitspersec/' fname_pref '_normspkRaster_PCs'];
-        plotRaster( Npcs, asd.SIsec.normspkRaster_pc, ytick_files, 'PC', fsave, fname, fclose );
-        
-        fname = [sdir 'asd_SI_bitspersec/' fname_pref '_rateplot_PCs'];
-        plot_pfChar( Npcs, asd.SIsec.normpfMap, asd.SIsec.pfLoc, asd.SIsec.pfSize, 'PC', fsave, fname, fclose )
-        
-        if plotNon_norm
-            fname = [sdir 'asd_SI_bitspersec/' fname_pref '_spkRaster_PCs'];
-            plotRaster( Npcs, asd.SIsec.spkRaster_pc, ytick_files, 'PC', fsave, fname, fclose );
+    if ~isempty(asd)
+        if fsave
+            if ~exist([sdir 'asd_SI_bitspersec/'],'dir'), mkdir([sdir 'asd_SI_bitspersec/']); end
         end
-        
-        fname = [sdir 'asd_SI_bitspersec/' fname_pref  '_populSummary'];
-        plot_populSummary( asd.SIsec.sort_normpfMap, asd.SIsec.sort_pfMap, asd.SIsec.spkPeak, asd.SIsec.spkMean, asd.SIsec.infoMap,...
-            asd.SIsec.pfSize, asd.SIsec.pfLoc, PFdata.bin_phi, fsave, fname, fclose );
-            
-        if Nepochs > 1
-            fname = [sdir 'asd_SI_bitspersec/' fname_pref '_remapping_asd_SIsec'];
-            plotRemapping( asd.SIsec.normpfMap, asd.SIsec.sortIdx, fname );
-        end
-    end
-    
-    % spike raster plots for NON-place cells 
-    if ~isempty(asd.SIsec.nonpcIdx)
-        Nnonpcs = numel(asd.SIsec.nonpcIdx);
-        fname = [sdir 'asd_SI_bitspersec/' fname_pref '_normspkRaster_nonPCs'];
-        plotRaster( Nnonpcs, asd.SIsec.normspkRaster_nonpc, ytick_files, 'Non-PC', fsave, fname, fclose );
-        
-        if plotNon_norm
-            fname = [sdir 'asd_SI_bitspersec/' fname_pref '_spkRaster_nonPCs'];
-            plotRaster( Nnonpcs, asd.SIsec.spkRaster_nonpc, ytick_files, 'Non-PC', fsave, fname, fclose );
-        end
-        
-        fname = [sdir 'asd_SI_bitspersec/' fname_pref '_rateplot_nonPCs'];
-        plot_pfChar( Nnonpcs, asd.normrMap(asd.SIsec.nonpcIdx,:), [], [], 'Non-PC', fsave, fname, fclose )
-    end
+        if ~isempty(asd.SIsec.pcIdx)
+            Npcs = numel(asd.SIsec.pcIdx);
+            fname = [sdir 'asd_SI_bitspersec/' fname_pref '_normspkRaster_PCs'];
+            plotRaster( Npcs, asd.SIsec.normspkRaster_pc, ytick_files, 'PC', fsave, fname, fclose );
 
+            fname = [sdir 'asd_SI_bitspersec/' fname_pref '_rateplot_PCs'];
+            plot_pfChar( Npcs, asd.SIsec.normpfMap, asd.SIsec.pfLoc, asd.SIsec.pfSize, 'PC', fsave, fname, fclose )
+
+            if plotNon_norm
+                fname = [sdir 'asd_SI_bitspersec/' fname_pref '_spkRaster_PCs'];
+                plotRaster( Npcs, asd.SIsec.spkRaster_pc, ytick_files, 'PC', fsave, fname, fclose );
+            end
+
+            fname = [sdir 'asd_SI_bitspersec/' fname_pref  '_populSummary'];
+            plot_populSummary( asd.SIsec.sort_normpfMap, asd.SIsec.sort_pfMap, asd.SIsec.spkPeak, asd.SIsec.spkMean, asd.SIsec.infoMap,...
+                asd.SIsec.pfSize, asd.SIsec.pfLoc, PFdata.bin_phi, fsave, fname, fclose );
+
+            if Nepochs > 1
+                fname = [sdir 'asd_SI_bitspersec/' fname_pref '_remapping_asd_SIsec'];
+                plotRemapping( asd.SIsec.normpfMap, asd.SIsec.sortIdx, fname );
+            end
+        end
+
+        % spike raster plots for NON-place cells 
+        if ~isempty(asd.SIsec.nonpcIdx)
+            Nnonpcs = numel(asd.SIsec.nonpcIdx);
+            fname = [sdir 'asd_SI_bitspersec/' fname_pref '_normspkRaster_nonPCs'];
+            plotRaster( Nnonpcs, asd.SIsec.normspkRaster_nonpc, ytick_files, 'Non-PC', fsave, fname, fclose );
+
+            if plotNon_norm
+                fname = [sdir 'asd_SI_bitspersec/' fname_pref '_spkRaster_nonPCs'];
+                plotRaster( Nnonpcs, asd.SIsec.spkRaster_nonpc, ytick_files, 'Non-PC', fsave, fname, fclose );
+            end
+
+            fname = [sdir 'asd_SI_bitspersec/' fname_pref '_rateplot_nonPCs'];
+            plot_pfChar( Nnonpcs, asd.normrMap(asd.SIsec.nonpcIdx,:), [], [], 'Non-PC', fsave, fname, fclose )
+        end
+    end
     
 %% SI (bits/spike)
     % histogram estimation
@@ -146,51 +147,54 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
 
     % asd
     % plots for PLACE cells 
-    if fsave
-        if ~exist([sdir 'asd_SI_bitsperspk/'],'dir'), mkdir([sdir 'asd_SI_bitsperspk/']); end
-    end
-    if ~isempty(asd.SIspk.pcIdx)
-        Npcs = numel(asd.SIspk.pcIdx);
-        fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_normspkRaster_PCs'];
-        plotRaster( Npcs, asd.SIspk.normspkRaster_pc, ytick_files, 'PC', fsave, fname, fclose );
-        
-        fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_rateplot_PCs'];
-        plot_pfChar( Npcs, asd.SIspk.normpfMap, asd.SIspk.pfLoc, asd.SIspk.pfSize, 'PC', fsave, fname, fclose )
-        
-        if plotNon_norm
-            fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_spkRaster_PCs'];
-            plotRaster( Npcs, asd.SIspk.spkRaster_pc, ytick_files, 'PC', fsave, fname, fclose );
+    if ~isempty(asd)
+        if fsave
+            if ~exist([sdir 'asd_SI_bitsperspk/'],'dir'), mkdir([sdir 'asd_SI_bitsperspk/']); end
         end
-        
-        fname = [sdir 'asd_SI_bitsperspk/' fname_pref  '_populSummary'];
-        plot_populSummary( asd.SIspk.sort_normpfMap, asd.SIspk.sort_pfMap, asd.SIspk.spkPeak, asd.SIspk.spkMean, asd.SIspk.infoMap,...
-            asd.SIspk.pfSize, asd.SIspk.pfLoc, PFdata.bin_phi, fsave, fname, fclose );
-            
-        if Nepochs > 1
-            fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_remapping_asd_SIspk'];
-            plotRemapping( asd.SIspk.normpfMap, asd.SIspk.sortIdx, fname );
+        if ~isempty(asd.SIspk.pcIdx)
+            Npcs = numel(asd.SIspk.pcIdx);
+            fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_normspkRaster_PCs'];
+            plotRaster( Npcs, asd.SIspk.normspkRaster_pc, ytick_files, 'PC', fsave, fname, fclose );
+
+            fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_rateplot_PCs'];
+            plot_pfChar( Npcs, asd.SIspk.normpfMap, asd.SIspk.pfLoc, asd.SIspk.pfSize, 'PC', fsave, fname, fclose )
+
+            if plotNon_norm
+                fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_spkRaster_PCs'];
+                plotRaster( Npcs, asd.SIspk.spkRaster_pc, ytick_files, 'PC', fsave, fname, fclose );
+            end
+
+            fname = [sdir 'asd_SI_bitsperspk/' fname_pref  '_populSummary'];
+            plot_populSummary( asd.SIspk.sort_normpfMap, asd.SIspk.sort_pfMap, asd.SIspk.spkPeak, asd.SIspk.spkMean, asd.SIspk.infoMap,...
+                asd.SIspk.pfSize, asd.SIspk.pfLoc, PFdata.bin_phi, fsave, fname, fclose );
+
+            if Nepochs > 1
+                fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_remapping_asd_SIspk'];
+                plotRemapping( asd.SIspk.normpfMap, asd.SIspk.sortIdx, fname );
+            end
+        end
+
+        % spike raster plots for NON-place cells 
+        if ~isempty(asd.SIspk.nonpcIdx)
+            Nnonpcs = numel(asd.SIspk.nonpcIdx);
+            fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_normspkRaster_nonPCs'];
+            plotRaster( Nnonpcs, asd.SIspk.normspkRaster_nonpc, ytick_files, 'Non-PC', fsave, fname, fclose );
+
+            if plotNon_norm
+                fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_spkRaster_nonPCs'];
+                plotRaster( Nnonpcs, asd.SIspk.spkRaster_nonpc, ytick_files, 'Non-PC', fsave, fname, fclose );
+            end
+
+            fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_rateplot_nonPCs'];
+            plot_pfChar( Nnonpcs, asd.normrMap(asd.SIspk.nonpcIdx,:), [], [], 'Non-PC', fsave, fname, fclose )
         end
     end
     
-    % spike raster plots for NON-place cells 
-    if ~isempty(asd.SIspk.nonpcIdx)
-        Nnonpcs = numel(asd.SIspk.nonpcIdx);
-        fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_normspkRaster_nonPCs'];
-        plotRaster( Nnonpcs, asd.SIspk.normspkRaster_nonpc, ytick_files, 'Non-PC', fsave, fname, fclose );
-        
-        if plotNon_norm
-            fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_spkRaster_nonPCs'];
-            plotRaster( Nnonpcs, asd.SIspk.spkRaster_nonpc, ytick_files, 'Non-PC', fsave, fname, fclose );
-        end
-        
-        fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_rateplot_nonPCs'];
-        plot_pfChar( Nnonpcs, asd.normrMap(asd.SIspk.nonpcIdx,:), [], [], 'Non-PC', fsave, fname, fclose )
-    end
     
 function plotRaster( Ncells, spkRaster, ytick_files, title_str, fsave, fname, fclose )
     [nRow, nCol] = getnRownCol(Ncells);
     nPlot = nRow*nCol;
-    Nfig = ceil((Ncells/nPlot))-1;
+    Nfig = ceil(Ncells/nPlot)-1;
     if Nfig<0, Nfig = 0; end
 
     for ii=0:Nfig
@@ -224,7 +228,7 @@ end
 function plot_pfChar( Ncells, normpfMap_sm, pfLoc, pfSize, title_str, fsave, fname, fclose )
     [nRow, nCol] = getnRownCol(Ncells);
     nPlot = nRow*nCol;
-    Nfig = ceil((Ncells/nPlot))-1;
+    Nfig = ceil(Ncells/nPlot)-1;
     if Nfig<0, Nfig = 0; end
 
     for ii=0:Nfig
@@ -232,7 +236,7 @@ function plot_pfChar( Ncells, normpfMap_sm, pfLoc, pfSize, title_str, fsave, fna
         ha = tight_subplot(nRow,nCol,[.02 .015],[.01 .05],[.01 .01]);
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Ncells
-                axes(ha(+jj+1));
+                axes(ha(jj+1));
                 map = viridisMap; 
                 plot(normpfMap_sm(ii*nPlot+jj+1,:)); colormap(map);
                 yticks([]); xticks([]); 

@@ -1,67 +1,44 @@
 % Written by Ann Go, adapted from Giuseppe's PF_ASD_2d.m
 
-function [occMap, spkMap, spkIdx, hist, asd, downData, activeData] = generatePFmap_2d(spikes, imtime, trackData, params, dsample)
+function [hist, asd, activeData, PFdata] = generatePFmap_2d(spikes, downTrackdata, params, doasd)
 
-if nargin<5, dsample = true; end
-fr = params.fr;
-Nbins = params.PFmap.Nbins;
-Nepochs = params.PFmap.Nepochs;     % number of epochs to divide trial in
+if nargin < 4, doasd = true; end
+hist.Nbins = params.PFmap.Nbins;
+Nepochs = params.PFmap.Nepochs;
 Vthr = params.PFmap.Vthr;
-histsmoothFac = params.PFmap.histsmoothFac;
+histsmoothWin = params.PFmap.histsmoothWin;
+prctile_thr = params.PFmap.prctile_thr;
+Ncells = size(spikes,1);
 
-%% Pre-process tracking data
-tracktime = trackData.t;
-t0 = tracktime(1);                  % initial time in tracking data
-Nt = size(spikes,2);                % number of timestamps for spikes
-
-% If no timestamps were recorded for Ca images, generate timestamps
-% using known image frame rate
-if isempty(imtime)
-%    dt = 1/fr;
-%    t = (t0:dt:Nt*dt)';
-    t = tracktime;
-end
-
-if dsample
-    x = trackData.x;
-    y = trackData.y;
-    r = trackData.r;
-    phi = trackData.phi;
-    speed = trackData.speed;
-
-    % Convert -180:180 to 0:360
-    if min(phi)<0
-       phi(phi<0) = phi(phi<0)+360;
+% Input data
+x = downTrackdata.x;
+y = downTrackdata.y;
+phi = downTrackdata.phi;
+r = downTrackdata.r;
+speed = downTrackdata.speed;
+t = downTrackdata.time;
+ind = find(abs(diff(t))>200);
+    if numel(ind)>1
+        dt = mean(diff(t(1:ind(1))));
+    else
+        dt = mean(diff(t));
     end
 
-    % Downsample tracking to Ca trace
-    downphi   = interp1(tracktime,phi,t,'linear');
-    downx     = interp1(tracktime,x,t,'linear');
-    downy     = interp1(tracktime,y,t,'linear');
-    downspeed = interp1(tracktime,speed,t,'linear'); % mm/s
-    downr     = interp1(tracktime,r,t,'linear'); % mm/s
-else
-    downphi   = trackData.phi;
-    downx     = trackData.x;
-    downy     = trackData.y;
-    downspeed = trackData.speed;
-    downr     = trackData.r;
-end
-
 % Consider only samples when the mouse is active
-activex     = downx(downspeed > Vthr);
-activey     = downy(downspeed > Vthr);
-activephi   = downphi(downspeed > Vthr);
-activespk   = spikes(:,downspeed > Vthr);
-activet     = t(downspeed > Vthr);
-activespeed = downspeed(downspeed > Vthr);
-activer     = downr(downspeed > Vthr);
+activex     = x(speed > Vthr);
+activey     = y(speed > Vthr);
+activephi   = phi(speed > Vthr);
+activespk   = spikes(:,speed > Vthr);
+activet     = t(speed > Vthr);
+activespeed = speed(speed > Vthr);
+activer     = r(speed > Vthr);
+clear x y phi r speed t
 
 xp1 = activex;
 xp2 = activey;
 
-n1=100; n2=100; nks=[n1,n2];     % env discretisation for ASD estimation
-h1 = Nbins(1); h2 = Nbins(2); % hs = [h1,h2];
+h1 = hist.Nbins(1); h2 = hist.Nbins(2);     % env discretisation
+n1 = 64; n2 = 64; asd.Nbins = [n1,n2];      
 
 % process tracking-environment data
 xp1 = (xp1-min(xp1))/(max(xp1)-min(xp1)); % normalised 0 mean
@@ -73,170 +50,219 @@ x1 = linspace(0,1.0001,h1+1);
 x2 = linspace(0,1.0001,h2+1);
 xh = floor((xp(:,1)-x1(1))/(x1(2)-x1(1)))+1;
 yh = floor((xp(:,2)-x2(1))/(x2(2)-x2(1)))+1;
-bin_pos = sub2ind([h1,h2],xh,yh); % flatten bin tracking (for ASD)
-occMap_hist = full(sparse(xh,yh,1,h1,h2));
+hist.bin_pos = sub2ind([h1,h2],xh,yh); % flatten bin tracking 
+hist.occMap = full(sparse(xh,yh,1,h1,h2));
 mode = 0; % the mask is obtained by imfill only
-envMask_h = getEnvEdgePrior(occMap_hist,mode); % hist
+envMask_h = getEnvEdgePrior(hist.occMap,mode); % hist
 
-% discretize x and y position for ASD estimation
-x1 = linspace(0,1.0001,n1+1);
-x2 = linspace(0,1.0001,n2+1);
-xi = floor((xp(:,1)-x1(1))/(x1(2)-x1(1)))+1;
-yi = floor((xp(:,2)-x2(1))/(x2(2)-x2(1)))+1;
-xind = sub2ind([n1,n2],xi,yi); % flatten bin tracking (for ASD)
-occMap_asd = full(sparse(xi,yi,1,n1,n2));
-mode = 2; % the mask is obtained by dilation and imfill
-envMask_asd = getEnvEdgePrior(occMap_asd,mode); % ASD
+if doasd
+    % discretize x and y position for ASD estimation
+    x1 = linspace(0,1.0001,n1+1);
+    x2 = linspace(0,1.0001,n2+1);
+    xa = floor((xp(:,1)-x1(1))/(x1(2)-x1(1)))+1;
+    ya = floor((xp(:,2)-x2(1))/(x2(2)-x2(1)))+1;
+    asd.bin_pos = sub2ind([n1,n2],xa,ya); % flatten bin tracking (for ASD)
+    asd.occMap = full(sparse(xa,ya,1,n1,n2));
+    mode = 2; % the mask is obtained by dilation and imfill
+    envMask_asd = getEnvEdgePrior(asd.occMap,mode); % ASD
+end
 
 % find which neurons are spiking
-for ii = 1:size(spikes,1)
+a = zeros(size(spikes,1),1);
+for ii = 1:Ncells
     a(ii) = sum(spikes(ii,:));
 end
 spkIdx = find(a); % store indices
 Nspk = length(spkIdx);
 
 % initialise  variables to store results
-occMap          = zeros(h1, h2, Nepochs);
-spkMap          = zeros(h1, h2, Nspk, Nepochs);
-hist.pfMap      = zeros(h1, h2, Nspk, Nepochs);
-hist.pfMap_sm   = zeros(h1, h2, Nspk, Nepochs);
-hist.infoMap    = zeros(Nspk, 2, Nepochs);
-asd.pfMap       = zeros(n1, n2, Nspk, Nepochs);
-asd.infoMap     = zeros(Nspk, 2, Nepochs);
+spkPeak = zeros(Nspk,1);
+spkMean = zeros(Nspk,1);
+
+hist.spkMap = zeros(h1, h2, Nspk);
+hist.rMap = zeros(h1, h2, Nspk);
+hist.rMap_sm = zeros(h1, h2, Nspk);
+hist.infoMap = zeros(Nspk, 2);
+
+if doasd
+    asd.spkMap = zeros(n1, n2, Nspk);
+    asd.rMap = zeros(n1, n2, Nspk);
+    asd.infoMap = zeros(Nspk, 2);
+end
 
 for id = 1:Nspk
     z = activespk(spkIdx(id),:);
-    % separate exploration in smaller intervals
-    e_bound = round(linspace(1,length(z),Nepochs+1));
-    for e = 1:Nepochs
-        % ASD estimation
-        x_e = xind(e_bound(e):e_bound(e+1));
-        z_e = z(e_bound(e):e_bound(e+1));
-        [aaa,~] = runASD_2d(x_e',z_e',nks,envMask_asd);
+    spkPeak(id) = max(z);
+    spkMean(id) = mean(z);
+    
+    % Histogram estimation
+    hist.spkMap(:,:,id) = full(sparse(xh,yh,z,h1,h2));
+    hhh = hist.spkMap(:,:,id)./(hist.occMap(:,:)*dt);
+    hhh(isnan(hhh)) = 0; hhh(isinf(hhh)) = 0; 
+    hist.rMap(:,:,id) = hhh;
+    hhh = imgaussfilt(hhh,2); 
+    hhh(~envMask_h) = 0;
+    hist.rMap_sm(:,:,id) = hhh;
+    hist.normrMap_sm(:,:,id) = hist.rMap_sm(:,:,id)./max(max(hist.rMap_sm(:,:,id)));
+
+    % ASD estimation
+    if doasd
+        [aaa,~] = runASD_2d(asd.bin_pos, z', asd.Nbins, envMask_asd);
         if min(aaa)<0; aaa = aaa-min(aaa); end
-        asd.pfMap(:,:,id,e) = aaa;
-        
-        % histogram estimation
-        x_e = xh(e_bound(e):e_bound(e+1));
-        y_e = yh(e_bound(e):e_bound(e+1));
-        occMap(:,:,e) = full(sparse(x_e,y_e,1,h1,h2));
-        spkMap(:,:,id,e) = full(sparse(x_e,y_e,z_e,h1,h2));
-        hhh = spkMap(:,:,id,e)./occMap(:,:,e);
-        hhh(isnan(hhh)) = 0;
-        hist.pfMap(:,:,id,e) = hhh;
-        hhh = imgaussfilt(hhh,h1/histsmoothFac); hhh(~envMask_h) = 0;
-        hist.pfMap_sm(:,:,id,e) = hhh;
-        
-        % info estimation
-        [asd.infoMap(id,1,e), asd.infoMap(id,2,e)] =...
-            infoMeasures(aaa',ones(n1,n2),0);
-        [hist.infoMap(id,1,e), hist.infoMap(id,2,e)] = infoMeasures(hhh,occMap(:,e),0);
+        asd.rMap(:,:,id) = aaa;
+        asd.normrMap(:,:,id) = asd.rMap(:,:,id)./max(max(asd.rMap(:,:,id)));
+    end
+
+    % info estimation
+    [hist.infoMap(id,1), hist.infoMap(id,2)] = infoMeasures(hhh,hist.occMap,0);
+    if doasd
+        [asd.infoMap(id,1), asd.infoMap(id,2)] = infoMeasures(aaa',ones(n1,n2),0);
     end
 end
 
-% Identify place cells
-[hist.pcIdx,asd.pcIdx] = filter_nonPC(bin_pos, activespk, infoMap, infoMap_asd, Nbins);
-activespk_hist = activespk(hist.pcIdx,:);
-activespk_asd = activespk(asd.pcIdx,:);
-Npcs = length(hist.pcIdx);
-Npcs_asd = length(asd.pcIdx);
+% Find location preference and field size
+[ hist.centroid, hist.fieldSize ] = prefLoc_fieldSize_2d( hist.rMap_sm );
+if doasd
+    [ asd.centroid, asd.fieldSize ] = prefLoc_fieldSize_2d( asd.rMap );
+end
+
+
+%% PLACE CELLS
+% Identify place cells. The cells are sorted in descending order of info content
+[hist.SIsec.pcIdx, hist.SIspk.pcIdx, hist.SIsec.nonpcIdx, hist.SIspk.nonpcIdx] ...
+    = identifyPCs_2d( hist.bin_pos, activespk, hist.infoMap, hist.Nbins, prctile_thr, 1000, 'hist' );
+
+if doasd
+    [asd.SIsec.pcIdx, asd.SIspk.pcIdx, asd.SIsec.nonpcIdx, asd.SIspk.nonpcIdx] ...
+    = identifyPCs_2d( asd.bin_pos, activespk, asd.infoMap, asd.Nbins, prctile_thr, 200, 'asd' );
+end
 
 
 %% Finalise place field maps, recalculate if Nepochs > 1
-if Nepochs == 1
-    hist.spkMap = spkMap(:,:,hist.pcIdx);
-    hist.pfMap = pfMap(:,:,hist.pcIdx);
-    for id = 1:Npcs
-        hist.normspkMap(:,:,id) = hist.spkMap(:,:,id)./max(hist.spkMap(:,:,id));
-        hist.pfMap_sm(:,:,id) = smoothdata(hist.pfMap(:,:,id),'gaussian',Nbins/histsmoothFac);
-        hist.normpfMap(:,:,id) = hist.pfMap(:,:,id)./max(hist.pfMap(:,:,id));
-        hist.normpfMap_sm(:,:,id) = hist.pfMap_sm(:,:,id)./max(hist.pfMap_sm(:,:,id));
-    end
-    hist.infoMap = infoMap(hist.pcIdx,:);
-    
-    asd.spkMap = spkMap(:,:,asd.pcIdx);
-    asd.pfMap = pfMap_asd(:,:,asd.pcIdx);
-    for id = 1:Npcs_asd
-        asd.normspkMap(:,:,id) = asd.spkMap(:,:,id)./max(asd.spkMap(:,:,id));
-        asd.normpfMap(:,:,id) = asd.pfMap(:,:,id)./max(asd.pfMap(:,:,id));
-    end
-    asd.infoMap = infoMap_asd(asd.pcIdx,:);
-
-else
+if Nepochs >1
     % Calculate PF maps for each epoch
     % Initialise matrices
-%     occMap = zeros(Nepochs, Nbins);                         
-%     hist.spkMap = zeros(Npcs, Nbins, Nepochs);            
-%     hist.normspkMap = zeros(Npcs, Nbins, Nepochs);            
-%     hist.pfMap = zeros(Npcs, Nbins, Nepochs);               
-%     hist.pfMap_sm = zeros(Npcs, Nbins, Nepochs);            
-%     hist.normpfMap = zeros(Npcs, Nbins, Nepochs);        
-%     hist.normpfMap_sm = zeros(Npcs, Nbins, Nepochs);     
-%     hist.infoMap = zeros(Npcs, 2, Nepochs);              
-%     asd.spkMap = zeros(Npcs_asd, Nbins, Nepochs);            
-%     asd.normspkMap = zeros(Npcs_asd, Nbins, Nepochs);            
-%     asd.pfMap = zeros(Npcs_asd, Nbins, Nepochs);              
-%     asd.normpfMap = zeros(Npcs_asd, Nbins, Nepochs);          
-%     asd.infoMap = zeros(Npcs_asd, 2, Nepochs);               
-% 
-%     % Calculate PF maps
-%     e_bound = round( linspace(1,size(activespk,2),Nepochs+1) );
-%     for id = 1:Npcs
-%         z = activespk_hist(id,:);
-% 
-%         % separate exploration in smaller intervals
-%         for e = 1:Nepochs
-%             bin_phi_e = bin_phi(e_bound(e):e_bound(e+1));
-%             spike_e = z(e_bound(e):e_bound(e+1));
-% 
-%             % Occupancy and spike rate maps
-%             occMap(e,:) = histcounts(bin_phi_e,Nbins);
-%             for n = 1:Nbins
-%                 hist.spkMap(id,n,e) = sum(spike_e(bin_phi_e == n));
-%             end
-%             hist.normspkMap(id,:,e) = hist.spkMap(id,:,e)./max(hist.spkMap(id,:,e));
-%             
-%             % histogram estimation
-%             hist.pfMap(id,:,e) = hist.spkMap(id,:,e)./occMap(e,:);
-%             hist.pfMap(isnan(hist.pfMap)) = 0;
-%             hist.pfMap_sm(id,:,e) = smoothdata(hist.pfMap(id,:,e),'gaussian',Nbins/histsmoothFac);
-% 
-%             hist.normpfMap(id,:,e) = hist.pfMap(id,:,e)./max(hist.pfMap(id,:,e));
-%             hist.normpfMap_sm(id,:,e) = hist.pfMap_sm(id,:,e)./max(hist.pfMap_sm(id,:,e));
-%             [hist.infoMap(id,1,e), hist.infoMap(id,2,e)] = infoMeasures(hist.pfMap(id,:,e),occMap(e,:),0);
-%         end
-%     end
-%     for id = 1:Npcs_asd
-%         z = activespk_asd(id,:);
-% 
-%         % separate exploration in smaller intervals
-%         for e = 1:Nepochs
-%             bin_phi_e = bin_phi(e_bound(e):e_bound(e+1));
-%             spike_e = z(e_bound(e):e_bound(e+1));
-% 
-%             % Occupancy and spike rate maps
-%             for n = 1:Nbins
-%                 asd.spkMap(id,n,e) = sum(spike_e(bin_phi_e == n));
-%             end
-%             asd.normspkMap(id,:,e) = asd.spkMap(id,:,e)./max(asd.spkMap(id,:,e));
-% 
-%             % asd estimation
-%             [asd.pfMap(id,:,e),~] = runASD_1d(bin_phi_e,(spike_e)',Nbins);
-%             asd.normpfMap(id,:,e) = asd.pfMap(id,:,e)./max(asd.pfMap(id,:,e));
-%             [asd.infomap(id,1,e), asd.infomap(id,2,e)] = ...
-%                 infoMeasures(squeeze(asd.pfMap(id,:,e))',ones(Nbins,1),0);
-%         end
-%     end
+    spkPeak = zeros(Nspk, Nepochs);
+    spkMean = zeros(Nspk, Nepochs);
+
+    bin_pos_e = zeros(h1*h2, Nepochs);
+    hist.spkMap = zeros(h1, h2, Nspk, Nepochs);
+    hist.occMap = zeros(h1, h2, Nepochs);
+    hist.rMap = zeros(h1, h2, Nspk, Nepochs);
+    hist.rMap_sm = zeros(h1, h2, Nspk, Nepochs);
+    hist.infoMap = zeros(Nspk, 2, Nepochs);
+    hist.centroid = zeros(Nspk, Nepochs);
+    hist.fieldSize = zeros(Nspk, 2, Nepochs);
+
+    if doasd
+        asd.spkMap = zeros(n1, n2, Nspk, Nepochs);
+        asd.rMap = zeros(n1, n2, Nspk, Nepochs);
+        asd.infoMap = zeros(Nspk, 2, Nepochs);
+        asd.centroid = zeros(Nspk, Nepochs);
+        asd.fieldSize = zeros(Nspk, 2, Nepochs);
+    end
+
+    % Calculate PF maps
+    e_bound = round( linspace(1,size(activespk,2),Nepochs+1) );
+    for id = 1:Nspk
+        z = activespk(id,:);
+        
+        % separate exploration in smaller intervals
+        for e = 1:Nepochs
+            activer(:,e) = activer(e_bound(e):e_bound(e+1));
+
+            % histogram estimation
+            bin_pos_e(:,e) = hist.bin_pos(e_bound(e):e_bound(e+1));
+            hist.occMap(:,:,e) = full(sparse(xh(e_bound(e):e_bound(e+1)),yh(e_bound(e):e_bound(e+1)),1,h1,h2));
+            hist.spkMap(:,:,id,e) = full(sparse(xh(e_bound(e):e_bound(e+1)), yh(e_bound(e):e_bound(e+1)), z(e_bound(e):e_bound(e+1)), h1, h2));
+            hhh = hist.spkMap(:,:,id,e)./hist.occMap(:,:,e);
+            hhh(isnan(hhh)) = 0; hhh(isinf(hhh)) = 0;
+            hist.rMap(:,:,id,e) = hhh;
+            hhh = imgaussfilt(hhh,2); 
+            hhh(~envMask_h) = 0;
+            hist.rMap_sm(:,:,id,e) = hhh;
+            hist.normrMap_sm(:,:,id,e) = hist.rMap_sm(:,:,id,e)./max(max(hist.rMap_sm(:,:,id,e)));
+            
+            % ASD estimation
+            if doasd
+                [aaa,~] = runASD_2d(asd.bin_pos(e_bound(e):e_bound(e+1)), z(e_bound(e):e_bound(e+1))', asd.Nbins, envMask_asd);
+                if min(aaa)<0; aaa = aaa-min(aaa); end
+                asd.rMap(:,:,id,e) = aaa;
+                asd.normrMap(:,:,id,e) = asd.rMap(:,:,id,e)./max(max(asd.rMap(:,:,id,e)));
+            end
+
+            % info estimation
+            [hist.infoMap(id,1,e), hist.infoMap(id,2,e)] = infoMeasures(hhh,hist.occMap(:,:,e),0);
+            if doasd
+                [asd.infoMap(id,1,e), asd.infoMap(id,2,e)] = infoMeasures(aaa',ones(n1,n2),0);
+            end
+    
+            % Find location preference and field size
+            [ hist.centroid(id,e), hist.fieldSize(id,e) ] = prefLoc_fieldSize_2d( hist.rMap_sm(:,:,id,e) );
+            if doasd
+                [ asd.centroid(id,e), asd.fieldSize(id,e) ] = prefLoc_fieldSize_2d( asd.rMap(:,:,id,e) );
+            end
+        end
+        
+        hist.bin_pos = bin_pos_e;
+    end
 end
 
-% Outputs
-downData.x = downx;
-downData.y = downy;
-downData.r = downr;
-downData.phi = downphi;
-downData.speed = downspeed;
-downData.t = t;
 
+%% Final data
+% histogram estimation
+if ~isempty(hist.SIsec.pcIdx)
+    hist.SIsec.spkMean = spkMean(hist.SIsec.pcIdx);
+    hist.SIsec.spkPeak = spkPeak(hist.SIsec.pcIdx);
+    
+    hist.SIsec.spkMap = hist.spkMap(:,:,hist.SIsec.pcIdx);
+    hist.SIsec.pfMap = hist.rMap(:,:,hist.SIsec.pcIdx);
+    hist.SIsec.pfMap_sm = hist.rMap_sm(:,:,hist.SIsec.pcIdx);
+    hist.SIsec.normpfMap_sm = hist.normrMap_sm(:,:,hist.SIsec.pcIdx);
+    hist.SIsec.infoMap = hist.infoMap(hist.SIsec.pcIdx,1,:);
+    hist.SIsec.centroid = hist.centroid(hist.SIsec.pcIdx,:);
+    hist.SIsec.fieldSize = hist.fieldSize(hist.SIsec.pcIdx,:,:);
+end
+
+if ~isempty(hist.SIspk.pcIdx)
+    hist.SIspk.spkMean = spkMean(hist.SIspk.pcIdx);
+    hist.SIspk.spkPeak = spkPeak(hist.SIspk.pcIdx);
+    
+    hist.SIspk.spkMap = hist.spkMap(:,:,hist.SIspk.pcIdx);
+    hist.SIspk.pfMap = hist.rMap(:,:,hist.SIspk.pcIdx);
+    hist.SIspk.pfMap_sm = hist.rMap_sm(:,:,hist.SIspk.pcIdx);
+    hist.SIspk.normpfMap_sm = hist.normrMap_sm(:,:,hist.SIspk.pcIdx);
+    hist.SIspk.infoMap = hist.infoMap(hist.SIspk.pcIdx,2,:);
+    hist.SIspk.centroid = hist.centroid(hist.SIspk.pcIdx,:);
+    hist.SIspk.fieldSize = hist.fieldSize(hist.SIspk.pcIdx,:,:);
+end
+
+if doasd
+    %asd
+    if ~isempty(asd.SIsec.pcIdx)
+        asd.SIsec.spkMean = spkMean(asd.SIsec.pcIdx);
+        asd.SIsec.spkPeak = spkPeak(asd.SIsec.pcIdx);
+
+        asd.SIsec.pfMap = asd.rMap(:,:,asd.SIsec.pcIdx);
+        asd.SIsec.normpfMap = asd.normrMap(:,:,asd.SIsec.pcIdx);
+        asd.SIsec.infoMap = asd.infoMap(asd.SIsec.pcIdx,1,:);
+        asd.SIsec.centroid = asd.centroid(asd.SIsec.pcIdx,:);
+        asd.SIsec.fieldSize = asd.fieldSize(asd.SIsec.pcIdx,:,:);
+    end
+
+    if ~isempty(asd.SIspk.pcIdx)
+        asd.SIspk.spkMean = spkMean(asd.SIspk.pcIdx);
+        asd.SIspk.spkPeak = spkPeak(asd.SIspk.pcIdx);
+
+        asd.SIspk.pfMap = asd.rMap(:,:,asd.SIspk.pcIdx);
+        asd.SIspk.normpfMap = asd.normrMap(:,:,asd.SIspk.pcIdx);
+        asd.SIspk.infoMap = asd.infoMap(asd.SIspk.pcIdx,2,:);
+        asd.SIspk.centroid = asd.centroid(asd.SIspk.pcIdx,:);
+        asd.SIspk.fieldSize = asd.fieldSize(asd.SIspk.pcIdx,:,:);
+    end
+end
+
+%% Outputs
 activeData.x = activex;
 activeData.y = activey;
 activeData.r = activer;
@@ -245,5 +271,9 @@ activeData.speed = activespeed;
 activeData.t = activet;
 activeData.spikes = activespk;
 
+PFdata.spkMean = spkMean;
+PFdata.spkPeak = spkPeak;
+
+if ~doasd, asd = []; end
 
 end

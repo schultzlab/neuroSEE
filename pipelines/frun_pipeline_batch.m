@@ -47,7 +47,7 @@ force = [false;...              % (1) motion correction even if motion corrected
          false;...              % (5) tracking data extraction
          false];                % (6) place field mapping
 
-mcorr_method = 'normcorre-nr';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
+mcorr_method = 'normcorre';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
                                     %   normcorre-r (rigid),

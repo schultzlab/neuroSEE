@@ -67,6 +67,7 @@ imreg_method = 'normcorre';  % image registration method
 groupreg_method = 'imreg';      % method for concatenating file data (either register images or rois)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
 dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
+doasd = false;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Load module folders and define data directory
@@ -435,7 +436,7 @@ end
 fields = {'Nbins_1D','Nbins_2D'};
 params.PFmap = rmfield(params.PFmap,fields);
 
-[ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile);
+[ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile, doasd);
 
 
 %% Saving all data

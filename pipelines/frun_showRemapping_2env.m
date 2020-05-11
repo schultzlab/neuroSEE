@@ -30,60 +30,37 @@ if nargin<7, figclose = true; end
 % USER-DEFINED INPUT                         
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Basic settings
-default = false;                 % flag to use default parameters
-mcorr_method = 'normcorre-nr';    % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
-                                    % CaImAn NoRMCorre method: 
-                                    %   normcorre-r (rigid),
-                                    %   normcorre-nr (nonrigid), 
-                                    % fft-rigid method (Katie's)
-slacknotify = false;              % flag to send Ann slack notification re start and end of processing
+slacknotify = false;                    % flag to send Ann slack notification re start and end of processing
+mcorr_method = 'normcorre';
+imreg_method = 'normcorre';
+segment_method = 'CaImAn';
+dofissa = true;
+    if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
 
-% Processing parameters (if not using default)
-if ~default
-    % motion correction
-        % Katie's method
-        if strcmpi(mcorr_method,'fftRigid')
-            params.mcorr.fftRigid.imscale = 1;             % image downsampling factor                                             [default: 1]
-            params.mcorr.fftRigid.Nimg_ave = 10;           % no. of images to be averaged for calculating pixel shift (zippering)  [default: 10]
-            params.mcorr.fftRigid.refChannel = 'green';    % channel to be used for calculating image shift (green,red)            [default: 'green']
-            params.mcorr.fftRigid.redoT = 300;             % no. of frames at start of file to redo motion correction for after 1st iteration [default: 300]
-        end
-        % NoRMCorre-rigid
-        if strcmpi(mcorr_method,'normcorre-r')
-            params.mcorr.normcorre_r = NoRMCorreSetParms(...
-                'd1', 512,...
-                'd2', 512,...
-                'max_shift',30,...          % default: 30
-                'bin_width',200,...         % default: 200
-                'us_fac',50,...             % default: 50
-                'init_batch',200);          % default: 200
-        end
-        % NoRMCorre-nonrigid
-        if strcmpi(mcorr_method,'normcorre-nr')    
-            params.mcorr.normcorre_nr = NoRMCorreSetParms(...
-                'd1', 512,...
-                'd2', 512,...
-                'grid_size',[64,64],...     % default: [64,64]
-                'overlap_pre',[64,64],...   % default: [64,64]
-                'overlap_post',[64,64],...  % default: [64,64]
-                'iter',1,...                % default: 1
-                'use_parallel',false,...    % default: false
-                'max_shift',20,...          % default: 20
-                'mot_uf',4,...              % default: 4
-                'bin_width',200,...         % default: 200
-                'max_dev',3,...             % default: 3
-                'us_fac',50,...             % default: 50
-                'init_batch',200);          % default: 200
-        end
-    % roi registration
-        params.ROIreg.maxthr = [];                     
-        params.ROIreg.dist_maxthr = 0.1;        % threshold for turning spatial components into binary masks [default: 0.1]
-        params.ROIreg.dist_exp = 0.8;           % power n for distance between masked components: dist = 1 - (and(m1,m2)/or(m1,m2))^n [default: 1]
-        params.ROIreg.dist_thr = 0.7;           % threshold for setting a distance to infinity    [default: 0.5]
-        params.ROIreg.dist_overlap_thr = 0.7;   % overlap threshold for detecting if one ROI is a subset of another [default: 0.8]
-        params.ROIreg.plot_reg = true;
-        params.ROIreg.print_msg = false;
-end
+% ROI registration parameters
+params.ROIreg_mc = NoRMCorreSetParms(...
+            'd1',512,...                % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
+            'd2',512,...                % length of image [default: 512] *value from actual image    
+            'grid_size',[128,128],...   % default: [64,64]
+            'overlap_pre',[64,64],...   % default: [64,64]
+            'overlap_post',[64,64],...  % default: [64,64]
+            'iter',1,...                % default: 1
+            'use_parallel',false,...    % default: false
+            'max_shift',25,...          % default: 20
+            'mot_uf',4,...              % default: 4
+            'bin_width',200,...         % default: 200
+            'max_dev',3,...             % default: 3
+            'us_fac',50,...             % default: 50
+            'init_batch',200);          % default: 200
+params.ROIreg_mc.print_msg = false;
+
+params.ROIreg.maxthr = [];                     
+params.ROIreg.dist_maxthr = 0.1;        % threshold for turning spatial components into binary masks [default: 0.1]
+params.ROIreg.dist_exp = 0.8;           % power n for distance between masked components: dist = 1 - (and(m1,m2)/or(m1,m2))^n [default: 1]
+params.ROIreg.dist_thr = 0.7;           % threshold for setting a distance to infinity    [default: 0.5]
+params.ROIreg.dist_overlap_thr = 0.7;   % overlap threshold for detecting if one ROI is a subset of another [default: 0.8]
+params.ROIreg.plot_reg = true;
+params.ROIreg.print_msg = false;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Load module folders and define data directory
@@ -94,28 +71,22 @@ if ~isempty(err)
     return
 end
 
-% Default parameters
-if default
-    C = load('default_params.mat');
-    if strcmpi(mcorr_method,'fftRigid')
-        params.mcorr.fftRigid = C.mcorr.fftRigid;
-    elseif strcmpi(mcorr_method,'normcorre-r')
-        params.mcorr.normcorre_r = C.mcorr.normcorre_r;
-    elseif strcmpi(mcorr_method,'normcorre-nr')
-        params.mcorr.normcorre_nr = C.mcorr.normcorre_nr;
-    end
-    clear C
-end
-
 
 %% Pre-processing
 % Check if data exist for mouseID in env1 and env2. Quit if data does not exist
-dir_env1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env1 ...
-           '/group_proc/normcorre-nr_CaImAn_FISSA/' mouseid '_' env1 env2 '-' env1 '_imreg_ref' ref1 '/'];
-data_env1 = [dir_env1 mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_PFmap_output.mat'];
+if strcmpi(imreg_method, mcorr_method)
+    dir_env1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env1 ...
+               '/group_proc/imreg_' imreg_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '-' env1 '_imreg_ref' ref1 '/'];
+    dir_env2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env2 ...
+            '/group_proc/imreg_' imreg_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '-' env2 '_imreg_ref' ref2 '/'];
+else
+    dir_env1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env1 ...
+               '/group_proc/imreg_' imreg_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '-' env1 '_imreg_ref' ref1 '_' mcorr_method '/'];
+    dir_env2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env2 ...
+            '/group_proc/imreg_' imreg_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '-' env2 '_imreg_ref' ref2 '_' mcorr_method '/'];
+end
 
-dir_env2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env2 ...
-           '/group_proc/normcorre-nr_CaImAn_FISSA/' mouseid '_' env1 env2 '-' env2 '_imreg_ref' ref2 '/'];
+data_env1 = [dir_env1 mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_PFmap_output.mat'];
 data_env2 = [dir_env2 mouseid '_' env1 env2 '-' env2 '_ref' ref2 '_PFmap_output.mat'];
        
 if ~and(exist(data_env1,'file'), exist(data_env2,'file'))       
@@ -134,9 +105,14 @@ end
 
 %% ROI registration across sessions
 tic
-fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 ...
-           '/remapping/normcorre-nr_CaImAn_FISSA/' mouseid '_' env1 env2 '_imreg_ref' ref1 '-' ref2 '/'];
-if ~exist(fdir,'dir'), mkdir(fdir); end
+if strcmpi(imreg_method, mcorr_method)
+    fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' ...
+           imreg_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '_imreg_ref' ref1 '-' ref2 '/'];
+else
+    fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' ...
+           imreg_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '_imreg_ref' ref1 '-' ref2 '_' mcorr_method '/'];
+
+end
 fname_remap = [fdir  mouseid '_' env1 env2 '_remapping_output.mat'];
 fname_remapfig = [fdir  mouseid '_' env1 env2 '_remapping_summary.fig'];
 
@@ -148,8 +124,8 @@ if ~exist(fname_remap,'file') || force
     PF1 = load([dir_env1 mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_PFmap_output.mat']);
     PF2 = load([dir_env2 mouseid '_' env1 env2 '-' env2 '_ref' ref2 '_PFmap_output.mat']);
 
-    masks1 = M1.masks(:,:,PF1.hist.pcIdx_SIsec);
-    masks2 = M2.masks(:,:,PF2.hist.pcIdx_SIsec);
+    masks1 = M1.masks(:,:,PF1.hist.SIsec.pcIdx);
+    masks2 = M2.masks(:,:,PF2.hist.SIsec.pcIdx);
     A1 = zeros(size(masks1,1)*size(masks1,2),size(masks1,3));
     A2 = zeros(size(masks2,1)*size(masks2,2),size(masks2,3));
     for i = 1:size(masks1,3)
@@ -173,24 +149,10 @@ if ~exist(fname_remap,'file') || force
     template1 = t1.template_g;
     template2 = t2.template_g;
 
-    params.ROIreg_mc = NoRMCorreSetParms(...
-                'd1',params.ROIreg.d1,...        % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
-                'd2',params.ROIreg.d2,...        % length of image [default: 512] *value from actual image    
-                'grid_size',[128,128],...     % default: [64,64]
-                'overlap_pre',[64,64],...   % default: [64,64]
-                'overlap_post',[64,64],...  % default: [64,64]
-                'iter',1,...                % default: 1
-                'use_parallel',false,...    % default: false
-                'max_shift',20,...          % default: 20
-                'mot_uf',4,...              % default: 4
-                'bin_width',200,...         % default: 200
-                'max_dev',3,...             % default: 3
-                'us_fac',50,...             % default: 50
-                'init_batch',200);          % default: 200
-    params.ROIreg_mc.print_msg = false;
 
     fname_fig = [fdir  mouseid '_' env1 env2 '_regROIs_output'];
-    [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A1,A2,params.ROIreg,template1,template2,params.ROIreg_mc,fname_fig,true);
+    [ matched_ROIs, nonmatched_1, nonmatched_2, A2, R, A_union ] = ...
+        register_ROIs( A1, A2, params.ROIreg, template1, template2, params.ROIreg_mc, fname_fig, true );
     masks_union = reshape(full(A_union), params.ROIreg.d1, params.ROIreg.d2, size(A_union,2));
     masks2_reg = reshape(full(A2), params.ROIreg.d1, params.ROIreg.d2, size(A2,2));
     for j = 1:size(masks_union,3)
@@ -252,28 +214,26 @@ if ~exist(fname_remap,'file') || force
     end
     
     % PF maps for fam2 in fam1 sorting
-    env2PF_env1Sorting = zeros(size([PF1.hist.sort_normpfMap_SIsec_sm]));
+    env2PF_env1Sorting = zeros(size([PF1.hist.SIsec.sort_normpfMap_sm]));
     for i = 1:size(masks1,3)
-       [matched,ind] = ismember(PF1.hist.sortIdx_SIsec(i),matched_ROIs(:,1));
+       [matched,ind] = ismember(PF1.hist.SIsec.sortIdx(i),matched_ROIs(:,1));
        if matched
-           env2PF_env1Sorting(i,:) = PF2.hist.sort_normpfMap_SIsec_sm(matched_ROIs(ind,2),:);
+           env2PF_env1Sorting(i,:) = PF2.hist.SIsec.sort_normpfMap_sm(matched_ROIs(ind,2),:);
        end
     end
     clear matched ind
     
     % PF maps for fam2 in fam1 sorting
-    env1PF_env2Sorting = zeros(size([PF2.hist.sort_normpfMap_SIsec_sm]));
+    env1PF_env2Sorting = zeros(size([PF2.hist.SIsec.sort_normpfMap_sm]));
     for i = 1:size(masks2,3)
-       [matched,ind] = ismember(PF2.hist.sortIdx_SIsec(i),matched_ROIs(:,2));
+       [matched,ind] = ismember(PF2.hist.SIsec.sortIdx(i),matched_ROIs(:,2));
        if matched
-           env1PF_env2Sorting(i,:) = PF1.hist.sort_normpfMap_SIsec_sm(matched_ROIs(ind,1),:);
+           env1PF_env2Sorting(i,:) = PF1.hist.SIsec.sort_normpfMap_sm(matched_ROIs(ind,1),:);
        end
     end
     
-    env1PF = PF1.hist.sort_normpfMap_SIsec;
-    env1PF_sm = PF1.hist.sort_normpfMap_SIsec_sm;
-    env2PF = PF2.hist.sort_normpfMap_SIsec;
-    env2PF_sm = PF2.hist.sort_normpfMap_SIsec_sm;
+    env1PF = PF1.hist.SIsec.sort_normpfMap_sm;
+    env2PF = PF2.hist.SIsec.sort_normpfMap_sm;
     
     % save data
     remapping_output.masks = masks_union;
@@ -290,13 +250,12 @@ if ~exist(fname_remap,'file') || force
     remapping_output.im_env2masks = im_env2masks;
     remapping_output.im_env1env2masks = im_env1env2masks;
     remapping_output.env1PF = env1PF;
-    remapping_output.env1PF_sm = env1PF_sm;
     remapping_output.env2PF_env1Sorting = env2PF_env1Sorting;
     remapping_output.env1PF_env2Sorting = env1PF_env2Sorting;
     remapping_output.env2PF = env2PF;
-    remapping_output.env2PF_sm = env2PF_sm;
     
     fprintf('%s: saving remapping data\n',[mouseid '_' env1 env2]);
+    if ~exist(fdir,'dir'), mkdir(fdir); end
     save(fname_remap, '-struct', 'remapping_output')
 else
     if ~exist(fname_remapfig,'file') 
@@ -307,10 +266,10 @@ else
         im_env1masks = c.im_env1masks;
         im_env2masks = c.im_env2masks;
         im_env1env2masks = c.im_env1env2masks;
-        env1PF_sm = c.env1PF;
+        env1PF = c.env1PF;
         env2PF_env1Sorting = c.env2PF_env1Sorting;
         env1PF_env2Sorting = c.env1PF_env2Sorting;
-        env2PF_sm = c.env2PF;
+        env2PF = c.env2PF;
         clear c
     end
 end
@@ -318,7 +277,7 @@ end
 if ~exist(fname_remapfig,'file') || force
     fh = figure;
     fontsize = 16;
-    Nbins = size(env1PF_sm,2);
+    Nbins = size(env1PF,2);
     subplot(2,12,1:4);
         imshow(im_env1masks); title(env1,'Fontweight','normal','Fontsize',fontsize);    
     subplot(2,12,5:8);
@@ -327,10 +286,10 @@ if ~exist(fname_remapfig,'file') || force
         imshow(im_env1env2masks); title([env1 ' \cap ' env2],'Fontweight','normal','Fontsize',fontsize);
     subplot(2,12,13:15);
         cmap = viridisMap;
-        imagesc(env1PF_sm); 
+        imagesc(env1PF); 
         colormap(cmap); %colorbar
         title(env1,'Fontweight','normal','Fontsize',fontsize);
-        yticks([1 size(env1PF_sm,1)]); yticklabels([1 size(env1PF_sm,1)]);
+        yticks([1 size(env1PF,1)]); yticklabels([1 size(env1PF,1)]);
         xticks([1 Nbins]); xticklabels([1 100]);
         xlabel('Position (cm)'); %ylabel('Cell no.');
     subplot(2,12,16:18);
@@ -342,11 +301,11 @@ if ~exist(fname_remapfig,'file') || force
     subplot(2,12,19:21);
         imagesc(env1PF_env2Sorting); 
         title(env1,'Fontweight','normal','Fontsize',fontsize); 
-        yticks([1 size(env2PF_sm,1)]); yticklabels([1 size(env2PF_sm,1)]);
+        yticks([1 size(env2PF,1)]); yticklabels([1 size(env2PF,1)]);
         xticks([1 Nbins]); xticklabels([1 100]);
         xlabel('Position (cm)');
     subplot(2,12,22:24);
-        imagesc(env2PF_sm); 
+        imagesc(env2PF); 
         title(env2,'Fontweight','normal','Fontsize',fontsize); 
         yticks([]);
         xticks([1 Nbins]); xticklabels([1 100]);

@@ -22,76 +22,76 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
             pfMaps_2d(activeData, hist.SIsec.pfMap, hist.SIsec.pfMap_sm, [], hist.SIsec.pcIdx);
         end
         
-        fname = [sdir 'hist_SI_bitspersec/' fname_pref '_centroid_PCs'];
-        plot_pfChar( Npcs, hist.SIsec.normpfMap_sm, hist.SIsec.centroid, 'PC', fsave, fname, fclose );
-
-        fname = [sdir 'hist_SI_bitspersec/' fname_pref  '_populSummary_PC'];
-        plot_populSummary( hist.SIsec.spkPeak, hist.SIsec.spkMean, hist.SIsec.infoMap,...
-            hist.SIsec.fieldSize, hist.SIsec.centroid, hist.bin_pos, activeData.r, fsave, fname, fclose );
-            
-        if Nepochs > 1
-            fname = [sdir 'hist_SI_bitspersec/' fname_pref '_remapping_hist_SIsec'];
-            plotRemapping( hist.SIsec.normpfMap_sm, fname );
-        end
+%         fname = [sdir 'hist_SI_bitspersec/' fname_pref '_centroid_PCs'];
+%         plot_pfChar( Npcs, hist.SIsec.normpfMap_sm, hist.SIsec.centroid, 'PC', fsave, fname, fclose );
+% 
+%         fname = [sdir 'hist_SI_bitspersec/' fname_pref  '_populSummary_PC'];
+%         plot_populSummary( hist.SIsec.spkPeak, hist.SIsec.spkMean, hist.SIsec.infoMap,...
+%             hist.SIsec.fieldSize, hist.SIsec.centroid, hist.bin_pos, activeData.r, fsave, fname, fclose );
+%             
+%         if Nepochs > 1
+%             fname = [sdir 'hist_SI_bitspersec/' fname_pref '_remapping_hist_SIsec'];
+%             plotRemapping( hist.SIsec.normpfMap_sm, fname );
+%         end
      end
-    
-    % spike raster plots for NON-place cells 
-    if ~isempty(hist.SIsec.nonpcIdx)
-        Nnonpcs = numel(hist.SIsec.nonpcIdx);
-        fname = [sdir 'hist_SI_bitspersec/' fname_pref '_pfMaps_nonPCs'];
-        if ~isempty(asd)
-            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIsec.nonpcIdx), hist.rMap_sm(:,:,hist.SIsec.nonpcIdx), asd.rMap(:,:,hist.SIsec.nonpcIdx), hist.SIsec.nonpcIdx);
-        else
-            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIsec.nonpcIdx), hist.rMap_sm(:,:,hist.SIsec.nonpcIdx), [], hist.SIsec.nonpcIdx);
-        end
-        
-        fname = [sdir 'hist_SI_bitspersec/' fname_pref '_centroid_nonPCs'];
-        plot_pfChar( Nnonpcs, hist.normrMap_sm(:,:,hist.SIsec.nonpcIdx), hist.centroid(hist.SIsec.nonpcIdx), 'nonPC', fsave, fname, fclose );
-
-    end
+%     
+%     % spike raster plots for NON-place cells 
+%     if ~isempty(hist.SIsec.nonpcIdx)
+%         Nnonpcs = numel(hist.SIsec.nonpcIdx);
+%         fname = [sdir 'hist_SI_bitspersec/' fname_pref '_pfMaps_nonPCs'];
+%         if ~isempty(asd)
+%             pfMaps_2d(activeData, hist.rMap(:,:,hist.SIsec.nonpcIdx), hist.rMap_sm(:,:,hist.SIsec.nonpcIdx), asd.rMap(:,:,hist.SIsec.nonpcIdx), hist.SIsec.nonpcIdx);
+%         else
+%             pfMaps_2d(activeData, hist.rMap(:,:,hist.SIsec.nonpcIdx), hist.rMap_sm(:,:,hist.SIsec.nonpcIdx), [], hist.SIsec.nonpcIdx);
+%         end
+%         
+%         fname = [sdir 'hist_SI_bitspersec/' fname_pref '_centroid_nonPCs'];
+%         plot_pfChar( Nnonpcs, hist.normrMap_sm(:,:,hist.SIsec.nonpcIdx), hist.centroid(hist.SIsec.nonpcIdx), 'nonPC', fsave, fname, fclose );
+% 
+%     end
     
 %% SI (bits/spike)
     % histogram estimation
     % plots for PLACE cells 
-    if fsave
-        if ~exist([sdir 'hist_SI_bitsperspk/'],'dir'), mkdir([sdir 'hist_SI_bitsperspk/']); end
-    end
-    if ~isempty(hist.SIspk.pcIdx)
-        Npcs = numel(hist.SIspk.pcIdx);
-        fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_pfMaps_PCs'];
-        if ~isempty(asd)
-            pfMaps_2d(activeData, hist.SIspk.pfMap, hist.SIspk.pfMap_sm, asd.rMap(:,:,hist.SIspk.pcIdx,:), hist.SIspk.pcIdx);
-        else
-            pfMaps_2d(activeData, hist.SIspk.pfMap, hist.SIspk.pfMap_sm, [], hist.SIspk.pcIdx);
-        end
-        
-        fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_centroid_PCs'];
-        plot_pfChar( Npcs, hist.SIspk.normpfMap_sm, hist.SIspk.centroid, 'PC', fsave, fname, fclose );
-
-        fname = [sdir 'hist_SI_bitsperspk/' fname_pref  '_populSummary_PC'];
-        plot_populSummary( hist.SIspk.spkPeak, hist.SIspk.spkMean, hist.SIspk.infoMap,...
-            hist.SIspk.fieldSize, hist.SIspk.centroid, hist.bin_pos, activeData.r, fsave, fname, fclose );
-            
-        if Nepochs > 1
-            fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_remapping_hist_SIsec'];
-            plotRemapping( hist.SIspk.normpfMap_sm, fname );
-        end
-    end
-    
-    % spike raster plots for NON-place cells 
-    if ~isempty(hist.SIspk.nonpcIdx)
-        Nnonpcs = numel(hist.SIspk.nonpcIdx);
-        fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_pfMaps_nonPCs'];
-        if ~isempty(asd)
-            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), asd.rMap(:,:,hist.SIspk.nonpcIdx), hist.SIspk.nonpcIdx);
-        else
-            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), [], hist.SIspk.nonpcIdx);
-        end
-        
-        fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_centroid_nonPCs'];
-        plot_pfChar( Nnonpcs, hist.normrMap_sm(:,:,hist.SIspk.nonpcIdx), hist.centroid(hist.SIspk.nonpcIdx), 'nonPC', fsave, fname, fclose );
-
-    end
+%     if fsave
+%         if ~exist([sdir 'hist_SI_bitsperspk/'],'dir'), mkdir([sdir 'hist_SI_bitsperspk/']); end
+%     end
+%     if ~isempty(hist.SIspk.pcIdx)
+%         Npcs = numel(hist.SIspk.pcIdx);
+%         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_pfMaps_PCs'];
+%         if ~isempty(asd)
+%             pfMaps_2d(activeData, hist.SIspk.pfMap, hist.SIspk.pfMap_sm, asd.rMap(:,:,hist.SIspk.pcIdx,:), hist.SIspk.pcIdx);
+%         else
+%             pfMaps_2d(activeData, hist.SIspk.pfMap, hist.SIspk.pfMap_sm, [], hist.SIspk.pcIdx);
+%         end
+%         
+%         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_centroid_PCs'];
+%         plot_pfChar( Npcs, hist.SIspk.normpfMap_sm, hist.SIspk.centroid, 'PC', fsave, fname, fclose );
+% 
+%         fname = [sdir 'hist_SI_bitsperspk/' fname_pref  '_populSummary_PC'];
+%         plot_populSummary( hist.SIspk.spkPeak, hist.SIspk.spkMean, hist.SIspk.infoMap,...
+%             hist.SIspk.fieldSize, hist.SIspk.centroid, hist.bin_pos, activeData.r, fsave, fname, fclose );
+%             
+%         if Nepochs > 1
+%             fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_remapping_hist_SIsec'];
+%             plotRemapping( hist.SIspk.normpfMap_sm, fname );
+%         end
+%     end
+%     
+%     % spike raster plots for NON-place cells 
+%     if ~isempty(hist.SIspk.nonpcIdx)
+%         Nnonpcs = numel(hist.SIspk.nonpcIdx);
+%         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_pfMaps_nonPCs'];
+%         if ~isempty(asd)
+%             pfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), asd.rMap(:,:,hist.SIspk.nonpcIdx), hist.SIspk.nonpcIdx);
+%         else
+%             pfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), [], hist.SIspk.nonpcIdx);
+%         end
+%         
+%         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_centroid_nonPCs'];
+%         plot_pfChar( Nnonpcs, hist.normrMap_sm(:,:,hist.SIspk.nonpcIdx), hist.centroid(hist.SIspk.nonpcIdx), 'nonPC', fsave, fname, fclose );
+% 
+%     end
     
     
 %% subfunctions
@@ -114,17 +114,21 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
                         axes(ha(jj*nCol+1));
                         z = activeData.spikes(pcIdx(ii*nRow+jj+1),:);
                         hold on; axis off;
-                        plot(activeData.x,-activeData.y,'Color',[0.6 0.6 0.6],'LineWidth',1.2); 
-                        ind = find(z>0);
-                        x = activeData.x(ind);
-                        y = activeData.y(ind);
-                        spikes = z(ind);
+                        plot(activeData.x,-activeData.y,'Color',[0.6 0.6 0.6],'LineWidth',1.2); axis square; 
+                        plot(activeData.x(z>0),-activeData.y(z>0),'r.','markersize',10);
+                        title(['Cell ',num2str(ii*nRow+jj+1)],'fontsize',15);
+                        hold on
+                        ind = find(m62.activeData.spikes(m62.hist.SIsec.pcIdx(id),:)>0);
+                        x = m62.activeData.x(ind);
+                        y = m62.activeData.y(ind);
+                        spikes = m62.activeData.spikes(m62.hist.SIsec.pcIdx(id),ind);
                         [spikes_sorted,sort_ind] = sort(spikes);
-                        scatter(x(sort_ind),-y(sort_ind),20,spikes_sorted,'filled');
-                        title_str = sprintf('Cell %d (%0.2g)',(ii*nRow+jj+1),max(spikes));
-                        title(title_str,'fontsize',15);
+                        scatter(-x(sort_ind),y(sort_ind),20,spikes_sorted,'filled');
+                        %scatter(x,y,20,spikes,'filled');
+                        max(m62.activeData.spikes(m62.hist.SIsec.pcIdx(id),ind))
                         hold off
 
+                        
                         axes(ha(jj*nCol+2));
                         imagesc(squeeze(pfMap_h(:,:,ii*nRow+jj+1,e))');
                         axis off; colorbar; % caxis([0 0.06]);

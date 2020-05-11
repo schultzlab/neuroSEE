@@ -213,7 +213,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
             else
                 str = sprintf('%s: Loading registered images...\n', [file '_' reffile]);
             end
-            cprintf( 'Text', str )
+            cprintf( 'Text', str );
             
             imG = read_file(fname_tif_gr_mcorr);
             if load_imR

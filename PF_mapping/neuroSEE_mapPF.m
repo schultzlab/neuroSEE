@@ -119,7 +119,7 @@ function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, dow
         else % '2D'
             [hist, asd, activeData, PFdata] = generatePFmap_2d(spikes, downTrackdata, params, doasd);
             
-             % Make plots
+            % Make plots
             if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); end
             plotPF_2d( hist, asd, activeData, true, true, fig_sdir, fname_pref )
         
@@ -146,6 +146,16 @@ function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, dow
         activeData = m.activeData;
         params.PFmap = m.params;
         Nepochs = params.PFmap.Nepochs;
+        
+        % Make plots if necessary
+        if ~exist(fig_sdir,'dir')
+            mkdir(fig_sdir); 
+            if strcmpi(params.mode_dim,'1D')
+                plotPF_1d(hist, asd, PFdata, true, true, fig_sdir, fname_pref)
+            else
+                plotPF_2d( hist, asd, activeData, true, true, fig_sdir, fname_pref )
+            end
+        end
         
         if isempty(list)
             str = sprintf( '%s: Place field map data loaded\n', file );

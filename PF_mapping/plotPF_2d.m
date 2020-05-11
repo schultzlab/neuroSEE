@@ -17,9 +17,9 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
         Npcs = numel(hist.SIsec.pcIdx);
         fname = [sdir 'hist_SI_bitspersec/' fname_pref '_pfMaps_PCs'];
         if ~isempty(asd)
-            pfMaps_2d(activeData, hist.SIsec.pfMap, hist.SIsec.pfMap_sm, asd.rMap(:,:,hist.SIsec.pcIdx,:), hist.SIsec.pcIdx);
+            pfMaps_2d(activeData, hist.SIsec.pfMap, hist.SIsec.pfMap_sm, asd.rMap(:,:,hist.SIsec.pcIdx,:), hist.SIsec.pcIdx, 'PC');
         else
-            pfMaps_2d(activeData, hist.SIsec.pfMap, hist.SIsec.pfMap_sm, [], hist.SIsec.pcIdx);
+            pfMaps_2d(activeData, hist.SIsec.pfMap, hist.SIsec.pfMap_sm, [], hist.SIsec.pcIdx, 'PC');
         end
         
         fname = [sdir 'hist_SI_bitspersec/' fname_pref '_centroid_PCs'];
@@ -40,9 +40,11 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
         Nnonpcs = numel(hist.SIsec.nonpcIdx);
         fname = [sdir 'hist_SI_bitspersec/' fname_pref '_pfMaps_nonPCs'];
         if ~isempty(asd)
-            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIsec.nonpcIdx), hist.rMap_sm(:,:,hist.SIsec.nonpcIdx), asd.rMap(:,:,hist.SIsec.nonpcIdx), hist.SIsec.nonpcIdx);
+            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIsec.nonpcIdx), hist.rMap_sm(:,:,hist.SIsec.nonpcIdx), ...
+                        asd.rMap(:,:,hist.SIsec.nonpcIdx), hist.SIsec.nonpcIdx, 'nonPC');
         else
-            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIsec.nonpcIdx), hist.rMap_sm(:,:,hist.SIsec.nonpcIdx), [], hist.SIsec.nonpcIdx);
+            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIsec.nonpcIdx), hist.rMap_sm(:,:,hist.SIsec.nonpcIdx), ...
+                        [], hist.SIsec.nonpcIdx, 'nonPC');
         end
         
         fname = [sdir 'hist_SI_bitspersec/' fname_pref '_centroid_nonPCs'];
@@ -60,9 +62,9 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
         Npcs = numel(hist.SIspk.pcIdx);
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_pfMaps_PCs'];
         if ~isempty(asd)
-            pfMaps_2d(activeData, hist.SIspk.pfMap, hist.SIspk.pfMap_sm, asd.rMap(:,:,hist.SIspk.pcIdx,:), hist.SIspk.pcIdx);
+            pfMaps_2d(activeData, hist.SIspk.pfMap, hist.SIspk.pfMap_sm, asd.rMap(:,:,hist.SIspk.pcIdx,:), hist.SIspk.pcIdx, 'PC');
         else
-            pfMaps_2d(activeData, hist.SIspk.pfMap, hist.SIspk.pfMap_sm, [], hist.SIspk.pcIdx);
+            pfMaps_2d(activeData, hist.SIspk.pfMap, hist.SIspk.pfMap_sm, [], hist.SIspk.pcIdx, 'PC');
         end
         
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_centroid_PCs'];
@@ -83,9 +85,11 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
         Nnonpcs = numel(hist.SIspk.nonpcIdx);
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_pfMaps_nonPCs'];
         if ~isempty(asd)
-            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), asd.rMap(:,:,hist.SIspk.nonpcIdx), hist.SIspk.nonpcIdx);
+            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), ...
+                        asd.rMap(:,:,hist.SIspk.nonpcIdx), hist.SIspk.nonpcIdx, 'nonPC');
         else
-            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), [], hist.SIspk.nonpcIdx);
+            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), ...
+                        [], hist.SIspk.nonpcIdx, 'nonPC');
         end
         
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_centroid_nonPCs'];
@@ -95,7 +99,7 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
     
     
 %% subfunctions
-    function pfMaps_2d(activeData, pfMap_h, pfMap_sm_h, pfMap_a, pcIdx)
+    function pfMaps_2d(activeData, pfMap_h, pfMap_sm_h, pfMap_a, pcIdx, cell_str)
         Nepochs = size( pfMap_h, 4 );
         Ncells = length(pcIdx);
         nRow = 4;
@@ -121,7 +125,7 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
                         spikes = z(ind);
                         [spikes_sorted,sort_ind] = sort(spikes);
                         scatter(x(sort_ind),-y(sort_ind),20,spikes_sorted,'filled');
-                        title_str = sprintf('Cell %d (%0.2g)',(ii*nRow+jj+1),max(spikes));
+                        title_str = sprintf('%s %d (%0.2g)', cell_str, (ii*nRow+jj+1), max(spikes));
                         title(title_str,'fontsize',15);
                         hold off
 

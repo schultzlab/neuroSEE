@@ -121,7 +121,7 @@ function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, dow
             
              % Make plots
             if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); end
-            plotPF_2d( hist, asd, activeData )
+            plotPF_2d( hist, asd, activeData, true, true, fig_sdir, fname_pref )
         
             % Save output
             output.hist = hist;

@@ -1,4 +1,5 @@
-function [A_union, assignments, matchings] = register_multisession(A, options, templates, options_mc, sdir, list, reffile)
+function [A_union, A2, assignments, matchings, templates_shifted, cmatched_ROIs, cnonmatched_1, cnonmatched_2, R, A_un ] = ...
+            register_multisession(A, options, templates, options_mc, figname_pref, figclose)
 % REGISTER_MULTISESSION - register ROIs from multiple recording sessions
 %
 %   [A_UNION, ASSIGNMENTS, MATCHINGS] = REGISTER_MULTISESSION(A,...
@@ -35,10 +36,13 @@ function [A_union, assignments, matchings] = register_multisession(A, options, t
 % matchings:              cell array. Each entry matchings{i}(j) = k means that component j from session
 %                               i is represented by component k in A_union
 
+% Ann's addition:
+if nargin < 6, figclose = true; end
+
 defoptions = CNMFSetParms;
 if ~exist('options','var'); options = defoptions; end
 
-if ~exist('templates','var') || ~exist('options_mc','var');
+if ~exist('templates','var') || ~exist('options_mc','var')
     warning('Some required inputs for aligning ROIs before registering are missing. Skipping alignment');
     align_flag = false;
 else
@@ -64,38 +68,55 @@ if length(templates) == 1
     end
 end
 
-siz = [options.d1,options.d2,options.d3];
+% siz = [options.d1,options.d2,options.d3];
+options_mc.r.correct_bidir = false;
 options_mc.correct_bidir = false;
 A_union = A{1};
+A_un{1} = A{1};
 matchings{1} = 1:size(A{1},2);
 
-% Ann's note: This is the original version, but this is wrong. It aligns 1
+% Ann's note: This is the original version. It aligns 1
 % to 2, then the union to 3, then the union to 4, etc. And in the case of
-% matched pairs between 1 and 2, it keeps 2!
+% matched pairs between 1 and 2, it keeps 2.
+for s = 2:n_sessions
+   if ~isempty(figname_pref)
+       fname_fig = [figname_pref '_s' num2str(s) '_regto_s' num2str(s-1)];
+   else
+       fname_fig = [];
+   end
+   [ ~, ~, ~, Aunion_shifted, ~, ~, template_shifted ] = ...
+       register_ROIs( A{s}, A_union, options, templates{s}, templates{s-1}, options_mc.r, [], figclose );
+   [ matched_ROIs, nonmatched_1, nonmatched_2, A2{s-1}, R{s-1}, A_un{s}, templates_shifted{s-1} ] = ...
+       register_ROIs( A{s}, Aunion_shifted, options, templates{s}, template_shifted, options_mc.nr ,fname_fig, figclose );
+   A_union = A_un{s};
+   A_union(:, matched_ROIs(:,2)) = A{s}(:, matched_ROIs(:,1));
+   % A_union = [A_union, A{s}(:,nonmatched_1)]; % Ann commented this out as
+   % it seems unnecessary
+   new_match = zeros(1,size(A{s},2));
+   new_match(matched_ROIs(:,1)) = matched_ROIs(:,2);
+   % new_match(nonmatched_1) = size(A_un{s-1},2)+1:size(A_union,2); % Ann
+   % commented this out as it's wrong!
+   new_match(nonmatched_1) = size(A_un{s-1},2)+1:size(A_union,2);
+   matchings{s} = new_match;
+   
+   cmatched_ROIs{s-1} = matched_ROIs;
+   cnonmatched_1{s-1} = nonmatched_1;
+   cnonmatched_2{s-1} = nonmatched_2;
+end
+
+% This version aligns all to 1. In the case of matched pairs between 1 and
+% 2, it keeps 1.
 % for session = 2:n_sessions
-%    [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_un] = register_ROIs(A{session},A_union,options,templates{session},templates{session-1},options_mc);
-%    A_union = A_un;
-%    A_union(:, matched_ROIs(:,2)) = A{session}(:, matched_ROIs(:,1));
-%    A_union = [A_union, A{session}(:,nonmatched_1)];
+%    fname_fig = [figname_pref '_s' num2str(session) '_regto_s1'];
+%    [ matched_ROIs{session-1}, nonmatched_1{session-1}, nonmatched_2{session-1}, A2{session-1}, R{session-1}, A_union ] = ...
+%       register_ROIs( A_union, A{session}, options, templates{1}, templates{session}, options_mc, fname_fig, figclose );
 %    new_match = zeros(1,size(A{session},2));
-%    new_match(matched_ROIs(:,1)) = matched_ROIs(:,2);
-%    new_match(nonmatched_1) = size(A_un,2)+1:size(A_union,2);
+%    new_match(matched_ROIs(:,2)) = matched_ROIs(:,1);
+%    new_match(nonmatched_2) = size(A_union,2)-numel(nonmatched_2)+1 : size(A_union,2);
 %    matchings{session} = new_match;
 % end
 
-% MouseID and experiment name
-[ mouseid, expname ] = find_mouseIDexpname(list);
-
-for session = 2:n_sessions
-   fname_fig = [sdir 'registered_rois/' mouseid '_' expname '_ref_' reffile '_session' num2str(session) '_regto_1'];
-   [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A_union,A{session},options,templates{1},templates{session},options_mc,fname_fig,options.figsave);
-   new_match = zeros(1,size(A{session},2));
-   new_match(matched_ROIs(:,2)) = matched_ROIs(:,1);
-   new_match(nonmatched_2) = size(A_union,2)-numel(nonmatched_2)+1 : size(A_union,2);
-   matchings{session} = new_match;
-end
-
 assignments = NaN(size(A_union,2), n_sessions);
-for session = 1:n_sessions
-    assignments(matchings{session}, session) = 1:length(matchings{session});
+for s = 1:n_sessions
+    assignments(matchings{s}, s) = 1:length(matchings{s});
 end

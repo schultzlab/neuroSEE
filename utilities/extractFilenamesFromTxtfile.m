@@ -1,15 +1,11 @@
 % Written by Ann Go
 % Function for reading individual filenames for batch processing 
 % INPUT
-%   filename : txt file with three columns. The one-line header specifies
-%               column names        
-%               e.g.    file    1or2d   fov
-%                       20181019_12_23_34   1   330
-%                       20181019_23_34_56   2   490
+%   filename 
+%           e.g.    20181019_12_23_34
+%                       
 % OUTPUT
-%   files       : filenames (1st column)
-%   filesDim    : no. of dimensions of environment (2nd column)
-%   filesFOV    : size of one length of square FOV in um (3rd column)
+%   files       : filenames 
 
 function files = extractFilenamesFromTxtfile(filename)
 

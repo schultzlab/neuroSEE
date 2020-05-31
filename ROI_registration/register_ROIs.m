@@ -1,4 +1,4 @@
-function [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A1,A2,options,template1,template2,options_mc,fname_fig,fsave,fclose)
+function [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union,template2] = register_ROIs(A1,A2,options,template1,template2,options_mc,figname,figclose)
 % REGISTER_ROIs - register ROIs from two different recording sessions
 %
 %   [MATCHED_ROIS, NONMATCHED_1, NONMATCHED_2, A2] = REGISTER_ROIS( ...
@@ -34,10 +34,7 @@ function [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union] = register_ROIs(A
 %                               pairs the ROIs from session # 1 are kept)
 
 % Ann's addition:
-if nargin < 8, fsave = true; end
-if nargin < 7, fsave = false; end
-if nargin < 9, fclose = true; end
-if isempty(fname_fig), fsave = false; end
+if nargin < 8, figclose = true; end
 
 defoptions = CNMFSetParms;
 if ~exist('options','var'); options = defoptions; end
@@ -64,7 +61,7 @@ options_mc.correct_bidir = false;
 if align_flag
     options_mc.upd_template = false;
     options_mc.boundary = 'zero';
-    [~,global_shift] = normcorre(template2,options_mc,template1);
+    [~,global_shift,template2] = normcorre(template2,options_mc,template1);
     %global_shift(1).diff = 0*global_shift(1).diff;
     
     shifts_fov = reshape(imresize(global_shift.shifts,[options.d1,options.d2]),[],2);
@@ -142,23 +139,21 @@ if options.plot_reg
     h(4) = plot(NaN,NaN,'k');
     legend(h,'Matched #1','Matched #2','Mismatched #1','Mismatched # 2'); hold off;
 
-    if ~isempty(fname_fig)
-        ind = strfind(fname_fig,'/');
-        titletext = fname_fig(ind(end)+1:end);
+    if ~isempty(figname)
+        ind = strfind(figname,'/');
+        titletext = figname(ind(end)+1:end);
     
-        dirname = fname_fig(1:ind(end));
+        dirname = figname(1:ind(end));
         ind = strfind(titletext,'_');
         titletext(ind) = '-';
         title(titletext);
-    end
-    
-    if fsave
+
         if ~exist(dirname,'dir'), mkdir(dirname); end
         % save figure
-        savefig( fh, fname_fig );
-        saveas( fh, fname_fig, 'png' );
+        savefig( fh, figname );
+        saveas( fh, figname, 'png' );
     end
-    if fclose
+    if figclose
         close(fh);
     end
 end

@@ -71,24 +71,27 @@ function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr
                     imR = read_file( fname_raw, 2, Inf, options );
                     writeTifStack( imR, fname_tif_red );
                 end 
-                if ~exist(fname_tif_gr,'file')
+                if ~exist(fname_tif_gr,'file') 
                     imG = read_file( fname_raw, 1, Inf, options );
                     writeTifStack( imG, fname_tif_gr );
-                    imR = read_file( fname_tif_red ); 
-                    if any( size(imG) ~= size(imR) )
-                        imR = read_file( fname_raw, 2, Inf, options );
-                        writeTifStack( imR, fname_tif_red );
+                    if exist(fname_tif_red,'file')
+                        imR = read_file( fname_tif_red ); 
+                        if any( size(imG) ~= size(imR) )
+                            imR = read_file( fname_raw, 2, Inf, options );
+                            writeTifStack( imR, fname_tif_red );
+                        end
                     end
                 end
-                if  ~exist(fname_tif_red,'file')
-                    imG = read_file( fname_tif_gr );
+                if  ~exist(fname_tif_red,'file') 
                     imR = read_file( fname_raw, 2, Inf, options );
                     writeTifStack( imR, fname_tif_red );
-                    if any( size(imG) ~= size(imR) )
-                        imG = read_file( fname_raw, 1, Inf, options );
-                        writeTifStack( imG, fname_tif_gr );
+                    if exist(fname_tif_gr,'file')
+                        imG = read_file( fname_tif_gr );
+                        if any( size(imG) ~= size(imR) )
+                            imG = read_file( fname_raw, 1, Inf, options );
+                            writeTifStack( imG, fname_tif_gr );
+                        end
                     end
-
                 end
                 % Note: This is somehow faster than reading entire raw file, saving half of
                 % it as imG, the other half as imR and then creating tif stacks.

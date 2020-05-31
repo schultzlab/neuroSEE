@@ -23,7 +23,8 @@
 %   params      : parameters for specific roi segmentation method
 
 function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force, mean_imR, list, reffile )
-
+    
+    if nargin<8, reffile = []; end
     if nargin<7, list = []; end
     if nargin<6, mean_imR = []; end
     if nargin<5, force = false; end

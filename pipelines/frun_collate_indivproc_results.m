@@ -31,7 +31,7 @@ if ~isempty(err)
     return
 end
 
-mcorr_method = 'normcorre-nr';
+mcorr_method = 'normcorre';
 segment_method = 'CaImAn';
 dofissa = true;
     if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
@@ -53,7 +53,6 @@ if Nfig < 0, Nfig = 0; end
 %% Load image data for each recording
 sdir1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/indiv_' ...
          mcorr_method '_' segment_method '_' str_fissa '/indiv_mcorr/'];
-    if ~exist(sdir1,'dir'), mkdir(sdir1); end
     
 if any([ force, ~exist([sdir1 mouseid '_' expname '_GREEN_mcorr.fig'],'file'),...
                 ~exist([sdir1 mouseid '_' expname '_RED_mcorr.fig'],'file') ])
@@ -93,6 +92,7 @@ if any([ force, ~exist([sdir1 mouseid '_' expname '_GREEN_mcorr.fig'],'file'),..
                 titletext(ind) = '-';
                 text('Position',[0.25 0.99], 'FontSize',14, 'String',titletext);
 
+            if ~exist(sdir1,'dir'), mkdir(sdir1); end    
             fname_fig = [sdir1 mouseid '_' expname '_GREEN_mcorr.fig'];
             savefig( fh, fname_fig );
             saveas( fh, fname_fig(1:end-4), 'png' );
@@ -125,7 +125,7 @@ if any([ force, ~exist([sdir1 mouseid '_' expname '_GREEN_mcorr.fig'],'file'),..
             close( fh );
         end 
     else
-        fprintf('%s: No motion corrected files found', list)
+        fprintf('%s: No motion corrected files found\n', list)
     end
 end
 
@@ -133,8 +133,7 @@ end
 %% Load tracking data for each recording
 sdir2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/indiv_' ...
          mcorr_method '_' segment_method '_' str_fissa '/indiv_trajectories/'];
-    if ~exist(sdir2,'dir'), mkdir(sdir2); end
-
+    
 if force || ~exist([sdir2 mouseid '_' expname '_traj.fig'],'file')
     for i = 1:Nfiles
         trackfile = findMatchingTrackingFile(data_locn, files(i,:), 0);
@@ -147,7 +146,6 @@ if force || ~exist([sdir2 mouseid '_' expname '_traj.fig'],'file')
         M(i).trackdata.time = c.time;
     end
     clear c
-
 
     if exist('M','var') && isfield(M,'trackdata')
         %% Compare trajectories
@@ -171,13 +169,14 @@ if force || ~exist([sdir2 mouseid '_' expname '_traj.fig'],'file')
                 ind = strfind(titletext,'_');
                 titletext(ind) = '-';
                 text('Position',[0.4 0.99], 'FontSize',14, 'String',titletext);
+            if ~exist(sdir2,'dir'), mkdir(sdir2); end
             fname_fig = [sdir2 mouseid '_' expname '_traj.fig'];
             savefig( fh, fname_fig );
             saveas( fh, fname_fig(1:end-4), 'png' );
             close( fh );
         end 
     else
-        fprintf('%s: No tracking files found', list)
+        fprintf('%s: No tracking files found\n', list)
     end
 else
     trackfile = findMatchingTrackingFile(data_locn, files(1,:), 0);
@@ -196,8 +195,7 @@ end
 
 sdir3 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/indiv_' ...
          mcorr_method '_' segment_method '_' str_fissa '/indiv_PFmaps/'];
-    if ~exist(sdir3,'dir'), mkdir(sdir3); end
-
+    
 if (force || ~exist([sdir3 mouseid '_' expname '_PFmaps.fig'],'file')) && strcmpi(mode_dim,'1D')
     for i = 1:Nfiles
         file = files(i,:);
@@ -232,6 +230,7 @@ if (force || ~exist([sdir3 mouseid '_' expname '_PFmaps.fig'],'file')) && strcmp
                 ind = strfind(titletext,'_');
                 titletext(ind) = '-';
                 text('Position',[0.25 0.99], 'FontSize',14, 'String',titletext);
+            if ~exist(sdir3,'dir'), mkdir(sdir3); end
             fname_fig = [sdir3 mouseid '_' expname '_PFmaps.fig'];
             savefig( fh, fname_fig );
             saveas( fh, fname_fig(1:end-4), 'png' );
@@ -246,8 +245,7 @@ end
 %% Load ROIs
 sdir4 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/indiv_' ...
          mcorr_method '_' segment_method '_' str_fissa '/indiv_ROIs/'];
-    if ~exist(sdir4,'dir'), mkdir(sdir4); end
-
+    
 if (force || ~exist([sdir4 mouseid '_' expname '_ROIs.fig'],'file')) 
     for i = 1:Nfiles
         file = files(i,:);
@@ -290,13 +288,14 @@ if (force || ~exist([sdir4 mouseid '_' expname '_ROIs.fig'],'file'))
                 ind = strfind(titletext,'_');
                 titletext(ind) = '-';
                 text('Position',[0.25 0.99], 'FontSize',14, 'String',titletext);
+            if ~exist(sdir4,'dir'), mkdir(sdir4); end
             fname_fig = [sdir4 mouseid '_' expname '_ROIs.fig'];
             savefig( fh, fname_fig );
             saveas( fh, fname_fig(1:end-4), 'png' );
             close( fh );
         end 
     else
-        fprintf('%s: ROIs not found', list)
+        fprintf('%s: ROIs not found\n', list)
     end
 end
 

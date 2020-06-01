@@ -42,6 +42,7 @@ Nepochs = params.PFmap.Nepochs;
 Vthr = params.PFmap.Vthr;
 histsmoothWin = params.PFmap.histsmoothWin;
 prctile_thr = params.PFmap.prctile_thr;
+Nlaps_thr = params.PFmap.Nlaps_thr;
 Ncells = size(spikes,1);
 
 % Input data
@@ -74,7 +75,6 @@ clear x y phi r speed t
 
 %% ALL CELLS
 % Calculate spike maps per trial
-dthr = 20;
 for ii = 1:Ncells
     % find the delineations for the video: find t = 0
     idx_file = find(diff(activet) < 0);
@@ -88,26 +88,26 @@ for ii = 1:Ncells
         % find the delineations per trial (i.e. loop)
         p_tr = p(idx_file(jj):idx_file(jj+1)-1);
         s_tr = s(idx_file(jj):idx_file(jj+1)-1);
-        idx_tr = find( abs(diff(p_tr)) > dthr );
+        idx_tr = find( p_tr == p_tr(1) );
         for k = numel(idx_tr):-1:2
-            if (idx_tr(k) - idx_tr(k-1)) <= 20 
+            if (idx_tr(k) - idx_tr(k-1)) <= Nbins 
                 idx_tr(k) = 0;
             end
         end
         idx_tr = idx_tr( idx_tr > 0 );
-        if numel(idx_tr)==1, idx_tr = [idx_tr; numel(p_tr)]; end
-        
-        for k = 1:numel(idx_tr)-1
-            phi{Ntrial} = p_tr(idx_tr(k)+1:idx_tr(k+1));
-            spike{ii}{Ntrial} = s_tr(idx_tr(k)+1:idx_tr(k+1));
-            Ntrial = Ntrial + 1;
-        end
-        
         Ntrials(jj) = numel(idx_tr)-1;
-        if jj == numel(idx_file)-1
-            ytick_files = [ytick_files; sum(Ntrials(1:jj))];
-        else
-            ytick_files = [ytick_files; sum(Ntrials(1:jj))+1];
+        if Ntrials(jj) > 0
+            for k = 1:numel(idx_tr)-1
+                phi_trials{Ntrial} = p_tr(idx_tr(k)+1:idx_tr(k+1));
+                spike_trials{ii}{Ntrial} = s_tr(idx_tr(k)+1:idx_tr(k+1));
+                Ntrial = Ntrial + 1;
+            end
+
+            if jj == numel(idx_file)-1
+                ytick_files = [ytick_files; sum(Ntrials(1:jj))];
+            else
+                ytick_files = [ytick_files; sum(Ntrials(1:jj))+1];
+            end
         end
     end
 end
@@ -117,8 +117,8 @@ spkPeak = zeros(Ncells);
 spkMean = zeros(Ncells);
 for ii = 1:Ncells
     for tr = 1:numel(phi)
-        phi_tr = phi{tr};
-        spike_tr = spike{ii}{tr};
+        phi_tr = phi_trials{tr};
+        spike_tr = spike_trials{ii}{tr};
 
         for n = 1:Nbins
             spkRaster{ii}(tr,n) = sum(spike_tr(phi_tr == n));
@@ -192,10 +192,10 @@ end
 %% PLACE CELLS
 % Identify place cells. The cells are sorted in descending order of info content
 [hist.SIsec.pcIdx, hist.SIspk.pcIdx, hist.SIsec.nonpcIdx, hist.SIspk.nonpcIdx] ...
-    = identifyPCs_1d( spkRaster, spkPeak, bin_phi, activespk, hist.infoMap, Nbins, prctile_thr, 1000);
+    = identifyPCs_1d( spkRaster, spkPeak, bin_phi, activespk, hist.infoMap, Nbins, prctile_thr, Nlaps_thr, 1000);
 if doasd
     [asd.SIsec.pcIdx, asd.SIspk.pcIdx, asd.SIsec.nonpcIdx, asd.SIspk.nonpcIdx] ...
-    = identifyPCs_1d( spkRaster, spkPeak, bin_phi, activespk, asd.infoMap, Nbins, prctile_thr, 1000, 'asd');
+    = identifyPCs_1d( spkRaster, spkPeak, bin_phi, activespk, asd.infoMap, Nbins, prctile_thr, Nlaps_thr, 1000, 'asd');
 end
 
 
@@ -392,6 +392,8 @@ activeData.spikes = activespk;
 
 PFdata.occMap = occMap;
 PFdata.spkRaster = spkRaster;
+PFdata.phi_trials = phi_trials;
+PFdata.spike_trials = spike_trials;
 PFdata.normspkRaster = normspkRaster;
 PFdata.ytick_files = ytick_files;
 PFdata.meanspkRaster = meanspkRaster;

@@ -5,10 +5,11 @@
 % Based on Indersmitten et al 2019, Front Neurosci
 
 function [ pcIdx_SIsec, pcIdx_SIspk, nonpcIdx_SIsec, nonpcIdx_SIspk ] ...
-    = identifyPCs_1d( spkRaster, spkPeak, bin_phi, activespikes, infoMap, Nbins, prctile_thr, randN, mode )
+    = identifyPCs_1d( spkRaster, spkPeak, bin_phi, activespikes, infoMap, Nbins, prctile_thr, Nlaps_thr, randN, mode )
 
-if nargin<9, mode = 'hist'; end
-if nargin<8, randN = 1000; end
+if nargin<10, mode = 'hist'; end
+if nargin<9, randN = 1000; end
+if nargin<8, Nlaps_thr = 0.5; end
 if nargin<7, prctile_thr = 99; end
 
 dt = 1/30.9;
@@ -19,7 +20,7 @@ SIspk = zeros(1,randN);
 
 % remove cells 
 % 1) with peak PSD > 10 
-% 2) that do not fire for half of the trials
+% 2) that do not fire for Nlaps_thr of the trials
 % 3) whose information content does not exceed 99th percentile of
 % shuffled distribution
 include_SIsec = []; exclude_SIsec = [];
@@ -29,7 +30,7 @@ for id = 1:Ncells
     if spkPeak(id) < 10
         spkTr = mean(spkRaster{id},2);
         activeTr = numel(find(spkTr));
-        if activeTr >= 0.5*size(spkRaster{id},1)
+        if activeTr >= Nlaps_thr*size(spkRaster{id},1)
             z = activespikes(id,:);
             for k = 1:Nbins
                 spikeMap(k) = sum(z(bin_phi == k));

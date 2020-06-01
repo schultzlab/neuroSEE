@@ -92,6 +92,8 @@ else
         params.PFmap.Vthr = 20;               % speed threshold (mm/s) Note: David Dupret uses 20 mm/s    [default: 20]
                                               %                              Neurotar uses 8 mm/s
         params.PFmap.prctile_thr = 99;        % percentile threshold for filtering nonPCs       [default: 99]
+        params.PFmap.Nlaps_thr = 0.5;         % fraction of laps that cell is required to be active to be 
+                                              % considered for place cell analysis              [default: 0.5]
         params.PFmap.Nbins_1D = 50;           % no. of position bins in 103-cm linear track
         params.PFmap.Nbins_2D = [16 16];      % position bins in 325-mm diameter open field arena
 end

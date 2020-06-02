@@ -100,9 +100,7 @@ for ii = 1:Ncells
             for k = 1:numel(idx_tr)-1
                 phi_trials{Ntrial} = p_tr(idx_tr(k)+1:idx_tr(k+1));
                 spike_trials{ii}{Ntrial} = s_tr(idx_tr(k)+1:idx_tr(k+1));
-                if k<numel(idx_tr)-1
-                    Ntrial = Ntrial + 1;
-                end
+                Ntrial = Ntrial + 1;
             end
 
             if jj == numel(idx_file)-1

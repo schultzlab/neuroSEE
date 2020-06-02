@@ -48,14 +48,18 @@
 %   pcIdx   : row indices of spikes corresponding to place cells
 %   sortIdx : sorted row indices corresponding to sorted_pfMap
 
-function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force, list, reffile, doasd)
-    if nargin<9, doasd = true; end
+function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force, list, reffile)
     if nargin<8, reffile = []; end
     if nargin<7, list = []; end
     if nargin<6, force = 0; end
 
     mcorr_method = params.methods.mcorr_method;
     segment_method = params.methods.segment_method;
+    if isfield(params.methods,'doasd')
+        doasd = params.methods.doasd;
+    else
+        doasd = false;
+    end
     
     if params.methods.dofissa
         str_fissa = 'FISSA';

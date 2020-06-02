@@ -59,6 +59,7 @@ Names = [
     'nFrames            ' % number of frames to average (default: 50)
     'bidir_us           ' % upsampling factor for bidirectional sampling (default: 10)
     'col_shift          ' % known bi-directional offset provided by the user (default: [])
+    'print_msg          ' % flag to print messages (default: false)
    ]; 
    
 [m,n] = size(Names);
@@ -146,7 +147,7 @@ Values = [
     % patches
     {[512,512,1]}         % size of non-overlapping regions (default: [d1,d2,d3])
     {[64,64,16]}          % size of overlapping region (default: [32,32,16])
-    {[64,64,16]}           % minimum size of patch (default: [32,32,16])    
+    {[64,64,16]}          % minimum size of patch (default: [32,32,16])    
     {[32,32,5]}           % minimum difference between patches (default: [16,16,5])
     {50}                  % upsampling factor for subpixel registration (default: 50)
     {[4,4,1]}             % degree of patches upsampling (default: [4,4,1])
@@ -190,6 +191,7 @@ Values = [
     {50}
     {10}
     {[]}
+    {false}               % flag to print messages (default: false)
     ];
 
 for j = 1:m

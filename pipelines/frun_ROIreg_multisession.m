@@ -16,38 +16,6 @@ dofissa = true;
     if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
 
 % ROI registration parameters
-params.ROIreg_mc.r = NoRMCorreSetParms(...
-            'd1',512,...                % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
-            'd2',512,...                % length of image [default: 512] *value from actual image    
-            'grid_size',[512,512],...   % default: [64,64]
-            'overlap_pre',[64,64],...   % default: [64,64]
-            'overlap_post',[64,64],...  % default: [64,64]
-            'iter',1,...                % default: 1
-            'use_parallel',false,...    % default: false
-            'max_shift',30,...          % default: 20
-            'mot_uf',4,...              % default: 4
-            'bin_width',200,...         % default: 200
-            'max_dev',3,...             % default: 3
-            'us_fac',50,...             % default: 50
-            'init_batch',200);          % default: 200
-params.ROIreg_mc.r.print_msg = false;
-
-params.ROIreg_mc.nr = NoRMCorreSetParms(...
-            'd1',512,...                % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
-            'd2',512,...                % length of image [default: 512] *value from actual image    
-            'grid_size',[128,128],...   % default: [64,64]
-            'overlap_pre',[64,64],...   % default: [64,64]
-            'overlap_post',[64,64],...  % default: [64,64]
-            'iter',1,...                % default: 1
-            'use_parallel',false,...    % default: false
-            'max_shift',20,...          % default: 20
-            'mot_uf',4,...              % default: 4
-            'bin_width',200,...         % default: 200
-            'max_dev',3,...             % default: 3
-            'us_fac',50,...             % default: 50
-            'init_batch',200);          % default: 200
-params.ROIreg_mc.nr.print_msg = false;
-
 params.ROIreg.maxthr = [];                     
 params.ROIreg.dist_maxthr = 0.1;        % threshold for turning spatial components into binary masks [default: 0.1]
 params.ROIreg.dist_exp = 0.7;           % power n for distance between masked components: dist = 1 - (and(m1,m2)/or(m1,m2))^n [default: 1]
@@ -55,6 +23,11 @@ params.ROIreg.dist_thr = 0.7;           % threshold for setting a distance to in
 params.ROIreg.dist_overlap_thr = 0.6;   % overlap threshold for detecting if one ROI is a subset of another [default: 0.8]
 params.ROIreg.plot_reg = true;
 params.ROIreg.print_msg = false;
+
+options = neuroSEE_setparams('mcorr_method', mcorr_method, 'dofissa', dofissa); 
+params.ROIreg_mc.r = options.mcorr.normcorre_r;
+params.ROIreg_mc.nr = options.mcorr.normcorre_nr;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Load module folders and define data directory
@@ -82,6 +55,19 @@ if any([ ~exist(fname_mat1,'file'), ~exist(fname_mat2,'file'), force ])
     exps = extractExpnamesFromTxtfile( listfile );
     Nexps = numel(exps);
 
+    % initialise variables
+    masks{1:Nexps} = [];
+    A{1:Nexps} = [];
+    templates{1:Nexps} = [];
+    normrMap_sm{1:Nexps} = [];
+    normpfMap_sm{1:Nexps} = [];
+    sortIdx{1:Nexps} = [];
+    pfLoc{1:Nexps} = [];
+    normspkRaster{1:Nexps} = [];
+    ytick_files{1:Nexps} = [];
+    pcIdx{1:Nexps} = [];
+    masks_pcs{1:Nexps} = [];
+    A_pcs{1:Nexps} = [];
     for n = 1:Nexps
         [ mouseid_n, exp_n ] = find_mouseIDexpname( exps{n} );
         if ~strcmpi(mouseid_n, mouseid)
@@ -158,9 +144,10 @@ if any([ ~exist(fname_mat1,'file'), ~exist(fname_mat2,'file'), force ])
     params.ROIreg.plot_reg = true;
     params.ROIreg.print_msg = true;
 
-    figname_pref = [sdir  mouseid '_' expname];
     [~, A_shifted, assignments, matchings, templates_shifted, matched_ROIs, nonmatched_1, nonmatched_2, ~, A_union ] = ...
         register_multisession(A, params.ROIreg, templates, params.ROIreg_mc, [], false);
+    masks_shifted{1:Nexps-1} = [];
+    masks_union{1:Nexps-1} = [];
     for nn = 1:Nexps-1
         masks_shifted{nn} = reshape(full(A_shifted{nn}), params.ROIreg.d1, params.ROIreg.d2, size(A_shifted{nn},2));
         masks_union{nn} = reshape(full(A_union{nn+1}), params.ROIreg.d1, params.ROIreg.d2, size(A_union{nn+1},2));
@@ -175,6 +162,8 @@ if any([ ~exist(fname_mat1,'file'), ~exist(fname_mat2,'file'), force ])
 
     [~, A_shifted_pcs, assignments_pcs, matchings_pcs, ~, matched_ROIs_pcs, nonmatched_1_pcs, nonmatched_2_pcs, ~, A_union_pcs ] = ...
         register_multisession(A_pcs, params.ROIreg, templates, params.ROIreg_mc, [], false);
+    masks_shifted_pcs{1:Nexps-1} = [];
+    masks_union_pcs{1:Nexps-1} = [];
     for nn = 1:Nexps-1
         masks_shifted_pcs{nn} = reshape(full(A_shifted_pcs{nn}), params.ROIreg.d1, params.ROIreg.d2, size(A_shifted_pcs{nn},2));
         masks_union_pcs{nn} = reshape(full(A_union_pcs{nn}), params.ROIreg.d1, params.ROIreg.d2, size(A_union_pcs{nn},2));
@@ -226,11 +215,12 @@ else
         normrMap_sm = c1.normrMap_sm;
         normpfMap_sm = c1.normpfMap_sm;
         sortIdx = c1.sortIdx;
-        pfLoc = c1.pfLoc;
+        % pfLoc = c1.pfLoc;
         normspkRaster = c1.normspkRaster;
         ytick_files = c1.ytick_files;
         pcIdx = c1.pcIdx;
         masks = c1.masks;
+            A{1:size(masks,2)} = [];
             for n = 1:size(masks,2)
                 AA = zeros(size(masks{n},1)*size(masks{n},2),size(masks{n},3));
                 for i = 1:size(masks{n},3)
@@ -240,6 +230,7 @@ else
                 A{n} = sparse(AA); 
             end
         masks_union = c1.masks_union;
+            A_union{1:size(masks_union,2)} = [];
             for n = 1:size(masks_union,2)
                 AA = zeros(size(masks_union{n},1)*size(masks_union{n},2),size(masks_union{n},3));
                 for i = 1:size(masks_union{n},3)
@@ -261,6 +252,7 @@ else
         nonmatched_2 = c2.nonmatched_2;
         masks_shifted = c2.masks_shifted;
             AA = zeros(size(masks_shifted{n},1)*size(masks_shifted{n},2),size(masks_shifted{n},3));
+            A_shifted{1:size(masks_shifted,2)} = [];
             for n = 1:size(masks_shifted,2)
                 for i = 1:size(masks_shifted{n},3)
                     mask = masks_shifted{n}(:,:,i);
@@ -272,6 +264,7 @@ else
         nonmatched_1_pcs = c2.nonmatched_1_pcs;
         nonmatched_2_pcs = c2.nonmatched_2_pcs;
         masks_pcs = c2.masks_pcs;
+            A_pcs{1:size(masks_pcs,2)} = [];
             for n = 1:size(masks_pcs,2)
                 AA = zeros(size(masks_pcs{n},1)*size(masks_pcs{n},2),size(masks_pcs{n},3));
                 for i = 1:size(masks_pcs{n},3)
@@ -281,6 +274,7 @@ else
                 A_pcs{n} = sparse(AA); 
             end
         masks_union_pcs = c2.masks_union_pcs;
+            A_union_pcs{1:size(masks_union_pcs,2)} = [];
             for n = 1:size(masks_union_pcs,2)
                 AA = zeros(size(masks_union_pcs{n},1)*size(masks_union_pcs{n},2),size(masks_union_pcs{n},3));
                 for i = 1:size(masks_union_pcs{n},3)
@@ -290,6 +284,7 @@ else
                 A_union_pcs{n} = sparse(AA); 
             end
         masks_shifted_pcs = c2.masks_shifted_pcs;
+            A_shifted_pcs{1:size(masks_shifted_pcs,2)} = [];
             for n = 1:size(masks_shifted_pcs,2)
                 AA = zeros(size(masks_shifted_pcs{n},1)*size(masks_shifted_pcs{n},2),size(masks_shifted_pcs{n},3));
                 for i = 1:size(masks_shifted_pcs{n},3)
@@ -298,8 +293,8 @@ else
                 end
                 A_shifted_pcs{n} = sparse(AA); 
             end
-        assignments_pcs = c2.assignments_pcs;
-        matchingspcs = c2.matchings_pcs;
+        % assignments_pcs = c2.assignments_pcs;
+        % matchingspcs = c2.matchings_pcs;
     end
 end
 
@@ -424,6 +419,7 @@ if ~exist(figdir,'dir') || force
 
     % place tuning across sessions
     Nbins = size(normrMap_sm{1},2);
+    pf_sort{1:Nexps} = [];
     for n = 1:Nexps
         for j = 1:Nexps
             if n ~= j
@@ -464,6 +460,8 @@ if ~exist(figdir,'dir') || force
     if figclose, close( fh4 ); end 
     
     % no. of active cells, pcs, stability across sessions
+    Nactivecells = zeros(Nexps,1);
+    Npcs = zeros(Nexps,1);
     for n = 1:Nexps
         Nactivecells(n) = 100*(size(A{n},2)/size(A_union{end},2));
         Npcs(n) = 100*(numel(sortIdx{n})/size(A{n},2));

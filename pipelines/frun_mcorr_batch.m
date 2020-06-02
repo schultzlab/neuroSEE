@@ -47,8 +47,6 @@ tic
 %% Load module folders and define data directory
 
 test = false;                      % flag to use one of smaller files in test folder)
-default = true;                    % flag to use default motion correction parameters
-
 [data_locn,comp,err] = load_neuroSEEmodules(test);
 if ~isempty(err)
     beep
@@ -70,55 +68,28 @@ if strcmpi(comp,'hpc') && MatlabVer > 2017
     return
 end
 
-
-%% USER: Set parameters (if not using default)
-if ~default
-    params_mcorr.refChannel = 'green';           % reference channel for motion correction [default: 'green']
-    % NoRMCorre-rigid
-    if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-r'))
-        params_mcorr.normcorre_r = NoRMCorreSetParms(...
-            'd1', 512,...
-            'd2', 512,...
-            'max_shift',maxshift_r);          % default: 30
-        params_mcorr.normcorre_r.print_msg = false;   % default: false
-    end
-    % NoRMCorre-nonrigid
-    if or(strcmpi(mcorr_method,'normcorre'),strcmpi(mcorr_method,'normcorre-nr') )    
-        params_mcorr.normcorre_nr = NoRMCorreSetParms(...
-            'd1', 512,...
-            'd2', 512,...
-            'grid_size',[128,128],...     % default: [128,128]
-            'overlap_pre',[64,64],...   % default: [64,64]
-            'overlap_post',[64,64],...  % default: [64,64]
-            'max_shift',20);          % default: 20
-        params_mcorr.normcorre_nr.print_msg = false;    % default: false
-    end
-end
-if default
-    c = load('default_params.mat');
-    if strcmpi(mcorr_method,'normcorre')
-        params_mcorr.normcorre_r = c.mcorr.normcorre_r;
-        params_mcorr.normcorre_nr = c.mcorr.normcorre_nr;
-    elseif strcmpi(mcorr_method,'normcorre-r')
-        params_mcorr.normcorre_r = c.mcorr.normcorre_r;
-    elseif strcmpi(mcorr_method,'normcorre-nr')
-        params_mcorr.normcorre_nr = c.mcorr.normcorre_nr; 
-    elseif strcmpi(mcorr_method,'fftRigid')
-        if ~isempty(reffile)
-            str = sprintf('%s: Cannot do image registration with fftRigid method. Choose another method.', list);
-            beep
-            cprintf('Errors',str);    
-            return;
-        else
-            params_mcorr.fftRigid = c.mcorr.fftRigid;
-        end
-    else
+% image registration cannot be done with fftRigid method at the moment
+if strcmpi(mcorr_method,'fftRigid')
+    if ~isempty(reffile)
+        str = sprintf('%s: Cannot do image registration with fftRigid method. Choose another method.', list);
         beep
-        cprintf('Errors','Invalid motion correction method.');    
-        return
+        cprintf('Errors',str);    
+        return;
     end
 end
-params_mcorr.refChannel = refChannel;
+
+
+%% USER: Set parameters 
+% Any parameter that is not set gets a default value
+
+params = neuroSEE_setparams(...
+            'mcorr_method', mcorr_method,...
+            'refChannel', refChannel,...        % reference channel for motion correction
+            'd1', 512,...
+            'd2', 512,...
+            'max_shift_r',maxshift_r); 
+        
+params_mcorr = params.mcorr;
 
 
 %% Motion correction/Image registration 

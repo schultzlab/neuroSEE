@@ -38,22 +38,6 @@ dofissa = true;
     if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
 
 % ROI registration parameters
-params.ROIreg_mc = NoRMCorreSetParms(...
-            'd1',512,...                % width of image [default: 512]  *Regardless of user-inputted value, neuroSEE_motioncorrect reads this 
-            'd2',512,...                % length of image [default: 512] *value from actual image    
-            'grid_size',[128,128],...   % default: [64,64]
-            'overlap_pre',[64,64],...   % default: [64,64]
-            'overlap_post',[64,64],...  % default: [64,64]
-            'iter',1,...                % default: 1
-            'use_parallel',false,...    % default: false
-            'max_shift',25,...          % default: 20
-            'mot_uf',4,...              % default: 4
-            'bin_width',200,...         % default: 200
-            'max_dev',3,...             % default: 3
-            'us_fac',50,...             % default: 50
-            'init_batch',200);          % default: 200
-params.ROIreg_mc.print_msg = false;
-
 params.ROIreg.maxthr = [];                     
 params.ROIreg.dist_maxthr = 0.1;        % threshold for turning spatial components into binary masks [default: 0.1]
 params.ROIreg.dist_exp = 0.8;           % power n for distance between masked components: dist = 1 - (and(m1,m2)/or(m1,m2))^n [default: 1]
@@ -61,6 +45,11 @@ params.ROIreg.dist_thr = 0.7;           % threshold for setting a distance to in
 params.ROIreg.dist_overlap_thr = 0.7;   % overlap threshold for detecting if one ROI is a subset of another [default: 0.8]
 params.ROIreg.plot_reg = true;
 params.ROIreg.print_msg = false;
+
+options = neuroSEE_setparams('mcorr_method', mcorr_method, 'dofissa', dofissa); 
+params.ROIreg_mc.r = options.mcorr.normcorre_r;
+params.ROIreg_mc.nr = options.mcorr.normcorre_nr;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Load module folders and define data directory
@@ -155,6 +144,7 @@ if ~exist(fname_remap,'file') || force
         register_ROIs( A1, A2, params.ROIreg, template1, template2, params.ROIreg_mc, fname_fig, true );
     masks_union = reshape(full(A_union), params.ROIreg.d1, params.ROIreg.d2, size(A_union,2));
     masks2_reg = reshape(full(A2), params.ROIreg.d1, params.ROIreg.d2, size(A2,2));
+    outlines{1:size(masks_union,3)} = [];
     for j = 1:size(masks_union,3)
         outlines{:,:,j} = bwboundaries(masks_union(:,:,j));    % boundary of each ROI
     end
@@ -261,8 +251,8 @@ else
     if ~exist(fname_remapfig,'file') 
         fprintf('%s: loading remapping data\n',[mouseid '_' env1 env2]);
         c = load(fname_remap);
-        nonmatched_1 = c.nonmatched_env1;
-        nonmatched_2 = c.nonmatched_env2;
+        % nonmatched_1 = c.nonmatched_env1;
+        % nonmatched_2 = c.nonmatched_env2;
         im_env1masks = c.im_env1masks;
         im_env2masks = c.im_env2masks;
         im_env1env2masks = c.im_env1env2masks;

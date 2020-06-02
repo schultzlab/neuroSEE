@@ -27,12 +27,10 @@ tic
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % USER-DEFINED INPUT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-file = '20181015_09_37_54'; % file to be processed
+file = '20181015_09_37_54';     % file to be processed
 
 % Basic settings
-test = false;               % flag to use one of smaller files in test folder)
-default = true;             % flag to use default parameters
-                            % flag to force
+test = false;                   % flag to use one of smaller files in test folder)
 force = [false;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
@@ -49,7 +47,14 @@ mcorr_method = 'normcorre';  % values: [normcorre, normcorre-r, normcorre-nr, ff
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
 dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
+doasd = false;                  % flag to do asd pf calculation
 slacknotify = false;            % flag to send Ann slack notifications about processing
+
+% Processing parameters (any parameter that is not set gets a default value)
+params = neuroSEE_setparams(...
+            'mcorr_method', mcorr_method, ...
+            'dofissa', dofissa); 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Load module folders and define data directory
@@ -64,9 +69,6 @@ end
 if strcmpi(comp,'hpc')
     maxNumCompThreads(32);        % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
 end
-
-% Processing parameters
-params = neuroSEE_setparams(mcorr_method, dofissa, default);
 
 % Auto-defined 
 if str2double(file(1,1:4)) > 2018

@@ -46,9 +46,7 @@ tic
 % USER-DEFINED INPUT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Basic settings
-test = false;               % flag to use one of smaller files in test folder
-default = true;             % flag to use default parameters
-                            % flag to force
+test = false;                   % flag to use one of smaller files in test folder
 force = [false;...              % (1) image registration even if registered images exist
          false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
@@ -67,7 +65,13 @@ imreg_method = 'normcorre';  % image registration method
 groupreg_method = 'imreg';      % method for concatenating file data (either register images or rois)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
 dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
-doasd = false;
+doasd = false;                  % flag to do asd pf calculation
+
+% Processing parameters (any parameter that is not set gets a default value)
+params = neuroSEE_setparams(...
+            'mcorr_method', mcorr_method, ...
+            'dofissa', dofissa); 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Load module folders and define data directory
@@ -90,9 +94,6 @@ files = extractFilenamesFromTxtfile( listfile );
 if nargin<2, reffile = files(1,:); end
 Nfiles = size(files,1);
 
-% Processing parameters
-params = neuroSEE_setparams(mcorr_method, dofissa, default);
-
 % Auto-defined 
 if str2double(files(1,1:4)) > 2018
     params.FOV = 490;                                                   % FOV area = FOV x FOV, FOV in um
@@ -111,6 +112,7 @@ params.methods.imreg_method = imreg_method;
 params.methods.mcorr_method = mcorr_method;
 params.methods.segment_method = segment_method;
 params.methods.dofissa = dofissa;
+params.methods.doasd = doasd;
 params.methods.groupreg_method = groupreg_method;
 
 release = version('-release'); % Find out what Matlab release version is running
@@ -436,7 +438,7 @@ end
 fields = {'Nbins_1D','Nbins_2D'};
 params.PFmap = rmfield(params.PFmap,fields);
 
-[ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile, doasd);
+[ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile);
 
 
 %% Saving all data

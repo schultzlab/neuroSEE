@@ -30,9 +30,7 @@ tic
 % USER-DEFINED INPUT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Basic settings
-test = false;               % flag to use one of smaller files in test folder)
-default = true;             % flag to use default parameters
-                            % flag to force
+test = false;                   % flag to use one of smaller files in test folder)
 force = [false;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
@@ -40,7 +38,7 @@ force = [false;...              % (1) motion correction even if motion corrected
          false;...              % (5) tracking data extraction
          false];                % (6) place field mapping
 
-mcorr_method = 'normcorre';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
+mcorr_method = 'normcorre';     % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
                                     %   normcorre-r (rigid),
@@ -49,7 +47,14 @@ mcorr_method = 'normcorre';  % values: [normcorre, normcorre-r, normcorre-nr, ff
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
 dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
+doasd = false;                  % flag to do asd pf calculation 
 slacknotify = false;            % flag to send Ann slack notifications about processing
+
+% Processing parameters (any parameter that is not set gets a default value)
+params = neuroSEE_setparams(...
+            'mcorr_method', mcorr_method, ...
+            'dofissa', dofissa); 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Load module folders and define data directory
@@ -64,9 +69,6 @@ end
 if strcmpi(comp,'hpc')
     maxNumCompThreads(32);        % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
 end
-
-% Processing parameters
-params = neuroSEE_setparams(mcorr_method, dofissa, default);
 
 % Auto-defined 
 if str2double(file(1,1:4)) > 2018
@@ -84,6 +86,7 @@ params.ROIsegment = rmfield(params.ROIsegment,fields);
 params.methods.mcorr_method = mcorr_method;
 params.methods.segment_method = segment_method;
 params.methods.dofissa = dofissa;
+params.methods.doasd = doasd;
 
 release = version('-release'); % Find out what Matlab release version is running
 MatlabVer = str2double(release(1:4));

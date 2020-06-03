@@ -43,7 +43,7 @@ if ~isempty(err)
 end
 
 %% Files
-listfile = [data_locn 'Digital_Logbook/lists/' list];
+listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 if nargin<2, reffile = files(1,:); end
 Nfiles = size(files,1);

@@ -144,7 +144,6 @@ if ~exist(fname_remap,'file') || force
         register_ROIs( A1, A2, params.ROIreg, template1, template2, params.ROIreg_mc, fname_fig, true );
     masks_union = reshape(full(A_union), params.ROIreg.d1, params.ROIreg.d2, size(A_union,2));
     masks2_reg = reshape(full(A2), params.ROIreg.d1, params.ROIreg.d2, size(A2,2));
-    outlines{1:size(masks_union,3)} = [];
     for j = 1:size(masks_union,3)
         outlines{:,:,j} = bwboundaries(masks_union(:,:,j));    % boundary of each ROI
     end

@@ -79,7 +79,7 @@ end
 
 % Image file
 [ mouseid, expname ] = find_mouseIDexpname(list);
-listfile = [data_locn 'Digital_Logbook/lists/' list];
+listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 file = files(array_id,:);
 

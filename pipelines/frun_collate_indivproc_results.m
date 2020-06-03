@@ -40,7 +40,7 @@ dofissa = true;
 [ mouseid, expname ] = find_mouseIDexpname(list);
 
 %% Files
-listfile = [data_locn 'Digital_Logbook/lists/' list];
+listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 Nfiles = size(files,1);
 

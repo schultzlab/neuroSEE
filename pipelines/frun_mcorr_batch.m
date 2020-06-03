@@ -93,7 +93,7 @@ params_mcorr = params.mcorr;
 
 
 %% Motion correction/Image registration 
-listfile = [data_locn 'Digital_Logbook/lists/' list];
+listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 
 % Image to be registered

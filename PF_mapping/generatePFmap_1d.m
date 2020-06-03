@@ -81,7 +81,7 @@ for ii = 1:Ncells
     idx_file = [0; idx_file; numel(activet)] +1; 
     p = bin_phi;
     s = activespk(ii,:);
-    Ntrial = 1;
+    ntrial = 1;
     ytick_files = 1;
     
     for jj = 1:numel(idx_file)-1
@@ -98,9 +98,9 @@ for ii = 1:Ncells
         Ntrials(jj) = numel(idx_tr)-1;
         if Ntrials(jj) > 0
             for k = 1:numel(idx_tr)-1
-                phi_trials{Ntrial} = p_tr(idx_tr(k)+1:idx_tr(k+1));
-                spike_trials{ii}{Ntrial} = s_tr(idx_tr(k)+1:idx_tr(k+1));
-                Ntrial = Ntrial + 1;
+                phi_trials{ntrial} = p_tr(idx_tr(k)+1:idx_tr(k+1));
+                spike_trials{ii}{ntrial} = s_tr(idx_tr(k)+1:idx_tr(k+1));
+                ntrial = ntrial + 1;
             end
 
             if jj == numel(idx_file)-1

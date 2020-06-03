@@ -51,23 +51,11 @@ figdir = [sdir 'multisession_pfmaps/'];
 %% Load individual session data
 if any([ ~exist(fname_mat1,'file'), ~exist(fname_mat2,'file'), force ])
     fprintf('%s: registering ROIs multisession\n',[mouseid '_' expname]);
-    listfile = [data_locn 'Digital_Logbook/lists/' list];
+    listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
     exps = extractExpnamesFromTxtfile( listfile );
     Nexps = numel(exps);
 
     % initialise variables
-    masks{1:Nexps} = [];
-    A{1:Nexps} = [];
-    templates{1:Nexps} = [];
-    normrMap_sm{1:Nexps} = [];
-    normpfMap_sm{1:Nexps} = [];
-    sortIdx{1:Nexps} = [];
-    pfLoc{1:Nexps} = [];
-    normspkRaster{1:Nexps} = [];
-    ytick_files{1:Nexps} = [];
-    pcIdx{1:Nexps} = [];
-    masks_pcs{1:Nexps} = [];
-    A_pcs{1:Nexps} = [];
     for n = 1:Nexps
         [ mouseid_n, exp_n ] = find_mouseIDexpname( exps{n} );
         if ~strcmpi(mouseid_n, mouseid)
@@ -146,8 +134,6 @@ if any([ ~exist(fname_mat1,'file'), ~exist(fname_mat2,'file'), force ])
 
     [~, A_shifted, assignments, matchings, templates_shifted, matched_ROIs, nonmatched_1, nonmatched_2, ~, A_union ] = ...
         register_multisession(A, params.ROIreg, templates, params.ROIreg_mc, [], false);
-    masks_shifted{1:Nexps-1} = [];
-    masks_union{1:Nexps-1} = [];
     for nn = 1:Nexps-1
         masks_shifted{nn} = reshape(full(A_shifted{nn}), params.ROIreg.d1, params.ROIreg.d2, size(A_shifted{nn},2));
         masks_union{nn} = reshape(full(A_union{nn+1}), params.ROIreg.d1, params.ROIreg.d2, size(A_union{nn+1},2));
@@ -162,8 +148,6 @@ if any([ ~exist(fname_mat1,'file'), ~exist(fname_mat2,'file'), force ])
 
     [~, A_shifted_pcs, assignments_pcs, matchings_pcs, ~, matched_ROIs_pcs, nonmatched_1_pcs, nonmatched_2_pcs, ~, A_union_pcs ] = ...
         register_multisession(A_pcs, params.ROIreg, templates, params.ROIreg_mc, [], false);
-    masks_shifted_pcs{1:Nexps-1} = [];
-    masks_union_pcs{1:Nexps-1} = [];
     for nn = 1:Nexps-1
         masks_shifted_pcs{nn} = reshape(full(A_shifted_pcs{nn}), params.ROIreg.d1, params.ROIreg.d2, size(A_shifted_pcs{nn},2));
         masks_union_pcs{nn} = reshape(full(A_union_pcs{nn}), params.ROIreg.d1, params.ROIreg.d2, size(A_union_pcs{nn},2));
@@ -220,7 +204,6 @@ else
         ytick_files = c1.ytick_files;
         pcIdx = c1.pcIdx;
         masks = c1.masks;
-            A{1:size(masks,2)} = [];
             for n = 1:size(masks,2)
                 AA = zeros(size(masks{n},1)*size(masks{n},2),size(masks{n},3));
                 for i = 1:size(masks{n},3)
@@ -230,7 +213,6 @@ else
                 A{n} = sparse(AA); 
             end
         masks_union = c1.masks_union;
-            A_union{1:size(masks_union,2)} = [];
             for n = 1:size(masks_union,2)
                 AA = zeros(size(masks_union{n},1)*size(masks_union{n},2),size(masks_union{n},3));
                 for i = 1:size(masks_union{n},3)
@@ -252,7 +234,6 @@ else
         nonmatched_2 = c2.nonmatched_2;
         masks_shifted = c2.masks_shifted;
             AA = zeros(size(masks_shifted{n},1)*size(masks_shifted{n},2),size(masks_shifted{n},3));
-            A_shifted{1:size(masks_shifted,2)} = [];
             for n = 1:size(masks_shifted,2)
                 for i = 1:size(masks_shifted{n},3)
                     mask = masks_shifted{n}(:,:,i);
@@ -264,7 +245,6 @@ else
         nonmatched_1_pcs = c2.nonmatched_1_pcs;
         nonmatched_2_pcs = c2.nonmatched_2_pcs;
         masks_pcs = c2.masks_pcs;
-            A_pcs{1:size(masks_pcs,2)} = [];
             for n = 1:size(masks_pcs,2)
                 AA = zeros(size(masks_pcs{n},1)*size(masks_pcs{n},2),size(masks_pcs{n},3));
                 for i = 1:size(masks_pcs{n},3)
@@ -274,7 +254,6 @@ else
                 A_pcs{n} = sparse(AA); 
             end
         masks_union_pcs = c2.masks_union_pcs;
-            A_union_pcs{1:size(masks_union_pcs,2)} = [];
             for n = 1:size(masks_union_pcs,2)
                 AA = zeros(size(masks_union_pcs{n},1)*size(masks_union_pcs{n},2),size(masks_union_pcs{n},3));
                 for i = 1:size(masks_union_pcs{n},3)
@@ -284,7 +263,6 @@ else
                 A_union_pcs{n} = sparse(AA); 
             end
         masks_shifted_pcs = c2.masks_shifted_pcs;
-            A_shifted_pcs{1:size(masks_shifted_pcs,2)} = [];
             for n = 1:size(masks_shifted_pcs,2)
                 AA = zeros(size(masks_shifted_pcs{n},1)*size(masks_shifted_pcs{n},2),size(masks_shifted_pcs{n},3));
                 for i = 1:size(masks_shifted_pcs{n},3)
@@ -419,7 +397,6 @@ if ~exist(figdir,'dir') || force
 
     % place tuning across sessions
     Nbins = size(normrMap_sm{1},2);
-    pf_sort{1:Nexps} = [];
     for n = 1:Nexps
         for j = 1:Nexps
             if n ~= j

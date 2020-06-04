@@ -1,6 +1,6 @@
-function Nrois = frun_getFileNrois( list )
+function Nrois = frun_getFileNrois( list, mcorr_method )
 
-mcorr_method = 'normcorre-nr';     % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
+if nargin<2, mcorr_method = 'normcorre-nr'; end     % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
 
 % Load module folders and define data directory

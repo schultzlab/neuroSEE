@@ -217,7 +217,7 @@ end
 trackfile = findMatchingTrackingFile( data_locn, file, force(5) );
 if force(5) || ~check(5)
     Trackdata = load_trackfile(data_locn, file, trackfile, force(5));
-    downTrackdata = downsample_trackData( Trackdata, spikes, params.fr );
+    downTrackdata = downsample_trackData( Trackdata, size(spikes,2), params.fr );
     save([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat'],'downTrackdata');
 else
     M = load([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat']);
@@ -258,7 +258,7 @@ else
 end
 fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
 
-save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
+save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','trackfile',...
                     'downTrackdata','activeData','pfData','hist','asd','params');
 if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
 if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end

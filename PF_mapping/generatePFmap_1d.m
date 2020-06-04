@@ -76,7 +76,7 @@ clear x y phi r speed t
 %% ALL CELLS
 % Calculate spike maps per trial
 for ii = 1:Ncells
-    % find the delineations for the video: find t = 0
+    % find the delineations for diff videos: find t = 0
     idx_file = find(diff(activet) < 0);
     idx_file = [0; idx_file; numel(activet)] +1; 
     p = bin_phi;

@@ -43,9 +43,9 @@ force = [false;...              % (1) motion correction even if motion corrected
          false;...              % (3) neuropil decontamination
          false;...              % (4) spike extraction
          false;...              % (5) tracking data extraction
-         false];                % (6) place field mapping
+         true];                % (6) place field mapping
 
-mcorr_method = 'normcorre';     % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
+mcorr_method = 'normcorre-nr';     % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
                                     %   normcorre-r (rigid),
@@ -60,7 +60,9 @@ slacknotify = false;            % flag to send Ann slack notifications about pro
 % Processing parameters (any parameter that is not set gets a default value)
 params = neuroSEE_setparams(...
             'mcorr_method', mcorr_method, ...
-            'dofissa', dofissa); 
+            'dofissa', dofissa,...
+            'prctile_thr', 95,...
+            'Nlaps_thr', 0); 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -191,80 +193,80 @@ end
 clear imG imR
 
 
-% %% (3) Run FISSA to extract neuropil-corrected time-series
-% % Saved in file folder: mat file with fields {dtsG, ddf_f, masks}
-% %                       summary plots of tsG, ddf_f (fig & png)
-% 
-% if dofissa
-%     release = version('-release'); % Find out what Matlab release version is running
-%     MatlabVer = str2double(release(1:4));
-%     if MatlabVer > 2017
-%         [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
-%     else
-%         fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
-%         dofissa = false;
-%         dtsG = [];
-%         ddf_f = [];
-%     end
-% else
-%     dtsG = [];
-%     ddf_f = [];
-% end
-% 
-% 
-% %% (4) Estimate spikes
-% % Saved in file folder: mat with fields {tsG, dtsG, df_f, ddf_f, spikes, params}
-% %                       summary plot of spikes (fig & png)
-% 
-% [spikes, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
-% 
-% if manually_refine_spikes
-%     GUI_manually_refine_spikes( spikes, tsG, dtsG, df_f, ddf_f, data_locn, file, params, corr_image, masks );
-%     uiwait 
-% end
-% 
-% 
-% %% (5) Find tracking file then load it
-% % Saved in file folder: trajectory plot (fig & png)
-% %                       mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
-% 
-% trackfile = findMatchingTrackingFile( data_locn, file, force(5) );
-% if force(5) || ~check(5)
-%     Trackdata = load_trackfile(data_locn, file, trackfile, force(5));
-%     downTrackdata = downsample_trackData( Trackdata, spikes, params.fr );
-%     save([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat'],'downTrackdata');
-% else
-%     M = load([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat']);
-%     downTrackdata = M.downTrackdata;
-% end
-% 
-% 
-% %% (6) Generate place field maps
-% % Saved: fig & png of several figures showing occMap, spkMap, pfMap, remapping and spkMap_pertrial
-% %        mat file with fields {occMap, hist, asd, downData, activeData}
-% 
-% if manually_refine_spikes
-%     force(6) = true;
-% end
-% 
-% if any(downTrackdata.r < 100)
-%     params.mode_dim = '2D';                     % open field
-%     params.PFmap.Nbins = params.PFmap.Nbins_2D; % number of location bins in [x y]               
-% else 
-%     params.mode_dim = '1D';                     % circular linear track
-%     params.PFmap.Nbins = params.PFmap.Nbins_1D; % number of location bins               
-% end
-% fields = {'Nbins_1D','Nbins_2D'};
-% params.PFmap = rmfield(params.PFmap,fields);
-% 
-% if strcmpi(params.mode_dim,'1D')
-%     [ hist, asd, pfData, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force(6));
-% else
-%     [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
-% end
-% 
-% %% Save output. These are all the variables needed for viewing data with GUI
-% 
+%% (3) Run FISSA to extract neuropil-corrected time-series
+% Saved in file folder: mat file with fields {dtsG, ddf_f, masks}
+%                       summary plots of tsG, ddf_f (fig & png)
+
+if dofissa
+    release = version('-release'); % Find out what Matlab release version is running
+    MatlabVer = str2double(release(1:4));
+    if MatlabVer > 2017
+        [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+    else
+        fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
+        dofissa = false;
+        dtsG = [];
+        ddf_f = [];
+    end
+else
+    dtsG = [];
+    ddf_f = [];
+end
+
+
+%% (4) Estimate spikes
+% Saved in file folder: mat with fields {tsG, dtsG, df_f, ddf_f, spikes, params}
+%                       summary plot of spikes (fig & png)
+
+[spikes, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
+
+if manually_refine_spikes
+    GUI_manually_refine_spikes( spikes, tsG, dtsG, df_f, ddf_f, data_locn, file, params, corr_image, masks );
+    uiwait 
+end
+
+
+%% (5) Find tracking file then load it
+% Saved in file folder: trajectory plot (fig & png)
+%                       mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
+
+trackfile = findMatchingTrackingFile( data_locn, file, force(5) );
+if force(5) || ~check(5)
+    Trackdata = load_trackfile(data_locn, file, trackfile, force(5));
+    downTrackdata = downsample_trackData( Trackdata, size(spikes,2), params.fr );
+    save([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat'],'downTrackdata');
+else
+    M = load([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat']);
+    downTrackdata = M.downTrackdata;
+end
+
+
+%% (6) Generate place field maps
+% Saved: fig & png of several figures showing occMap, spkMap, pfMap, remapping and spkMap_pertrial
+%        mat file with fields {occMap, hist, asd, downData, activeData}
+
+if manually_refine_spikes
+    force(6) = true;
+end
+
+if any(downTrackdata.r < 100)
+    params.mode_dim = '2D';                     % open field
+    params.PFmap.Nbins = params.PFmap.Nbins_2D; % number of location bins in [x y]               
+else 
+    params.mode_dim = '1D';                     % circular linear track
+    params.PFmap.Nbins = params.PFmap.Nbins_1D; % number of location bins               
+end
+fields = {'Nbins_1D','Nbins_2D'};
+params.PFmap = rmfield(params.PFmap,fields);
+
+if strcmpi(params.mode_dim,'1D')
+    [ hist, asd, pfData, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force(6));
+else
+    [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+end
+
+%% Save output. These are all the variables needed for viewing data with GUI
+
 % if dofissa
 %     str_fissa = 'FISSA';
 % else
@@ -272,11 +274,11 @@ clear imG imR
 % end
 % fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
 % 
-% save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','fname_track',...
+% save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','trackfile',...
 %                     'downTrackdata','activeData','pfData','hist','asd','params');
 % if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
 % if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
- 
+%  
 t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
 cprintf(str)

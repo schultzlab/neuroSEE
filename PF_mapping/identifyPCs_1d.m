@@ -27,7 +27,7 @@ include_SIsec = []; exclude_SIsec = [];
 include_SIspk = []; exclude_SIspk = [];
 
 for id = 1:Ncells
-    if spkPeak(id) < 10
+    %if spkPeak(id) < 10
         spkTr = mean(spkRaster{id},2);
         activeTr = numel(find(spkTr));
         if activeTr >= Nlaps_thr*size(spkRaster{id},1)
@@ -68,10 +68,10 @@ for id = 1:Ncells
             exclude_SIsec = [exclude_SIsec; id];
             exclude_SIspk = [exclude_SIspk; id];
         end
-    else
-        exclude_SIsec = [exclude_SIsec; id];
-        exclude_SIspk = [exclude_SIspk; id];
-    end
+%     else
+%         exclude_SIsec = [exclude_SIsec; id];
+%         exclude_SIspk = [exclude_SIspk; id];
+%     end
 end
 
 % sort cells in order of decreasing info

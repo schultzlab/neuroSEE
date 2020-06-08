@@ -94,8 +94,8 @@ end
 %% calculate event counts per bin, event and activity rates
 L = size(activespk,2);
 T = L / fr;
-spk_rate = zeros(Ncells);                   % average event ("spike" rate)
-spk_amplrate = zeros(Ncells);               % average event amplitude rate
+spk_eventrate = zeros(Ncells);                   % average event ("spike" rate)
+spk_rate = zeros(Ncells);               % average event amplitude rate
 bin_activet = zeros(Ncells, Nbins);         % fraction of dwell time in bin for which cell was active   
 spkMap = zeros(Ncells, Nbins);              % cumulative spike map
 normspkMap = zeros(Ncells, Nbins);          % normalised spike map
@@ -105,8 +105,8 @@ for c = 1:Ncells
    z = activespk(c,:);
    spk_idx = z>0;
    spk_ampl = z(spk_idx);
-   spk_rate(c) = length(spk_ampl)/T;
-   spk_amplrate(c) = sum(spk_ampl)/T;
+   spk_eventrate(c) = length(spk_ampl)/T;
+   spk_rate(c) = sum(spk_ampl)/T;
    for bin = 1:Nbins
        bin_idx = find(bin_phi == bin);
        bin_activet(c,bin) = length(find(z(bin_idx)>0))/length(bin_idx);
@@ -117,17 +117,17 @@ end
 
 
 %% calculate rate maps for entire session 
-hist.rMap = zeros(Ncells, Nbins);          % place field map
-hist.rMap_sm = zeros(Ncells, Nbins);       % smoothened place field map
-hist.normrMap_sm = zeros(Ncells, Nbins);   % smoothened normalised place field map
+hist.rateMap = zeros(Ncells, Nbins);          % place field map
+hist.rateMap_sm = zeros(Ncells, Nbins);       % smoothened place field map
+hist.normrateMap_sm = zeros(Ncells, Nbins);   % smoothened normalised place field map
 hist.infoMap = zeros(Ncells,2);             % info values
 hist.pfLoc = zeros(Ncells,1);
 hist.fieldSize = zeros(Ncells,1);
 hist.pfBins = zeros(Ncells,1);
 
 if doasd
-    asd.rMap = zeros(Ncells, Nbins);           % place field map for asd
-    asd.rMap = zeros(Ncells, Nbins);       % normalised place field map for asd
+    asd.rateMap = zeros(Ncells, Nbins);           % place field map for asd
+    asd.rateMap = zeros(Ncells, Nbins);       % normalised place field map for asd
     asd.infoMap = zeros(Ncells,2);              % info values
     asd.pfLoc = zeros(Ncells,1);
     asd.fieldSize = zeros(Ncells,1);
@@ -137,21 +137,21 @@ end
 occMap = histcounts(bin_phi,Nbins);
 for c = 1:Ncells
     % histogram estimation
-    hist.rMap(c,:) = spkMap(c,:)./(occMap*dt);    
-    hist.rMap_sm(c,:) = circularSmooth(hist.rMap(c,:),histsmoothWin);
-    hist.normrMap_sm(c,:) = hist.rMap_sm(c,:)./max(hist.rMap_sm(c,:));
-    [hist.infoMap(c,1), hist.infoMap(c,2)] = infoMeasures(hist.rMap(c,:),occMap,0);
+    hist.rateMap(c,:) = spkMap(c,:)./(occMap*dt);    
+    hist.rateMap_sm(c,:) = circularSmooth(hist.rateMap(c,:),histsmoothWin);
+    hist.normrateMap_sm(c,:) = hist.rateMap_sm(c,:)./max(hist.rateMap_sm(c,:));
+    [hist.infoMap(c,1), hist.infoMap(c,2)] = infoMeasures(hist.rateMap(c,:),occMap,0);
     
     if doasd
         % ASD estimation
-        [asd.rMap(c,:),~] = runASD_1d(bin_phi,z',Nbins);
-        asd.normrMap(c,:) = asd.rMap(c,:)./max(asd.rMap(c,:));
-        [asd.infoMap(c,1), asd.infoMap(c,2)] = infoMeasures(asd.rMap(c,:)',ones(Nbins,1),0);
+        [asd.rateMap(c,:),~] = runASD_1d(bin_phi,z',Nbins);
+        asd.normrateMap(c,:) = asd.rateMap(c,:)./max(asd.rateMap(c,:));
+        [asd.infoMap(c,1), asd.infoMap(c,2)] = infoMeasures(asd.rateMap(c,:)',ones(Nbins,1),0);
     end
 end
 
 %% find location preference and field size, active time within putative place field
-[ hist.pfLoc, hist.fieldSize, hist.pfBins ] = prefLoc_fieldSize_1d( hist.rMap_sm );
+[ hist.pfLoc, hist.fieldSize, hist.pfBins ] = prefLoc_fieldSize_1d( hist.rateMap_sm );
 for c = 1:Ncells
    % get list of spikes for this cell
    z = activespk(c,:);
@@ -166,7 +166,7 @@ for c = 1:Ncells
    hist.pf_activet(c) = pfBins_activet/pfBins_t;
 end
 if doasd
-    [ asd.pfLoc, asd.fieldSize, asd.pfBins ] = prefLoc_fieldSize_1d( asd.rMap );
+    [ asd.pfLoc, asd.fieldSize, asd.pfBins ] = prefLoc_fieldSize_1d( asd.rateMap );
     for c = 1:Ncells
        % get list of spikes for this cell
        z = activespk(c,:);
@@ -177,9 +177,9 @@ if doasd
            bin_idx = find(bin_phi == bin);
            pfBins_activet = pfBins_activet + length(find(z(bin_idx)>0));
            pfBins_t = pfBins_t + length(bin_idx);
-   end
-   asd.pf_activet(c) = pfBins_activet/pfBins_t;
-end
+       end
+       asd.pf_activet(c) = pfBins_activet/pfBins_t;
+    end
 end
 
 %% output
@@ -192,8 +192,8 @@ PFdata.spkRaster = spkRaster;
 PFdata.normspkRaster = normspkRaster;
 PFdata.ytick_files = ytick_files;
 PFdata.activetrials = activetrials;
+PFdata.spk_eventrate = spk_eventrate;
 PFdata.spk_rate = spk_rate;
-PFdata.spk_amplrate = spk_amplrate;
 PFdata.bin_activet = bin_activet;
 PFdata.occMap = occMap;
 PFdata.spkMap = spkMap;

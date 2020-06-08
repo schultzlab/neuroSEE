@@ -93,7 +93,7 @@ Names = [
                               %                              Neurotar uses 8 mm/s
         'prctile_thr        ' % percentile threshold for filtering nonPCs (default: 99)
         'pfactivet_thr      ' % fraction of dwell time in place field cell is required to be active (default: 0)
-        'activetrials_thr   ' % fraction of trials cell is required to be active (default: 0.2)
+        'activetrials_thr   ' % fraction of trials cell is required 
         'Nrand              ' % number of shuffles for bootstrap test
         'Nbins_1D           ' % no. of position bins in 103-cm linear track (default: 50)
         'Nbins_2D           ' % position bins in 325-mm diameter open field arena (default: [16,16])
@@ -264,7 +264,6 @@ Values = [
                               %                              Neurotar uses 8 mm/s
         {99}                  % percentile threshold for filtering nonPCs (default: 99)
         {0}                   % fraction of dwell time in place field cell is required to be active (default: 0)
-        {0.2}                 % fraction of trials cell is required to be active (default: 0.2)
         {1000}                % number of shuffles for bootstrap test
         {50}                  % no. of position bins in 103-cm linear track (default: 50)
         {[16,16]}             % position bins in 325-mm diameter open field arena (default: [16,16])

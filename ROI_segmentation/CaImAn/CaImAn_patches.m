@@ -12,8 +12,8 @@ fprintf('\tExtracting ROIs with CaImAn_patches\n');
 sizY = size(imG);
 
 %% Set parameters
-patch_size = [32,32];                   % size of each patch along each dimension (optional, default: [32,32])
-overlap = [4,4];                        % amount of overlap in each dimension (optional, default: [4,4])
+patch_size = [128,128];                   % size of each patch along each dimension (optional, default: [32,32])
+overlap = [16,16];                        % amount of overlap in each dimension (optional, default: [4,4])
 
 patches = construct_patches(sizY(1:end-1),patch_size,overlap);
 npatch_fov = (sizY(1)/patch_size(1))^2;

@@ -253,7 +253,7 @@ Values = [
     % spike extraction
         {85}                  % percentile to be used for estimating baseline (default: 85)
         {1}                   % spike SNR for min spike value (default: 1)
-        {0.4}                 % length of a typical transient in seconds (default: 0.4)
+        {1}                   % length of a typical transient in seconds (default: 0.4)
         {0.99}                % false positive probability for determing lambda penalty (default: 0.99)
     % PF mapping
         {1}                   % number of epochs into which data will be divided for analysis (default: 1)

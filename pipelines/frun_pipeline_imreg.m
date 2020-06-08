@@ -64,7 +64,7 @@ imreg_method = 'normcorre';  % image registration method
                                 % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
 groupreg_method = 'imreg';      % method for concatenating file data (either register images or rois)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
+dofissa = false;                 % flag to implement FISSA (when false, overrides force(3) setting)
 doasd = false;                  % flag to do asd pf calculation
 
 % Processing parameters (any parameter that is not set gets a default value)

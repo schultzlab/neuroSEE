@@ -15,7 +15,7 @@ idx_file = find(diff(activet) < 0);
 idx_file = [0; idx_file; numel(activet)] +1; 
     
 % initialise matrices
-files_Ntrials = zeros(numel(idx_file)-1, 1);
+Ntrials = zeros(numel(idx_file)-1, 1);
 
 for f = 1:numel(idx_file)-1
     % bin_phi for video jj
@@ -34,9 +34,9 @@ for f = 1:numel(idx_file)-1
         end
     end
     idx_tr = idx_tr( idx_tr > 0 );
-    files_Ntrials(f) = numel(idx_tr)-1;
+    file_Ntrials(f) = numel(idx_tr)-1;
     
-    if files_Ntrials(f) > 0
+    if Ntrials(f) > 0
         p_file = p(idx_file(f):idx_file(f+1)-1);
         for l = 1:numel(idx_tr)-1
             bp_trials{ntrial} = bp_file(idx_tr(l)+1:idx_tr(l+1));
@@ -50,17 +50,16 @@ for f = 1:numel(idx_file)-1
         end
 
         if f == numel(idx_file)-1
-            ytick_files = [ytick_files; sum(files_Ntrials(1:f))];
+            ytick_files = [ytick_files; sum(Ntrials(1:f))];
         else
-            ytick_files = [ytick_files; sum(files_Ntrials(1:f))+1];
+            ytick_files = [ytick_files; sum(Ntrials(1:f))+1];
         end
     end
 end
 
 %% find time spent in bin for different trials
-Ntrials = sum(files_Ntrials);
 bintime_trials = zeros(Ntrials,Nbins);
-for tr = 1:Ntrials
+for tr = 1:sum(Ntrials)
     for bin = 1:Nbins
         bintime_trials(tr,bin) = length(find(bp_trials{tr} == bin))/fr;
     end
@@ -70,7 +69,6 @@ bintime = sum(bintime_trials,1);
 %% generate spike rastergrams and find active laps
 spkRaster = cell(Ncells, 1);
 normspkRaster = cell(Ncells, 1);
-activetrials = zeros(Ncells, 1);
 for c = 1:Ncells
     for l = 1:numel(bp_trials)
         bp_tr = bp_trials{l};
@@ -84,7 +82,7 @@ for c = 1:Ncells
         normspkRaster{c}(isnan(normspkRaster{c})) = 0;
     end
     meanspkRaster = mean(spkRaster{c},2);
-    activetrials(c) = numel(find(meanspkRaster))/numel(bp_trials);
+    activetrials = numel(find(meanspkRaster))/numel(bp_trials);
 end
 
 %% calculate event counts per bin, event and activity rates
@@ -154,7 +152,6 @@ if doasd
 end
 
 %% output
-PFdata.files_Ntrials = files_Ntrials;
 PFdata.phi_trials = phi_trials;
 PFdata.spk_trials = spk_trials;
 PFdata.bintime_trials = bintime_trials;

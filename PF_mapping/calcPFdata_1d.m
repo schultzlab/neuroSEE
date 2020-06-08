@@ -1,16 +1,22 @@
-function [PFdata, hist, asd] = calcPFdata_1d(bin_phi, activephi, activespk, activet, Nbins, fr)
-if nargin<6, fr = 30.9; end
+function [PFdata, hist, asd] = calcPFdata_1d(bin_phi, activephi, activespk, activet, Nbins, histsmoothWin, fr, doasd)
+if nargin<8, doasd = false; end     % flag to do asd estimation of pf
+if nargin<7, fr = 30.9; end         % imaging frame rate
+dt = 1/fr;
 
 %% separate phi and spike data into trials (laps)
 bp = bin_phi;
 p = activephi;    
 ntrial = 1;
 ytick_files = 1;
+Ncells = size(activespk,1);
 
 % find the delineations for diff videos: find t = 0
 idx_file = find(diff(activet) < 0);
 idx_file = [0; idx_file; numel(activet)] +1; 
     
+% initialise matrices
+Ntrials = zeros(numel(idx_file)-1, 1);
+
 for f = 1:numel(idx_file)-1
     % bin_phi for video jj
     bp_file = bp(idx_file(f):idx_file(f+1)-1);
@@ -61,6 +67,8 @@ end
 bintime = sum(bintime_trials,1);
 
 %% generate spike rastergrams and find active laps
+spkRaster = cell(Ncells, 1);
+normspkRaster = cell(Ncells, 1);
 for c = 1:Ncells
     for l = 1:numel(bp_trials)
         bp_tr = bp_trials{l};
@@ -89,8 +97,8 @@ normspkMap = zeros(Ncells, Nbins);          % normalised spike map
 for c = 1:Ncells
    % get list of spikes for this cell
    z = activespk(c,:);
-   spk_idx = z(c,:)>0;
-   spk_ampl = z(c,spk_idx);
+   spk_idx = z>0;
+   spk_ampl = z(spk_idx);
    spk_rate(c) = length(spk_ampl)/T;
    spk_amplrate(c) = sum(spk_ampl)/T;
    for bin = 1:Nbins
@@ -137,10 +145,10 @@ for c = 1:Ncells
 end
 
 %% find location preference and field size
-[ hist.pfLoc, hist.fieldSize, hist.pfBins ] = pfLoc_fieldSize_1d( hist.rMap_sm );
+[ hist.pfLoc, hist.fieldSize, hist.pfBins ] = prefLoc_fieldSize_1d( hist.rMap_sm );
 
 if doasd
-    [ asd.pfLoc, asd.fieldSize, asd.pfBins ] = pfLoc_fieldSize_1d( asd.rMap );
+    [ asd.pfLoc, asd.fieldSize, asd.pfBins ] = prefLoc_fieldSize_1d( asd.rMap );
 end
 
 %% output
@@ -158,3 +166,5 @@ PFdata.bin_activity = bin_activity;
 PFdata.occMap = occMap;
 PFdata.spkMap = spkMap;
 PFdata.normspkMap = normspkMap;
+
+if ~doasd, asd = []; end

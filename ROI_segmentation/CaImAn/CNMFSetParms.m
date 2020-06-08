@@ -390,7 +390,7 @@ Values = [
     {true}
     % parameters for computing event exceptionality (compute_event_exceptionality.m)
     {2}
-    {0.4}
+    {1.0}
     {false}
     {[]}
     {[]}

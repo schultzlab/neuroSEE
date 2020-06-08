@@ -44,7 +44,6 @@ Nepochs = params.PFmap.Nepochs;
 Vthr = params.PFmap.Vthr;
 histsmoothWin = params.PFmap.histsmoothWin;
 prctile_thr = params.PFmap.prctile_thr;
-Ncells = size(spikes,1);
 
 % Input data
 x = downTrackdata.x;
@@ -53,13 +52,6 @@ phi = downTrackdata.phi;
 r = downTrackdata.r;
 speed = downTrackdata.speed;
 t = downTrackdata.time;
-    % find out how many files data is from
-    ind = find(abs(diff(t))>200);
-    if numel(ind)>1 % more than 1 image file
-        dt = mean(diff(t(1:ind(1))));
-    else
-        dt = mean(diff(t));
-    end
 
 % Consider only samples when the mouse is active
 activex     = x(speed > Vthr);
@@ -76,12 +68,12 @@ clear x y phi r speed t
 
 
 %% ALL CELLS: calculate PF data for entire duration (one epoch)
-[PFdata, hist, asd] = calcPFdata_1d(bin_phi, activephi, activespk, activet, Nbins, fr);
+[PFdata, hist, asd] = calcPFdata_1d(bin_phi, activephi, activespk, activet, Nbins, histsmoothWin, fr, doasd);
 % PFdata is a structure with the following fields
 %   phi_trials, spk_trials, bintime_trials, bintime
 %   spkRaster, normspkRaster, activetrials
 %   spk_rate, spk_amplrate, bin_activity
-%   occMap, spkMap = PFdata.spkMap, normspkMap = PFdata.normspkMap;
+%   occMap, spkMap, normspkMap
 
 % hist and asd are structures with the following fields
 %   rMap, rMap_sm (hist only), normrMap_sm (hist only)
@@ -97,25 +89,9 @@ if doasd
     = identifyPCs_1d( bin_phi, activespk, asd.infoMap,  prctile_thr, Nrand, 'asd');
 end
 
-
-%% Organise pc and nonpc data structures
-% histogram estimation
-hist.SIsec = organisefields(spkRaster, normspkRaster, spkMap, normspkMap, ...
-                            spk_rate, spk_amplrate, hist, hist.SIsec, 'SIbitspersec');
-hist.SIspk = organisefields(spkRaster, normspkRaster, spkMap, normspkMap, ...
-                            spk_rate, spk_amplrate, hist, hist.SIspk, 'SIbitsperspk');
-
-% asd
-if doasd
-    asd.SIsec = organisefields(spkRaster, normspkRaster, spkMap, normspkMap, ...
-                                spk_rate, spk_amplrate, asd, asd.SIsec, 'SIbitspersec');
-    asd.SIspk = organisefields(spkRaster, normspkRaster, spkMap, normspkMap, ...
-                                spk_rate, spk_amplrate, asd, asd.SIspk, 'SIbitsperspk');
-end
-
 % sort pf maps
-hist.SIsec = sortPFmaps(hist.SIsec);
-hist.SIspk = sortPFmaps(hist.SIspk);
+hist.SIsec = sortPFmaps(pfMap, pfMap_sm, normpfMap_sm, hist.SIsec);
+hist.SIspk = sortPFmaps(pfMap, pfMap_sm, normpfMap_sm, hist.SIspk);
 
 
 %% ADDITIONAL PROCESSING IF Nepochs > 1
@@ -167,9 +143,9 @@ if Nepochs > 1
         spk_trials_e{e} = PFdata_e.spk_trials;
         bintime_trials{e} = PFdata_e.bintime_trials;
         bintime_e(e,:) = PFdata_e.bintime;
-        spkRaster = PFdata_e.spkRaster;
-        normspkRaster = PFdata_e.normspkRaster;
-        activetrials = PFdata_e.activetrials;
+        spkRaster{e}{:} = PFdata_e.spkRaster;
+        normspkRaster{e}{:} = PFdata_e.normspkRaster;
+        activetrials{e} = PFdata_e.activetrials;
         spk_rate = PFdata_e.spk_rate;
         spk_amplrate = PFdata_e.spk_amplrate;
         bin_activity = PFdata_e.bin_activity;
@@ -180,22 +156,6 @@ if Nepochs > 1
 end
 
 
-%% Organise pc and nonpc data structures for Nepochs > 1
-if Nepochs > 1
-    % histogram estimation
-    hist_e.SIsec = organisefields([], [], spkMap_e, normspkMap_e, ...
-                            spk_rate_e, spk_amplrate_e, hist_e, hist_e.SIsec, 'SIbitspersec');
-    hist_e.SIspk = organisefields([], [], spkMap_e, normspkMap_e, ...
-                            spk_rate_e, spk_amplrate_e, hist_e, hist_e.SIspk, 'SIbitsperspk');
-
-    %asd
-    if doasd
-        asd_e.SIsec = organisefields([], [], spkMap_e, normspkMap_e, ...
-                                spk_rate_e, spk_amplrate_e, asd_e, asd_e.SIsec, 'SIbitspersec');
-        asd_e.SIspk = organisefields([], [], spkMap_e, normspkMap_e, ...
-                                spk_rate_e, spk_amplrate_e, asd_e, asd_e.SIspk, 'SIbitsperspk');
-    end
-end
 
 % sort pf maps
 hist_e.SIsec = sortPFmaps(hist_e.SIsec);
@@ -211,7 +171,7 @@ activeData.speed = activespeed;
 activeData.time = activet;
 activeData.spikes = activespk;
 
-if Nepochs>1
+if Nepochs > 1
     PFdata_epochs.occMap = occMap_e;                         
     PFdata_epochs.spkMap = spkMap_e;
     PFdata_epochs.normspkMap = normspkMap_e;   
@@ -220,111 +180,38 @@ if Nepochs>1
     PFdata_epochs.spk_rate = spk_rate_e;
     PFdata_epochs.spk_amplrate = spk_amplrate_e;
     PFdata_epochs.bin_activity = bin_activity_e;
-    
-    hist_epochs = hist_e;
-    if doasd, asd_epochs = asd_e; end
 else
     hist_epochs = [];
     if doasd, asd_epochs = []; end
 end
-
 if ~doasd, asd = []; end
 
 varargout(1) = hist_epochs;
 varargout(2) = asd_epochs;
 end
 
-function hSIstruct = organisefields(spkRaster, normspkRaster, spkMap, normspkMap, ...
-                                    bintime_trials, bin_activity, activetrials, ...
-                                    spk_rate, spk_amplrate, hstruct, hSIstruct, infotype)
-    if nargin<12, infotype = 2; end
-    if strcmpi(infotype, 'SIbitspersec'), info = 1; end
-    if strcmpi(infotype, 'SIbitsperspk'), info = 2; end
-    
-    Nepochs = size(spkmap,3);
-    if Nepochs == 1
-        pcIdx = hSIstruct.pcIdx;
-        if ~isempty(pcIdx)
-            hSIstruct.spkRaster_pc = spkRaster(pcIdx);
-            hSIstruct.normspkRaster_pc = normspkRaster(pcIdx);
-            hSIstruct.activetrials_pc = activetrials(pcIdx);
-            hSIstruct.bintime_trials_pc = bintime_trials(pcIdx,:);
-            hSIstruct.bin_activity_pc = bin_activity(pcIdx,:);
-            hSIstruct.spk_rate_pc = spk_rate(pcIdx);
-            hSIstruct.spk_amplrate_pc = spk_amplrate(pcIdx);
-            hSIstruct.infoMap_pc = hstruct.infoMap(pcIdx, info);
-
-            hSIstruct.spkMap = spkMap(pcIdx,:);
-            hSIstruct.normspkMap = normspkMap(pcIdx,:);
-            hSIstruct.pfMap = hstruct.rMap(pcIdx,:);
-            if isfield(hstruct,'rMap_sm')
-                hSIstruct.pfMap_sm = hstruct.rMap_sm(pcIdx,:);
-                hSIstruct.normpfMap_sm = hstruct.normrMap_sm(pcIdx,:);
-            end
-            hSIstruct.pfLoc = hstruct.pfLoc(pcIdx);
-            hSIstruct.pfSize = hstruct.fieldSize(pcIdx);
-        end
-        nonpcIdx = hSIstruct.nonpcIdx;
-        if ~isempty(nonpcIdx)
-            hSIstruct.spkRaster_nonpc = spkRaster(nonpcIdx);
-            hSIstruct.normspkRaster_nonpc = normspkRaster(nonpcIdx);
-            hSIstruct.activetrials_nonpc = activetrials(nonpcIdx);
-            hSIstruct.bintime_trials_nonpc = bintime_trials(nonpcIdx,:);
-            hSIstruct.bin_activity_nonpc = bin_activity(nonpcIdx,:);
-            hSIstruct.spk_rate_nonpc = spk_rate(nonpcIdx);
-            hSIstruct.spk_amplrate_nonpc = spk_amplrate(nonpcIdx);
-            hSIstruct.infoMap_nonpc = hstruct.infoMap(nonpcIdx, info);
-        end
-    else
-        for e = 1:Nepochs
-            pcIdx = hSIstruct.pcIdx{e};
-            if ~isempty(pcIdx)
-                hSIstruct.spk_rate_pc{e} = spk_rate(pcIdx,e);
-                hSIstruct.spk_amplrate_pc{e} = spk_amplrate(pcIdx,e);
-                hSIstruct.infoMap_pc{e} = hstruct.infoMap(pcIdx,info,e);
-
-                hSIstruct.spkMap{e} = spkMap(pcIdx,:,e);
-                hSIstruct.normspkMap{e} = normspkMap(pcIdx,:,e);
-                hSIstruct.pfMap{e} = hstruct.rMap(pcIdx,:,e);
-                if isfield(hstruct,'rMap_sm')
-                    hSIstruct.pfMap_sm{e} = hstruct.rMap_sm(pcIdx,:,e);
-                    hSIstruct.normpfMap_sm{e} = hstruct.normrMap_sm(pcIdx,:,e);
-                end
-                hSIstruct.pfLoc{e} = hstruct.pfLoc(pcIdx,e);
-                hSIstruct.pfSize{e} = hstruct.fieldSize(pcIdx,e);
-            end
-            nonpcIdx = hSIstruct.nonpcIdx{e};
-            if ~isempty(nonpcIdx)
-                hSIstruct.spk_rate_nonpc{e} = spk_rate(nonpcIdx,e);
-                hSIstruct.spk_amplrate_nonpc{e} = spk_amplrate(nonpcIdx,e);
-                hSIstruct.infoMap_nonpc{e} = hstruct.infoMap(nonpcIdx,info,e);
-            end
-        end
-    end
-end
-
-function hSIstruct = sortPFmaps(hSIstruct)
+function hSIstruct = sortPFmaps(pfMap, pfMap_sm, normpfMap_sm, hSIstruct)
     % Sort place field maps
-    Nepochs = size(hSIstruct.pfMap,3);
+    Nepochs = size(pfMap,3);
     if Nepochs == 1
         if ~isempty(hSIstruct.pcIdx)
             [ ~, sortIdx ] = sort( hSIstruct.pfLoc );
-            hSIstruct.sortIdx = sortIdx;
-            hSIstruct.sort_pfMap = hSIstruct.pfMap(sortIdx,:);
+            hSIstruct.sortIdx = hSIstruct.pcIdx(sortIdx);
+            hSIstruct.sort_pfMap = pfMap(sortIdx,:);
             if isfield(hSIstruct,'pfMap_sm')
-                hSIstruct.sort_pfMap_sm = hSIstruct.pfMap_sm(sortIdx,:);
-                hSIstruct.sort_normpfMap_sm = hSIstruct.normpfMap_sm(sortIdx,:);
+                hSIstruct.sort_pfMap_sm = pfMap_sm(sortIdx,:);
+                hSIstruct.sort_normpfMap_sm = normpfMap_sm(sortIdx,:);
             end
         end
     else
         for e = 1:Nepochs
             if ~isempty(hSIstruct.pcIdx{e})
                 [ ~, sortIdx ] = sort( hSIstruct.pfLoc{e} );
-                hSIstruct.sortIdx{e} = sortIdx;
-                hSIstruct.sort_pfMap{e} = hSIstruct.pfMap{e}(sortIdx,:);
+                hSIstruct.sortIdx{e} = hSIstruct.pcIdx{e}(sortIdx);
+                hSIstruct.sort_pfMap{e} = pfMap{e}(sortIdx,:);
                 if isfield(hSIstruct,'pfMap_sm')
-                    hSIstruct.sort_pfMap_sm{e} = hSIstruct.pfMap_sm{e}(sortIdx,:);
-                    hSIstruct.sort_normpfMap_sm{e} = hSIstruct.normpfMap_sm{e}(sortIdx,:);
+                    hSIstruct.sort_pfMap_sm{e} = pfMap_sm{e}(sortIdx,:);
+                    hSIstruct.sort_normpfMap_sm{e} = normpfMap_sm{e}(sortIdx,:);
                 end
             end
         end

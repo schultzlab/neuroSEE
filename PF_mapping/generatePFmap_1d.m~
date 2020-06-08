@@ -84,10 +84,10 @@ clear x y phi r speed t
 %% Identify PLACE CELLS
 % Cells are sorted in descending order of info content
 [hist.SIsec.pcIdx, hist.SIspk.pcIdx, hist.SIsec.nonpcIdx, hist.SIspk.nonpcIdx] ...
-    = identifyPCs_1d( bin_phi, activespk, hist.infoMap, hist.pf_activet, prctile_thr, pfactivet_thr, Nrand );
+    = identifyPCs_1d( bin_phi, PFdata.bin_activity, hist.pfBins, activespk, hist.infoMap, prctile_thr, pfactivet_thr, Nrand );
 if doasd
     [asd.SIsec.pcIdx, asd.SIspk.pcIdx, asd.SIsec.nonpcIdx, asd.SIspk.nonpcIdx] ...
-    = identifyPCs_1d( bin_phi, activespk, hist.infoMap, hist.pf_activet, prctile_thr, pfactivet_thr, Nrand, 'asd');
+    = identifyPCs_1d( bin_phi, PFdata.bin_activity, activespk, asd.infoMap,  prctile_thr, pfactivet_thr, Nrand, 'asd');
 end
 
 % sort pf maps

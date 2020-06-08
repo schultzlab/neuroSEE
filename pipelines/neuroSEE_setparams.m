@@ -92,7 +92,7 @@ Names = [
         'Vthr               ' % speed threshold (mm/s) Note: David Dupret uses 20 mm/s (default: 20)
                               %                              Neurotar uses 8 mm/s
         'prctile_thr        ' % percentile threshold for filtering nonPCs (default: 99)
-        'pfactivity_thr     ' % fraction of dwell time in place field cell is required to be active (default: 0)
+        'pfactivet_thr      ' % fraction of dwell time in place field cell is required to be active (default: 0)
         'Nrand              ' % number of shuffles for bootstrap test
         'Nbins_1D           ' % no. of position bins in 103-cm linear track (default: 50)
         'Nbins_2D           ' % position bins in 325-mm diameter open field arena (default: [16,16])
@@ -245,9 +245,9 @@ Values = [
         {5}                   % percentile to be used for estimating baseline (default: 5)
         {13}                  % degree of smoothing for df_f (default: 13)
         {6}                   % expected radius of a cell in 490x490 um FOV (pixels) (default: 6)  
-        {300}                 % estimated number of cells in 490x490 um FOV (default: 300)
+        {400}                 % estimated number of cells in 490x490 um FOV (default: 300)
         {9}                   % expected radius of a cell in 330x330 um FOV (pixels) (default: 9)  
-        {200}                 % estimated number of cells in 330x330 um FOV (default: 200)
+        {300}                 % estimated number of cells in 330x330 um FOV (default: 200)
     % neuropil correction
         {5}                   % percentile to be used for estimating baseline (default:5)
         {17}                  % degree of smoothing for ddf_f (default: 17)

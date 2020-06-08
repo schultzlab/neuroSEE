@@ -58,6 +58,9 @@ for f = 1:numel(idx_file)-1
 end
 
 %% find time spent in bin for different trials
+% bintime_trials:   [trials x bins] dwell time in bin per trial
+% bintime :         [1 x bins]      total dwell time in bin
+
 Ntrials = sum(files_Ntrials);
 bintime_trials = zeros(Ntrials,Nbins);
 for tr = 1:Ntrials
@@ -84,16 +87,17 @@ for c = 1:Ncells
         normspkRaster{c}(isnan(normspkRaster{c})) = 0;
     end
     meanspkRaster = mean(spkRaster{c},2);
+    % number of trials (laps) for which cell was active
     activetrials(c) = numel(find(meanspkRaster))/numel(bp_trials);
 end
 
 %% calculate event counts per bin, event and activity rates
 L = size(activespk,2);
 T = L / fr;
-spk_rate = zeros(Ncells);
-spk_amplrate = zeros(Ncells);
-bin_activity = zeros(Ncells, Nbins);
-spkMap = zeros(Ncells, Nbins);              % spike map
+spk_rate = zeros(Ncells);                   % average event ("spike" rate)
+spk_amplrate = zeros(Ncells);               % average event amplitude rate
+bin_activet = zeros(Ncells, Nbins);         % fraction of dwell time in bin for which cell was active   
+spkMap = zeros(Ncells, Nbins);              % cumulative spike map
 normspkMap = zeros(Ncells, Nbins);          % normalised spike map
 
 for c = 1:Ncells
@@ -105,7 +109,7 @@ for c = 1:Ncells
    spk_amplrate(c) = sum(spk_ampl)/T;
    for bin = 1:Nbins
        bin_idx = find(bin_phi == bin);
-       bin_activity(c,bin) = length(find(activespk(c,bin_idx)>0))/length(bin_idx);
+       bin_activet(c,bin) = length(find(z(bin_idx)>0))/length(bin_idx);
        spkMap(c,bin) = sum(z(bin_phi == bin));
    end
     normspkMap(c,:) = spkMap(c,:)./max(spkMap(c,:));
@@ -146,11 +150,36 @@ for c = 1:Ncells
     end
 end
 
-%% find location preference and field size
+%% find location preference and field size, active time within putative place field
 [ hist.pfLoc, hist.fieldSize, hist.pfBins ] = prefLoc_fieldSize_1d( hist.rMap_sm );
-
+for c = 1:Ncells
+   % get list of spikes for this cell
+   z = activespk(c,:);
+   pfBins_activet = 0;
+   pfBins_t = 0;
+   for k = 1:length(hist.pfBins{c})
+       bin = hist.pfBins{c}(k);
+       bin_idx = find(bin_phi == bin);
+       pfBins_activet = pfBins_activet + length(find(z(bin_idx)>0));
+       pfBins_t = pfBins_t + length(bin_idx);
+   end
+   hist.pf_activet(c) = pfBins_activet/pfBins_t;
+end
 if doasd
     [ asd.pfLoc, asd.fieldSize, asd.pfBins ] = prefLoc_fieldSize_1d( asd.rMap );
+    for c = 1:Ncells
+       % get list of spikes for this cell
+       z = activespk(c,:);
+       pfBins_activet = 0;
+       pfBins_t = 0;
+       for k = 1:length(hist.pfBins{c})
+           bin = asd.pfBins{c}(k);
+           bin_idx = find(bin_phi == bin);
+           pfBins_activet = pfBins_activet + length(find(z(bin_idx)>0));
+           pfBins_t = pfBins_t + length(bin_idx);
+   end
+   asd.pf_activet(c) = pfBins_activet/pfBins_t;
+end
 end
 
 %% output
@@ -165,7 +194,7 @@ PFdata.ytick_files = ytick_files;
 PFdata.activetrials = activetrials;
 PFdata.spk_rate = spk_rate;
 PFdata.spk_amplrate = spk_amplrate;
-PFdata.bin_activity = bin_activity;
+PFdata.bin_activet = bin_activet;
 PFdata.occMap = occMap;
 PFdata.spkMap = spkMap;
 PFdata.normspkMap = normspkMap;

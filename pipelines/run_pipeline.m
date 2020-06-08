@@ -27,10 +27,10 @@ tic
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % USER-DEFINED INPUT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-file = '20181015_09_37_54';     % file to be processed
+file = '20181015_09_26_48';     % file to be processed
 
 % Basic settings
-test = false;                   % flag to use one of smaller files in test folder)
+test = true;                   % flag to use one of smaller files in test folder)
 force = [false;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
@@ -38,7 +38,7 @@ force = [false;...              % (1) motion correction even if motion corrected
          false;...              % (5) tracking data extraction
          false];                % (6) place field mapping
 
-mcorr_method = 'normcorre';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
+mcorr_method = 'normcorre-nr';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
                                     %   normcorre-r (rigid),

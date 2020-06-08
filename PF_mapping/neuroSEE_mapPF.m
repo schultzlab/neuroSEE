@@ -110,8 +110,10 @@ function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, dow
             [hist, asd, activeData, PFdata] = generatePFmap_1d( spikes, downTrackdata, params, doasd );
            
             % Make plots
-            if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); end
-            plotPF_1d(hist, asd, PFdata, true, true, fig_sdir, fname_pref)
+            if force || ~exist(fig_sdir,'dir')
+                if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); end
+                plotPF_1d(hist, asd, PFdata, true, true, fig_sdir, fname_pref)
+            end
         
             % Save output
             output.hist = hist;
@@ -124,8 +126,10 @@ function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, dow
             [hist, asd, activeData, PFdata] = generatePFmap_2d(spikes, downTrackdata, params, doasd);
             
             % Make plots
-            if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); end
-            plotPF_2d( hist, asd, activeData, true, true, fig_sdir, fname_pref )
+            if force || ~exist(fig_sdir,'dir')
+                if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); end
+                plotPF_2d( hist, asd, activeData, true, true, fig_sdir, fname_pref )
+            end
         
             % Save output
             output.hist = hist;

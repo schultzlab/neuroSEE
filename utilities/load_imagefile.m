@@ -35,7 +35,7 @@ function [ imG, imR ] = load_imagefile( data_locn, file, forceRaw, suffix, mcorr
         cprintf('Errors','Reference file for registered image required!\n');
         return
     end
-    str = sprintf( '%s: Loading %s images...\n', file, suffix );
+    str = sprintf( '%s: Loading %s images...\n', file, suffix(2:end) );
     cprintf( str )
     
     % Define file names

@@ -92,8 +92,7 @@ Names = [
         'Vthr               ' % speed threshold (mm/s) Note: David Dupret uses 20 mm/s (default: 20)
                               %                              Neurotar uses 8 mm/s
         'prctile_thr        ' % percentile threshold for filtering nonPCs (default: 99)
-        'Nlaps_thr          ' % fraction of laps that cell is required to be active to be considered
-                              % for place cell analysis (default: 0.5)
+        'Nrand              ' % number of shuffles for bootstrap test
         'Nbins_1D           ' % no. of position bins in 103-cm linear track (default: 50)
         'Nbins_2D           ' % position bins in 325-mm diameter open field arena (default: [16,16])
    ]; 
@@ -262,8 +261,7 @@ Values = [
         {20}                  % speed threshold (mm/s) Note: David Dupret uses 20 mm/s (default: 20)
                               %                              Neurotar uses 8 mm/s
         {99}                  % percentile threshold for filtering nonPCs (default: 99)
-        {0.5}                 % fraction of laps that cell is required to be active to be considered
-                              % for place cell analysis (default: 0.5)
+        {1000}                % number of shuffles for bootstrap test
         {50}                  % no. of position bins in 103-cm linear track (default: 50)
         {[16,16]}             % position bins in 325-mm diameter open field arena (default: [16,16])
     ];

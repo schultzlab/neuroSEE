@@ -25,6 +25,7 @@ patches = construct_patches(sizY(1:end-1),patch_size,overlap);
 npatch_fov = (sizY(1)/patch_size(1))^2;
 K = round(options.maxcells/npatch_fov);   % number of components to be found in each patch
 tau = options.gSig;                       % std of gaussian kernel (size of neuron) 
+p = options.p;                            % order of AR model dynamics 
 
 %% Run on patches
 

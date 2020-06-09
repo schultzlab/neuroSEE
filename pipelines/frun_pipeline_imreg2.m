@@ -35,7 +35,7 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, slacknotify )
+function frun_pipeline_imreg2( list, reffile, slacknotify )
 
 if nargin<3, slacknotify = false; end
 % if nargin<2, see line 121
@@ -65,7 +65,7 @@ imreg_method = 'normcorre';  % image registration method
                                 % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
 groupreg_method = 'imreg';      % method for concatenating file data (either register images or rois)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-dofissa = false;                 % flag to implement FISSA (when false, overrides force(3) setting)
+dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 doasd = false;                  % flag to do asd pf calculation
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -106,8 +106,8 @@ params = neuroSEE_setparams(...
             'mcorr_method', mcorr_method,...
             'dofissa', dofissa,...
             'FOV', FOV,...
-            'patch_size', [128,128],...
-            'overlap', [16,16],...
+            'patch_size', [32,32],...
+            'overlap', [4,4],...
             'maxcells_FOV330', 200); 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

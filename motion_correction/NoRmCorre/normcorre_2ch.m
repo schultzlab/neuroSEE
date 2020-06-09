@@ -23,6 +23,10 @@ function [M_final_y, M_final_x, Y_out, X_out, col_shift, shifts, template, optio
 % options:          options structure (if modified)
 
 
+   %% ensure correct image size
+   options.d1 = size(Y,1);
+   options.d2 = size(Y,2);
+   
    %% first determine filetype
 
    % determine whether imaging is 2d or 3d

@@ -63,13 +63,12 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         else
             fprintf( '%s: Starting ROI segmentation\n', [mouseid '_' expname] );
         end
-        maxcells = params.ROIsegment.maxcells;
-        cellrad = params.ROIsegment.cellrad;
-
         if strcmpi(segment_method,'ABLE')
-            df_prctile = params.ROIsegment.df_prctile;
-            df_medfilt1 = params.ROIsegment.df_medfilt1;
-            fr = params.fr;
+            maxcells = params.ROIsegment.ABLE.maxcells;
+            cellrad = params.ROIsegment.ABLE.cellrad;
+            df_prctile = params.ROIsegment.ABLE.df_prctile;
+            df_medfilt1 = params.ROIsegment.ABLE.df_medfilt1;
+            fr = params.ROIsegment.ABLE.fr;
 
             [tsG, masks, corr_image] = ABLE_manfredi( imG, mean_imR, maxcells, cellrad );
 
@@ -86,7 +85,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             end
 
         else
-            [df_f, masks, corr_image] = CaImAn( imG, maxcells, cellrad );
+            [df_f, masks, corr_image, F0, GUIdata] = CaImAn_patches( imG, params.ROIsegment.CaImAn );
             df_f = full(df_f);
 
             % Extract raw timeseries
@@ -106,6 +105,8 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         output.df_f = df_f;
         output.masks = masks;
         output.corr_image = corr_image;
+        output.F0 = F0;
+        output.GUIdata = GUIdata;
         output.params = params.ROIsegment;
         if ~exist( filedir, 'dir' ), mkdir( filedir ); end
         save(fname_mat,'-struct','output');

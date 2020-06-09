@@ -3,38 +3,24 @@
 % This function extracts ROIs and their decontaminated signals from a green
 % channel image stack using CaImAn
 
-function [C_df, masks, corr_image, F0] = CaImAn_patches( imG, maxcells, cellrad, display )
+function [C_df, masks, corr_image, F0, GUIdata] = CaImAn_patches( imG, options, display )
 
-if nargin<4, display = false; end
+if nargin<3, display = false; end
 
 fprintf('\tExtracting ROIs with CaImAn_patches\n');
 
 sizY = size(imG);
 
 %% Set parameters
-patch_size = [128,128];                   % size of each patch along each dimension (optional, default: [32,32])
-overlap = [16,16];                        % amount of overlap in each dimension (optional, default: [4,4])
+options.d1 = sizY(1);
+options.d2 = sizY(2);
 
+patch_size = options.patch_size;          % size of each patch along each dimension (optional, default: [32,32])
+overlap = options.overlap;                % amount of overlap in each dimension (optional, default: [4,4])
 patches = construct_patches(sizY(1:end-1),patch_size,overlap);
 npatch_fov = (sizY(1)/patch_size(1))^2;
-K = round(maxcells/npatch_fov);           % number of components to be found in each patch
-tau = cellrad;                            % std of gaussian kernel (size of neuron) 
-p = 2;                                    % order of autoregressive system (p = 0 no dynamics, p=1 just decay, p = 2, both rise and decay)
-merge_thr = 0.8;                          % merging threshold
-
-options = CNMFSetParms(...
-    'd1',sizY(1),'d2',sizY(2),...
-    'nb',1,...                                  % number of background components per patch
-    'gnb',3,...                                 % number of global background components
-    'ssub',2,...
-    'tsub',1,...
-    'p',p,...                                   % order of AR dynamics
-    'merge_thr',merge_thr,...                   % merging threshold
-    'gSig',tau,... 
-    'spatial_method','regularized',...
-    'cnn_thr',0.2,...
-    'patch_space_thresh',0.25,...
-    'min_SNR',2);
+K = round(options.maxcells/npatch_fov);   % number of components to be found in each patch
+tau = options.gSig;                       % std of gaussian kernel (size of neuron) 
 
 %% Run on patches
 
@@ -87,7 +73,7 @@ P.p = 2;
 if display
     figure;
     plot_contours(A2,corr_image,options,1);
-    plot_components_GUI(imG,A2,C2,b,f2,corr_image,options);
+    plot_components_GUI(imG,A2,C2,b2,f2,corr_image,options);
 end
 
 %% convert contour of spatial footprints to logical masks (added by Ann Go)
@@ -97,5 +83,10 @@ for i = 1:numel(A2)
 end
 
 masks = logical(masks);
+
+GUIdata.A2 = A2; 
+GUIdata.C2 = C2;
+GUIdata.b2 = b2;
+GUIdata.f2 = f2;
 
 end

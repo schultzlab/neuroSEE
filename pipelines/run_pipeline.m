@@ -29,6 +29,13 @@ tic
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 file = '20181015_09_26_48';     % file to be processed
 
+% Auto-defined FOV
+if str2double(file(1,1:4)) > 2018
+    FOV = 490;                  % FOV area = FOV x FOV, FOV in um
+else
+    FOV = 330;          
+end
+
 % Basic settings
 test = true;                   % flag to use one of smaller files in test folder)
 force = [false;...              % (1) motion correction even if motion corrected images exist
@@ -53,9 +60,14 @@ slacknotify = false;            % flag to send Ann slack notifications about pro
 % Processing parameters (any parameter that is not set gets a default value)
 params = neuroSEE_setparams(...
             'mcorr_method', mcorr_method, ...
-            'dofissa', dofissa); 
+            'dofissa', dofissa, ...
+            'FOV', FOV); 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+params.methods.mcorr_method = mcorr_method;
+params.methods.segment_method = segment_method;
+params.methods.dofissa = dofissa;
 
 % Load module folders and define data directory
 [data_locn,comp,err] = load_neuroSEEmodules(test);
@@ -70,23 +82,7 @@ if strcmpi(comp,'hpc')
     maxNumCompThreads(32);        % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
 end
 
-% Auto-defined 
-if str2double(file(1,1:4)) > 2018
-    params.FOV = 490;                                                   % FOV area = FOV x FOV, FOV in um
-    params.ROIsegment.cellrad = params.ROIsegment.cellrad_FOV490;       % expected radius of a cell (pixels)    
-    params.ROIsegment.maxcells = params.ROIsegment.maxcells_FOV490;     % estimated number of cells in FOV  
-else
-    params.FOV = 330; 
-    params.ROIsegment.cellrad = params.ROIsegment.cellrad_FOV330;            
-    params.ROIsegment.maxcells = params.ROIsegment.maxcells_FOV330;
-end
-fields = {'cellrad_FOV490','maxcells_FOV490','cellrad_FOV330','maxcells_FOV330'};
-params.ROIsegment = rmfield(params.ROIsegment,fields);
-
-params.methods.mcorr_method = mcorr_method;
-params.methods.segment_method = segment_method;
-params.methods.dofissa = dofissa;
-
+% Matlab version
 release = version('-release'); % Find out what Matlab release version is running
 MatlabVer = str2double(release(1:4));
 

@@ -37,7 +37,7 @@
 function [ hist, asd, activeData, PFdata, varargout ] = generatePFmap_1d( spikes, downTrackdata, params, doasd )
     
 if nargin < 4, doasd = false; end
-fr = params.fr;
+fr = params.PFmap.fr;
 Nrand = params.PFmap.Nrand;
 Nbins = params.PFmap.Nbins;
 Nepochs = params.PFmap.Nepochs;

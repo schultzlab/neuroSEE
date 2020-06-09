@@ -173,5 +173,3 @@ function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, dow
         cprintf(str)
     end
 end % function
-
-

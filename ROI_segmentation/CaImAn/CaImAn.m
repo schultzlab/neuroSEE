@@ -3,9 +3,9 @@
 % This function extracts ROIs and their decontaminated signals from a green
 % channel image stack using CaImAn
 
-function [df_f, masks, corr_image] = CaImAn( imG, maxcells, cellrad, display )
+function [df_f, masks, corr_image, F0, GUIdata] = CaImAn( imG, options, display )
 
-if nargin<4, display = false; end
+if nargin<3, display = false; end
 
 fprintf('\tExtracting ROIs with CaImAn\n');
 
@@ -16,21 +16,13 @@ if ~isa(imG,'single');    imG = single(imG);  end     % convert to single
 d = d1*d2;                                            % total number of pixels
 
 %% Set parameters
+options.d1 = d1;
+options.d2 = d2;
+options.min_SNR = 3;                                  % minimum SNR threshold
+options.space_thresh = 0.5;
+K = options.maxcells;                                 % number of components to be found
+tau = options.gSig;                                   % std of gaussian kernel (half size of neuron) 
 
-K = maxcells;                                   % number of components to be found
-tau = cellrad;                                  % std of gaussian kernel (half size of neuron) 
-p = 2;
-
-options = CNMFSetParms(...   
-    'd1',d1,'d2',d2,...                         % dimensionality of the FOV
-    'p',p,...                                   % order of AR dynamics    
-    'gSig',tau,...                              % half size of neuron
-    'merge_thr',0.80,...                        % merging threshold  
-    'nb',2,...                                  % number of background components    
-    'min_SNR',3,...                             % minimum SNR threshold
-    'space_thresh',0.5,...                      % space correlation threshold
-    'cnn_thr',0.2...                            % threshold for CNN classifier    
-    );
 %% Data pre-processing
 
 [P,imG] = preprocess_data(imG,p);
@@ -138,7 +130,7 @@ Pm.p = p;    % restore AR value
 % [A_or,C_or,S_or,P_or] = order_ROIs(A2,C2,S2,P2); % order components
 [A_or,C_or,~,P_or] = order_ROIs(A2,C2,S2,P2); % order components
 % K_m = size(C_or,1);
-[df_f,~] = extract_DF_F(Yr,A_or,C_or,P_or,options); % extract DF/F values (optional)
+[df_f,F0] = extract_DF_F(Yr,A_or,C_or,P_or,options); % extract DF/F values (optional)
 
     % fh4 = 
 fig = figure;
@@ -167,5 +159,11 @@ for i = 1:numel(Coor)
 end
 
 masks = logical(masks);
+
+GUIdata.Yr = Yr; 
+GUIdata.A_or = A_or;
+GUIdata.C_or = C_or;
+GUIdata.b2 = b2;
+GUIdata.f2 = f2;
 
 end

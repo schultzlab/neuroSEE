@@ -75,6 +75,13 @@ P.p = 2;
 [C_df,F0] = detrend_df_f(A2,b2,C2,f2,YrA2,options);
 
 %% plot results
+fig = figure;
+[Coor,~] = plot_contours(A2,corr_image,options,0); % contour plot of spatial footprints
+
+if ~display
+    close(fig);
+end
+
 if display
     figure;
     plot_contours(A2,corr_image,options,1);
@@ -82,9 +89,9 @@ if display
 end
 
 %% convert contour of spatial footprints to logical masks (added by Ann Go)
-masks = zeros(sizY(1),sizY(1),numel(A2));
-for i = 1:numel(A2)
-    masks(:,:,i) = poly2mask(A2{i}(1,:),A2{i}(2,:),d1,d2);
+masks = zeros(sizY(1), sizY(2), numel(Coor));
+for i = 1:numel(Coor)
+    masks(:,:,i) = poly2mask(Coor{i}(1,:), Coor{i}(2,:), sizY(1), sizY(2));
 end
 
 masks = logical(masks);

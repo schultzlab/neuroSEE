@@ -136,10 +136,10 @@ Pm.p = p;    % restore AR value
 % K_m = size(C_or,1);
 [df_f,F0] = extract_DF_F(Yr,A_or,C_or,P_or,options); % extract DF/F values (optional)
 
-    % fh4 = 
+% fh4 = 
 fig = figure;
 [Coor,json_file] = plot_contours(A_or,corr_image,options,0); % contour plot of spatial footprints
-    %savejson('jmesh',json_file,'filename');        % optional save json file with component coordinates (requires matlab json library)
+% savejson('jmesh',json_file,'filename');        % optional save json file with component coordinates (requires matlab json library)
 
 if ~display
     close(fig);

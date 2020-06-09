@@ -248,7 +248,7 @@ Values = [
         {6}                   % expected radius of a cell in 490x490 um FOV (pixels) (default: 6)  
         {400}                 % estimated number of cells in 490x490 um FOV (default: 300)
         {9}                   % expected radius of a cell in 330x330 um FOV (pixels) (default: 9)  
-        {300}                 % estimated number of cells in 330x330 um FOV (default: 200)
+        {400}                 % estimated number of cells in 330x330 um FOV (default: 200)
     % neuropil correction
         {5}                   % percentile to be used for estimating baseline (default:5)
         {17}                  % degree of smoothing for ddf_f (default: 17)

@@ -1,8 +1,17 @@
 % Written by Ann Go
 % Script for spike estimation
 
-function spikes = extractSpikes( ts, bl_prctile, spk_SNR, fr, decay_time, lam_pr )
+function spikes = extractSpikes( ts, options )
+if nargin<2
+    params = neuroSEE_setparams();
+    options = params.spkExtract;
+end
 
+bl_prctile = options.bl_prctile;
+spk_SNR = options.spk_SNR;
+fr = options.fr;
+decay_time = options.decay_time; 
+lam_pr = options.lam_pr;
 N = size(ts,1); T = size(ts,2);
 
 for i = 1:N

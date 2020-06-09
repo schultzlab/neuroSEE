@@ -6,9 +6,14 @@
 
 function params = neuroSEE_setparams(varargin)
 Names = [
-    % general
+    % methods
+        'mcorr_method       ' % motion correction method (default: 'normcorre')
+        'segment_method     ' % ROI segmentation method: ABLE or CaImAn (default: CaImAn)
         'dofissa            ' % flag to do fissa correction (default: true)
-        % dataset info
+        'doasd              ' % flag to calculate place fields by asd estimation  (default: false)
+        'imreg_method       ' % image registration method (default: 'normcorre')
+        'groupreg_method    ' % method for concatenating file data (either imreg or roireg) (default: 'imreg')
+    % dataset info
         'd1                 ' % number of rows
         'd2                 ' % number of cols
         'd3                 ' % number of planes (for 3d imaging, default: 1)
@@ -16,7 +21,6 @@ Names = [
         'fr                 ' % imaging frame rate in Hz (defaut: 30)
         'decay_time         ' % length of a typical transient in seconds
     % motion correction (general)
-        'mcorr_method       ' % motion correction method (default: 'normcorre')
         'refChannel         ' % reference channel for motion correction (default: 'green')
     % motion correction: fftRigid    
         'imscale            ' % image downsampling factor (default: 1)
@@ -76,7 +80,6 @@ Names = [
         'col_shift          ' % known bi-directional offset provided by the user (default: [])
         'print_msg          ' % flag to print messages (default: false)
     % ROI segmentation (general)
-        'segment_method     ' % ROI segmentation method: ABLE or CaImAn (default: CaImAn)
         'cellrad_FOV490     ' % expected radius of a cell in 490x490 um FOV (pixels) (default: 6)  
         'maxcells_FOV490    ' % estimated number of cells in 490x490 um FOV (default: 300) 
         'cellrad_FOV330     ' % expected radius of a cell in 330x330 um FOV (pixels) (default: 9)  
@@ -325,9 +328,14 @@ if expectval
 end
 
 Values = [
-    % general
+    % methods
+        {'normcorre'}         % motion correction method (default: 'normcorre')
+        {'CaImAn'}            % ROI segmentation method: ABLE or CaImAn (default: CaImAn)
         {true}                % flag to do fissa correction (default: true)
-        % dataset info
+        {false}               % flag to calculate place fields by asd estimation  (default: false)
+        {'normcorre'}         % image registration method (default: 'normcorre')
+        {'imreg'}             % method for concatenating file data (either imreg or roireg) (default: 'imreg')
+    % dataset info
         {512}                 % number of rows
         {512}                 % number of columns
         {1}
@@ -335,7 +343,6 @@ Values = [
         {30.9}                % imaging frame rate in Hz (defaut: 30)
         {1}                   % length of a typical transient in seconds
     % motion correction (general)
-        {'normcorre'}         % motion correction method (default: 'normcorre')
         {'green'}             % reference channel for motion correction (default: 'green')
     % motion correction: fftRigid    
         {1}                   % image downsampling factor (default: 1)
@@ -393,7 +400,6 @@ Values = [
         {[]}
         {false}               % flag to print messages (default: false)
     % ROI segmentation
-        {'CaImAn'}            % ROI segmentation method: ABLE or CaImAn (default: CaImAn)
         {6}                 % estimated radius of a cell in 490x490 um FOV (default: 6)
         {500}                 % estimated number of cells in 490x490 um FOV (default: 300)
         {9}                   % expected radius of a cell in 330x330 um FOV (pixels) (default: 9)  
@@ -619,10 +625,20 @@ if isempty(options.min_fitness); options.min_fitness = log(normcdf(-options.min_
 if isempty(options.patch_min_fitness); options.patch_min_fitness = log(normcdf(-options.patch_min_SNR))*options.N_samples_exc; end
 
 % output
+% methods
+f = {'mcorr_method'; 'segment_method'; 'dofissa'; 'doasd'; 'imreg_method'; 'groupreg_method'};
+fn = fieldnames(options);
+for i = 1:length(fn)
+    for j = 1:length(f)
+        if strcmpi(fn{i},f{j})
+            params.methods.(fn{i}) = options.(fn{i});
+        end
+    end
+end
 % motion correction
 params.mcorr.refChannel = options.refChannel;
 if strcmpi(options.mcorr_method,'fftRigid')
-    f = {'imscale';'Nimg_ave';'redoT'};
+    f = {'imscale'; 'Nimg_ave'; 'redoT'};
     fn = fieldnames(options);
     for i = 1:length(fn)
         for j = 1:length(f)
@@ -752,7 +768,7 @@ if options.dofissa
     end
 end
 % spike extraction
-f = {'bl_prctile'; 'spk_SNR'; 'decay_time'; 'lam_pr'};
+f = {'bl_prctile'; 'spk_SNR'; 'decay_time'; 'lam_pr'; 'fr'};
 fn = fieldnames(options);
 for i = 1:length(fn)
     for j = 1:length(f)

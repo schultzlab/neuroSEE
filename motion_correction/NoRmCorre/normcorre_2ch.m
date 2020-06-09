@@ -82,7 +82,8 @@ function [M_final_y, M_final_x, Y_out, X_out, col_shift, shifts, template, optio
    %% set default parameters if not present
 
    if ~exist('options','var') || isempty(options)    
-       options = NoRMCorreSetParms('d1',sizY(1),'d2',sizY(2));
+       params = neuroSEE_setparams('d1',sizY(1),'d2',sizY(2));
+       options = params.mcorr.normcorre_r;
        if nd > 2; options.d3 = sizY(3); end
    end
 

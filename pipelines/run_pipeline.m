@@ -60,14 +60,12 @@ slacknotify = false;            % flag to send Ann slack notifications about pro
 % Processing parameters (any parameter that is not set gets a default value)
 params = neuroSEE_setparams(...
             'mcorr_method', mcorr_method, ...
+            'segment_method', segment_method,...
             'dofissa', dofissa, ...
+            'doasd', doasd,...
             'FOV', FOV); 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-params.methods.mcorr_method = mcorr_method;
-params.methods.segment_method = segment_method;
-params.methods.dofissa = dofissa;
 
 % Load module folders and define data directory
 [data_locn,comp,err] = load_neuroSEEmodules(test);

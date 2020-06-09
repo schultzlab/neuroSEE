@@ -73,7 +73,7 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
         end
         cprintf(str)
 
-        spikes = extractSpikes( C, params.spkExtract.bl_prctile, params.spkExtract.spk_SNR, params.fr, params.spkExtract.decay_time, params.spkExtract.lam_pr );
+        spikes = extractSpikes( C, params.spkExtract );
         
         % Save output
         spike_output.spikes = spikes;

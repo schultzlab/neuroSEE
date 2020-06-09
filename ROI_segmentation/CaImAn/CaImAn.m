@@ -6,6 +6,10 @@
 function [df_f, masks, corr_image, F0, GUIdata] = CaImAn( imG, options, display )
 
 if nargin<3, display = false; end
+if nargin<2 
+    params = neuroSEE_setparams();
+    options = params.ROIsegment.CaImAn;
+end
 
 fprintf('\tExtracting ROIs with CaImAn\n');
 

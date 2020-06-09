@@ -34,9 +34,10 @@
 %   activeData  : downsampled tracking data for when animal was moving, fields are
 %                 x, y, r, phi, speed, t, spikes, spikes_pc 
 
-function [ hist, asd, activeData, PFdata, varargout ] = generatePFmap_1d( spikes, downTrackdata, params, doasd )
-    
-if nargin < 4, doasd = false; end
+function [ hist, asd, activeData, PFdata, varargout ] = generatePFmap_1d( spikes, downTrackdata, params )
+if nargin<3, params = neuroSEE_setparams(); end
+
+doasd = params.methods.doasd; 
 fr = params.PFmap.fr;
 Nrand = params.PFmap.Nrand;
 Nbins = params.PFmap.Nbins;

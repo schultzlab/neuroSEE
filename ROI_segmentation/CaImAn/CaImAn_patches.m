@@ -82,7 +82,7 @@ if display
 end
 
 %% convert contour of spatial footprints to logical masks (added by Ann Go)
-masks = zeros(d1,d2,numel(A2));
+masks = zeros(sizY(1),sizY(1),numel(A2));
 for i = 1:numel(A2)
     masks(:,:,i) = poly2mask(A2{i}(1,:),A2{i}(2,:),d1,d2);
 end

@@ -93,7 +93,7 @@ if doasd
 end
 
 % sort pf maps
-hist.SIsec = sortPFmaps(hist.rMap, hist.rMap_sm, normpfMap_sm, hist.SIsec);
+hist.SIsec = sortPFmaps(hist.rateMap, hist.rateMap_sm, normrateMap_sm, hist.SIsec);
 hist.SIspk = sortPFmaps(pfMap, pfMap_sm, normpfMap_sm, hist.SIspk);
 
 
@@ -193,28 +193,28 @@ varargout(1) = hist_epochs;
 varargout(2) = asd_epochs;
 end
 
-function hSIstruct = sortPFmaps(pfMap, pfMap_sm, normpfMap_sm, hSIstruct)
+function hSIstruct = sortPFmaps(rateMap, rateMap_sm, normrateMap_sm, hSIstruct)
     % Sort place field maps
-    Nepochs = size(pfMap,3);
+    Nepochs = size(rateMap,3);
     if Nepochs == 1
         if ~isempty(hSIstruct.pcIdx)
             [ ~, sortIdx ] = sort( hSIstruct.pfLoc );
-            hSIstruct.sortIdx = hSIstruct.pcIdx(sortIdx);
-            hSIstruct.sort_pfMap = pfMap(sortIdx,:);
+            hSIstruct.sortpcIdx = hSIstruct.pcIdx(sortIdx);
+            hSIstruct.sort_pfMap = rateMap(sortIdx,:);
             if isfield(hSIstruct,'pfMap_sm')
-                hSIstruct.sort_pfMap_sm = pfMap_sm(sortIdx,:);
-                hSIstruct.sort_normpfMap_sm = normpfMap_sm(sortIdx,:);
+                hSIstruct.sort_pfMap_sm = rateMap_sm(sortIdx,:);
+                hSIstruct.sort_normpfMap_sm = normrateMap_sm(sortIdx,:);
             end
         end
     else
         for e = 1:Nepochs
             if ~isempty(hSIstruct.pcIdx{e})
                 [ ~, sortIdx ] = sort( hSIstruct.pfLoc{e} );
-                hSIstruct.sortIdx{e} = hSIstruct.pcIdx{e}(sortIdx);
-                hSIstruct.sort_pfMap{e} = pfMap{e}(sortIdx,:);
+                hSIstruct.sortpcIdx{e} = hSIstruct.pcIdx{e}(sortIdx);
+                hSIstruct.sort_pfMap{e} = rateMap{e}(sortIdx,:);
                 if isfield(hSIstruct,'pfMap_sm')
-                    hSIstruct.sort_pfMap_sm{e} = pfMap_sm{e}(sortIdx,:);
-                    hSIstruct.sort_normpfMap_sm{e} = normpfMap_sm{e}(sortIdx,:);
+                    hSIstruct.sort_pfMap_sm{e} = rateMap_sm{e}(sortIdx,:);
+                    hSIstruct.sort_normpfMap_sm{e} = normrateMap_sm{e}(sortIdx,:);
                 end
             end
         end

@@ -232,7 +232,6 @@ if dostep(1)
                     close(fig);
                 end
             end
-            Nt(n) = size(imG{n},3);
         end
 
         % Image downsampling    
@@ -287,22 +286,12 @@ if dostep(2)
     end
     
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, [], params, force(2), mean(imR,3), list, reffile );
-    cdf_f = cell(Nfiles,1);
-    if ~dofissa
-        % divide tsG and df_f into individual files for spike estimation
-        if ~exist('Nt','var') % assume each file has 7420 frames
-            for n = 1:Nfiles
-                cdf_f{n} = df_f(:, (n-1)*7420+1:n*7420);
-            end
-        else
-            cdf_f{1} = df_f(:, 1:Nt(1));
-            for n = 2:Nfiles
-                cdf_f{n} = df_f(:, sum(Nt(1:n-1))+1:sum(Nt(1:n)));
-            end
-        end
-    end
 else
     fprintf('%s: ROI segmentation step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
 end
     
 %% 3) FISSA
@@ -350,6 +339,10 @@ if dostep(3)
 else
     if dofissa
         fprintf('%s: FISSA step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+        t = toc;
+        str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+        cprintf(str)
+        return
     end
 end
 
@@ -358,6 +351,16 @@ if dostep(4)
     if any([ force(4), force(5), ~check_list(3), ~check_list(4) ])
         spikes = []; 
         cspikes = cell(Nfiles,1);
+        
+        cdf_f = cell(Nfiles,1);
+        if ~dofissa
+            % divide df_f into individual files for spike estimation
+            file_idx = round( linspace(1,size(imG,3),Nfiles+1) );
+            for n = 1:Nfiles
+                cdf_f{n} = df_f(:, file_idx(n):file_idx(n+1));
+            end
+        end
+                
         for n = 1:Nfiles
             file = files(n,:);
             if dofissa
@@ -387,6 +390,10 @@ if dostep(4)
     end
 else
     fprintf('%s: Spike estimation step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
 end
 
 %% 5) Behaviour tracking data
@@ -465,6 +472,10 @@ if dostep(5)
     end
 else
     fprintf('%s: Behaviour tracking step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
 end
     
 %% 6) PFmapping

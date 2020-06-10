@@ -110,7 +110,7 @@ params = neuroSEE_setparams(...
             'FOV', FOV,...
             'patch_size', [128,128],...
             'overlap', [16,16],...
-            'maxcells_FOV330', 300,...
+            'maxcells_FOV330', 200,...
             'space_thresh',0.5); 
         
                                % flag to execute step (use if wanting to skip later steps)
@@ -286,14 +286,6 @@ if dostep(2)
     end
     
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, [], params, force(2), mean(imR,3), list, reffile );
-    cdf_f = cell(Nfiles,1);
-    if ~dofissa
-        % divide tsG and df_f into individual files for spike estimation
-        file_idx = round( linspace(1,size(imG,3),Nfiles+1) );
-        for n = 1:Nfiles
-            cdf_f{n} = df_f(:, file_idx(n):file_idx(n+1));
-        end
-    end
 else
     fprintf('%s: ROI segmentation step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
     t = toc;
@@ -359,6 +351,16 @@ if dostep(4)
     if any([ force(4), force(5), ~check_list(3), ~check_list(4) ])
         spikes = []; 
         cspikes = cell(Nfiles,1);
+        
+        cdf_f = cell(Nfiles,1);
+        if ~dofissa
+            % divide df_f into individual files for spike estimation
+            file_idx = round( linspace(1,size(imG,3),Nfiles+1) );
+            for n = 1:Nfiles
+                cdf_f{n} = df_f(:, file_idx(n):file_idx(n+1));
+            end
+        end
+                
         for n = 1:Nfiles
             file = files(n,:);
             if dofissa

@@ -31,8 +31,11 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
 
     mcorr_method = params.methods.mcorr_method;
     segment_method = params.methods.segment_method;
+    runpatches = params.methods.runpatches;
     dofissa = params.methods.dofissa; 
         if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
+    roiarea_thr = params.ROIsegment.roiarea_thr;      % area of roi to be considered a cell
+        
 
     if isempty(list)
         filedir = [ data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_', mcorr_method , '/', segment_method, '/' ];
@@ -53,8 +56,9 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         end
         fname_mat = [filedir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
         fname_fig1 = [filedir mouseid '_' expname '_ref' reffile '_ROIs.fig'];
-        fname_fig2 = [filedir mouseid '_' expname '_ref' reffile '_raw_timeseries.fig'];
-        fname_fig3 = [filedir mouseid '_' expname '_ref' reffile '_df_f.fig'];
+        fname_fig2 = [filedir mouseid '_' expname '_ref' reffile '_elimROIS.fig'];
+        fname_fig3 = [filedir mouseid '_' expname '_ref' reffile '_raw_timeseries.fig'];
+        fname_fig4 = [filedir mouseid '_' expname '_ref' reffile '_df_f.fig'];
     end
 
     if force || ~exist(fname_mat,'file')
@@ -70,40 +74,59 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             df_medfilt1 = params.ROIsegment.ABLE.df_medfilt1;
             fr = params.ROIsegment.ABLE.fr;
 
-            [tsG, masks, corr_image] = ABLE_manfredi( imG, mean_imR, maxcells, cellrad );
+            [tsG_all, masks_all, corr_image] = ABLE_manfredi( imG, mean_imR, maxcells, cellrad );
 
             % Calculate df_f
-            df_f = zeros(size(tsG));
-            for i = 1:size(tsG,1)
-                x = lowpass( medfilt1(tsG(i,:),df_medfilt1), 1, fr );
+            df_f_all = zeros(size(tsG_all));
+            for i = 1:size(tsG_all,1)
+                x = lowpass( medfilt1(tsG_all(i,:),df_medfilt1), 1, fr );
                 fo = ones(size(x)) * prctile(x,df_prctile);
                 while fo == 0
                     fo = ones(size(x)) * prctile(x,df_prctile+5);
                     df_prctile = df_prctile+5;
                 end
-                df_f(i,:) = (x - fo) ./ fo;
+                df_f_all(i,:) = (x - fo) ./ fo;
             end
 
         else
-            [df_f, masks, corr_image, F0, GUIdata] = CaImAn_patches( imG, params.ROIsegment.CaImAn );
-            df_f = full(df_f);
+            if runpatches
+                [df_f_all, masks_all, corr_image, F0, GUIdata] = CaImAn_patches( imG, params.ROIsegment.CaImAn );
+            else
+                [df_f_all, masks_all, corr_image, F0, GUIdata] = CaImAn( imG, params.ROIsegment.CaImAn );
+            end
+            df_f_all = full(df_f_all);
 
             % Extract raw timeseries
             [d1,d2,T] = size(imG);
-            tsG = zeros(size(df_f));
-            for n = 1:size(masks,3)
-                maskind = masks(:,:,n);
+            tsG_all = zeros(size(df_f_all));
+            for n = 1:size(masks_all,3)
+                maskind = masks_all(:,:,n);
                 for j = 1:T
                     imG_reshaped = reshape( imG(:,:,j), d1*d2, 1);
-                    tsG(n,j) = mean( imG_reshaped(maskind) );
+                    tsG_all(n,j) = mean( imG_reshaped(maskind) );
                 end
             end
         end
-
+        
+        % Eliminate very small rois and rois touching image border
+        area = zeros(size(masks_all,3),1);
+        for j = 1:size(masks_all,3)
+            im = imclearborder(masks_all(:,:,j));
+            c = regionprops(im,'area');
+            if ~isempty(c)
+                area(j) = c.Area;                    % area of each ROI
+            end
+        end
+        masks = masks_all(:,:,area>roiarea_thr);
+        elim_masks = masks_all(:,:,area<roiarea_thr);
+        tsG = tsG_all(area>roiarea_thr,:);
+        df_f = df_f_all(area>roiarea_thr,:);
+        
         % Save output
         output.tsG = tsG;
         output.df_f = df_f;
         output.masks = masks;
+        output.elim_masks = elim_masks;
         output.corr_image = corr_image;
         output.F0 = F0;
         output.GUIdata = GUIdata;
@@ -112,7 +135,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         save(fname_mat,'-struct','output');
 
         % Plot masks on correlation image and save plot
-        makeplot(corr_image, masks);
+        makeplot(corr_image, masks, elim_masks, tsG, df_f);
 
         fprintf('%s: ROI segmentation done\n',file);
 
@@ -142,11 +165,16 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         else
             corr_image = zeros(size(mean_imR));
         end
+        if isfield(segmentOutput,'elim_masks')
+            elims_masks = segmentOutput.elim_masks;
+        else
+            elim_masks = [];
+        end
         params.ROIsegment = segmentOutput.params;
 
         % If ROI image doesn't exist, create & save figure
         if any([~exist(fname_fig1,'file'),~exist(fname_fig2,'file'),~exist(fname_fig3,'file')])
-           makeplot(corr_image, masks);
+           makeplot(corr_image, masks, elim_masks, tsG, df_f);
         end
         if isempty(reffile)
             newstr = sprintf( '%s: Segmentation output found and loaded\n', file );
@@ -156,7 +184,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         refreshdisp(newstr, prevstr)
     end
 
-    function makeplot(corr_image, masks)
+    function makeplot(corr_image, masks, elim_masks, tsG, df_f)
         % ROIs overlayed on correlation image
         plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
         fig = plotContoursOnSummaryImage(corr_image, masks, plotopts);
@@ -164,20 +192,29 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         saveas(fig, fname_fig1(1:end-4), 'png');
         close(fig);
         
+        % eliminated ROIs overlayed on correlation image
+        if ~isempty(elim_masks)
+            plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
+            fig = plotContoursOnSummaryImage(corr_image, elim_masks, plotopts);
+            savefig(fig, fname_fig2(1:end-4));
+            saveas(fig, fname_fig2(1:end-4), 'png');
+            close(fig);
+        end
+        
         % raw timeseries
         fig = figure;
         iosr.figures.multiwaveplot(1:size(tsG,2),1:size(tsG,1),tsG,'gain',5); yticks([]); xticks([]); 
         title('Raw timeseries','Fontweight','normal','Fontsize',12); 
-        savefig(fig, fname_fig2(1:end-4));
-        saveas(fig, fname_fig2(1:end-4), 'png');
+        savefig(fig, fname_fig3(1:end-4));
+        saveas(fig, fname_fig3(1:end-4), 'png');
         close(fig);
         
         % dF/F
         fig = figure;
         iosr.figures.multiwaveplot(1:size(df_f,2),1:size(df_f,1),df_f,'gain',5); yticks([]); xticks([]); 
         title('dF/F','Fontweight','normal','Fontsize',12); 
-        savefig(fig, fname_fig3(1:end-4));
-        saveas(fig, fname_fig3(1:end-4), 'png');
+        savefig(fig, fname_fig4(1:end-4));
+        saveas(fig, fname_fig4(1:end-4), 'png');
         close(fig);
     end
 end

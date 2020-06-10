@@ -81,6 +81,7 @@ mcorr_method = 'normcorre-nr';     % values: [normcorre, normcorre-r, normcorre-
                                     %   normcorre-nr (nonrigid), 
                                     % fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
+runpatches = false;            % for CaImAn processing, flag to run patches (default: false)
 dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
 doasd = false;                  % flag to do asd pf calculation 
@@ -92,6 +93,7 @@ slacknotify = false;            % flag to send Ann slack notifications about pro
 params = neuroSEE_setparams(...
             'mcorr_method', mcorr_method,...
             'segment_method', segment_method,...
+            'runpatches', runpatches,...
             'dofissa', dofissa,...
             'doasd', doasd,...
             'FOV', FOV,...
@@ -202,7 +204,7 @@ end
 
 if dostep(2)
     % If doing CaImAn, continue only if Matlab version is R2018 or higher
-    if strcmpi(segment_method,'CaImAn') && MatlabVer < 2018
+    if runpatches && MatlabVer < 2018
         beep
         err = sprintf('%s: Higher Matlab version required. Cannot proceed with ROI segmentation.\n', [mouseid '_' expname]);
         cprintf('Errors',err);

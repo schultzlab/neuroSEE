@@ -85,8 +85,8 @@ Names = [
         'maxcells_FOV490    ' % estimated number of cells in 490x490 um FOV (default: 300) 
         'cellrad_FOV330     ' % expected radius of a cell in 330x330 um FOV (pixels) (default: 9)  
         'maxcells_FOV330    ' % estimated number of cells in 330x330 um FOV (default: 200)
-        'df_prctile         ' % percentile to be defined as baseline (default: 20)
-        'roiarea_thr        ' % area of roi to be considered a cell (default: 70)
+        'df_prctile         ' % percentile to be defined as baseline (default 20)
+        'roiarea_thr .      ' % area of roi to be considered a cell ()
     % ROI segmentation (ABLE)    
         'df_medfilt1        ' % degree of smoothing for df_f (default: 13)
     % ROI segmentation: CaImAn
@@ -403,12 +403,11 @@ Values = [
         {[]}
         {false}               % flag to print messages (default: false)
     % ROI segmentation
-        {6}                   % expected radius of a cell in 490x490 um FOV (default: 6)
+        {6}                 % estimated radius of a cell in 490x490 um FOV (default: 6)
         {500}                 % estimated number of cells in 490x490 um FOV (default: 300)
         {9}                   % expected radius of a cell in 330x330 um FOV (pixels) (default: 9)  
         {400}                 % estimated number of cells in 330x330 um FOV (default: 200)
         {20}                  % percentile to be defined as baseline (default 20)
-        {70}                  % area of roi to be considered a cell (default: 70)
     % ROI segmentation (ABLE)
         {13}                  % degree of smoothing for df_f (default: 13)
     % ROI segmentation: CaImAn
@@ -705,7 +704,6 @@ if strcmpi(options.mcorr_method,'normcorre') || strcmpi(options.mcorr_method,'no
 
 end
 % ROI segmentation
-params.ROIsegment.roiarea_thr = options.roiarea_thr;
 if options.FOV == 330
     maxcells = options.maxcells_FOV330;
     cellrad = options.cellrad_FOV330;

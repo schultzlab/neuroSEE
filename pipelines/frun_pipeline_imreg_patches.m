@@ -37,9 +37,9 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, slacknotify, dofissa, maxcells_FOV330 )
+function frun_pipeline_imreg_patches( list, reffile, runpatches, dofissa, patch_size, overlap, maxcells_FOV330, slacknotify )
 
-if nargin<3, slacknotify = false; end
+if nargin<7, slacknotify = false; end
 % if nargin<2, see line 121
 tic
 
@@ -94,7 +94,7 @@ mcorr_method = 'normcorre';  % motion correction method used for reference file
                                     %   normcorre-nr (nonrigid), 
                                     % fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-runpatches = false;            % for CaImAn processing, flag to run patches (default: false)
+% runpatches = false;            % for CaImAn processing, flag to run patches (default: false)
 % dofissa = true;                % flag to implement FISSA (when false, overrides force(3) setting)
 doasd = false;                  % flag to do asd pf calculation
 
@@ -110,10 +110,10 @@ params = neuroSEE_setparams(...
             'dofissa', dofissa,...
             'doasd', doasd,...
             'FOV', FOV,...
-            'patch_size', [128,128],...
-            'overlap', [16,16],...
+            'patch_size', patch_size,...
+            'overlap', overlap,...
             'maxcells_FOV330', maxcells_FOV330,...
-            'space_thresh', 0.5); 
+            'space_thresh',0.5); 
         
                                % flag to execute step (use if wanting to skip later steps)
 dostep = [true;...              % (1) image registration 
@@ -184,6 +184,7 @@ if dostep(1)
         
         imG = cell(Nfiles,1);
         if ~strcmpi(segment_method,'CaImAn'), imR = cell(Nfiles,1); end
+        Nt = zeros(Nfiles,1);
         for n = 1:Nfiles
             file = files(n,:);
 

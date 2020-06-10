@@ -37,9 +37,9 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, slacknotify )
+function frun_pipeline_imreg2( list, reffile, runpatches, dofissa, patch_size, overlap, maxcells_FOV330, slacknotify )
 
-if nargin<3, slacknotify = false; end
+if nargin<7, slacknotify = false; end
 % if nargin<2, see line 121
 tic
 
@@ -94,7 +94,8 @@ mcorr_method = 'normcorre';  % motion correction method used for reference file
                                     %   normcorre-nr (nonrigid), 
                                     % fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-dofissa = false;                % flag to implement FISSA (when false, overrides force(3) setting)
+% runpatches = false;            % for CaImAn processing, flag to run patches (default: false)
+dofissa = true;                % flag to implement FISSA (when false, overrides force(3) setting)
 doasd = false;                  % flag to do asd pf calculation
 
 % Processing parameters (any parameter that is not set gets a default value)
@@ -105,12 +106,13 @@ params = neuroSEE_setparams(...
             'imreg_method', imreg_method,...
             'mcorr_method', mcorr_method,...
             'segment_method', segment_method,...
+            'runpatches', runpatches,...
             'dofissa', dofissa,...
             'doasd', doasd,...
             'FOV', FOV,...
-            'patch_size', [32,32],...
-            'overlap', [4,4],...
-            'maxcells_FOV330', 200,...
+            'patch_size', patch_size,...
+            'overlap', overlap,...
+            'maxcells_FOV330', maxcells_FOV330,...
             'space_thresh',0.5); 
         
                                % flag to execute step (use if wanting to skip later steps)
@@ -275,7 +277,7 @@ end
 %% 2) ROI segmentation
 if dostep(2)
     % If doing CaImAn, continue only if Matlab version is R2018 or higher
-    if strcmpi(segment_method,'CaImAn') && MatlabVer < 2018
+    if runpatches && MatlabVer < 2018
         beep
         err = sprintf('%s: Higher Matlab version required. Cannot proceed with ROI segmentation.\n', [mouseid '_' expname]);
         cprintf('Errors',err);

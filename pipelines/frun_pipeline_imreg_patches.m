@@ -39,7 +39,7 @@
 
 function frun_pipeline_imreg_patches( list, reffile, runpatches, dofissa, patch_size, overlap, maxcells_FOV330, slacknotify )
 
-if nargin<7, slacknotify = false; end
+if nargin<8, slacknotify = false; end
 % if nargin<2, see line 121
 tic
 

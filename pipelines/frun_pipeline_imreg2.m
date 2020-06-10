@@ -165,7 +165,7 @@ end
 % Load images and do registration if forced to do so or if ROI segmentation data doesn't exist 
 
 if dostep(1)
-    if force(2) || ~check_list(1) 
+    if any([ force(2), ~check(2), ~check(1) ]) 
         % Continue only if Matlab version is R2017
         if strcmpi(comp,'hpc') && MatlabVer > 2017
             beep
@@ -181,7 +181,7 @@ if dostep(1)
         end
         
         imG = cell(Nfiles,1);
-        imR = cell(Nfiles,1);
+        if ~strcmpi(segment_method,'CaImAn'), imR = cell(Nfiles,1); end
         Nt = zeros(Nfiles,1);
         for n = 1:Nfiles
             file = files(n,:);
@@ -199,7 +199,7 @@ if dostep(1)
                 if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
                     [ imG{n}, ~, params.mcorr ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
                                                             mcorr_method, params.mcorr, reffile, imreg_method, force(1), list );
-                    imR{n} = [];
+                    imR = [];
                 else
                     [ imG{n}, ~, params.mcorr, imR{n} ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
                                                             mcorr_method, params.mcorr, reffile, imreg_method, force(1), list );
@@ -210,7 +210,7 @@ if dostep(1)
                 cprintf('Text',str)
                 imG{n} = read_file([ imdir file '_2P_XYT_green_mcorr.tif' ]);
                 if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
-                    imR{n} = [];
+                    imR = [];
                 else
                     imR{n} = read_file([ imdir file '_2P_XYT_red_mcorr.tif' ]);
                 end

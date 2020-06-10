@@ -4,7 +4,7 @@ if nargin<2, mcorr_method = 'normcorre-nr'; end     % values: [normcorre, normco
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
 
 % Load module folders and define data directory
-[data_locn, ~, err] = load_neuroSEEmodules(false);
+[data_locn, ~, err] = load_neuroSEEmodules;
 if ~isempty(err)
     beep
     cprintf('Errors',err);    

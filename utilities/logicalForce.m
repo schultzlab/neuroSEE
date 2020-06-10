@@ -18,13 +18,13 @@ function force = logicalForce(force)
 
 % Allow only combinations of values that make sense
 if force(1)
-    force([2:4,6]) = true; 
+    force(2:6) = true; 
 elseif force(2)
-    force([3:4,6]) = true; 
+    force(3:6) = true; 
 elseif force(3)
-    force([4,6]) = true; 
+    force(4:6) = true; 
 elseif force(4)
-    force(6) = true;
+    force(5:6) = true;
 elseif force(5)
     force(6) = true;
 end

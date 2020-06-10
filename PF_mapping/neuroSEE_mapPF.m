@@ -48,7 +48,7 @@
 %   pcIdx   : row indices of spikes corresponding to place cells
 %   sortIdx : sorted row indices corresponding to sorted_pfMap
 
-function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force, list, reffile)
+function [ hist, asd, PFdata, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force, list, reffile)
     if nargin<8, reffile = []; end
     if nargin<7, list = []; end
     if nargin<6, force = 0; end
@@ -107,7 +107,7 @@ function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, dow
         Nepochs = params.PFmap.Nepochs;
         if strcmpi(params.mode_dim,'1D')
             % Generate place field maps
-            [hist, asd, activeData, PFdata] = generatePFmap_1d( spikes, downTrackdata, params, doasd );
+            [hist, asd, PFdata] = generatePFmap_1d( spikes, downTrackdata, params, doasd );
            
             % Make plots
             if force || ~exist(fig_sdir,'dir')
@@ -119,23 +119,21 @@ function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, dow
             output.hist = hist;
             if doasd, output.asd = asd; end
             output.pfData = PFdata;
-            output.activeData = activeData;
             output.params = params.PFmap;
             save(fname_mat,'-struct','output');
         else % '2D'
-            [hist, asd, activeData, PFdata] = generatePFmap_2d(spikes, downTrackdata, params, doasd);
+            [hist, asd, PFdata] = generatePFmap_2d(spikes, downTrackdata, params, doasd);
             
             % Make plots
             if force || ~exist(fig_sdir,'dir')
                 if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); end
-                plotPF_2d( hist, asd, activeData, true, true, fig_sdir, fname_pref )
+                plotPF_2d( hist, asd, true, true, fig_sdir, fname_pref )
             end
         
             % Save output
             output.hist = hist;
             if doasd, output.asd = asd; end
             output.pfData = PFdata;
-            output.activeData = activeData;
             output.params = params.PFmap;
             save(fname_mat,'-struct','output');
         end
@@ -151,7 +149,6 @@ function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, dow
         hist = m.hist;
         if doasd, asd = m.asd; else, asd = []; end
         PFdata = m.pfData;
-        activeData = m.activeData;
         params.PFmap = m.params;
         Nepochs = params.PFmap.Nepochs;
         
@@ -161,7 +158,7 @@ function [ hist, asd, PFdata, activeData, params ] = neuroSEE_mapPF( spikes, dow
             if strcmpi(params.mode_dim,'1D')
                 plotPF_1d(hist, asd, PFdata, true, true, fig_sdir, fname_pref)
             else
-                plotPF_2d( hist, asd, activeData, true, true, fig_sdir, fname_pref )
+                plotPF_2d( hist, asd, true, true, fig_sdir, fname_pref )
             end
         end
         

@@ -14,17 +14,15 @@
 %           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
 %           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
 %
-% force  : flag to force generation of comparison figures even though they
-%           already exist
+% force  : (optional) flag to force generation of comparison figures even though they
+%           already exist (default: false)
 
 function frun_collate_indivproc_results( list, force )
 
 if nargin<2, force = false; end
     
 %% Load module folders and define data directory
-test = false;   % flag to use test file directory
-
-[data_locn,~,err] = load_neuroSEEmodules(test);
+[data_locn,~,err] = load_neuroSEEmodules;
 if ~isempty(err)
     beep
     cprintf('Errors',err);    

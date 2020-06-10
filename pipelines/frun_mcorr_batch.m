@@ -1,7 +1,9 @@
 % Written by Ann Go
 %
-% This script implements motion correction of a single file or the
-% registration of a file to a reference file (if reference file is specified). 
+% This script implements motion correction or image registration.
+% When no reference file (reffile) is specified, motion correction 
+% of all files within list is done. Otherwise, each file within the 
+% list is registered to the reference file (reffile). 
 % This script is designed to be run on the hpc server where array_id 
 % loops through values specified in the hpc script.
 %
@@ -14,18 +16,18 @@
 %           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
 %           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
 % mcorr_method : [fftRigid, normcorre, normcorre-nr, normcorre-r]
-% force     : (optional) flag to force generation of comparison figures even though they
-%               already exist. Default: false
+% force     : (optional) flag to force motion correction or image 
+%               registration even though processed data exist (default:
+%               false)
 % reffile   : (optional) file to be used as registration template. When empty, motion 
 %               correction of file is done, with a template computed from first 200 frames.
 %               This file is usually part of 'list' (i.e. for best results, choose a 
 %               reference file from the same experiment) but does not have to be. This 
 %               file must have already been motion corrected.
 % refChannel : (optional) channel (red or green) to be used as registation
-%               template. Default: 'green'
-% slacknotify : (optional) flag to send Slack notification when processing is started
-%               or has ended. Default: false
-
+%               template (default: 'green')
+% slacknotify : (optional) flag to send Ann Slack notification when processing is started
+%               or has ended (default: false)
 
 function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, imreg_method, refChannel, maxshift_r, slacknotify )
 
@@ -84,10 +86,9 @@ end
 
 params = neuroSEE_setparams(...
             'mcorr_method', mcorr_method,...
+            'imreg_method', mcorr_method,...
             'refChannel', refChannel,...        % reference channel for motion correction
-            'd1', 512,...
-            'd2', 512,...
-            'max_shift_r',maxshift_r); 
+            'max_shift_r', maxshift_r);         % maximum rigid shift
         
 params_mcorr = params.mcorr;
 

@@ -2,7 +2,7 @@ function [ laps_per_file, phi_trials ] = frun_getFileLaps( list, force )
     if nargin<2, force = false; end
 
 % Load module folders and define data directory
-[data_locn, ~, err] = load_neuroSEEmodules(false);
+[data_locn, ~, err] = load_neuroSEEmodules;
 if ~isempty(err)
     beep
     cprintf('Errors',err);    
@@ -14,6 +14,7 @@ listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 
 laps_per_file = zeros(size(files,1),1);
+phi_trials = cell(size(files,1),1);
 for n = 1:size(files,1)
     % image file
     file = files(n,:);

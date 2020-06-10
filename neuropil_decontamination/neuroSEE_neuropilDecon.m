@@ -5,7 +5,7 @@
 %   dtsG    : decontaminated raw timeseries
 %   ddf_f   : (decontaminated) df_f
 
-function [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force, list, reffile )
+function [dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force, list, reffile )
 
 if nargin<7, reffile = []; end
 if nargin<6, list = []; end
@@ -61,10 +61,10 @@ if force || ~exist(fname_mat,'file')
     result = load(fname_mat_temp,'result');
     
     % Convert raw timeseries cell array structure to a matrix
-    tsG = zeros(size(masks,3),size(raw.raw.cell0.trial0,2));
-    for i = 1:numel(fieldnames(raw.raw))
-        tsG(i,:) = raw.raw.(['cell' num2str(i-1)]).trial0(1,:);
-    end
+%     tsG = zeros(size(masks,3),size(raw.raw.cell0.trial0,2));
+%     for i = 1:numel(fieldnames(raw.raw))
+%         tsG(i,:) = raw.raw.(['cell' num2str(i-1)]).trial0(1,:);
+%     end
     
     % Convert decontaminated timeseries cell array structure to a matrix
     dtsG = zeros(size(masks,3),size(result.result.cell0.trial0,2));
@@ -86,7 +86,7 @@ if force || ~exist(fname_mat,'file')
     end
     
     % Save output
-    output.tsG = tsG;
+%     output.tsG = tsG;
     output.dtsG = dtsG;
     output.ddf_f = ddf_f;
     output.params = params.fissa;
@@ -104,7 +104,7 @@ if force || ~exist(fname_mat,'file')
 else
     % If it exists, load it 
     fissa_output = load(fname_mat);
-    if isfield(fissa_output,'tsG'), tsG = fissa_output.tsG; end
+%     if isfield(fissa_output,'tsG'), tsG = fissa_output.tsG; end
     dtsG = fissa_output.dtsG;
     ddf_f = fissa_output.ddf_f;
     params.fissa = fissa_output.params;
@@ -120,7 +120,7 @@ else
 end
 
 function makeplot(dtsG, ddf_f)
-    % raw timeseries
+    % fissa-corrected timeseries
     fig = figure;
     iosr.figures.multiwaveplot(1:size(dtsG,2),1:size(dtsG,1),dtsG,'gain',5); yticks([]); xticks([]); 
     title('Fissa-corrected raw timeseries','Fontweight','normal','Fontsize',12); 

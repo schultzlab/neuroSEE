@@ -11,57 +11,53 @@
 %           'list_m62_fam1nov.txt'              - all files in fam1nov experiments
 %           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
 %           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
-% reffile   : file used as registration template
-% imreg_method : image registration method
+% reffile   : (optional) file used as registration template. If none
+%               specified, the first file in the list is used
+% imreg_method : (optional) image registration method (default: normcorre)
 %   e.g.    'normcorre'                         - rigid + non-rigid normcorre
 %           'normcorre-nr'                      - non-rigid normcorre
 %           'normcorre-r'                       - rigid normcorre
 %           'fftRigid'                          - Katie's method
-% force     : flag to force generation of comparison figures even though they
-%               already exist
+% force     : (optional) flag to force generation of comparison figures even though they
+%               already exist (default: false)
 % mcorr_method : motion correction method used for correcting reffile
 %                (optional, default: same as imreg_method)
 
 function frun_collate_imreg_results( list, imreg_method, reffile, force, mcorr_method )
 
-% e.g. m##_expname: 'm62_fam1nov_fam1fam1rev'
-%                   'm62_fam1fam1rev'
-%                   'm70_fam1_s1-5'
-%                   'm82_open_s1-2'
-%                   'm82_open_s1'
-
+if nargin<2, imreg_method = 'normcorre'; end
+% if nargin<3 see line 44
 if nargin<4, force = false; end
 if nargin<5, mcorr_method = imreg_method; end
 
 %% Load module folders and define data directory
-test = false;                   % flag to use one of smaller files in test folder)
-[data_locn,~,err] = load_neuroSEEmodules(test);
+[data_locn,~,err] = load_neuroSEEmodules;
 if ~isempty(err)
     beep
     cprintf('Errors',err);    
     return
 end
 
+%% MouseID and experiment name
+[ mouseid, expname ] = find_mouseIDexpname(list);
+
 %% Files
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 if nargin<2, reffile = files(1,:); end
 Nfiles = size(files,1);
-% Experiment name
-[ mouseid, expname ] = find_mouseIDexpname(list);
 
 [nRow, nCol] = getnRownCol(Nfiles);
 nPlot = nCol*nRow;
 Nfig = (Nfiles/nPlot)-1;
 if Nfig < 0, Nfig = 0; end
 
-% template file
+%% Template file
 filedir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_' mcorr_method '/'];
 c = load([filedir reffile '_mcorr_output.mat']);
 templateG = c.green.meanregframe./(max(max(c.green.meanregframe)));
 templateR = c.red.meanregframe./(max(max(c.red.meanregframe)));
 clear c
-
 
 %% Load image data for each recording
 % directory where registration results summary is saved: sdir

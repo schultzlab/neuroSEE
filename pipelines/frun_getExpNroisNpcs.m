@@ -8,7 +8,7 @@ dofissa = true;                 % flag to implement FISSA (when false, overrides
     if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
     
 % Load module folders and define data directory
-[data_locn, ~, err] = load_neuroSEEmodules(false);
+[data_locn, ~, err] = load_neuroSEEmodules;
 if ~isempty(err)
     beep
     cprintf('Errors',err);    
@@ -29,13 +29,13 @@ else
                 mouseid '_' expname '_imreg_ref' reffile '_' mcorr_method '/'];
 end
     
-if exist([grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'])
+if exist([grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'],'file')
     M = load([grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat']);
     Nrois = size(M.masks,3);
 else
     Nrois = [];
 end
-if exist([grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'])
+if exist([grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'file')
     N = load([grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat']);
     Npcs = numel(N.hist.SIspk.pcIdx);
 else

@@ -16,28 +16,29 @@
 % The section labeled "USER-DEFINED INPUT" requires user input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Matlab version requirement for running on hpc: 
-%   normcorre and CaImAn only work with Matlab R2017a. 
+% Matlab version requirement: 
+%   CaImAn requires at least Matlab R2017b
 %   FISSA requires at least Matlab R2018
-
-function frun_pipeline( file )
 
 tic
 
 %% SETTINGS
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% USER-DEFINED INPUT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+file = '20181015_09_26_48';     % file to be processed
+
 % Auto-defined FOV
 if str2double(file(1,1:4)) > 2018
     FOV = 490;                  % FOV area = FOV x FOV, FOV in um
 else
-    FOV = 330; 
+    FOV = 330;          
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% USER-DEFINED INPUT
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Basic settings
-test = false;                   % flag to use one of smaller files in test folder)
+test = true;                   % flag to use one of smaller files in test folder
+                               % flag to force 
 force = [false;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
          false;...              % (3) neuropil decontamination
@@ -45,7 +46,7 @@ force = [false;...              % (1) motion correction even if motion corrected
          false;...              % (5) tracking data extraction
          false];                % (6) place field mapping
 
-mcorr_method = 'normcorre';     % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
+mcorr_method = 'normcorre-nr';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
                                     %   normcorre-r (rigid),
@@ -54,14 +55,16 @@ mcorr_method = 'normcorre';     % values: [normcorre, normcorre-r, normcorre-nr,
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
 dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
 manually_refine_spikes = false; % flag to manually refine spike estimates
-doasd = false;                  % flag to do asd pf calculation 
+doasd = false;                  % flag to do asd pf calculation
 slacknotify = false;            % flag to send Ann slack notifications about processing
 
 % Processing parameters (any parameter that is not set gets a default value)
+% Add any parameters you want to set after FOV. See neuroSEE_setparams for
+% full set of parameters
 params = neuroSEE_setparams(...
             'mcorr_method', mcorr_method, ...
             'segment_method', segment_method,...
-            'dofissa', dofissa,...
+            'dofissa', dofissa, ...
             'doasd', doasd,...
             'FOV', FOV); 
 
@@ -81,7 +84,7 @@ if strcmpi(comp,'hpc')
 end
 
 % Matlab version
-release = version('-release'); % Find out what Matlab release version is running
+release = version('-release');    % Find out what Matlab release version is running
 MatlabVer = str2double(release(1:4));
 
 
@@ -105,10 +108,10 @@ end
 % Load original image files if forced to do motion correction or if motion corrected files don't exist 
 
 if force(1) || ~check(1)
-    % Continue only if Matlab version is R2017
+    % Continue only if Matlab version on hpc is R2017
     if strcmpi(comp,'hpc') && MatlabVer > 2017
         beep
-        err = sprintf('%s: Lower Matlab version required; skipping processing.\n', [mouseid '_' expname]);
+        err = sprintf('%s: Lower Matlab version required for motion correction. Cannot proceed.\n', [mouseid '_' expname]);
         cprintf('Errors',err);
         return
     end
@@ -166,7 +169,19 @@ end
 % Saved in file folder: correlation image with ROIs (fig, png) 
 %                       summary plots of tsG, df_f (fig, png)
 %                       mat with fields {tsG, df_f, masks, corr_image, params}
+%                       in case of CaImAn: other data needed for GUI viewing
 
+% If doing CaImAn, continue only if Matlab version is R2018 or higher
+if strcmpi(segment_method,'CaImAn') && MatlabVer < 2018
+    beep
+    err = sprintf('%s: Higher Matlab version required. Cannot proceed with ROI segmentation.\n', [mouseid '_' expname]);
+    cprintf('Errors',err);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
+end
+    
 [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force(2), mean(imR,3) );
 clear imG imR
 
@@ -179,7 +194,7 @@ if dofissa
     release = version('-release'); % Find out what Matlab release version is running
     MatlabVer = str2double(release(1:4));
     if MatlabVer > 2017
-        [tsG, dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+        [dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
     else
         fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
         dofissa = false;
@@ -238,9 +253,9 @@ fields = {'Nbins_1D','Nbins_2D'};
 params.PFmap = rmfield(params.PFmap,fields);
 
 if strcmpi(params.mode_dim,'1D')
-    [ hist, asd, pfData, activeData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force(6));
+    [ hist, asd, pfData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force(6));
 else
-    [ occMap, hist, asd, downData, activeData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+    [ occMap, hist, asd, downData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
 end
 
 %% Save output. These are all the variables needed for viewing data with GUI
@@ -253,7 +268,7 @@ end
 fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
 
 save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','trackfile',...
-                    'downTrackdata','activeData','pfData','hist','asd','params');
+                    'downTrackdata','pfData','hist','asd','params');
 if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
 if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
  
@@ -265,7 +280,5 @@ cprintf(str)
 if slacknotify
     slacktext = [file ': FINISHED in' num2str(round(t/3600,2)) ' hrs. No errors!'];
     neuroSEE_slackNotify( slacktext );
-end
-
 end
 

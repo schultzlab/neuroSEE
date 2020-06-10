@@ -37,9 +37,9 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg_patches( list, reffile, runpatches, dofissa, patch_size, overlap, maxcells_FOV330, slacknotify )
+function frun_pipeline_imreg_patches( list, reffile, runpatches, dofissa, patch_size, overlap, maxcells_FOV330, space_thresh, slacknotify )
 
-if nargin<8, slacknotify = false; end
+if nargin<9, slacknotify = false; end
 % if nargin<2, see line 121
 tic
 
@@ -113,7 +113,7 @@ params = neuroSEE_setparams(...
             'patch_size', patch_size,...
             'overlap', overlap,...
             'maxcells_FOV330', maxcells_FOV330,...
-            'space_thresh',0.5); 
+            'space_thresh',space_thresh); 
         
                                % flag to execute step (use if wanting to skip later steps)
 dostep = [true;...              % (1) image registration 

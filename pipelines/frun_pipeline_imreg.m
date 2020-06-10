@@ -110,7 +110,7 @@ params = neuroSEE_setparams(...
             'FOV', FOV,...
             'patch_size', [128,128],...
             'overlap', [16,16],...
-            'maxcells_FOV330', 200,...
+            'maxcells_FOV330', 300,...
             'space_thresh',0.5); 
         
                                % flag to execute step (use if wanting to skip later steps)
@@ -303,6 +303,10 @@ if dostep(2)
     end
 else
     fprintf('%s: ROI segmentation step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
 end
     
 %% 3) FISSA
@@ -350,6 +354,10 @@ if dostep(3)
 else
     if dofissa
         fprintf('%s: FISSA step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+        t = toc;
+        str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+        cprintf(str)
+        return
     end
 end
 
@@ -387,6 +395,10 @@ if dostep(4)
     end
 else
     fprintf('%s: Spike estimation step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
 end
 
 %% 5) Behaviour tracking data
@@ -465,6 +477,10 @@ if dostep(5)
     end
 else
     fprintf('%s: Behaviour tracking step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
 end
     
 %% 6) PFmapping

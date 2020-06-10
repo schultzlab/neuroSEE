@@ -6,6 +6,7 @@ dt = 1/fr;
 %% separate phi and spike data into trials (laps)
 bp = bin_phi;
 p = activephi;    
+t = activet;
 ntrial = 1;
 ytick_files = 1;
 Ncells = size(activespk,1);
@@ -38,9 +39,11 @@ for f = 1:numel(idx_file)-1
     
     if files_Ntrials(f) > 0
         p_file = p(idx_file(f):idx_file(f+1)-1);
+        t_file = t(idx_file(f):idx_file(f+1)-1);
         for l = 1:numel(idx_tr)-1
             bp_trials{ntrial} = bp_file(idx_tr(l)+1:idx_tr(l+1));
             phi_trials{ntrial} = p_file(idx_tr(l)+1:idx_tr(l+1));
+            time_trials{ntrial} = t_file(idx_tr(l)+1:idx_tr(l+1));
             for c = 1:Ncells
                 s = activespk(c,:);
                 s_file = s(idx_file(f):idx_file(f+1)-1);
@@ -186,6 +189,7 @@ end
 PFdata.files_Ntrials = files_Ntrials;
 PFdata.phi_trials = phi_trials;
 PFdata.spk_trials = spk_trials;
+PFdata.time_trials = time_trials;
 PFdata.bintime_trials = bintime_trials;
 PFdata.bintime = bintime;
 PFdata.spkRaster = spkRaster;

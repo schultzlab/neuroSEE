@@ -93,13 +93,20 @@ if doasd
 end
 
 % sort pf maps
-hist.SIsec = sortPFmaps(hist.rateMap, hist.rateMap_sm, normrateMap_sm, hist.SIsec);
-hist.SIspk = sortPFmaps(pfMap, pfMap_sm, normpfMap_sm, hist.SIspk);
+hist.SIsec = sortPFmaps(hist.rateMap, hist.rateMap_sm, hist.normrateMap_sm, hist.pfLoc, hist.SIsec);
+hist.SIspk = sortPFmaps(hist.rateMap, hist.rateMap_sm, hist.normrateMap_sm, hist.pfLoc, hist.SIspk);
+
+if doasd
+    asd.SIsec = sortPFmaps(asd.rateMap, [], asd.normrateMap_sm, asd.pfLoc, asd.SIsec);
+    asd.SIspk = sortPFmaps(asd.rateMap, [], asd.normrateMap_sm, asd.pfLoc, asd.SIspk);
+end
 
 
 %% ADDITIONAL PROCESSING IF Nepochs > 1
 % Calculate place field maps for each epoch 
 if Nepochs > 1
+    Ncells = size(spikes,1);
+
     % Initialise matrices
     bintime_e = zeros(Nepochs, Nbins);                         
     occMap_e = zeros(Nepochs, Nbins);                         
@@ -132,7 +139,12 @@ if Nepochs > 1
     end
     
     % Calculate PF maps
-    e_bound = round( linspace(1,size(activespk,2),Nepochs+1) );
+    % divide timeseries into equally spaced epochs
+    % e_bound = round( linspace(1,size(activespk,2),Nepochs+1) );
+    
+    % divide timeseries into equal-number-laps epochs
+    Ntrials = PFdata.ytick_files(end);
+    e_bound = round( linspace(1,Ntrials,Nepochs+1) );
     
     % separate exploration into smaller intervals
     for e = 1:Nepochs

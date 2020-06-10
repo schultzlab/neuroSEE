@@ -778,8 +778,8 @@ for i = 1:length(fn)
     end
 end
 % PF mapping
-f = {'fr'; 'Nepochs'; 'histsmoothWin'; 'Vthr'; 'prctile_thr';...
-     'Nlaps_thr'; 'Nbins_1D'; 'Nbins_2D'};
+f = {'fr'; 'Nepochs'; 'histsmoothWin'; 'Vthr'; 'prctile_thr'; 'pfactivet_thr'; ...
+      'activetrials_thr'; 'Nrand'; 'Nlaps_thr'; 'Nbins_1D'; 'Nbins_2D'};
 fn = fieldnames(options);
 for i = 1:length(fn)
     for j = 1:length(f)

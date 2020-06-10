@@ -94,7 +94,7 @@ mcorr_method = 'normcorre';  % motion correction method used for reference file
                                     %   normcorre-nr (nonrigid), 
                                     % fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-dofissa = false;                % flag to implement FISSA (when false, overrides force(3) setting)
+dofissa = true;                % flag to implement FISSA (when false, overrides force(3) setting)
 doasd = false;                  % flag to do asd pf calculation
 
 % Processing parameters (any parameter that is not set gets a default value)
@@ -110,7 +110,8 @@ params = neuroSEE_setparams(...
             'FOV', FOV,...
             'patch_size', [128,128],...
             'overlap', [16,16],...
-            'maxcells_FOV330', 300); 
+            'maxcells_FOV330', 200,...
+            'space_thresh',0.5); 
         
                                % flag to execute step (use if wanting to skip later steps)
 dostep = [true;...              % (1) image registration 

@@ -165,7 +165,7 @@ end
 % Load images and do registration if forced to do so or if ROI segmentation data doesn't exist 
 
 if dostep(1)
-    if any([ force(2), ~check(2), ~check(1) ]) 
+    if any([ force(2), ~check_list(2), ~check_list(1) ]) 
         % Continue only if Matlab version is R2017
         if strcmpi(comp,'hpc') && MatlabVer > 2017
             beep

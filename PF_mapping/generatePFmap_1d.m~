@@ -113,7 +113,7 @@ if Nepochs > 1
     spkMap_e = zeros(Ncells, Nbins, Nepochs);
     normspkMap_e = zeros(Ncells, Nbins, Nepochs);   
     bin_phi_e = zeros(Nepochs, Nbins);
-    activephi_e = cell(Nepochs, 1);
+    activephi_e = zeros(Ncells, Nbins, Nepochs);
     activespk_e = zeros(Ncells, Nbins, Nepochs);
     activet_e = zeros(Ncells, Nbins, Nepochs);
     spk_rate_e = zeros(Ncells, Nepochs);
@@ -151,7 +151,8 @@ if Nepochs > 1
     
     % separate exploration into smaller intervals
     for e = 1:Nepochs
-        activephi_e{e} = activephi(e_bound(e):e_bound(e+1));
+        activephi_e(:,:,e) = activephi(:,e_bound(e):e_bound(e+1));
+        
         bin_phi_e(e,:) = discretize(activephi(e_bound(e):e_bound(e+1)), Nbins);
         activespk_e(:,:,e) = activespk(:,e_bound(e):e_bound(e+1));
         activet_e(:,:,e) = activet(:,e_bound(e):e_bound(e+1));

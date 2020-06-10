@@ -17,7 +17,7 @@ idx_file = [0; idx_file; numel(activet)] +1;
     
 % initialise matrices
 files_Ntrials = zeros(numel(idx_file)-1, 1);
-tcount = (1:length(activet));
+idx = (1:length()))
 
 for f = 1:numel(idx_file)-1
     % bin_phi for video jj
@@ -40,11 +40,11 @@ for f = 1:numel(idx_file)-1
     
     if files_Ntrials(f) > 0
         p_file = p(idx_file(f):idx_file(f+1)-1);
-        tcount_file = tcount(idx_file(f):idx_file(f+1)-1);
+        t_file = t(idx_file(f):idx_file(f+1)-1);
         for l = 1:numel(idx_tr)-1
             bp_trials{ntrial} = bp_file(idx_tr(l)+1:idx_tr(l+1));
             phi_trials{ntrial} = p_file(idx_tr(l)+1:idx_tr(l+1));
-            idx_trials{ntrial} = tcount_file(idx_tr(l)+1:idx_tr(l+1));
+            time_trials{ntrial} = t_file(idx_tr(l)+1:idx_tr(l+1));
             for c = 1:Ncells
                 s = activespk(c,:);
                 s_file = s(idx_file(f):idx_file(f+1)-1);
@@ -190,7 +190,7 @@ end
 PFdata.files_Ntrials = files_Ntrials;
 PFdata.phi_trials = phi_trials;
 PFdata.spk_trials = spk_trials;
-PFdata.idx_trials = idx_trials;
+PFdata.time_trials = time_trials;
 PFdata.bintime_trials = bintime_trials;
 PFdata.bintime = bintime;
 PFdata.spkRaster = spkRaster;

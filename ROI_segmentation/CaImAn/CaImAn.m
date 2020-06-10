@@ -26,6 +26,7 @@ options.min_SNR = 3;                                  % minimum SNR threshold
 options.space_thresh = 0.5;
 K = options.maxcells;                                 % number of components to be found
 tau = options.gSig;                                   % std of gaussian kernel (half size of neuron) 
+p = options.p;
 
 %% Data pre-processing
 

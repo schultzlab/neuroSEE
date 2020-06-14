@@ -271,7 +271,7 @@ end
 % amplitude rate histogram (pcs & nonpcs), histogram of info (pcs & nonpcs)
 % Row 3: sorted norm pf maps, histogram of fieldsize, histogram of field
 % loc, frac of pf dwell time cell is active
-function plot_populSummary(bintime_trials, bin_phi, bin_activet, activetrials,...
+function plot_populSummary(bintime_trials, bintime, bin_activet, activetrials,...
         sort_pfMap_sm, sort_normpfMap_sm, spk_eventrate, spk_rate, infoMap, ...
         fieldSize, pfLoc, pf_activet, pcIdx, nonpcIdx, fsave, fname, fclose )
     % summary of population data
@@ -285,15 +285,27 @@ function plot_populSummary(bintime_trials, bin_phi, bin_activet, activetrials,..
             yticks(1); yticklabels(1); 
         end
         ylabel('Lap #'); 
-        title('Dwell time'); colorbar;
-    subplot(342); histogram(bin_phi,Nbins,'Normalization','probability','FaceColor',[0.5 0.5 0.5],...
-        'LineStyle','none');
-        % hold on;
-        % bin_phi_mean = mean(bin_phi(:,e));
-        % plot(bin_phi_mean,0.03,'kv','markerfacecolor','k','markersize',6); hold off;
+        title('Active dwell time (s)'); c = colorbar; c.Ticks = [0 round(max(max(bintime_trials)),1)];
+    subplot(342); bar(bintime,'FaceColor',[0.5 0.5 0.5],'LineStyle','none');
         xticks([1 Nbins]); xticklabels([1 100]); xlabel('Position (cm)');
-        ylabel('Proportion of time');
+        ylabel('Total dwell time (s)');
     subplot(343); 
+        hold on
+        histogram(bin_activet(pcIdx)*100,'Normalization','probability','DisplayStyle','bar',...
+            'BinMethod','sqrt','FaceColor',[0.4 0.6 1],'LineStyle','none',...
+            'FaceAlpha',0.7)
+        histogram(bin_activet(nonpcIdx)*100,'Normalization','probability','DisplayStyle','bar',...
+            'BinMethod','sqrt','FaceColor',[1 0.6 0.6],'LineStyle','none',...
+            'FaceAlpha',0.7)
+        plot(mean(bin_activet(pcIdx))*100,0.2,'v','markerfacecolor',[0.4 0.6 1],...
+            'markeredgecolor',[0.4 0.6 1],'markersize',4);
+        plot(mean(bin_activet(nonpcIdx))*100,0.2,'v','markerfacecolor',[1 0.6 0.6],...
+        'markeredgecolor',[1 0.6 0.6],'markersize',4);
+        legend('pc','nonpc'); legend('boxoff');
+        hold off;
+        xlabel('Active bin time (%)'); 
+        ylabel('Prop. of cells');
+    subplot(344); 
         hold on
         histogram(activetrials(pcIdx),'Normalization','probability','DisplayStyle','bar',...
             'BinMethod','sqrt','FaceColor',[0.4 0.6 1],'LineStyle','none',...
@@ -305,9 +317,13 @@ function plot_populSummary(bintime_trials, bin_phi, bin_activet, activetrials,..
             'markeredgecolor',[0.4 0.6 1],'markersize',4);
         plot(mean(activetrials(nonpcIdx)),0.2,'v','markerfacecolor',[1 0.6 0.6],...
             'markeredgecolor',[1 0.6 0.6],'markersize',4);
-
-    map = viridisMap; 
-    subplot(241); imagesc(sort_normpfMap_sm(:,:,e)); colormap(map);
+        hold off;
+        ylabel('Prop. of cells'); 
+        xlabel('Active trials (%)');
+        % legend('pc','nonpc'); legend('boxoff');
+    subplot(345); 
+        map = viridisMap;
+        imagesc(sort_normpfMap_sm); colormap(map);
         xticks([1 Nbins/2 Nbins]); xticklabels([1 50 100]); xlabel('Position (cm)');
         if Ncells>1 
             yticks([1 Ncells]); yticklabels([1 Ncells]);

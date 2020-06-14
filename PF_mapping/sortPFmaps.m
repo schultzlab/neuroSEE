@@ -1,7 +1,6 @@
 function hSIstruct = sortPFmaps(rateMap, rateMap_sm, normrateMap_sm, pfLoc, hSIstruct)
     % Sort place field maps
-    Nepochs = size(rateMap,3);
-    if Nepochs == 1
+    if ~iscell(rateMap)
         if ~isempty(hSIstruct.pcIdx)
             [ ~, sortIdx ] = sort( pfLoc(hSIstruct.pcIdx) );
             hSIstruct.sortpcIdx = hSIstruct.pcIdx(sortIdx);
@@ -12,7 +11,7 @@ function hSIstruct = sortPFmaps(rateMap, rateMap_sm, normrateMap_sm, pfLoc, hSIs
             end
         end
     else
-        for e = 1:Nepochs
+        for e = 1:length(rateMap)
             if ~isempty(hSIstruct.pcIdx{e})
                 [ ~, sortIdx ] = sort( pfLoc{e}(hSIstruct.pcIdx{e}) );
                 hSIstruct.sortpcIdx{e} = hSIstruct.pcIdx{e}(sortIdx);

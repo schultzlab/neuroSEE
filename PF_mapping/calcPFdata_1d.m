@@ -6,7 +6,6 @@ dt = 1/fr;
 %% separate phi and spike data into trials (laps)
 bp = bin_phi;
 p = activephi;    
-t = activet;
 ntrial = 1;
 ytick_files = 1;
 Ncells = size(activespk,1);
@@ -95,11 +94,11 @@ for c = 1:Ncells
     activetrials(c) = numel(find(meanspkRaster))/numel(bp_trials);
 end
 
-%% calculate event counts per bin, event and activity rates
+%% calculate total event amplitude per bin, event and activity rates
 L = size(activespk,2);
 T = L / fr;
-spk_eventrate = zeros(Ncells);                   % average event ("spike" rate)
-spk_rate = zeros(Ncells);               % average event amplitude rate
+spk_eventrate = zeros(Ncells,1);                   % average event ("spike" rate)
+spk_rate = zeros(Ncells,1);               % average event amplitude rate
 bin_activet = zeros(Ncells, Nbins);         % fraction of dwell time in bin for which cell was active   
 spkMap = zeros(Ncells, Nbins);              % cumulative spike map
 normspkMap = zeros(Ncells, Nbins);          % normalised spike map
@@ -156,6 +155,8 @@ end
 
 %% find location preference and field size, active time within putative place field
 [ hist.pfLoc, hist.fieldSize, hist.pfBins ] = prefLoc_fieldSize_1d( hist.rateMap_sm );
+
+%% calculate fraction of dwell time within place field in which cell was active
 for c = 1:Ncells
    % get list of spikes for this cell
    z = activespk(c,:);

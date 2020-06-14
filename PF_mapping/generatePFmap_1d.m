@@ -89,7 +89,7 @@ clear x y phi r speed t
     bin_phi, activespk, hist.infoMap, hist.pf_activet, PFdata.activetrials, prctile_thr, pfactivet_thr, activetrials_thr, Nrand );
 if doasd
     [asd.SIsec.pcIdx, asd.SIspk.pcIdx, asd.SIsec.nonpcIdx, asd.SIspk.nonpcIdx] = identifyPCs_1d( ...
-    bin_phi, activespk, hist.infoMap, hist.pf_activet, PFdata.activetrials, prctile_thr, pfactivet_thr, activetrials_thr, Nrand, 'asd');
+    bin_phi, activespk, asd.infoMap, asd.pf_activet, PFdata.activetrials, prctile_thr, pfactivet_thr, activetrials_thr, Nrand, 'asd');
 end
 
 % sort pf maps
@@ -105,126 +105,86 @@ end
 %% ADDITIONAL PROCESSING IF Nepochs > 1
 % Calculate place field maps for each epoch 
 if Nepochs > 1
-    Ncells = size(spikes,1);
-
-    % Initialise matrices
-    bintime_e = zeros(Nepochs, Nbins);                         
-    occMap_e = zeros(Nepochs, Nbins);                         
-    spkMap_e = zeros(Ncells, Nbins, Nepochs);
-    normspkMap_e = zeros(Ncells, Nbins, Nepochs);   
-    bin_phi_e = zeros(Nepochs, Nbins);
-    activephi_e = cell(Nepochs, 1);
-    activespk_e = zeros(Ncells, Nbins, Nepochs);
-    activet_e = zeros(Ncells, Nbins, Nepochs);
-    spk_rate_e = zeros(Ncells, Nepochs);
-    spk_amplrate_e = zeros(Ncells, Nepochs);
-    bin_activity_e = zeros(Ncells, Nbins, Nepochs);
     
-    hist_epochs.rMap = zeros(Ncells, Nbins, Nepochs);               
-    hist_epochs.rMap_sm = zeros(Ncells, Nbins, Nepochs);            
-    hist_epochs.normrMap_sm = zeros(Ncells, Nbins, Nepochs);     
-    hist_epochs.infoMap = zeros(Ncells, 2, Nepochs); 
-    hist_epochs.pfLoc = zeros(Ncells, Nepochs);
-    hist_epochs.fieldSize = zeros(Ncells, Nepochs);
-    hist_epochs.pfBins = zeros(Ncells, Nepochs);
-    
-    if doasd
-        asd_epochs.rMap = zeros(Ncells, Nbins, Nepochs);               
-        asd_epochs.rMap_sm = zeros(Ncells, Nbins, Nepochs);            
-        asd_epochs.normrMap_sm = zeros(Ncells, Nbins, Nepochs);     
-        asd_epochs.infoMap = zeros(Ncells, 2, Nepochs); 
-        asd_epochs.pfLoc = zeros(Ncells, Nepochs);
-        asd_epochs.fieldSize = zeros(Ncells, Nepochs);
-        asd_epochs.pfBins = zeros(Ncells, Nepochs);
-    end
-    
-    % Calculate PF maps
     % divide timeseries into equally spaced epochs
     % e_bound = round( linspace(1,size(activespk,2),Nepochs+1) );
     
     % divide timeseries into equal-number-laps epochs
     Ntrials = PFdata.ytick_files(end);
-    tr_div = round( linspace(1,Ntrials,Nepochs+1) );    
+    tr_div = round( linspace(1,Ntrials,Nepochs+1) );  
+    e_bound = zeros(length(tr_div),1);
     for i = 1:length(tr_div)
         e_bound(i) = PFdata.idx_trials{tr_div(i)}(1);
     end
     
     % separate exploration into smaller intervals
+    activephi_e = cell(Nepochs,1);
+    bin_phi_e = cell(Nepochs,1);
+    activespk_e = cell(Nepochs,1);
+    activet_e = cell(Nepochs,1);
+    PFdata_e = cell(Nepochs,1);
+    hist_e = cell(Nepochs,1);
+    asd_e = cell(Nepochs,1);
     for e = 1:Nepochs
         activephi_e{e} = activephi(e_bound(e):e_bound(e+1));
-        bin_phi_e(e,:) = discretize(activephi(e_bound(e):e_bound(e+1)), Nbins);
-        activespk_e(:,:,e) = activespk(:,e_bound(e):e_bound(e+1));
-        activet_e(:,:,e) = activet(:,e_bound(e):e_bound(e+1));
+        bin_phi_e{e} = bin_phi(e_bound(e):e_bound(e+1));
+        activespk_e{e} = activespk(:,e_bound(e):e_bound(e+1));
+        activet_e{e} = activet(e_bound(e):e_bound(e+1));
             
-        [PFdata_e, hist_e, asd_e] = calcPFdata_1d(bin_phi_e(e,:), activephi_e(:,:,e), activespk_e(:,:,e), activet_e(:,:,e), Nbins, fr);
-        phi_trials_e{e} = PFdata_e.phi_trials;
-        spk_trials_e{e} = PFdata_e.spk_trials;
-        bintime_trials{e} = PFdata_e.bintime_trials;
-        bintime_e(e,:) = PFdata_e.bintime;
-        spkRaster{e}{:} = PFdata_e.spkRaster;
-        normspkRaster{e}{:} = PFdata_e.normspkRaster;
-        activetrials{e} = PFdata_e.activetrials;
-        spk_rate = PFdata_e.spk_rate;
-        spk_amplrate = PFdata_e.spk_amplrate;
-        bin_activity = PFdata_e.bin_activity;
-        occMap = PFdata_e.occMap;
-        spkMap = PFdata_e.spkMap;
-        normspkMap = PFdata_e.normspkMap;
+        [PFdata_e{e}, hist_e{e}, asd_e{e}] = calcPFdata_1d(bin_phi_e{e}, activephi_e{e}, activespk_e{e}, activet_e{e}, Nbins, histsmoothWin, fr, doasd);
+    end
+    
+    % combine epoch data into one structure
+    f = fields(PFdata_e{1});
+    for i = 1:length(f)
+        for e = 1:Nepochs
+            PFdata_epochs.(f{i}){e} = PFdata_e{e}.(f{i});
+        end
+    end
+    f = fields(hist_e{1});
+    for i = 1:length(f)
+        for e = 1:Nepochs
+            hist_epochs.(f{i}){e} = hist_e{e}.(f{i});
+        end
+    end
+    if doasd
+        f = fields(asd_e{1});
+        for i = 1:length(f)
+            for e = 1:Nepochs
+                asd_epochs.(f{i}){e} = asd_e{e}.(f{i});
+            end
+        end
     end
 end
 
+for e = 1:Nepochs
+    % Identify PLACE CELLS per epoch
+    [hist_epochs.SIsec.pcIdx{e}, hist_epochs.SIspk.pcIdx{e}, hist_epochs.SIsec.nonpcIdx{e}, hist_epochs.SIspk.nonpcIdx{e}] = identifyPCs_1d( ...
+        bin_phi_e{e}, activespk_e{e}, hist_epochs.infoMap{e}, hist_epochs.pf_activet{e}, PFdata_epochs.activetrials{e}, prctile_thr, pfactivet_thr, activetrials_thr, Nrand );
+    if doasd
+        [asd_epochs.SIsec.pcIdx{e}, asd_epochs.SIspk.pcIdx{e}, asd_epochs.SIsec.nonpcIdx{e}, asd_epochs.SIspk.nonpcIdx{e}] = identifyPCs_1d( ...
+        bin_phi_e{e}, activespk_e{e}, asd_epochs.infoMap{e}, asd_epochs.pf_activet{e}, PFdata_epochs.activetrials{e}, prctile_thr, pfactivet_thr, activetrials_thr, Nrand, 'asd');
+    end
+end
 
+% sort pf maps per epoch
+hist_epochs.SIsec = sortPFmaps(hist_epochs.rateMap, hist_epochs.rateMap_sm, hist_epochs.normrateMap_sm, hist_epochs.pfLoc, hist_epochs.SIsec);
+hist_epochs.SIspk = sortPFmaps(hist_epochs.rateMap, hist_epochs.rateMap_sm, hist_epochs.normrateMap_sm, hist_epochs.pfLoc, hist_epochs.SIspk);
 
-% sort pf maps
-hist_e.SIsec = sortPFmaps(hist_e.SIsec);
-hist_e.SIspk = sortPFmaps(hist_e.SIspk);
-
+if doasd
+    asd_epochs.SIsec = sortPFmaps(asd_epochs.rateMap, [], asd_epochs.normrateMap_sm, asd_epochs.pfLoc, asd_epochs.SIsec);
+    asd_epochs.SIspk = sortPFmaps(asd_epochs.rateMap, [], asd_epochs.normrateMap_sm, asd_epochs.pfLoc, asd_epochs.SIspk);
+end
 
 %% Outputs
-if Nepochs > 1
-    PFdata_epochs.occMap = occMap_e;                         
-    PFdata_epochs.spkMap = spkMap_e;
-    PFdata_epochs.normspkMap = normspkMap_e;   
-    PFdata_epochs.bin_phi = bin_phi_e;
-    PFdata_epochs.activespk = activespk_e;
-    PFdata_epochs.spk_rate = spk_rate_e;
-    PFdata_epochs.spk_amplrate = spk_amplrate_e;
-    PFdata_epochs.bin_activity = bin_activity_e;
-else
+if Nepochs == 1
     hist_epochs = [];
+    PFdata_epochs = [];
     if doasd, asd_epochs = []; end
 end
 if ~doasd, asd = []; end
 
 varargout(1) = hist_epochs;
 varargout(2) = asd_epochs;
+varargout(3) = PFdata_epochs;
 end
-
-function hSIstruct = sortPFmaps(rateMap, rateMap_sm, normrateMap_sm, hSIstruct)
-    % Sort place field maps
-    Nepochs = size(rateMap,3);
-    if Nepochs == 1
-        if ~isempty(hSIstruct.pcIdx)
-            [ ~, sortIdx ] = sort( hSIstruct.pfLoc );
-            hSIstruct.sortpcIdx = hSIstruct.pcIdx(sortIdx);
-            hSIstruct.sort_pfMap = rateMap(sortIdx,:);
-            if isfield(hSIstruct,'pfMap_sm')
-                hSIstruct.sort_pfMap_sm = rateMap_sm(sortIdx,:);
-                hSIstruct.sort_normpfMap_sm = normrateMap_sm(sortIdx,:);
-            end
-        end
-    else
-        for e = 1:Nepochs
-            if ~isempty(hSIstruct.pcIdx{e})
-                [ ~, sortIdx ] = sort( hSIstruct.pfLoc{e} );
-                hSIstruct.sortpcIdx{e} = hSIstruct.pcIdx{e}(sortIdx);
-                hSIstruct.sort_pfMap{e} = rateMap{e}(sortIdx,:);
-                if isfield(hSIstruct,'pfMap_sm')
-                    hSIstruct.sort_pfMap_sm{e} = rateMap_sm{e}(sortIdx,:);
-                    hSIstruct.sort_normpfMap_sm{e} = normrateMap_sm{e}(sortIdx,:);
-                end
-            end
-        end
-    end
-end
-

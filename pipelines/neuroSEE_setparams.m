@@ -20,7 +20,7 @@ Names = [
         'd3                 ' % number of planes (for 3d imaging, default: 1)
         'FOV                ' % size of field of view in um
         'fr                 ' % imaging frame rate in Hz (defaut: 30)
-        'decay_time         ' % length of a typical transient in seconds
+        'decay_time         ' % length of a typical transient in seconds (default: 0.4)
     % motion correction (general)
         'refChannel         ' % reference channel for motion correction (default: 'green')
     % motion correction: fftRigid    
@@ -86,7 +86,7 @@ Names = [
         'cellrad_FOV330     ' % expected radius of a cell in 330x330 um FOV (pixels) (default: 9)  
         'maxcells_FOV330    ' % estimated number of cells in 330x330 um FOV (default: 200)
         'df_prctile         ' % percentile to be defined as baseline (default: 20)
-        'roiarea_thr        ' % area of roi to be considered a cell (default: 70)
+        'roiarea_thr        ' % area of roi to be considered a cell (default: 65)
     % ROI segmentation (ABLE)    
         'df_medfilt1        ' % degree of smoothing for df_f (default: 13)
     % ROI segmentation: CaImAn
@@ -190,7 +190,7 @@ Names = [
         % CLASSIFY COMPONENTS PIXELS (classify_components_pixels.m)
         'cl_thr             ' % overlap threshold for energy for a component to be classified as true (default: 0.8)
         % CLASSIFY COMPONENTS with CORRELATION (classify_comp_corr.m)
-        'space_thresh       ' % threshold for r-value in space (default: 0.4)
+        'space_thresh       ' % threshold for r-value in space (default: 0.5)
         'time_thresh        ' % threshold for r-value in time (default: 0.4)
         'A_thresh           ' % threshold for determining overlap (default: 0.1)
         'Npeaks             ' % # of peaks to be considered (default: 5)
@@ -344,7 +344,7 @@ Values = [
         {1}
         {330}                 % size of field of view in um
         {30.9}                % imaging frame rate in Hz (defaut: 30)
-        {1}                   % length of a typical transient in seconds
+        {0.4}                 % length of a typical transient in seconds (default: 0.4)
     % motion correction (general)
         {'green'}             % reference channel for motion correction (default: 'green')
     % motion correction: fftRigid    
@@ -408,7 +408,7 @@ Values = [
         {9}                   % expected radius of a cell in 330x330 um FOV (pixels) (default: 9)  
         {400}                 % estimated number of cells in 330x330 um FOV (default: 200)
         {20}                  % percentile to be defined as baseline (default 20)
-        {70}                  % area of roi to be considered a cell (default: 70)
+        {70}                  % area of roi to be considered a cell (default: 65)
     % ROI segmentation (ABLE)
         {13}                  % degree of smoothing for df_f (default: 13)
     % ROI segmentation: CaImAn
@@ -512,7 +512,7 @@ Values = [
         % CLASSIFY COMPONENTS PIXELS (classify_components_pixels.m)
         {0.8}                 % overlap threshold for energy for a component to be classified as true (default: 0.8)
         % CLASSIFY COMPONENTS with CORRELATION (classify_comp_corr.m)
-        {0.4}                 % threshold for r-value in space (default: 0.4)
+        {0.5}                 % threshold for r-value in space (default: 0.5)
         {0.4}                 % threshold for r-value in time (default: 0.4)
         {0.1}                 % threshold for determining overlap (default: 0.1)
         {5}                   % # of peaks to be considered (default: 5)
@@ -706,6 +706,7 @@ if strcmpi(options.mcorr_method,'normcorre') || strcmpi(options.mcorr_method,'no
 end
 % ROI segmentation
 params.ROIsegment.roiarea_thr = options.roiarea_thr;
+params.ROIsegment.FOV = options.FOV;
 if options.FOV == 330
     maxcells = options.maxcells_FOV330;
     cellrad = options.cellrad_FOV330;

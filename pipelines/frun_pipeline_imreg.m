@@ -37,10 +37,13 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, dofissa, slacknotify )
+function frun_pipeline_imreg( list, reffile, dofissa, decay_time, force )
 
 if nargin<3, dofissa = true; end
-if nargin<4, slacknotify = false; end
+if nargin<4, decay_time = 0.4; end
+if nargin<5, force = [0; 0; 0; 0; 0; 0]; end
+% if nargin<4, slacknotify = false; end
+slacknotify = false;
 % if nargin<2, see line 121
 tic
 
@@ -79,12 +82,12 @@ groupreg_method = 'imreg';      % method for concatenating file data (either reg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Basic settings
                              % flag to force execution of step even if data exist
-force = [false;...              % (1) image registration even if registered images exist
-         false;...              % (2) roi segmentation
-         true;...              % (3) neuropil decontamination
-         true;...              % (4) spike extraction
-         false;...              % (5) tracking data consolidation
-         false];                % (6) place field mapping
+% force = [false;...              % (1) image registration even if registered images exist
+%          false;...              % (2) roi segmentation
+%          true;...              % (3) neuropil decontamination
+%          true;...              % (4) spike extraction
+%          false;...              % (5) tracking data consolidation
+%          false];                % (6) place field mapping
 imreg_method = 'normcorre';  % image registration method 
                                 % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
 mcorr_method = 'normcorre';  % motion correction method used for reference file
@@ -110,7 +113,8 @@ params = neuroSEE_setparams(...
             'runpatches', runpatches,...
             'dofissa', dofissa,...
             'doasd', doasd,...
-            'FOV', FOV); 
+            'FOV', FOV,...
+            'decay_time', decay_time); 
         
                                % flag to execute step (use if wanting to skip later steps)
 dostep = [true;...              % (1) image registration 

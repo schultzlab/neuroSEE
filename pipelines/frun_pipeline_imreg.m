@@ -429,7 +429,7 @@ if dostep(5)
             if force(5) || ~exist([file_sdir file '_' mouseid '_' expname '_ref' reffile '_downTrackdata.mat'],'file')
                 trackfile = findMatchingTrackingFile(data_locn, file, force(5));
                 c = load_trackfile(data_locn, files(n,:), trackfile, force(5));
-                downTrackdata = downsample_trackData( c, size(cspikes{n},2), params.fr );
+                downTrackdata = downsample_trackData( c, size(cspikes{n},2), params.PFmap.fr );
 
                 save([file_sdir file '_' mouseid '_' expname '_ref' reffile '_downTrackdata.mat'],'downTrackdata');
                 cdownTrackdata{n} = downTrackdata;

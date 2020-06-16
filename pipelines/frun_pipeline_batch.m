@@ -181,7 +181,7 @@ if dostep(1)
     %                           params
 
 
-    if any([ force(2), ~check(2), ~check(1) ]) 
+    if force(2) || ~check(1) 
         if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
             [ imG, ~, params.mcorr ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
             imR = [];

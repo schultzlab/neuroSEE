@@ -155,25 +155,25 @@ if Nepochs > 1
             end
         end
     end
-end
 
-for e = 1:Nepochs
-    % Identify PLACE CELLS per epoch
-    [hist_epochs.SIsec.pcIdx{e}, hist_epochs.SIspk.pcIdx{e}, hist_epochs.SIsec.nonpcIdx{e}, hist_epochs.SIspk.nonpcIdx{e}] = identifyPCs_1d( ...
-        bin_phi_e{e}, activespk_e{e}, hist_epochs.infoMap{e}, hist_epochs.pf_activet{e}, PFdata_epochs.activetrials{e}, prctile_thr, pfactivet_thr, activetrials_thr, Nrand );
-    if doasd
-        [asd_epochs.SIsec.pcIdx{e}, asd_epochs.SIspk.pcIdx{e}, asd_epochs.SIsec.nonpcIdx{e}, asd_epochs.SIspk.nonpcIdx{e}] = identifyPCs_1d( ...
-        bin_phi_e{e}, activespk_e{e}, asd_epochs.infoMap{e}, asd_epochs.pf_activet{e}, PFdata_epochs.activetrials{e}, prctile_thr, pfactivet_thr, activetrials_thr, Nrand, 'asd');
+    for e = 1:Nepochs
+        % Identify PLACE CELLS per epoch
+        [hist_epochs.SIsec.pcIdx{e}, hist_epochs.SIspk.pcIdx{e}, hist_epochs.SIsec.nonpcIdx{e}, hist_epochs.SIspk.nonpcIdx{e}] = identifyPCs_1d( ...
+            bin_phi_e{e}, activespk_e{e}, hist_epochs.infoMap{e}, hist_epochs.pf_activet{e}, PFdata_epochs.activetrials{e}, prctile_thr, pfactivet_thr, activetrials_thr, Nrand );
+        if doasd
+            [asd_epochs.SIsec.pcIdx{e}, asd_epochs.SIspk.pcIdx{e}, asd_epochs.SIsec.nonpcIdx{e}, asd_epochs.SIspk.nonpcIdx{e}] = identifyPCs_1d( ...
+            bin_phi_e{e}, activespk_e{e}, asd_epochs.infoMap{e}, asd_epochs.pf_activet{e}, PFdata_epochs.activetrials{e}, prctile_thr, pfactivet_thr, activetrials_thr, Nrand, 'asd');
+        end
     end
-end
 
-% sort pf maps per epoch
-hist_epochs.SIsec = sortPFmaps(hist_epochs.rateMap, hist_epochs.rateMap_sm, hist_epochs.normrateMap_sm, hist_epochs.pfLoc, hist_epochs.SIsec);
-hist_epochs.SIspk = sortPFmaps(hist_epochs.rateMap, hist_epochs.rateMap_sm, hist_epochs.normrateMap_sm, hist_epochs.pfLoc, hist_epochs.SIspk);
+    % sort pf maps per epoch
+    hist_epochs.SIsec = sortPFmaps(hist_epochs.rateMap, hist_epochs.rateMap_sm, hist_epochs.normrateMap_sm, hist_epochs.pfLoc, hist_epochs.SIsec);
+    hist_epochs.SIspk = sortPFmaps(hist_epochs.rateMap, hist_epochs.rateMap_sm, hist_epochs.normrateMap_sm, hist_epochs.pfLoc, hist_epochs.SIspk);
 
-if doasd
-    asd_epochs.SIsec = sortPFmaps(asd_epochs.rateMap, [], asd_epochs.normrateMap_sm, asd_epochs.pfLoc, asd_epochs.SIsec);
-    asd_epochs.SIspk = sortPFmaps(asd_epochs.rateMap, [], asd_epochs.normrateMap_sm, asd_epochs.pfLoc, asd_epochs.SIspk);
+    if doasd
+        asd_epochs.SIsec = sortPFmaps(asd_epochs.rateMap, [], asd_epochs.normrateMap_sm, asd_epochs.pfLoc, asd_epochs.SIsec);
+        asd_epochs.SIspk = sortPFmaps(asd_epochs.rateMap, [], asd_epochs.normrateMap_sm, asd_epochs.pfLoc, asd_epochs.SIspk);
+    end
 end
 
 %% Outputs

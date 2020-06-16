@@ -37,11 +37,12 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, dofissa, decay_time, force )
+function frun_pipeline_imreg( list, reffile, dofissa, decay_time, force, dostep )
 
 if nargin<3, dofissa = true; end
 if nargin<4, decay_time = 0.4; end
 if nargin<5, force = [0; 0; 0; 0; 0; 0]; end
+if nargin<6, dostep = [1; 1; 1; 1; 1; 1]; end
 % if nargin<4, slacknotify = false; end
 slacknotify = false;
 % if nargin<2, see line 121
@@ -117,12 +118,12 @@ params = neuroSEE_setparams(...
             'decay_time', decay_time); 
         
                                % flag to execute step (use if wanting to skip later steps)
-dostep = [true;...              % (1) image registration 
-         true;...               % (2) roi segmentation
-         true;...              % (3) neuropil decontamination
-         true;...              % (4) spike extraction
-         true;...              % (5) tracking data consolidation
-         true];                % (6) place field mapping
+% dostep = [true;...              % (1) image registration 
+%          true;...               % (2) roi segmentation
+%          true;...              % (3) neuropil decontamination
+%          true;...              % (4) spike extraction
+%          true;...              % (5) tracking data consolidation
+%          true];                % (6) place field mapping
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -276,7 +277,7 @@ end
 
 %% 2) ROI segmentation
 if dostep(2)
-    % If doing CaImAn, continue only if Matlab version is R2018 or higher
+    % If doing CaImAn and running patches, continue only if Matlab version is R2018 or higher
     if runpatches && MatlabVer < 2018
         beep
         err = sprintf('%s: Higher Matlab version required. Cannot proceed with ROI segmentation.\n', [mouseid '_' expname]);

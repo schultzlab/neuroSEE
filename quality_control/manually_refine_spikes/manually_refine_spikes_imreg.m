@@ -1,12 +1,12 @@
 % in /neuroSEE/pipelines
-test = false;                   % flag to use one of smaller files in test folder)
-[data_locn,comp,err] = load_neuroSEEmodules(test);
+[data_locn,comp,err] = load_neuroSEEmodules;
 if ~isempty(err)
     beep
     cprintf('Errors',err);    
     return
 end
-params = load('default_params.mat');
+
+params = neuroSEE_setparams;
 file = '20190406_20_14_42';
 reffile = '20190406_20_27_07';
 expname = 'm82_open_day2';

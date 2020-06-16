@@ -493,7 +493,8 @@ if dostep(6)
     fields = {'Nbins_1D','Nbins_2D'};
     params.PFmap = rmfield(params.PFmap,fields);
 
-    [ hist, asd, PFdata, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile);
+    [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] = ...
+        neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile);
 
     %% Saving all data
     sname_allData = [ grp_sdir mouseid '_' expname '_ref' reffile '_allData.mat' ];

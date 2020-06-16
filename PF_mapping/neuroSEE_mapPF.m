@@ -48,7 +48,8 @@
 %   pcIdx   : row indices of spikes corresponding to place cells
 %   sortIdx : sorted row indices corresponding to sorted_pfMap
 
-function [ hist, asd, pfData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force, list, reffile)
+function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] = ...
+            neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force, list, reffile)
     if nargin<8, reffile = []; end
     if nargin<7, list = []; end
     if nargin<6, force = 0; end
@@ -107,32 +108,32 @@ function [ hist, asd, pfData, params ] = neuroSEE_mapPF( spikes, downTrackdata, 
         
         if strcmpi(params.mode_dim,'1D')
             % Generate place field maps
-            [hist, asd, pfData, hist_epochs, asd_epochs, pfData_epochs] = generatePFmap_1d( spikes, downTrackdata, params );
+            [hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs] = generatePFmap_1d( spikes, downTrackdata, params );
            
             % Make plots
             if force || ~exist(fig_sdir,'dir')
                 if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); end
-                plotPF_1d(hist, asd, pfData, true, true, fig_sdir, fname_pref)
+                plotPF_1d(hist, asd, PFdata, true, true, fig_sdir, fname_pref)
                 
                 if params.PFmap.Nepochs > 1
                     if ~exist(fig_sdir_epochs,'dir'), mkdir(fig_sdir_epochs); end
-                    plotPF_1d(hist_epochs, asd_epochs, pfData_epochs, true, true, fig_sdir_epochs, fname_pref)
+                    plotPF_1d(hist_epochs, asd_epochs, PFdata_epochs, true, true, fig_sdir_epochs, fname_pref)
                 end
             end
             
             % Save output
             output.hist = hist;
             if doasd, output.asd = asd; end
-            output.pfData = pfData;
+            output.pfData = PFdata;
             output.params = params.PFmap;
             if params.PFmap.Nepochs > 1
                 output.hist_epochs = hist_epochs;
                 if doasd, output.asd_epochs = asd_epochs; end
-                output.pfData_epochs = pfData_epochs;
+                output.pfData_epochs = PFdata_epochs;
             end
             save(fname_mat,'-struct','output');
         else % '2D'
-            [hist, asd, pfData] = generatePFmap_2d( spikes, downTrackdata, params );
+            [hist, asd, PFdata] = generatePFmap_2d( spikes, downTrackdata, params );
             
             % Make plots
             if force || ~exist(fig_sdir,'dir')
@@ -143,7 +144,7 @@ function [ hist, asd, pfData, params ] = neuroSEE_mapPF( spikes, downTrackdata, 
             % Save output
             output.hist = hist;
             if doasd, output.asd = asd; end
-            output.pfData = pfData;
+            output.pfData = PFdata;
             output.params = params.PFmap;
             save(fname_mat,'-struct','output');
         end
@@ -158,23 +159,23 @@ function [ hist, asd, pfData, params ] = neuroSEE_mapPF( spikes, downTrackdata, 
         m = load(fname_mat);
         hist = m.hist;
         if doasd, asd = m.asd; else, asd = []; end
-        pfData = m.pfData;
+        PFdata = m.pfData;
         params.PFmap = m.params;
         if params.PFmap.Nepochs > 1
             hist_epochs = m.hist_epochs;
             asd_epochs = m.asd_epochs;
-            pfData_epochs = m.pfData_epochs;
+            PFdata_epochs = m.pfData_epochs;
         else
             hist_epochs = [];
             asd_epochs = [];
-            pfData_epochs = [];
+            PFdata_epochs = [];
         end
         
         % Make plots if necessary
         if ~exist(fig_sdir,'dir')
             mkdir(fig_sdir); 
             if strcmpi(params.mode_dim,'1D')
-                plotPF_1d(hist, asd, pfData, true, true, fig_sdir, fname_pref)
+                plotPF_1d(hist, asd, PFdata, true, true, fig_sdir, fname_pref)
             else
                 plotPF_2d( hist, asd, true, true, fig_sdir, fname_pref )
             end
@@ -184,7 +185,7 @@ function [ hist, asd, pfData, params ] = neuroSEE_mapPF( spikes, downTrackdata, 
             if ~exist(fig_sdir_epochs,'dir')
                 mkdir(fig_sdir_epochs); 
                 if strcmpi(params.mode_dim,'1D')
-                    plotPF_1d( hist_epochs, asd_epochs, pfData_epochs, true, true, fig_sdir_epochs, fname_pref )
+                    plotPF_1d( hist_epochs, asd_epochs, PFdata_epochs, true, true, fig_sdir_epochs, fname_pref )
                 else
                     plotPF_2d( hist_epochs, asd_epochs, true, true, fig_sdir_epochs, fname_pref )
                 end

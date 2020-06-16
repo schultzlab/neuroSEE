@@ -193,7 +193,7 @@ if dostep(1)
         imG = []; imR = [];
     end
 else
-    fprintf('%s: No processing steps specified. Cannot proceed.\n', file);
+    fprintf('%s: No processing steps ticked. Cannot proceed.\n', file);
 end
 
 
@@ -217,7 +217,7 @@ if dostep(2)
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force(2), mean(imR,3) );
     clear imG imR
 else
-    fprintf('%s: ROI segmentation step not specified. Skipping this and later steps.\n', file);
+    fprintf('%s: ROI segmentation step not ticked. Skipping this and later steps.\n', file);
 end
 
 
@@ -243,7 +243,7 @@ if dostep(3)
     end
 else
     if dofissa
-        fprintf('%s: FISSA step not specified. Skipping this and later steps.\n', file);
+        fprintf('%s: FISSA step not ticked. Skipping this and later steps.\n', file);
     end
 end
 
@@ -259,7 +259,7 @@ if dostep(4)
         uiwait 
     end
 else
-    fprintf('%s: Spike estimation step not specified. Skipping this and later steps.\n', file);
+    fprintf('%s: Spike estimation step not ticked. Skipping this and later steps.\n', file);
 end
 
 
@@ -278,7 +278,7 @@ if dostep(5)
         downTrackdata = M.downTrackdata;
     end
 else
-    fprintf('%s: Behaviour tracking step not specified. Skipping this and later steps.\n', file);
+    fprintf('%s: Behaviour tracking step not ticked. Skipping this and later steps.\n', file);
 end
 
 %% (6) Generate place field maps
@@ -320,7 +320,7 @@ if dostep(6)
     if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
     if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
 else
-    fprintf('%s: PF mapping step not specified. Skipping step.\n', file);
+    fprintf('%s: PF mapping step not ticked. Skipping step.\n', file);
 end
 
 t = toc;

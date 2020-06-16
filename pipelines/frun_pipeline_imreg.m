@@ -37,12 +37,10 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, slacknotify, dofissa, maxcells_FOV330, decay_time )
+function frun_pipeline_imreg( list, reffile, dofissa, slacknotify )
 
-if nargin<6, decay_time = 0.4; end
-if nargin<5, maxcells_FOV330 = 400; end
-if nargin<4, dofissa = true; end
-if nargin<3, slacknotify = false; end
+if nargin<3, dofissa = true; end
+if nargin<4, slacknotify = false; end
 % if nargin<2, see line 121
 tic
 
@@ -112,17 +110,15 @@ params = neuroSEE_setparams(...
             'runpatches', runpatches,...
             'dofissa', dofissa,...
             'doasd', doasd,...
-            'FOV', FOV,...
-            'maxcells_FOV330', maxcells_FOV330,...
-            'decay_time', decay_time); 
+            'FOV', FOV); 
         
                                % flag to execute step (use if wanting to skip later steps)
 dostep = [true;...              % (1) image registration 
          true;...               % (2) roi segmentation
-         false;...              % (3) neuropil decontamination
-         false;...              % (4) spike extraction
-         false;...              % (5) tracking data consolidation
-         false];                % (6) place field mapping
+         true;...              % (3) neuropil decontamination
+         true;...              % (4) spike extraction
+         true;...              % (5) tracking data consolidation
+         true];                % (6) place field mapping
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -271,7 +267,7 @@ if dostep(1)
         imG = []; imR = [];
     end
 else
-    fprintf('%s: No processing steps specified. Cannot proceed.\n', [mouseid '_' expname]);
+    fprintf('%s: No processing steps ticked. Cannot proceed.\n', [mouseid '_' expname]);
 end
 
 %% 2) ROI segmentation
@@ -289,9 +285,9 @@ if dostep(2)
     
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, [], params, force(2), mean(imR,3), list, reffile );
 else
-    fprintf('%s: ROI segmentation step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+    fprintf('%s: ROI segmentation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
     t = toc;
-    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    str = sprintf('%s: Processing done in %g hrs\n', [mouseid '_' expname], round(t/3600,2));
     cprintf(str)
     return
 end
@@ -340,9 +336,9 @@ if dostep(3)
     end
 else
     if dofissa
-        fprintf('%s: FISSA step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+        fprintf('%s: FISSA step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
         t = toc;
-        str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+        str = sprintf('%s: Processing done in %g hrs\n', [mouseid '_' expname], round(t/3600,2));
         cprintf(str)
         return
     end
@@ -391,9 +387,9 @@ if dostep(4)
         refreshdisp(newstr, str)
     end
 else
-    fprintf('%s: Spike estimation step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+    fprintf('%s: Spike estimation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
     t = toc;
-    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    str = sprintf('%s: Processing done in %g hrs\n', [mouseid '_' expname], round(t/3600,2));
     cprintf(str)
     return
 end
@@ -473,9 +469,9 @@ if dostep(5)
         fprintf('%s: Tracking data found and loaded\n', [mouseid '_' expname]);
     end
 else
-    fprintf('%s: Behaviour tracking step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+    fprintf('%s: Behaviour tracking step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
     t = toc;
-    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    str = sprintf('%s: Processing done in %g hrs\n', [mouseid '_' expname], round(t/3600,2));
     cprintf(str)
     return
 end
@@ -504,7 +500,7 @@ if dostep(6)
     if ~isempty(dtsG), save(sname_allData,'-append','dtsG'); end
     if ~isempty(ddf_f), save(sname_allData,'-append','ddf_f'); end
 else
-    fprintf('%s: PF mapping step not specified. Skipping step.\n', [mouseid '_' expname]);
+    fprintf('%s: PF mapping step not ticked. Skipping step.\n', [mouseid '_' expname]);
 end
 
 t = toc;

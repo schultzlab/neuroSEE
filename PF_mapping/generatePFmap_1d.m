@@ -34,7 +34,7 @@
 %   activeData  : downsampled tracking data for when animal was moving, fields are
 %                 x, y, r, phi, speed, t, spikes, spikes_pc 
 
-function [ hist, asd, PFdata, varargout ] = generatePFmap_1d( spikes, downTrackdata, params )
+function [ hist, asd, pfData, varargout ] = generatePFmap_1d( spikes, downTrackdata, params )
 if nargin<3, params = neuroSEE_setparams; end
 
 doasd = params.methods.doasd; 
@@ -71,7 +71,7 @@ clear x y phi r speed t
 
 
 %% ALL CELLS: calculate PF data for entire duration (one epoch)
-[PFdata, hist, asd] = calcPFdata_1d(bin_phi, activephi, activespk, activet, Nbins, histsmoothWin, fr, doasd);
+[pfData, hist, asd] = calcPFdata_1d(bin_phi, activephi, activespk, activet, Nbins, histsmoothWin, fr, doasd);
 % PFdata is a structure with the following fields
 %   phi_trials, spk_trials, bintime_trials, bintime
 %   spkRaster, normspkRaster, activetrials
@@ -86,10 +86,10 @@ clear x y phi r speed t
 %% Identify PLACE CELLS
 % Cells are sorted in descending order of info content
 [hist.SIsec.pcIdx, hist.SIspk.pcIdx, hist.SIsec.nonpcIdx, hist.SIspk.nonpcIdx] = identifyPCs_1d( ...
-    bin_phi, activespk, hist.infoMap, hist.pf_activet, PFdata.activetrials, prctile_thr, pfactivet_thr, activetrials_thr, Nrand );
+    bin_phi, activespk, hist.infoMap, hist.pf_activet, pfData.activetrials, prctile_thr, pfactivet_thr, activetrials_thr, Nrand );
 if doasd
     [asd.SIsec.pcIdx, asd.SIspk.pcIdx, asd.SIsec.nonpcIdx, asd.SIspk.nonpcIdx] = identifyPCs_1d( ...
-    bin_phi, activespk, asd.infoMap, asd.pf_activet, PFdata.activetrials, prctile_thr, pfactivet_thr, activetrials_thr, Nrand, 'asd');
+    bin_phi, activespk, asd.infoMap, asd.pf_activet, pfData.activetrials, prctile_thr, pfactivet_thr, activetrials_thr, Nrand, 'asd');
 end
 
 % sort pf maps
@@ -110,11 +110,11 @@ if Nepochs > 1
     % e_bound = round( linspace(1,size(activespk,2),Nepochs+1) );
     
     % divide timeseries into equal-number-laps epochs
-    Ntrials = PFdata.ytick_files(end);
+    Ntrials = pfData.ytick_files(end);
     tr_div = round( linspace(1,Ntrials,Nepochs+1) );  
     e_bound = zeros(length(tr_div),1);
     for i = 1:length(tr_div)
-        e_bound(i) = PFdata.idx_trials{tr_div(i)}(1);
+        e_bound(i) = pfData.idx_trials{tr_div(i)}(1);
     end
     
     % separate exploration into smaller intervals

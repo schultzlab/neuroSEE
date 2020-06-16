@@ -2,6 +2,8 @@ function Nrois = frun_getFileNrois( list, mcorr_method )
 
 if nargin<2, mcorr_method = 'normcorre-nr'; end     % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
+params = neuroSEE_setparams;
+roiarea_thr = params.ROIsegment.roiarea_thr;
 
 % Load module folders and define data directory
 [data_locn, ~, err] = load_neuroSEEmodules;

@@ -272,7 +272,7 @@ if dostep(1)
         imG = []; imR = [];
     end
 else
-    fprintf('%s: No processing steps specified. Cannot proceed.\n', [mouseid '_' expname]);
+    fprintf('%s: No processing steps ticked. Cannot proceed.\n', [mouseid '_' expname]);
 end
 
 %% 2) ROI segmentation
@@ -290,9 +290,9 @@ if dostep(2)
     
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, [], params, force(2), mean(imR,3), list, reffile );
 else
-    fprintf('%s: ROI segmentation step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+    fprintf('%s: ROI segmentation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
     t = toc;
-    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    str = sprintf('%s: Processing done in %g hrs\n', [mouseid '_' expname], round(t/3600,2));
     cprintf(str)
     return
 end
@@ -341,9 +341,9 @@ if dostep(3)
     end
 else
     if dofissa
-        fprintf('%s: FISSA step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+        fprintf('%s: FISSA step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
         t = toc;
-        str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+        str = sprintf('%s: Processing done in %g hrs\n', [mouseid '_' expname], round(t/3600,2));
         cprintf(str)
         return
     end
@@ -392,9 +392,9 @@ if dostep(4)
         refreshdisp(newstr, str)
     end
 else
-    fprintf('%s: Spike estimation step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+    fprintf('%s: Spike estimation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
     t = toc;
-    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    str = sprintf('%s: Processing done in %g hrs\n', [mouseid '_' expname], round(t/3600,2));
     cprintf(str)
     return
 end
@@ -474,9 +474,9 @@ if dostep(5)
         fprintf('%s: Tracking data found and loaded\n', [mouseid '_' expname]);
     end
 else
-    fprintf('%s: Behaviour tracking step not specified. Skipping this and later steps.\n', [mouseid '_' expname]);
+    fprintf('%s: Behaviour tracking step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
     t = toc;
-    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    str = sprintf('%s: Processing done in %g hrs\n', [mouseid '_' expname], round(t/3600,2));
     cprintf(str)
     return
 end
@@ -505,7 +505,7 @@ if dostep(6)
     if ~isempty(dtsG), save(sname_allData,'-append','dtsG'); end
     if ~isempty(ddf_f), save(sname_allData,'-append','ddf_f'); end
 else
-    fprintf('%s: PF mapping step not specified. Skipping step.\n', [mouseid '_' expname]);
+    fprintf('%s: PF mapping step not ticked. Skipping step.\n', [mouseid '_' expname]);
 end
 
 t = toc;

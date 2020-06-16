@@ -107,7 +107,7 @@ function [ hist, asd, pfData, params ] = neuroSEE_mapPF( spikes, downTrackdata, 
         
         if strcmpi(params.mode_dim,'1D')
             % Generate place field maps
-            [hist, asd, pfData, hist_epochs, asd_epochs, pfData_epochs] = generatePFmap_1d( spikes, downTrackdata, params, doasd );
+            [hist, asd, pfData, hist_epochs, asd_epochs, pfData_epochs] = generatePFmap_1d( spikes, downTrackdata, params );
            
             % Make plots
             if force || ~exist(fig_sdir,'dir')
@@ -132,7 +132,7 @@ function [ hist, asd, pfData, params ] = neuroSEE_mapPF( spikes, downTrackdata, 
             end
             save(fname_mat,'-struct','output');
         else % '2D'
-            [hist, asd, pfData] = generatePFmap_2d(spikes, downTrackdata, params, doasd);
+            [hist, asd, pfData] = generatePFmap_2d( spikes, downTrackdata, params );
             
             % Make plots
             if force || ~exist(fig_sdir,'dir')

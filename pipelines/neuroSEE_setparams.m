@@ -764,7 +764,7 @@ if strcmpi(options.segment_method,'CaImAn')
 end
 % neuropil correction
 if options.dofissa
-    f = {'ddf_prctile'; 'ddf_medfilt1'};
+    f = {'ddf_prctile'; 'ddf_medfilt1'; 'fr'};
     fn = fieldnames(options);
     for i = 1:length(fn)
         for j = 1:length(f)

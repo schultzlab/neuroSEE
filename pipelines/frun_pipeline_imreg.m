@@ -81,8 +81,8 @@ groupreg_method = 'imreg';      % method for concatenating file data (either reg
                              % flag to force execution of step even if data exist
 force = [false;...              % (1) image registration even if registered images exist
          false;...              % (2) roi segmentation
-         false;...              % (3) neuropil decontamination
-         false;...              % (4) spike extraction
+         true;...              % (3) neuropil decontamination
+         true;...              % (4) spike extraction
          false;...              % (5) tracking data consolidation
          false];                % (6) place field mapping
 imreg_method = 'normcorre';  % image registration method 

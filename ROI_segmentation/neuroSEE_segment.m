@@ -168,7 +168,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             corr_image = zeros(size(mean_imR));
         end
         if isfield(segmentOutput,'elim_masks')
-            elims_masks = segmentOutput.elim_masks;
+            elim_masks = segmentOutput.elim_masks;
         else
             elim_masks = [];
         end

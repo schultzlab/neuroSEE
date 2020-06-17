@@ -75,51 +75,41 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
             if fsave
                 str = sprintf( '%s: Doing spike extraction\n', [mouseid '_' expname '_' file] );
             else
-                str = sprintf( '%s: Doing spike extraction\n', [mouseid '_' expname] );
+                str = sprintf( '%s: Doing spike extraction\n', [mouseid '_' expname '_' file] );
             end
         end
         cprintf(str)
 
         spikes = extractSpikes( C, params.spkExtract );
         
-        if fsave
-            % Save output
-            spike_output.spikes = spikes;
-            if ~exist(filedir,'dir'), mkdir(filedir); end
-            spike_output.params = params.spkExtract;
-            save(fname_mat,'-struct','spike_output');
-
-            % Make and save plot
-            makeplot(spikes);
-        end
+        % Save output
+        spike_output.spikes = spikes;
+        if ~exist(filedir,'dir'), mkdir(filedir); end
+        spike_output.params = params.spkExtract;
+        save(fname_mat,'-struct','spike_output');
+        
+        % plot
+        makeplot(spikes);
         
         if isempty(list)
             currstr = sprintf( '%s: Spike extraction done\n', file );
         else
-            if fsave
-                currstr = sprintf( '%s: Spike extraction done\n', [mouseid '_' expname '_' file] );
-            else
-                currstr = sprintf( '%s: Spike extraction done\n', [mouseid '_' expname] );
-            end
+            currstr = sprintf( '%s: Spike extraction done\n', [mouseid '_' expname '_' file] );
         end
         refreshdisp(currstr,str)
     else
         spike_output = load(fname_mat);
         spikes = spike_output.spikes;
         params.spkExtract = spike_output.params;
-        
-        if fsave && ~exist(fname_fig,'file')
+
+        if ~exist(fname_fig,'file')
             makeplot(spikes);
         end
 
         if isempty(list)
             fprintf( '%s: Spike extraction data found and loaded\n', file );
         else
-            if ~isempty(file)
-                fprintf( '%s: Spike extraction data found and loaded\n', [mouseid '_' expname '_' file] );
-            else
-                fprintf( '%s: Spike extraction data found and loaded\n', [mouseid '_' expname] );
-            end
+            fprintf( '%s: Spike extraction data found and loaded\n', [mouseid '_' expname '_' file] );
         end
     end
 

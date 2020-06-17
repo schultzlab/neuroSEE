@@ -239,7 +239,6 @@ if dostep(1)
 
         % Image downsampling    
         fprintf('%s: Downsampling images\n', [mouseid '_' expname])
-        framesperfile = zeros(Nfiles,1);
         for n = 1:Nfiles
             Yii = imG{n};
             Y(:,:,(n-1)*size(Yii,3)+1:n*size(Yii,3)) = Yii;
@@ -446,11 +445,11 @@ if dostep(5)
         end
         clear downTrackdata
         if ~dofissa
-            downTrackdata = SdownTrackdata(1:tsub:end);
-        else
-            downTrackdata = SdownTrackdata;
-        end
+            downTrackdata = SdownTrackdata(1:tsub:);
         clear SdownTrackdata
+        if ~dofissa
+            downTrackdata = downTra
+        end
 
         % plot consolidated tracking data
         if ~exist([grp_trackdir mouseid '_' expname '_mtrajectory.fig'],'file')

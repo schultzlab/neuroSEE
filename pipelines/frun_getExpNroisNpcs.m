@@ -15,6 +15,9 @@ if ~isempty(err)
     return
 end
 
+params = neuroSEE_setparams;
+roiarea_thr = params.ROIsegment.roiarea_thr;
+
 % Mouseid, Experiment name, files
 [ mouseid, expname ] = find_mouseIDexpname(list);
 

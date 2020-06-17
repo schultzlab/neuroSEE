@@ -252,7 +252,13 @@ if dostep(1)
             clear Xii
         end
 
-        if size(files,1) <= 7
+        if size(files,1) == 1
+            tsub = 1;
+        elseif size(files,1) <= 3
+            tsub = 2;
+        elseif size(files,1) <= 5
+            tsub = 4;
+        elseif size(files,1) <= 7
             tsub = 5;
         elseif size(files,1) <= 10
             tsub = 7;

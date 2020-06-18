@@ -366,7 +366,7 @@ end
 
 %% 4) Spike estimation
 if dostep(4)
-    if any([ force(4), force(5), ~check_list(3), ~check_list(4) ])
+    if force(4) || ~check_list(3) 
         spikes = []; 
         
         if dofissa

@@ -239,6 +239,7 @@ if dostep(1)
 
         % Image downsampling    
         fprintf('%s: Downsampling images\n', [mouseid '_' expname])
+        framesperfile = zeros(Nfiles,1);
         for n = 1:Nfiles
             Yii = imG{n};
             Y(:,:,(n-1)*size(Yii,3)+1:n*size(Yii,3)) = Yii;
@@ -283,6 +284,7 @@ if dostep(1)
     else
         fprintf('%s: Registered images found. Skipping image registration.\n', [mouseid '_' expname]);
         imG = []; imR = [];
+        framesperfile = load([grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
     end
 else
     fprintf('%s: No processing steps ticked. Cannot proceed.\n', [mouseid '_' expname]);
@@ -364,7 +366,7 @@ end
 
 %% 4) Spike estimation
 if dostep(4)
-    if any([ force(4), force(5), ~check_list(3), ~check_list(4) ])
+    if any([ force(4), ~check_list(3) ])
         spikes = []; 
         
         if dofissa
@@ -425,7 +427,7 @@ if dostep(5)
             file = files(n,:);
             fprintf('%s: Loading tracking data\n', [mouseid '_' expname '_' file]);
             
-            file_sdir = [data_locn 'Data/' file(1:8) '/Processed/behaviour/'];
+            file_sdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/'];
             if force(5) || ~exist([file_sdir file '_downTrackdata.mat'],'file')
                 trackfile = findMatchingTrackingFile(data_locn, file, force(5));
                 c = load_trackfile(data_locn, files(n,:), trackfile, force(5));
@@ -445,11 +447,16 @@ if dostep(5)
         end
         clear downTrackdata
         if ~dofissa
-            downTrackdata = SdownTrackdata(1:tsub:);
-        clear SdownTrackdata
-        if ~dofissa
-            downTrackdata = downTra
+            downTrackdata.phi = SdownTrackdata.phi(1:tsub:end);
+            downTrackdata.x = SdownTrackdata.x(1:tsub:end);
+            downTrackdata.y = SdownTrackdata.y(1:tsub:end);
+            downTrackdata.speed = SdownTrackdata.speed(1:tsub:end);
+            downTrackdata.r = SdownTrackdata.r(1:tsub:end);
+            downTrackdata.time = SdownTrackdata.time(1:tsub:end);
+        else
+            downTrackdata = SdownTrackdata;
         end
+        clear SdownTrackdata
 
         % plot consolidated tracking data
         if ~exist([grp_trackdir mouseid '_' expname '_mtrajectory.fig'],'file')

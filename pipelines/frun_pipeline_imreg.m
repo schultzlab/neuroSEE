@@ -517,6 +517,23 @@ if dostep(5)
         grp_sname = [grp_trackdir mouseid '_' expname '_downTrackdata.mat'];
         downTrackdata = load(grp_sname);
         fprintf('%s: Tracking data found and loaded\n', [mouseid '_' expname]);
+        if ~dofissa
+            if size(files,1) <= 7
+                tsub = 5;
+            elseif size(files,1) <= 10
+                tsub = 7;
+            elseif size(files,1) <= 13
+                tsub = 9;
+            else
+                tsub = round( size(files,1)*7420/11000 );
+            end
+            downTrackdata.phi = downTrackdata.phi(1:tsub:end);
+            downTrackdata.x = downTrackdata.x(1:tsub:end);
+            downTrackdata.y = downTrackdata.y(1:tsub:end);
+            downTrackdata.speed = downTrackdata.speed(1:tsub:end);
+            downTrackdata.r = downTrackdata.r(1:tsub:end);
+            downTrackdata.time = downTrackdata.time(1:tsub:end);
+        end
     end
 else
     fprintf('%s: Behaviour tracking step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);

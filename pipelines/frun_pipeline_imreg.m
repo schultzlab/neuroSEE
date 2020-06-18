@@ -256,18 +256,27 @@ if dostep(1)
             clear Xii
         end
 
-        if size(files,1) == 1
-            tsub = 1;
-        elseif size(files,1) <= 3
-            tsub = 2;
-        elseif size(files,1) == 4
-            tsub = 3;
-        elseif size(files,1) <= 6
-            tsub = 4;
-        elseif size(files,1) == 7
+%         if size(files,1) == 1
+%             tsub = 1;
+%         elseif size(files,1) <= 3
+%             tsub = 2;
+%         elseif size(files,1) == 4
+%             tsub = 3;
+%         elseif size(files,1) <= 6
+%             tsub = 4;
+%         elseif size(files,1) == 7
+%             tsub = 5;
+%         elseif size(files,1) <= 9
+%             tsub = 6;
+%         elseif size(files,1) <= 10
+%             tsub = 7;
+%         elseif size(files,1) <= 13
+%             tsub = 9;
+%         else
+%             tsub = round( size(files,1)*7420/11000 );
+%         end
+        if size(files,1) <= 7
             tsub = 5;
-        elseif size(files,1) <= 9
-            tsub = 6;
         elseif size(files,1) <= 10
             tsub = 7;
         elseif size(files,1) <= 13
@@ -284,19 +293,29 @@ if dostep(1)
     else
         fprintf('%s: Registered images found. Skipping image registration.\n', [mouseid '_' expname]);
         imG = []; imR = [];
-        framesperfile = load([grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
-        if size(files,1) == 1
-            tsub = 1;
-        elseif size(files,1) <= 3
-            tsub = 2;
-        elseif size(files,1) == 4
-            tsub = 3;
-        elseif size(files,1) <= 6
-            tsub = 4;
-        elseif size(files,1) == 7
+        m = load([grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
+        framesperfile = m.framesperfile;
+%         if size(files,1) == 1
+%             tsub = 1;
+%         elseif size(files,1) <= 3
+%             tsub = 2;
+%         elseif size(files,1) == 4
+%             tsub = 3;
+%         elseif size(files,1) <= 6
+%             tsub = 4;
+%         elseif size(files,1) == 7
+%             tsub = 5;
+%         elseif size(files,1) <= 9
+%             tsub = 6;
+%         elseif size(files,1) <= 10
+%             tsub = 7;
+%         elseif size(files,1) <= 13
+%             tsub = 9;
+%         else
+%             tsub = round( size(files,1)*7420/11000 );
+%         end
+        if size(files,1) <= 7
             tsub = 5;
-        elseif size(files,1) <= 9
-            tsub = 6;
         elseif size(files,1) <= 10
             tsub = 7;
         elseif size(files,1) <= 13
@@ -448,7 +467,7 @@ if dostep(5)
             if force(5) || ~exist([file_sdir file '_downTrackdata.mat'],'file')
                 trackfile = findMatchingTrackingFile(data_locn, file, force(5));
                 c = load_trackfile(data_locn, files(n,:), trackfile, force(5));
-                downTrackdata = downsample_trackData( c, 7420, params.PFmap.fr );
+                downTrackdata = downsample_trackData( c, framesperfile(n), params.PFmap.fr );
                 save([file_sdir file '_downTrackdata.mat'],'downTrackdata');
                 cdownTrackdata{n} = downTrackdata;
             else
@@ -481,7 +500,7 @@ if dostep(5)
             for n = 1:Nfiles
                 plot(cdownTrackdata{n}.x, cdownTrackdata{n}.y, 'b'); hold on;
             end
-            hold off;
+            hold off; axis off;
             title('Mouse trajectory','Fontweight','normal','Fontsize',12);
             savefig(fig,[grp_trackdir mouseid '_' expname '_mtrajectory']);
             saveas(fig,[grp_trackdir mouseid '_' expname '_mtrajectory'],'png');

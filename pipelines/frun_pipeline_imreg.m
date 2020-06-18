@@ -518,8 +518,18 @@ if dostep(5)
         downTrackdata = load(grp_sname);
         fprintf('%s: Tracking data found and loaded\n', [mouseid '_' expname]);
         if ~dofissa
-            if size(files,1) <= 7
+            if size(files,1) == 1
+                tsub = 1;
+            elseif size(files,1) <= 3
+                tsub = 2;
+            elseif size(files,1) == 4
+                tsub = 3;
+            elseif size(files,1) <= 6
+                tsub = 4;
+            elseif size(files,1) == 7
                 tsub = 5;
+            elseif size(files,1) <= 9
+                tsub = 6;
             elseif size(files,1) <= 10
                 tsub = 7;
             elseif size(files,1) <= 13

@@ -246,7 +246,8 @@ if dostep(1)
             Y(:,:,(n-1)*size(Yii,3)+1:n*size(Yii,3)) = Yii;
             framesperfile(n) = size(Yii,3);
         end
-        clear Yii
+        clear Yii imG
+        imG = Y;
         grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat'];
         save(grp_sname,'framesperfile');
         
@@ -255,7 +256,8 @@ if dostep(1)
                 Xii = imR{n};
                 X(:,:,(n-1)*size(Xii,3)+1:n*size(Xii,3)) = Xii;
             end
-            clear Xii
+            clear Xii imR;
+            imR = X;
         end
     else
         fprintf('%s: Registered images found. Skipping image registration.\n', [mouseid '_' expname]);

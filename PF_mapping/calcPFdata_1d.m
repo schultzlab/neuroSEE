@@ -78,11 +78,11 @@ for f = 1:numel(idx_file)-1
             bp_trials{ntrial} = bp_file(idx_tr(l)+1:idx_tr(l+1));
             phi_trials{ntrial} = p_file(idx_tr(l)+1:idx_tr(l+1));
             idx_trials{ntrial} = tcount_file(idx_tr(l)+1:idx_tr(l+1));
-%             for c = 1:Ncells
-%                 s = activespk(c,:);
-%                 s_file = s(idx_file(f):idx_file(f+1)-1);
-%                 spk_trials{c}{ntrial} = s_file(idx_tr(l)+1:idx_tr(l+1));
-%             end
+            for c = 1:Ncells
+                s = activespk(c,:);
+                s_file = s(idx_file(f):idx_file(f+1)-1);
+                spk_trials{c}{ntrial} = s_file(idx_tr(l)+1:idx_tr(l+1));
+            end
             ntrial = ntrial + 1;
         end
 

@@ -19,7 +19,7 @@
 %   params
 
 function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force, list, reffile, fsave )
-    if nargin>9, fsave = true; end
+    if nargin<9, fsave = true; end
     if nargin<8, reffile = []; end
     if nargin<7, list = []; end
     if nargin<6, force = 0; end

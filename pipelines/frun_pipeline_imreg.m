@@ -335,7 +335,7 @@ end
 if dostep(3)
     dtsG = []; ddf_f = []; 
     if dofissa
-        if any([ force(3), force(4), ~check_list(2), ~check_list(3) ])
+        if force(3) || ~check_list(2)
             for n = 1:Nfiles
                 file = files(n,:);
                 [ cdtsG{n}, cddf_f{n}, params ] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3), list, reffile );

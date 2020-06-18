@@ -285,6 +285,25 @@ if dostep(1)
         fprintf('%s: Registered images found. Skipping image registration.\n', [mouseid '_' expname]);
         imG = []; imR = [];
         framesperfile = load([grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
+        if size(files,1) == 1
+            tsub = 1;
+        elseif size(files,1) <= 3
+            tsub = 2;
+        elseif size(files,1) == 4
+            tsub = 3;
+        elseif size(files,1) <= 6
+            tsub = 4;
+        elseif size(files,1) == 7
+            tsub = 5;
+        elseif size(files,1) <= 9
+            tsub = 6;
+        elseif size(files,1) <= 10
+            tsub = 7;
+        elseif size(files,1) <= 13
+            tsub = 9;
+        else
+            tsub = round( size(files,1)*7420/11000 );
+        end
     end
 else
     fprintf('%s: No processing steps ticked. Cannot proceed.\n', [mouseid '_' expname]);

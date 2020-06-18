@@ -25,8 +25,7 @@ for f = 1:numel(idx_file)-1
     % find the delineations for diff trials (laps)
     idx_tr = [];
     for li = 1:numel(bp_file)
-        if bp_file(li) <= bp_file(1)+2 && bp_file(li) >= bp_file(1)-2
-        % if bp_file(li) == bp_file(1)
+        if bp_file(li) <= bp_file(1)+1 && bp_file(li) >= bp_file(1)-1
             idx_tr = [idx_tr; li];
         end
     end
@@ -43,8 +42,9 @@ for f = 1:numel(idx_file)-1
     end
     idx_tr = idx_tr( idx_tr > 0 );
     idx1 = []; idx2 = []; idx3 = []; idx4 = [];
+    temp = idx_tr;
     for l = 1:numel(idx_tr)-1
-        bp_tr = bp_file(idx_tr(l):idx_tr(l+1)); 
+        bp_tr = bp_file(temp(l):temp(l+1)); 
         for li = 1:numel(bp_tr)
             % This trial must contain a bin close to the 360th degree position
             if bp_tr(li) <= Nbins && bp_tr(li) >= Nbins-4

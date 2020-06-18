@@ -448,7 +448,7 @@ if dostep(5)
             if force(5) || ~exist([file_sdir file '_downTrackdata.mat'],'file')
                 trackfile = findMatchingTrackingFile(data_locn, file, force(5));
                 c = load_trackfile(data_locn, files(n,:), trackfile, force(5));
-                downTrackdata = downsample_trackData( c, framesperfile(n), params.PFmap.fr );
+                downTrackdata = downsample_trackData( c, 7420, params.PFmap.fr );
                 save([file_sdir file '_downTrackdata.mat'],'downTrackdata');
                 cdownTrackdata{n} = downTrackdata;
             else

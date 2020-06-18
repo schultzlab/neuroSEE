@@ -284,6 +284,7 @@ if dostep(1)
     else
         fprintf('%s: Registered images found. Skipping image registration.\n', [mouseid '_' expname]);
         imG = []; imR = [];
+        framesperfile = load([grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
     end
 else
     fprintf('%s: No processing steps ticked. Cannot proceed.\n', [mouseid '_' expname]);
@@ -426,7 +427,7 @@ if dostep(5)
             file = files(n,:);
             fprintf('%s: Loading tracking data\n', [mouseid '_' expname '_' file]);
             
-            file_sdir = [data_locn 'Data/' file(1:8) '/Processed/behaviour/'];
+            file_sdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/'];
             if force(5) || ~exist([file_sdir file '_downTrackdata.mat'],'file')
                 trackfile = findMatchingTrackingFile(data_locn, file, force(5));
                 c = load_trackfile(data_locn, files(n,:), trackfile, force(5));
@@ -446,7 +447,12 @@ if dostep(5)
         end
         clear downTrackdata
         if ~dofissa
-            downTrackdata = SdownTrackdata(1:tsub:end);
+            downTrackdata.phi = SdownTrackdata.phi(1:tsub:end);
+            downTrackdata.x = SdownTrackdata.x(1:tsub:end);
+            downTrackdata.y = SdownTrackdata.y(1:tsub:end);
+            downTrackdata.speed = SdownTrackdata.speed(1:tsub:end);
+            downTrackdata.r = SdownTrackdata.r(1:tsub:end);
+            downTrackdata.time = SdownTrackdata.time(1:tsub:end);
         else
             downTrackdata = SdownTrackdata;
         end

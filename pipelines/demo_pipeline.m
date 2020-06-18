@@ -249,7 +249,16 @@ if any(downTrackdata.r < 100)
     params.PFmap.Nbins = params.PFmap.Nbins_2D; % number of location bins in [x y]               
 else 
     params.mode_dim = '1D';                     % circular linear track
-    params.PFmap.Nbins = params.PFmap.Nbins_1D; % number of location bins               
+    params.PFmap.Nbins = params.PFmap.Nbins_1D; % number of location bins    
+    
+    if ~exist([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_phiposition.fig'],'file')
+        fig = figure('position',[680 678 1000 200]);
+        plot(downTrackdata.phi); 
+        title('Mouse phi position','Fontweight','normal','Fontsize',12);
+        savefig(fig,[grp_trackdir mouseid '_' expname '_phiposition']);
+        saveas(fig,[grp_trackdir mouseid '_' expname '_phiposition'],'png');
+        close(fig);
+    end
 end
 fields = {'Nbins_1D','Nbins_2D'};
 params.PFmap = rmfield(params.PFmap,fields);

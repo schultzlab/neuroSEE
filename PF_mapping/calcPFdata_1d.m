@@ -23,15 +23,48 @@ for f = 1:numel(idx_file)-1
     bp_file = bp(idx_file(f):idx_file(f+1)-1);
     
     % find the delineations for diff trials (laps)
-    idx_tr = find( bp_file == bp_file(1) );
-    % Eliminate false delineations - if indices are less than 2*Nbins
-    % apart, they are probably due to animal moving back and forth or any
-    % artefacts in tracking (if animal moves 2*Nbins (204 cm) in 2*Nbins
-    % time points (30.9 Hz recording), this corresponds to >300 mm/s!
-    % Animal doesn't run this fast, so 2*Nbins is a safe threshold.
-    for l = numel(idx_tr):-1:2
-        if (idx_tr(l) - idx_tr(l-1)) <= 2*Nbins 
-            idx_tr(l) = 0;
+    idx_tr = [];
+    for li = 1:numel(bp_file)
+        if bp_file(li) <= bp_file(1)+2 && bp_file(li) >= bp_file(1)-2
+        % if bp_file(li) == bp_file(1)
+            idx_tr = [idx_tr; li];
+        end
+    end
+    % Eliminate false delineations - if indices are less than Nbins
+    % apart, they are probably due to animal staying in the same place
+    % or moving back and forth (if animal moves Nbins (102 cm) in Nbins
+    % time points (30.9 Hz recording), this corresponds to >600 mm/s!
+    % Animal doesn't run this fast, so Nbins is a safe threshold.
+    temp = idx_tr;
+    for l = 1:numel(idx_tr)-1
+        if (temp(l+1) - temp(l)) <= Nbins 
+            idx_tr(l+1) = 0;
+        end
+    end
+    idx_tr = idx_tr( idx_tr > 0 );
+    idx1 = []; idx2 = []; idx3 = []; idx4 = [];
+    for l = 1:numel(idx_tr)-1
+        bp_tr = bp_file(idx_tr(l):idx_tr(l+1)); 
+        for li = 1:numel(bp_tr)
+            % This trial must contain a bin close to the 360th degree position
+            if bp_tr(li) <= Nbins && bp_tr(li) >= Nbins-4
+                idx1 = [idx1; li];
+            end
+            % This trial must contain a bin close to the 270th degree position
+            if bp_tr(li) <= (3*Nbins/4)+2 && bp_tr(li) >= (3*Nbins/4)-2
+                idx2 = [idx2; li];
+            end
+            % This trial must contain a bin close to the 180th degree position
+            if bp_tr(li) <= (Nbins/2)+2 && bp_tr(li) >= (Nbins/2)-2
+                idx3 = [idx3; li];
+            end
+            % This trial must contain a bin close to the 90th degree position
+            if bp_tr(li) <= (Nbins/4)+2 && bp_tr(li) >= (Nbins/4)-2
+                idx4 = [idx4; li];
+            end
+        end
+        if any([isempty(idx1) isempty(idx2) isempty(idx3) isempty(idx4)])
+            idx_tr(l+1) = 0;
         end
     end
     idx_tr = idx_tr( idx_tr > 0 );
@@ -40,15 +73,16 @@ for f = 1:numel(idx_file)-1
     if files_Ntrials(f) > 0
         p_file = p(idx_file(f):idx_file(f+1)-1);
         tcount_file = tcount(idx_file(f):idx_file(f+1)-1);
+        idx_tr(1) = 0;
         for l = 1:numel(idx_tr)-1
             bp_trials{ntrial} = bp_file(idx_tr(l)+1:idx_tr(l+1));
             phi_trials{ntrial} = p_file(idx_tr(l)+1:idx_tr(l+1));
             idx_trials{ntrial} = tcount_file(idx_tr(l)+1:idx_tr(l+1));
-            for c = 1:Ncells
-                s = activespk(c,:);
-                s_file = s(idx_file(f):idx_file(f+1)-1);
-                spk_trials{c}{ntrial} = s_file(idx_tr(l)+1:idx_tr(l+1));
-            end
+%             for c = 1:Ncells
+%                 s = activespk(c,:);
+%                 s_file = s(idx_file(f):idx_file(f+1)-1);
+%                 spk_trials{c}{ntrial} = s_file(idx_tr(l)+1:idx_tr(l+1));
+%             end
             ntrial = ntrial + 1;
         end
 

@@ -285,6 +285,25 @@ if dostep(1)
         fprintf('%s: Registered images found. Skipping image registration.\n', [mouseid '_' expname]);
         imG = []; imR = [];
         framesperfile = load([grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
+        if size(files,1) == 1
+            tsub = 1;
+        elseif size(files,1) <= 3
+            tsub = 2;
+        elseif size(files,1) == 4
+            tsub = 3;
+        elseif size(files,1) <= 6
+            tsub = 4;
+        elseif size(files,1) == 7
+            tsub = 5;
+        elseif size(files,1) <= 9
+            tsub = 6;
+        elseif size(files,1) <= 10
+            tsub = 7;
+        elseif size(files,1) <= 13
+            tsub = 9;
+        else
+            tsub = round( size(files,1)*7420/11000 );
+        end
     end
 else
     fprintf('%s: No processing steps ticked. Cannot proceed.\n', [mouseid '_' expname]);
@@ -366,7 +385,7 @@ end
 
 %% 4) Spike estimation
 if dostep(4)
-    if any([ force(4), ~check_list(3) ])
+    if force(4) || ~check_list(3) 
         spikes = []; 
         
         if dofissa
@@ -470,7 +489,7 @@ if dostep(5)
             saveas(fig,[grp_trackdir mouseid '_' expname '_mtrajectory'],'png');
             close(fig);
         end
-
+        
         % save consolidated tracking data
         fprintf('%s: Saving tracking data\n', [mouseid '_' expname]);
         grp_sname = [grp_trackdir mouseid '_' expname '_downTrackdata.mat'];
@@ -498,7 +517,18 @@ if dostep(6)
         params.PFmap.Nbins = params.PFmap.Nbins_2D; % number of location bins in [x y]               
     else 
         params.mode_dim = '1D';                     % circular linear track
-        params.PFmap.Nbins = params.PFmap.Nbins_1D; % number of location bins               
+        params.PFmap.Nbins = params.PFmap.Nbins_1D; % number of location bins         
+        
+        if ~exist([grp_trackdir mouseid '_' expname '_phiposition.fig'],'file')
+            fig = figure('position',[680 678 800 420]);
+            plot(downTrackdata.phi); hold on;
+            plot(downTrackdata.time); hold off;
+            legend('phi','time'); legend('boxoff');
+            title('Mouse phi position','Fontweight','normal','Fontsize',12);
+            savefig(fig,[grp_trackdir mouseid '_' expname '_phiposition']);
+            saveas(fig,[grp_trackdir mouseid '_' expname '_phiposition'],'png');
+            close(fig);
+        end
     end
     fields = {'Nbins_1D','Nbins_2D'};
     params.PFmap = rmfield(params.PFmap,fields);

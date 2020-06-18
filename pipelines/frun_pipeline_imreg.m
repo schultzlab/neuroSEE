@@ -489,7 +489,7 @@ if dostep(5)
             saveas(fig,[grp_trackdir mouseid '_' expname '_mtrajectory'],'png');
             close(fig);
         end
-
+        
         % save consolidated tracking data
         fprintf('%s: Saving tracking data\n', [mouseid '_' expname]);
         grp_sname = [grp_trackdir mouseid '_' expname '_downTrackdata.mat'];
@@ -517,7 +517,18 @@ if dostep(6)
         params.PFmap.Nbins = params.PFmap.Nbins_2D; % number of location bins in [x y]               
     else 
         params.mode_dim = '1D';                     % circular linear track
-        params.PFmap.Nbins = params.PFmap.Nbins_1D; % number of location bins               
+        params.PFmap.Nbins = params.PFmap.Nbins_1D; % number of location bins         
+        
+        if ~exist([grp_trackdir mouseid '_' expname '_phiposition.fig'],'file')
+            fig = figure('position',[680 678 1000 200]);
+            plot(downTrackdata.phi); hold on;
+            plot(downTrackdata.time); hold off;
+            legend('phi','time'); legend('boxoff');
+            title('Mouse phi position','Fontweight','normal','Fontsize',12);
+            savefig(fig,[grp_trackdir mouseid '_' expname '_phiposition']);
+            saveas(fig,[grp_trackdir mouseid '_' expname '_phiposition'],'png');
+            close(fig);
+        end
     end
     fields = {'Nbins_1D','Nbins_2D'};
     params.PFmap = rmfield(params.PFmap,fields);

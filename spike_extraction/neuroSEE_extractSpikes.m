@@ -33,6 +33,10 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
         str_fissa = 'noFISSA';
     end
     
+    if ~isempty(list)
+        [ mouseid, expname ] = find_mouseIDexpname(list);
+    end    
+        
     if fsave
         if isempty(list)
             filedir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/',str_fissa,'/'];
@@ -43,7 +47,6 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
             end
             fname_fig = [filedir file '_spikes.fig'];
         else
-            [ mouseid, expname ] = find_mouseIDexpname(list);
             if strcmpi(file, reffile)
                 filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ...
                             segment_method '_' mouseid '_' expname '/' str_fissa '/'];

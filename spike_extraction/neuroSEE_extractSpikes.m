@@ -43,21 +43,25 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
         fname_fig = [filedir file '_spikes.fig'];
     else
         [ mouseid, expname ] = find_mouseIDexpname(list);
-        if strcmpi(file, reffile)
-            filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ...
-                        segment_method '_' mouseid '_' expname '/' str_fissa '/'];
-        else
-            imreg_method = params.methods.imreg_method;
-            if strcmpi(imreg_method, mcorr_method)
-                filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '/'...
-                           segment_method '_' mouseid '_' expname '/' str_fissa '/'];
+        if fsave
+            if strcmpi(file, reffile)
+                filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ...
+                            segment_method '_' mouseid '_' expname '/' str_fissa '/'];
             else
-                filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '_' mcorr_method '/'...
-                           segment_method '_' mouseid '_' expname '/' str_fissa '/'];
+                imreg_method = params.methods.imreg_method;
+                if strcmpi(imreg_method, mcorr_method)
+                    filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '/'...
+                               segment_method '_' mouseid '_' expname '/' str_fissa '/'];
+                else
+                    filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '_' mcorr_method '/'...
+                               segment_method '_' mouseid '_' expname '/' str_fissa '/'];
+                end
             end
+            fname_mat = [filedir file '_' mouseid '_' expname '_ref' reffile '_spikes.mat'];
+            fname_fig = [filedir file '_' mouseid '_' expname '_ref' reffile '_spikes.fig'];
+        else
+            fname_mat = [];
         end
-        fname_mat = [filedir file '_' mouseid '_' expname '_ref' reffile '_spikes.mat'];
-        fname_fig = [filedir file '_' mouseid '_' expname '_ref' reffile '_spikes.fig'];
     end    
 
     if ~isempty(ddf_f)

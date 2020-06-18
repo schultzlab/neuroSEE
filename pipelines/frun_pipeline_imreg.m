@@ -444,8 +444,6 @@ if dostep(5)
         
         for n = 1:Nfiles
             file = files(n,:);
-            fprintf('%s: Loading tracking data\n', [mouseid '_' expname '_' file]);
-            
             file_sdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/'];
             if force(5) || ~exist([file_sdir file '_downTrackdata.mat'],'file')
                 trackfile = findMatchingTrackingFile(data_locn, file, force(5));

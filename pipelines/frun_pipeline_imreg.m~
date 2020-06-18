@@ -115,7 +115,8 @@ params = neuroSEE_setparams(...
             'dofissa', dofissa,...
             'doasd', doasd,...
             'FOV', FOV,...
-            'decay_time', decay_time); 
+            'decay_time', decay_time,...
+            'tsub', 5);         % temporal downsampling factor for CaImAn
         
                                % flag to execute step (use if wanting to skip later steps)
 % dostep = [true;...              % (1) image registration 
@@ -237,14 +238,15 @@ if dostep(1)
             end
         end
 
-        % Image downsampling    
-        fprintf('%s: Downsampling images\n', [mouseid '_' expname])
+        % Image concatenation    
+        fprintf('%s: Concatenating images\n', [mouseid '_' expname])
         framesperfile = zeros(Nfiles,1);
         for n = 1:Nfiles
             Yii = imG{n};
             Y(:,:,(n-1)*size(Yii,3)+1:n*size(Yii,3)) = Yii;
             framesperfile(n) = size(Yii,3);
         end
+        clear Yii
         grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat'];
         save(grp_sname,'framesperfile');
         
@@ -255,55 +257,11 @@ if dostep(1)
             end
             clear Xii
         end
-
-        if size(files,1) == 1
-            tsub = 1;
-        elseif size(files,1) <= 3
-            tsub = 2;
-        elseif size(files,1) == 4
-            tsub = 3;
-        elseif size(files,1) <= 6
-            tsub = 4;
-        elseif size(files,1) == 7
-            tsub = 5;
-        elseif size(files,1) <= 9
-            tsub = 6;
-        elseif size(files,1) <= 10
-            tsub = 7;
-        elseif size(files,1) <= 13
-            tsub = 9;
-        else
-            tsub = round( size(files,1)*7420/11000 );
-        end
-        imG = Y(:,:,1:tsub:end); % downsampled concatenated image
-        clear Y Yii
-        if ~strcmpi(segment_method,'CaImAn')
-            imR = X(:,:,1:tsub:end);
-            clear X
-        end
     else
         fprintf('%s: Registered images found. Skipping image registration.\n', [mouseid '_' expname]);
         imG = []; imR = [];
-        framesperfile = load([grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
-        if size(files,1) == 1
-            tsub = 1;
-        elseif size(files,1) <= 3
-            tsub = 2;
-        elseif size(files,1) == 4
-            tsub = 3;
-        elseif size(files,1) <= 6
-            tsub = 4;
-        elseif size(files,1) == 7
-            tsub = 5;
-        elseif size(files,1) <= 9
-            tsub = 6;
-        elseif size(files,1) <= 10
-            tsub = 7;
-        elseif size(files,1) <= 13
-            tsub = 9;
-        else
-            tsub = round( size(files,1)*7420/11000 );
-        end
+        m = load([grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
+        framesperfile = m.framesperfile;
     end
 else
     fprintf('%s: No processing steps ticked. Cannot proceed.\n', [mouseid '_' expname]);
@@ -335,7 +293,7 @@ end
 if dostep(3)
     dtsG = []; ddf_f = []; 
     if dofissa
-        if any([ force(3), force(4), ~check_list(2), ~check_list(3) ])
+        if force(3) || ~check_list(2)
             for n = 1:Nfiles
                 file = files(n,:);
                 [ cdtsG{n}, cddf_f{n}, params ] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3), list, reffile );
@@ -444,8 +402,6 @@ if dostep(5)
         
         for n = 1:Nfiles
             file = files(n,:);
-            fprintf('%s: Loading tracking data\n', [mouseid '_' expname '_' file]);
-            
             file_sdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/'];
             if force(5) || ~exist([file_sdir file '_downTrackdata.mat'],'file')
                 trackfile = findMatchingTrackingFile(data_locn, file, force(5));
@@ -483,7 +439,7 @@ if dostep(5)
             for n = 1:Nfiles
                 plot(cdownTrackdata{n}.x, cdownTrackdata{n}.y, 'b'); hold on;
             end
-            hold off;
+            hold off; axis off;
             title('Mouse trajectory','Fontweight','normal','Fontsize',12);
             savefig(fig,[grp_trackdir mouseid '_' expname '_mtrajectory']);
             saveas(fig,[grp_trackdir mouseid '_' expname '_mtrajectory'],'png');
@@ -500,6 +456,7 @@ if dostep(5)
         grp_sname = [grp_trackdir mouseid '_' expname '_downTrackdata.mat'];
         downTrackdata = load(grp_sname);
         fprintf('%s: Tracking data found and loaded\n', [mouseid '_' expname]);
+        end
     end
 else
     fprintf('%s: Behaviour tracking step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
@@ -520,7 +477,7 @@ if dostep(6)
         params.PFmap.Nbins = params.PFmap.Nbins_1D; % number of location bins         
         
         if ~exist([grp_trackdir mouseid '_' expname '_phiposition.fig'],'file')
-            fig = figure('position',[680 678 800 420]);
+            fig = figure('position',[680 678 1000 200]);
             plot(downTrackdata.phi); hold on;
             plot(downTrackdata.time); hold off;
             legend('phi','time'); legend('boxoff');

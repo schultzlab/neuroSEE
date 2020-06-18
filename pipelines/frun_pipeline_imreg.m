@@ -115,7 +115,8 @@ params = neuroSEE_setparams(...
             'dofissa', dofissa,...
             'doasd', doasd,...
             'FOV', FOV,...
-            'decay_time', decay_time); 
+            'decay_time', decay_time,...
+            'tsub', 5);         % temporal downsampling factor for CaImAn
         
                                % flag to execute step (use if wanting to skip later steps)
 % dostep = [true;...              % (1) image registration 
@@ -237,14 +238,15 @@ if dostep(1)
             end
         end
 
-        % Image downsampling    
-        fprintf('%s: Downsampling images\n', [mouseid '_' expname])
+        % Image concatenation    
+        fprintf('%s: Concatenating images\n', [mouseid '_' expname])
         framesperfile = zeros(Nfiles,1);
         for n = 1:Nfiles
             Yii = imG{n};
             Y(:,:,(n-1)*size(Yii,3)+1:n*size(Yii,3)) = Yii;
             framesperfile(n) = size(Yii,3);
         end
+        clear Yii
         grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat'];
         save(grp_sname,'framesperfile');
         
@@ -255,74 +257,11 @@ if dostep(1)
             end
             clear Xii
         end
-
-%         if size(files,1) == 1
-%             tsub = 1;
-%         elseif size(files,1) <= 3
-%             tsub = 2;
-%         elseif size(files,1) == 4
-%             tsub = 3;
-%         elseif size(files,1) <= 6
-%             tsub = 4;
-%         elseif size(files,1) == 7
-%             tsub = 5;
-%         elseif size(files,1) <= 9
-%             tsub = 6;
-%         elseif size(files,1) <= 10
-%             tsub = 7;
-%         elseif size(files,1) <= 13
-%             tsub = 9;
-%         else
-%             tsub = round( size(files,1)*7420/11000 );
-%         end
-        if size(files,1) <= 7
-            tsub = 5;
-        elseif size(files,1) <= 10
-            tsub = 7;
-        elseif size(files,1) <= 13
-            tsub = 9;
-        else
-            tsub = round( size(files,1)*7420/11000 );
-        end
-        imG = Y(:,:,1:tsub:end); % downsampled concatenated image
-        clear Y Yii
-        if ~strcmpi(segment_method,'CaImAn')
-            imR = X(:,:,1:tsub:end);
-            clear X
-        end
     else
         fprintf('%s: Registered images found. Skipping image registration.\n', [mouseid '_' expname]);
         imG = []; imR = [];
         m = load([grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
         framesperfile = m.framesperfile;
-%         if size(files,1) == 1
-%             tsub = 1;
-%         elseif size(files,1) <= 3
-%             tsub = 2;
-%         elseif size(files,1) == 4
-%             tsub = 3;
-%         elseif size(files,1) <= 6
-%             tsub = 4;
-%         elseif size(files,1) == 7
-%             tsub = 5;
-%         elseif size(files,1) <= 9
-%             tsub = 6;
-%         elseif size(files,1) <= 10
-%             tsub = 7;
-%         elseif size(files,1) <= 13
-%             tsub = 9;
-%         else
-%             tsub = round( size(files,1)*7420/11000 );
-%         end
-        if size(files,1) <= 7
-            tsub = 5;
-        elseif size(files,1) <= 10
-            tsub = 7;
-        elseif size(files,1) <= 13
-            tsub = 9;
-        else
-            tsub = round( size(files,1)*7420/11000 );
-        end
     end
 else
     fprintf('%s: No processing steps ticked. Cannot proceed.\n', [mouseid '_' expname]);
@@ -517,22 +456,6 @@ if dostep(5)
         grp_sname = [grp_trackdir mouseid '_' expname '_downTrackdata.mat'];
         downTrackdata = load(grp_sname);
         fprintf('%s: Tracking data found and loaded\n', [mouseid '_' expname]);
-        if ~dofissa
-            if size(files,1) <= 7
-                tsub = 5;
-            elseif size(files,1) <= 10
-                tsub = 7;
-            elseif size(files,1) <= 13
-                tsub = 9;
-            else
-                tsub = round( size(files,1)*7420/11000 );
-            end
-            downTrackdata.phi = downTrackdata.phi(1:tsub:end);
-            downTrackdata.x = downTrackdata.x(1:tsub:end);
-            downTrackdata.y = downTrackdata.y(1:tsub:end);
-            downTrackdata.speed = downTrackdata.speed(1:tsub:end);
-            downTrackdata.r = downTrackdata.r(1:tsub:end);
-            downTrackdata.time = downTrackdata.time(1:tsub:end);
         end
     end
 else

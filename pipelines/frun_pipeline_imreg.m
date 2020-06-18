@@ -451,12 +451,10 @@ if dostep(5)
         grp_sname = [grp_trackdir mouseid '_' expname '_downTrackdata.mat'];
         save(grp_sname,'-struct','downTrackdata');
         clear cdownTrackdata 
-
     else
         grp_sname = [grp_trackdir mouseid '_' expname '_downTrackdata.mat'];
         downTrackdata = load(grp_sname);
         fprintf('%s: Tracking data found and loaded\n', [mouseid '_' expname]);
-        end
     end
 else
     fprintf('%s: Behaviour tracking step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);

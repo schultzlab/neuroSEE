@@ -423,16 +423,7 @@ if dostep(5)
             SdownTrackdata.time = [SdownTrackdata.time; cdownTrackdata{n}.time];
         end
         clear downTrackdata
-        if ~dofissa
-            downTrackdata.phi = SdownTrackdata.phi(1:tsub:end);
-            downTrackdata.x = SdownTrackdata.x(1:tsub:end);
-            downTrackdata.y = SdownTrackdata.y(1:tsub:end);
-            downTrackdata.speed = SdownTrackdata.speed(1:tsub:end);
-            downTrackdata.r = SdownTrackdata.r(1:tsub:end);
-            downTrackdata.time = SdownTrackdata.time(1:tsub:end);
-        else
-            downTrackdata = SdownTrackdata;
-        end
+        downTrackdata = SdownTrackdata;
         clear SdownTrackdata
 
         % plot consolidated tracking data

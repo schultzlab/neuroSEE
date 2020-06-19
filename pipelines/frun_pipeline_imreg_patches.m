@@ -37,9 +37,10 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg_patches( list, reffile, runpatches, dofissa, patch_size, overlap, maxcells_FOV330, space_thresh, decay_time, slacknotify )
+function frun_pipeline_imreg_patches( list, reffile, runpatches, dofissa, patch_size, overlap, maxcells_FOV330, force, dostep )
 
-if nargin<9, slacknotify = false; end
+slacknotify = false;
+% if nargin<9, slacknotify = false; end
 % if nargin<2, see line 121
 tic
 
@@ -78,12 +79,12 @@ groupreg_method = 'imreg';      % method for concatenating file data (either reg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Basic settings
                              % flag to force execution of step even if data exist
-force = [false;...              % (1) image registration even if registered images exist
-         false;...              % (2) roi segmentation
-         false;...              % (3) neuropil decontamination
-         false;...              % (4) spike extraction
-         false;...              % (5) tracking data consolidation
-         false];                % (6) place field mapping
+% force = [false;...              % (1) image registration even if registered images exist
+%          false;...              % (2) roi segmentation
+%          false;...              % (3) neuropil decontamination
+%          false;...              % (4) spike extraction
+%          false;...              % (5) tracking data consolidation
+%          false];                % (6) place field mapping
 imreg_method = 'normcorre';  % image registration method 
                                 % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
 mcorr_method = 'normcorre';  % motion correction method used for reference file
@@ -113,16 +114,16 @@ params = neuroSEE_setparams(...
             'patch_size', patch_size,...
             'overlap', overlap,...
             'maxcells_FOV330', maxcells_FOV330,...
-            'space_thresh', space_thresh,...
-            'decay_time', decay_time); 
+            'space_thresh', 0.4,...
+            'decay_time', 0.4); 
         
                                % flag to execute step (use if wanting to skip later steps)
-dostep = [true;...              % (1) image registration 
-         true;...               % (2) roi segmentation
-         false;...              % (3) neuropil decontamination
-         false;...              % (4) spike extraction
-         false;...              % (5) tracking data consolidation
-         false];                % (6) place field mapping
+% dostep = [true;...              % (1) image registration 
+%          true;...               % (2) roi segmentation
+%          false;...              % (3) neuropil decontamination
+%          false;...              % (4) spike extraction
+%          false;...              % (5) tracking data consolidation
+%          false];                % (6) place field mapping
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

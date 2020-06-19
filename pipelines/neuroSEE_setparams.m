@@ -20,7 +20,7 @@ Names = [
         'd3                 ' % number of planes (for 3d imaging, default: 1)
         'FOV                ' % size of field of view in um
         'fr                 ' % imaging frame rate in Hz (defaut: 30)
-        'decay_time         ' % length of a typical transient in seconds (default: 0.4)
+        'decay_time         ' % length of a typical transient in seconds (default: 1.0)
     % motion correction (general)
         'refChannel         ' % reference channel for motion correction (default: 'green')
     % motion correction: fftRigid    
@@ -95,7 +95,7 @@ Names = [
         'overlap            ' % amount of overlap in each dimension (optional, default: [16,16])
         % INITIALIZATION  (initialize_components.m)
         'ssub               ' % spatial downsampling factor (default: 1)
-        'tsub               ' % temporal downsampling factor (default: 1)
+        'tsub               ' % temporal downsampling factor (default: r)
         'init_method        ' % initialization method ('greedy','greedy_corr','sparse_NMF','HALS') (default: 'greedy')
         'rem_prct           ' % percentile to be removed before initialization (default: 20)
         'noise_norm         ' % normalization by noise estimate prior to initialization (default: true)
@@ -344,7 +344,7 @@ Values = [
         {1}
         {330}                 % size of field of view in um
         {30.9}                % imaging frame rate in Hz (defaut: 30)
-        {0.4}                 % length of a typical transient in seconds (default: 0.4)
+        {1.0}                 % length of a typical transient in seconds (default: 1.0)
     % motion correction (general)
         {'green'}             % reference channel for motion correction (default: 'green')
     % motion correction: fftRigid    
@@ -417,7 +417,7 @@ Values = [
         {[16,16]}             % amount of overlap in each dimension (optional, default: [16,16])
         % INITIALIZATION  (initialize_components.m)
         {1}                   % spatial downsampling factor (default: 1)
-        {1}                   % temporal downsampling factor (default: 1)
+        {5}                   % temporal downsampling factor (default: 5)
         {'greedy'}            % initialization method ('greedy','greedy_corr','sparse_NMF','HALS') (default: 'greedy')
         {20}                  % percentile to be removed before initialization (default: 20)
         {true}                % normalization by noise estimate prior to initialization (default: true)

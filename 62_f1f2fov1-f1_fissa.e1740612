@@ -1,0 +1,31 @@
+{Error using images.internal.morphop
+Can't load '/rds/general/apps/MATLAB/R2017b/bin/glnxa64/libmwdastudio.so':
+/lib64/libfontconfig.so.1: undefined symbol: FT_Done_MM_Var
+
+Error in imdilate (line 135)
+B = images.internal.morphop(A,se,'dilate',mfilename,varargin{:});
+
+Error in strel>MakeDiskStrel (line 1103)
+    nhood = imdilate(1, se.decomposition, 'full');
+
+Error in strel (line 205)
+                        se = MakeDiskStrel(params{:});
+
+Error in HALS (line 26)
+    params.se = strel('disk', params.bSiz);
+
+Error in initialize_components (line 141)
+[Ain, Cin, bin, fin] = HALS(Y_ds, full(Ain), Cin, bin, fin, options_ds);
+
+Error in CaImAn (line 37)
+[Ain,Cin,bin,fin,center] = initialize_components(imG,K,tau,options,P);  %
+initialize
+
+Error in neuroSEE_segment (line 95)
+                [df_f_all, masks_all, corr_image, F0, GUIdata] = CaImAn( imG,
+                params.ROIsegment.CaImAn );
+
+Error in frun_pipeline_imreg_maxcells300 (line 286)
+    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn,
+    [], params, force(2), mean(imR,3), list, reffile );
+} 

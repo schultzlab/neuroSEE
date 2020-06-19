@@ -1,0 +1,65 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2017 The MathWorks, Inc.
+                   R2017b (9.3.0.713579) 64-bit (glnxa64)
+                             September 14, 2017
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+m62_fam1fam2_fov1-fam1_20181011_14_54_19: Loading registered images...
+m62_fam1fam2_fov1-fam1_20181011_14_54_19: Registered images loaded
+m62_fam1fam2_fov1-fam1_20181011_15_00_25: Loading registered images...
+m62_fam1fam2_fov1-fam1_20181011_15_00_25: Registered images loaded
+m62_fam1fam2_fov1-fam1_20181011_15_10_39: Loading reference image
+m62_fam1fam2_fov1-fam1_20181011_15_10_39: Reference image loaded
+m62_fam1fam2_fov1-fam1_20181011_15_16_17: Loading registered images...
+m62_fam1fam2_fov1-fam1_20181011_15_16_17: Registered images loaded
+m62_fam1fam2_fov1-fam1: Concatenating images
+m62_fam1fam2_fov1-fam1: Starting ROI segmentation
+	Extracting ROIs with CaImAn
+	Estimating the noise power for each pixel from a simple PSD estimate...  done 
+	No spatial downsampling is performed. Consider spatial downsampling if the field of view is very large. 
+	starting resampling 
+	Initializing components with greedy method 
+	found 10 out of 300 neurons..
+	found 20 out of 300 neurons..
+	found 30 out of 300 neurons..
+	found 40 out of 300 neurons..
+	found 50 out of 300 neurons..
+	found 60 out of 300 neurons..
+	found 70 out of 300 neurons..
+	found 80 out of 300 neurons..
+	found 90 out of 300 neurons..
+	found 100 out of 300 neurons..
+	found 110 out of 300 neurons..
+	found 120 out of 300 neurons..
+	found 130 out of 300 neurons..
+	found 140 out of 300 neurons..
+	found 150 out of 300 neurons..
+	found 160 out of 300 neurons..
+	found 170 out of 300 neurons..
+	found 180 out of 300 neurons..
+	found 190 out of 300 neurons..
+	found 200 out of 300 neurons..
+	found 210 out of 300 neurons..
+	found 220 out of 300 neurons..
+	found 230 out of 300 neurons..
+	found 240 out of 300 neurons..
+	found 250 out of 300 neurons..
+	found 260 out of 300 neurons..
+	found 270 out of 300 neurons..
+	found 280 out of 300 neurons..
+	found 290 out of 300 neurons..
+	found 300 out of 300 neurons..
+	Refining initial estimates with HALS...
+============================================
+
+        Job resource usage summary 
+
+                 Memory (GB)    NCPUs
+ Requested  :       960           256
+ Used       :       101 (peak)  10.34 (ave)
+
+============================================

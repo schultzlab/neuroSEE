@@ -37,12 +37,11 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, dofissa, decay_time, force, dostep )
+function frun_pipeline_imreg( list, reffile, dofissa, force, dostep )
 
 if nargin<3, dofissa = true; end
-if nargin<4, decay_time = 0.4; end
-if nargin<5, force = [0; 0; 0; 0; 0; 0]; end
-if nargin<6, dostep = [1; 1; 1; 1; 1; 1]; end
+if nargin<4, force = [0; 0; 0; 0; 0; 0]; end
+if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
 % if nargin<4, slacknotify = false; end
 slacknotify = false;
 % if nargin<2, see line 121
@@ -115,7 +114,6 @@ params = neuroSEE_setparams(...
             'dofissa', dofissa,...
             'doasd', doasd,...
             'FOV', FOV,...
-            'decay_time', decay_time,...
             'tsub', 5);         % temporal downsampling factor for CaImAn
         
                                % flag to execute step (use if wanting to skip later steps)

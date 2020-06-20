@@ -37,7 +37,7 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg_patches( list, reffile, dofissa, patch_size, overlap, force, dostep )
+function frun_pipeline_imreg_patches( list, reffile, dofissa, patch_size, overlap, tsub, force, dostep )
 
 if nargin<3, dofissa = true; end
 if nargin<4, patch_size = [128,128]; end
@@ -117,7 +117,8 @@ params = neuroSEE_setparams(...
             'doasd', doasd,...
             'FOV', FOV,...
             'patch_size', patch_size,...
-            'overlap', overlap);         % temporal downsampling factor for CaImAn
+            'overlap', overlap,...
+            'tsub', tsub);         % temporal downsampling factor for CaImAn
         
                                % flag to execute step (use if wanting to skip later steps)
 % dostep = [true;...              % (1) image registration 

@@ -281,6 +281,21 @@ if dostep(2)
     end
     
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, [], params, force(2), mean(imR,3), list, reffile );
+    
+    % divide into cells according to number of files in prep for spike
+    % extraction
+    if ~dofissa
+        cdf_f = cell(Nfiles,1);
+        cdf_f{1} = df_f(:,1:framesperfile(1));
+        for n = 2:Nfiles
+            cdf_f{n} = df_f(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
+        end
+    else
+        cdf_f = cell(Nfiles,1);
+        for n = 1:Nfiles
+            cdf_f{n} = [];
+        end
+    end
 else
     fprintf('%s: ROI segmentation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
     t = toc;
@@ -319,8 +334,12 @@ if dostep(3)
             newstr = sprintf('%s: Fissa data loaded\n', [mouseid '_' expname]);
             refreshdisp(newstr, str)
 
-            for n = 1:Nfiles
-                cddf_f{n} = [];
+            % divide into cells according to number of files in prep for spike
+            % extraction
+            cddf_f = cell(Nfiles,1);
+            cddf_f{1} = ddf_f(:,1:framesperfile(1));
+            for n = 2:Nfiles
+                cddf_f{n} = ddf_f(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
             end
         end
         
@@ -329,6 +348,10 @@ if dostep(3)
         end
         if ~exist([grp_sdir mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],'file') 
             multiplot_ts(ddf_f, [grp_sdir mouseid '_' expname '_ref' reffile '_fissa_df_f'], 'Fissa-corrected dF/F');
+        end
+    else
+        for n = 1:Nfiles
+            cddf_f{n} = [];
         end
     end
 else
@@ -344,26 +367,15 @@ end
 %% 4) Spike estimation
 if dostep(4)
     if force(4) || ~check_list(3) 
-        spikes = []; 
+        cspikes = cell(Nfiles,1); spikes = [];
         
-        if dofissa
-            cspikes = cell(Nfiles,1);
-            if isempty(cddf_f)
-                cddf_f{1} = ddf_f(:,1:framesperfile(1));
-                for n = 2:Nfiles
-                    cddf_f{n} = ddf_f(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
-                end
-            end
-            for n = 1:Nfiles
-                file = files(n,:);
-                [ cspikes{n}, params ] = neuroSEE_extractSpikes( [], cddf_f{n}, data_locn, file, params, force(4), list, reffile );
-                spikes = [spikes cspikes{n}];
-            end
-            clear cddf_f
-        else
-            [ spikes, params ] = neuroSEE_extractSpikes( df_f, [], data_locn, [], params, force(4), list, reffile, false );
+        for n = 1:Nfiles
+            file = files(n,:);
+            [ cspikes{n}, params ] = neuroSEE_extractSpikes( cdf_f{n}, cddf_f{n}, data_locn, file, params, force(4), list, reffile );
+            spikes = [spikes cspikes{n}];
         end
-        
+        clear ts
+            
         fprintf('%s: Saving spike data\n', [mouseid '_' expname]);
         grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_spikes.mat'];
         if force(4) || ~check_list(3)
@@ -379,6 +391,10 @@ if dostep(4)
         spikes = s.spikes;
         newstr = sprintf('%s: Spike data loaded\n', [mouseid '_' expname]);
         refreshdisp(newstr, str)
+    end
+    
+    if ~exist([grp_sdir mouseid '_' expname '_ref' reffile '_spikes.fig'],'file')
+        plotSpikes(spikes, [grp_sdir mouseid '_' expname '_ref' reffile '_spikes']);
     end
 else
     fprintf('%s: Spike estimation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);

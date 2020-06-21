@@ -92,7 +92,7 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
             save(fname_mat,'-struct','spike_output');
 
             % Make and save plot
-            makeplot(spikes);
+            plotSpikes(spikes, fname_fig(1:end-4));
         end
         
         if isempty(list)
@@ -111,7 +111,7 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
         params.spkExtract = spike_output.params;
         
         if fsave && ~exist(fname_fig,'file')
-            makeplot(spikes);
+            plotSpikes(spikes, fname_fig(1:end-4));
         end
 
         if isempty(list)
@@ -123,15 +123,6 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
                 fprintf( '%s: Spike extraction data found and loaded\n', [mouseid '_' expname] );
             end
         end
-    end
-
-    function makeplot(spikes)
-        fig = figure;
-        iosr.figures.multiwaveplot(1:size(spikes,2),1:size(spikes,1),spikes,'gain',5); yticks([]); xticks([]);
-        title('dF/F','Fontweight','normal','Fontsize',12);
-        savefig(fig, fname_fig(1:end-4));
-        saveas(fig, fname_fig(1:end-4),'png');
-        close(fig);
     end
 
 end % function

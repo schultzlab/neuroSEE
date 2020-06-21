@@ -1,3 +1,5 @@
+% fname_fig does not include file type (e.g. .fig, .jpg)
+
 function multiplot_ts(ts, fname_fig, title_str, fclose)
     if nargin<4, fclose = true; end
     if nargin<3, title_str = []; end

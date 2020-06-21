@@ -370,6 +370,13 @@ function plotRaster( Ncells, spkRaster, ytick_files, title_str, fsave, fname, fc
     nPlot = nRow*nCol;
     Nfig = ceil(Ncells/nPlot)-1;
     if Nfig<0, Nfig = 0; end
+    cmap0 = [0.9 0.9 0.9];
+    cmap1 = [0 0 1];
+    cmap = zeros(50,3);
+    for j=1:3
+        cmap(:,j) = linspace(cmap0(j),cmap1(j),50);
+    end
+    colormap(cmap);
 
     for ii=0:Nfig
         fh = figure;
@@ -378,7 +385,7 @@ function plotRaster( Ncells, spkRaster, ytick_files, title_str, fsave, fname, fc
             if (ii*nPlot+jj+1) <= Ncells
                 axes(ha(jj+1));
                 map = viridisMap; 
-                imagesc(spkRaster{ii*nPlot+jj+1}); colormap(map);
+                imagesc(spkRaster{ii*nPlot+jj+1}); colormap(cmap);
                 % only put ylabels for 1st column plots
                 if ii*nPlot+jj+1 < 8
                     if ii*nPlot+jj+1 == 1

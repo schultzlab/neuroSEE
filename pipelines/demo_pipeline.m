@@ -22,6 +22,23 @@
 
 tic
 
+%% Load module folders and define data directory
+[data_locn,comp,err] = load_neuroSEEmodules(test);
+if ~isempty(err)
+    beep
+    cprintf('Errors',err);    
+    return
+end
+
+% Some security measures
+if strcmpi(comp,'hpc')
+    maxNumCompThreads(32);        % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
+end
+
+% Matlab version
+release = version('-release');    % Find out what Matlab release version is running
+MatlabVer = str2double(release(1:4));
+
 %% SETTINGS
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -71,24 +88,6 @@ params = neuroSEE_setparams(...
             'FOV', FOV); 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Load module folders and define data directory
-[data_locn,comp,err] = load_neuroSEEmodules(test);
-if ~isempty(err)
-    beep
-    cprintf('Errors',err);    
-    return
-end
-
-% Some security measures
-if strcmpi(comp,'hpc')
-    maxNumCompThreads(32);        % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
-end
-
-% Matlab version
-release = version('-release');    % Find out what Matlab release version is running
-MatlabVer = str2double(release(1:4));
-
 
 %% Check if file has been processed. If not, continue processing unless forced to overwrite 
 % existing processed data

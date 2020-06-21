@@ -57,7 +57,7 @@ if force || ~exist(fname_mat,'file')
     if force || and( ~exist(fname_mat,'file'), ~exist(fname_mat_temp,'file') )
         runFISSA( masks, tiffile, fissadir );
     end
-    raw = load(fname_mat_temp,'raw');
+%     raw = load(fname_mat_temp,'raw');
     result = load(fname_mat_temp,'result');
     
     % Convert raw timeseries cell array structure to a matrix
@@ -99,8 +99,9 @@ if force || ~exist(fname_mat,'file')
     end
     refreshdisp(str, prevstr);
     
-    % plot 
-    makeplot(dtsG, ddf_f);
+    % plot
+    multiplot_ts(dtsG, fname_fig1(1:end-4), 'Fissa-corrected raw timeseries');
+    multiplot_ts(ddf_f, fname_fig2(1:end-4), 'Fissa-corrected dF/F');
 else
     % If it exists, load it 
     fissa_output = load(fname_mat);
@@ -110,31 +111,14 @@ else
     params.fissa = fissa_output.params;
 
     if ~exist(fname_fig1,'file') || ~exist(fname_fig2,'file')
-        makeplot(dtsG, ddf_f);
+        multiplot_ts(dtsG, fname_fig1(1:end-4), 'Fissa-corrected raw timeseries');
+        multiplot_ts(ddf_f, fname_fig2(1:end-4), 'Fissa-corrected dF/F');
     end
     if isempty(list)
         fprintf('%s: Neuropil decontamination output found and loaded\n',file);
     else
         fprintf('%s: Neuropil decontamination output found and loaded\n',[mouseid '_' expname  '_' file]);
     end
-end
-
-function makeplot(dtsG, ddf_f)
-    % fissa-corrected timeseries
-    fig = figure;
-    iosr.figures.multiwaveplot(1:size(dtsG,2),1:size(dtsG,1),dtsG,'gain',5); yticks([]); xticks([]); 
-    title('Fissa-corrected raw timeseries','Fontweight','normal','Fontsize',12); 
-    savefig(fig, fname_fig1(1:end-4));
-    saveas(fig, fname_fig1(1:end-4),'png');
-    close(fig);
-
-    % dF/F
-    fig = figure;
-    iosr.figures.multiwaveplot(1:size(ddf_f,2),1:size(ddf_f,1),ddf_f,'gain',5); yticks([]); xticks([]); 
-    title('Fissa-corrected dF/F','Fontweight','normal','Fontsize',12); 
-    savefig(fig, fname_fig2(1:end-4));
-    saveas(fig, fname_fig2(1:end-4),'png');
-    close(fig);
 end
 
 end

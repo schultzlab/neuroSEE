@@ -272,16 +272,6 @@ end
 %% 2) ROI segmentation
 if dostep(2)
     % If doing CaImAn and running patches, continue only if Matlab version is R2018 or higher
-    if runpatches && MatlabVer < 2018
-        beep
-        err = sprintf('%s: Higher Matlab version required. Cannot proceed with ROI segmentation.\n', [mouseid '_' expname]);
-        cprintf('Errors',err);
-        t = toc;
-        str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
-        cprintf(str)
-        return
-    end
-    
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, [], params, force(2), mean(imR,3), list, reffile );
     
     % divide into cells according to number of files in prep for spike

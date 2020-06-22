@@ -73,7 +73,8 @@ P.p = 2;
 
 %% extract DF_F
 %[C_df,~] = extract_DF_F(Yr,A,C,P,options);
-[C_df,F0] = detrend_df_f(A2,b2,C2,f2,YrA2,options);
+% [C_df,F0] = detrend_df_f(A2,b2,C2,f2,YrA2,options);
+[C_df,F0] = detrend_df_f(A_keep,b,C2,f2,YrA2,options);
 
 %% plot results
 fig = figure;

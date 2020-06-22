@@ -113,7 +113,8 @@ if memmaped
         end
     end
 else
-    parfor i = 1:K_m
+    % par
+    for i = 1:K_m
         ovlp_cmp = find(tAA(:,i));
         indeces = LOCS{i};
         for j = 1:length(ovlp_cmp)

@@ -66,9 +66,10 @@ A_keep = A(:,keep);
 C_keep = C(keep,:);
 options.p = 2;      % perform deconvolution
 P.p = 2;
-[A2,b2,C2] = update_spatial_components(imG,C_keep,f,[A_keep,b],P,options);
+% [A2,b2,C2] = update_spatial_components(imG,C_keep,f,[A_keep,b],P,options);
 % [C2,f2,P2,S2,YrA2] = update_temporal_components_fast(imG,A2,b2,C2,f,P,options);
-[C2,f2,~,~,YrA2] = update_temporal_components_fast(imG,A2,b2,C2,f,P,options);
+% [C2,f2,~,~,YrA2] = update_temporal_components_fast(imG,A2,b2,C2,f,P,options);
+[C2,f2,~,~,YrA2] = update_temporal_components_fast(imG,A_keep,b,C_keep,f,P,options);
 
 %% extract DF_F
 %[C_df,~] = extract_DF_F(Yr,A,C,P,options);

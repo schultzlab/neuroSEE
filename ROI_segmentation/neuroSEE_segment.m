@@ -110,7 +110,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         
         % Eliminate very small rois and rois touching image border
         area = zeros(size(masks_all,3),1);
-        borderpix = 3;
+        borderpix = 4;
         for j = 1:size(masks_all,3)
             mask = masks_all(borderpix:size(masks_all,1)-borderpix,borderpix:size(masks_all,2)-borderpix,j);
             im = imclearborder(mask);

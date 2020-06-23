@@ -97,8 +97,7 @@ params = neuroSEE_setparams(...
             'dofissa', dofissa,...
             'doasd', doasd,...
             'FOV', FOV,...
-            'prctile_thr', 95,...
-            'Nlaps_thr', 0); 
+            'tsub', 1); 
 
                                % flag to execute step (use if wanting to skip later steps)
 dostep = [true;...              % (1) motion correction even if motion corrected images exist
@@ -203,17 +202,6 @@ end
 %                       mat with fields {tsG, df_f, masks, corr_image, params}
 
 if dostep(2)
-    % If doing CaImAn, continue only if Matlab version is R2018 or higher
-    if runpatches && MatlabVer < 2018
-        beep
-        err = sprintf('%s: Higher Matlab version required. Cannot proceed with ROI segmentation.\n', [mouseid '_' expname]);
-        cprintf('Errors',err);
-        t = toc;
-        str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
-        cprintf(str)
-        return
-    end
-        
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force(2), mean(imR,3) );
     clear imG imR
 else

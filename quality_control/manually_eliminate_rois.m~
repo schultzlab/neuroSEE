@@ -35,25 +35,25 @@ end
 load([grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'])    
 
 roiarea_thr = 70;
-masks_orig = masks; 
+masks_all = masks; 
 tsG_all = tsG; 
 df_f_all = df_f; 
 elim_masks_orig = elim_masks; 
 clear masks tsG df_f elim_masks
 
 % Eliminate very small rois and rois touching image border
-area = zeros(size(masks_orig,3),1);
+area = zeros(size(masks_all,3),1);
 borderpix = 4;
-for j = 1:size(masks_orig,3)
-    mask = masks_orig(borderpix:size(masks_orig,1)-borderpix,borderpix:size(masks_orig,2)-borderpix,j);
+for j = 1:size(masks_all,3)
+    mask = masks_all(borderpix:size(masks_all,1)-borderpix,borderpix:size(masks_all,2)-borderpix,j);
     im = imclearborder(mask);
     c = regionprops(im,'area');
     if ~isempty(c)
         area(j) = c.Area;                    % area of each ROI
     end
 end
-masks = masks_orig(:,:,area>roiarea_thr);
-elim_masks = masks_orig(:,:,area<roiarea_thr);
+masks = masks_all(:,:,area>roiarea_thr);
+elim_masks = masks_all(:,:,area<roiarea_thr);
 tsG = tsG_all(area>roiarea_thr,:);
 df_f = df_f_all(area>roiarea_thr,:);
 

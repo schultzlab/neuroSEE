@@ -48,7 +48,6 @@ if strcmpi(comp,'hpc')
 end
 
 % Image file
-[ mouseid, expname ] = find_mouseIDexpname(list);
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 file = files(array_id,:);
@@ -139,7 +138,7 @@ if dostep(1)
         % Continue only if Matlab version on hpc is R2017
         if strcmpi(comp,'hpc') && MatlabVer > 2017
             beep
-            err = sprintf('%s: Lower Matlab version required for motion correction. Cannot proceed.\n', [mouseid '_' expname]);
+            err = sprintf('%s: Lower Matlab version required for motion correction. Cannot proceed.\n', file);
             cprintf('Errors',err);
             return
         end
@@ -289,8 +288,8 @@ if dostep(6)
             fig = figure('position',[680 678 1000 200]);
             plot(downTrackdata.phi); 
             title('Mouse phi position','Fontweight','normal','Fontsize',12);
-            savefig(fig,[grp_trackdir mouseid '_' expname '_phiposition']);
-            saveas(fig,[grp_trackdir mouseid '_' expname '_phiposition'],'png');
+            savefig(fig, [data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_phiposition']);
+            saveas(fig, [data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_phiposition'],'png');
             close(fig);
         end
     end

@@ -7,6 +7,11 @@ segment_method = 'CaImAn';
 dofissa = true;
 groupreg_method = 'imreg';
 
+roiarea_thr = 70;           % roi area smaller than this will be eliminated
+                            % neuroSEE_segment already filtered areas <70
+borderpix = 4;              % thickness (in pix) of image border to be cleared of rois
+removerois = [];            % specific rois to eliminate (e.g. overlapping rois)
+
 %% Load module folders and define data directory
 [data_locn,~,err] = load_neuroSEEmodules;
 if ~isempty(err)
@@ -31,41 +36,83 @@ else
                 mouseid '_' expname '_imreg_ref' reffile '_' mcorr_method '/'];
 end
 
-%% Manually eliminate rois
+%% Manually eliminate rois from ROI segmentation data
 load([grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'])    
 
-roiarea_thr = 70;
-masks_all = masks; 
-tsG_all = tsG; 
-df_f_all = df_f; 
-elim_masks_orig = elim_masks; 
-clear masks tsG df_f elim_masks
-
-% Eliminate very small rois and rois touching image border
-area = zeros(size(masks_all,3),1);
-borderpix = 4;
-for j = 1:size(masks_all,3)
-    mask = masks_all(borderpix:size(masks_all,1)-borderpix,borderpix:size(masks_all,2)-borderpix,j);
+% Eliminate rois with area < roiarea_thr and rois touching image border
+% within borderpix pixels
+area = zeros(size(masks_orig,3),1);
+for j = 1:size(masks_orig,3)
+    mask = masks(borderpix:size(masks_orig,1)-borderpix,borderpix:size(masks,2)-borderpix,j);
     im = imclearborder(mask);
     c = regionprops(im,'area');
     if ~isempty(c)
         area(j) = c.Area;                    % area of each ROI
     end
 end
-masks = masks_all(:,:,area>roiarea_thr);
-elim_masks = masks_all(:,:,area<roiarea_thr);
-tsG = tsG_all(area>roiarea_thr,:);
-df_f = df_f_all(area>roiarea_thr,:);
+exc_idx = [removerois; find(area<roiarea_thr)];
+elim_masks = cat(3,elim_masks,masks(:,:,exc_idx));
 
-% ROIs overlayed on correlation image
-plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
-fig = plotContoursOnSummaryImage(corr_image, masks, plotopts);
-savefig(fig, fname_fig1(1:end-4));
-saveas(fig, fname_fig1(1:end-4), 'png');
-close(fig);
+inc_idx = [];
+for k = 1:size(masks,3)
+    if ~ismember(k,exc_idx)
+        inc_idx = [inc_idx; k];
+    end
+end
+masks = masks(:,:,inc_idx);
+tsG = tsG(inc_idx,:);
+df_f = df_f(inc_idx,:);
 
-% eliminated ROIs overlayed on correlation image
-if ~isempty(elim_masks)
-    plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
-    fig = plotContoursOnSummaryImage(corr_image, elim_masks, plotopts);
+% Save data
+output.corr_image = corr_image;
+output.elim_masks = elim_masks;
+output.masks = masks;
+output.tsG = tsG;
+output.df_f = df_f;
+output.F0 = F0;
+output.params = params;
+if exist(GUIdata,'var'), output.GUIdata = GUIdata; end
+save([grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'],'-struct','output');
+
+% Save revised figures
+plotROIsegmentdata(corr_image, masks, elim_masks, tsG, df_f, [grp_sdir mouseid '_' expname '_ref' reffile])
+clear corr_image elim_masks masks tsG df_f F0 GUIdata params
+
+%% Revise fissa data
+if exist([grp_sdir mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file')
+    load([grp_sdir mouseid '_' expname '_ref' reffile '_fissa_output.mat']);
+    
+    dtsG = dtsG(inc_idx,:);
+    ddf_f = ddf_f(inc_idx,:);
+    output.dtsG = dtsG;
+    output.ddf_f = ddf_f;
+    output.params = params;
+    save([grp_sdir mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'-struct','output');
+    
+    multiplot_ts(dtsG, [grp_sdir mouseid '_' expname '_ref' reffile '_fissa_result.fig'], 'Fissa-corrected raw timeseries');
+    multiplot_ts(ddf_f, [grp_sdir mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'], 'Fissa-corrected dF/F');
+    clear dtsG ddf_f params
+end
+
+%% Revise spike data
+if exist([grp_sdir mouseid '_' expname '_ref' reffile '_spikes.mat'],'file')
+    load([grp_sdir mouseid '_' expname '_ref' reffile '_spikes.mat']);
+    
+    spikes = spikes(inc_idx,:);
+    output.spikes = spikes;
+    output.params = params;
+    save([grp_sdir mouseid '_' expname '_ref' reffile '_spikes.mat'],'-struct','output');
+    
+    plotSpikes(spikes, [grp_sdir mouseid '_' expname '_ref' reffile '_spikes'])
+    clear spikes params
+end
+
+%% Revise pf mapping data
+if exist([grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'file')
+    load ([grp_sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat']);
+    
+    hist.rateMap = hist.rateMap(inc_idx,:);
+    hist.rateMap_sm = hist.rateMap_sm(inc_idx,:);
+    hist.normrateMap_sm = hist.normrateMap_sm(inc_idx,:);
+    
 end

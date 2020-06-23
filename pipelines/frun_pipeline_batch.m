@@ -30,7 +30,9 @@
 %   CaImAn requires at least Matlab R2017b
 %   FISSA requires at least Matlab R2018
 
-function frun_pipeline_batch( array_id, list )
+function frun_pipeline_batch( array_id, list, force, dostep )
+if nargin<4, dostep = [1;1;0;0;0;0]; end
+if nargin<3, force  = [0;0;0;0;0;0]; end
 
 tic
 
@@ -66,12 +68,12 @@ end
 
 % Basic settings
                                % flag to force step execution even with existing data
-force = [false;...              % (1) motion correction even if motion corrected images exist
-         false;...              % (2) roi segmentation
-         false;...              % (3) neuropil decontamination
-         false;...              % (4) spike extraction
-         false;...              % (5) tracking data extraction
-         false];                % (6) place field mapping
+% force = [false;...              % (1) motion correction even if motion corrected images exist
+%          false;...              % (2) roi segmentation
+%          false;...              % (3) neuropil decontamination
+%          false;...              % (4) spike extraction
+%          false;...              % (5) tracking data extraction
+%          false];                % (6) place field mapping
 
 mcorr_method = 'normcorre';     % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
@@ -99,12 +101,12 @@ params = neuroSEE_setparams(...
             'tsub', 1); 
 
                                % flag to execute step (use if wanting to skip later steps)
-dostep = [true;...              % (1) motion correction even if motion corrected images exist
-         true;...               % (2) roi segmentation
-         false;...              % (3) neuropil decontamination
-         false;...              % (4) spike extraction
-         false;...              % (5) tracking data extraction
-         false];                % (6) place field mapping
+% dostep = [true;...              % (1) motion correction even if motion corrected images exist
+%          true;...               % (2) roi segmentation
+%          false;...              % (3) neuropil decontamination
+%          false;...              % (4) spike extraction
+%          false;...              % (5) tracking data extraction
+%          false];                % (6) place field mapping
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

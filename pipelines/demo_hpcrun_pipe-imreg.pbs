@@ -1,0 +1,9 @@
+#PBS -l walltime=24:00:00
+#PBS -l select=1:ncpus=80:mem=960gb
+#PBS -N 70f1n-f1_pipe
+
+module load matlab/R2018a
+export LD_PRELOAD=/lib64/libfreetype.so
+cd $PBS_O_WORKDIR
+
+matlab -nodesktop -nosplash -nodisplay -r "frun_pipeline_imreg( 'list_m70_fam1nov-fam1.txt', '20181101_13_09_55', true, [0;0;0;0;0;0], [1;1;1;1;1;1], 5 )"

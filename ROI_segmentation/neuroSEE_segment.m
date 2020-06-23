@@ -43,6 +43,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         fname_fig1 = [filedir file '_ROIs.fig'];
         fname_fig2 = [filedir file '_raw_timeseries.fig'];
         fname_fig3 = [filedir file '_df_f.fig'];
+        fname_pref = [filedir file];
     else
         [ mouseid, expname ] = find_mouseIDexpname(list);
         groupreg_method = params.methods.groupreg_method;
@@ -56,9 +57,9 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         end
         fname_mat = [filedir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
         fname_fig1 = [filedir mouseid '_' expname '_ref' reffile '_ROIs.fig'];
-        fname_fig2 = [filedir mouseid '_' expname '_ref' reffile '_elimROIS.fig'];
-        fname_fig3 = [filedir mouseid '_' expname '_ref' reffile '_raw_timeseries.fig'];
-        fname_fig4 = [filedir mouseid '_' expname '_ref' reffile '_df_f.fig'];
+        fname_fig2 = [filedir mouseid '_' expname '_ref' reffile '_raw_timeseries.fig'];
+        fname_fig3 = [filedir mouseid '_' expname '_ref' reffile '_df_f.fig'];
+        fname_pref = [filedir mouseid '_' expname '_ref' reffile ];
     end
 
     if force || ~exist(fname_mat,'file')
@@ -137,7 +138,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         save(fname_mat,'-struct','output');
 
         % Plot masks on correlation image and save plot
-        makeplot(corr_image, masks, elim_masks, tsG, df_f);
+        plotROIsegmentdata(corr_image, masks, elim_masks, tsG, df_f, fname_pref);
 
         fprintf('%s: ROI segmentation done\n',file);
 
@@ -176,7 +177,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
 
         % If ROI image doesn't exist, create & save figure
         if any([~exist(fname_fig1,'file'),~exist(fname_fig2,'file'),~exist(fname_fig3,'file')])
-           makeplot(corr_image, masks, elim_masks, tsG, df_f);
+           plotROIsegmentdata(corr_image, masks, elim_masks, tsG, df_f, fname_pref);
         end
         if isempty(reffile)
             newstr = sprintf( '%s: Segmentation output found and loaded\n', file );
@@ -184,39 +185,5 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             newstr = sprintf( '%s: Segmentation output found and loaded\n', [mouseid '_' expname] );
         end
         refreshdisp(newstr, prevstr)
-    end
-
-    function makeplot(corr_image, masks, elim_masks, tsG, df_f)
-        % ROIs overlayed on correlation image
-        plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
-        fig = plotContoursOnSummaryImage(corr_image, masks, plotopts);
-        savefig(fig, fname_fig1(1:end-4));
-        saveas(fig, fname_fig1(1:end-4), 'png');
-        close(fig);
-        
-        % eliminated ROIs overlayed on correlation image
-        if ~isempty(elim_masks)
-            plotopts.plot_ids = 1; % set to 1 to view the ID number of the ROIs on the plot
-            fig = plotContoursOnSummaryImage(corr_image, elim_masks, plotopts);
-            savefig(fig, fname_fig2(1:end-4));
-            saveas(fig, fname_fig2(1:end-4), 'png');
-            close(fig);
-        end
-        
-        % raw timeseries
-        fig = figure;
-        iosr.figures.multiwaveplot(1:size(tsG,2),1:size(tsG,1),tsG,'gain',5); yticks([]); xticks([]); 
-        title('Raw timeseries','Fontweight','normal','Fontsize',12); 
-        savefig(fig, fname_fig3(1:end-4));
-        saveas(fig, fname_fig3(1:end-4), 'png');
-        close(fig);
-        
-        % dF/F
-        fig = figure;
-        iosr.figures.multiwaveplot(1:size(df_f,2),1:size(df_f,1),df_f,'gain',5); yticks([]); xticks([]); 
-        title('dF/F','Fontweight','normal','Fontsize',12); 
-        savefig(fig, fname_fig4(1:end-4));
-        saveas(fig, fname_fig4(1:end-4), 'png');
-        close(fig);
     end
 end

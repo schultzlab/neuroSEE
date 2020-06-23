@@ -29,7 +29,7 @@
 % slacknotify : (optional) flag to send Ann Slack notification when processing is started
 %               or has ended (default: false)
 
-function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, imreg_method, refChannel, maxshift_r, slacknotify )
+function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, imreg_method, refChannel, maxshift_r, maxshift_nr )
 
 if nargin<3, mcorr_method = 'normcorre'; end
 if nargin<4, force = false; end
@@ -43,7 +43,8 @@ if nargin<6 || isempty(imreg_method)
 end
 if nargin<7, refChannel = 'green'; end
 if nargin<8, maxshift_r = 30; end
-if nargin<9, slacknotify = false; end
+if nargin<9, maxshift_nr = 30; end
+slacknotify = false;
 tic
 
 %% Load module folders and define data directory
@@ -88,7 +89,8 @@ params = neuroSEE_setparams(...
             'mcorr_method', mcorr_method,...
             'imreg_method', mcorr_method,...
             'refChannel', refChannel,...        % reference channel for motion correction
-            'max_shift_r', maxshift_r);         % maximum rigid shift
+            'max_shift_r', maxshift_r,...       % maximum rigid shift
+            'max_shift_nr', maxshift_nr);         % maximum nonrigid shift
         
 params_mcorr = params.mcorr;
 

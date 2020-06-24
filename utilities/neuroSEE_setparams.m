@@ -12,7 +12,6 @@ Names = [
         'runpatches         ' % flag to run patches for CaImAn processing (default: false)
         'dofissa            ' % flag to do fissa correction (default: true)
         'doasd              ' % flag to calculate place fields by asd estimation  (default: false)
-        'imreg_method       ' % image registration method (default: [])
         'groupreg_method    ' % method for concatenating file data (either imreg or roireg) (default: [])
     % dataset info
         'd1                 ' % number of rows
@@ -336,7 +335,6 @@ Values = [
         {false}               % flag to run patches for CaImAn processing (default: false)
         {true}                % flag to do fissa correction (default: true)
         {false}               % flag to calculate place fields by asd estimation  (default: false)
-        {[]}                  % image registration method (default: 'normcorre')
         {[]}                  % method for concatenating file data (either imreg or roireg) (default: 'imreg')
     % dataset info
         {512}                 % number of rows
@@ -631,7 +629,7 @@ if isempty(options.patch_min_fitness); options.patch_min_fitness = log(normcdf(-
 % output
 % methods
 f = {'mcorr_method'; 'segment_method'; 'runpatches'; 'dofissa'; 'doasd'; ...
-     'imreg_method'; 'groupreg_method'};
+     'groupreg_method'};
 fn = fieldnames(options);
 for i = 1:length(fn)
     for j = 1:length(f)

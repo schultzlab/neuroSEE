@@ -32,7 +32,6 @@ if nargin<7, figclose = true; end
 % Basic settings
 slacknotify = false;                    % flag to send Ann slack notification re start and end of processing
 mcorr_method = 'normcorre';
-imreg_method = 'normcorre';
 segment_method = 'CaImAn';
 dofissa = true;
     if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
@@ -63,17 +62,10 @@ end
 
 %% Pre-processing
 % Check if data exist for mouseID in env1 and env2. Quit if data does not exist
-if strcmpi(imreg_method, mcorr_method)
-    dir_env1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env1 ...
-               '/group_proc/imreg_' imreg_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '-' env1 '_imreg_ref' ref1 '/'];
-    dir_env2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env2 ...
-            '/group_proc/imreg_' imreg_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '-' env2 '_imreg_ref' ref2 '/'];
-else
-    dir_env1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env1 ...
-               '/group_proc/imreg_' imreg_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '-' env1 '_imreg_ref' ref1 '_' mcorr_method '/'];
-    dir_env2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env2 ...
-            '/group_proc/imreg_' imreg_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '-' env2 '_imreg_ref' ref2 '_' mcorr_method '/'];
-end
+dir_env1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env1 ...
+            '/group_proc/imreg_' mcorr_method '_' segment_method '/' mouseid '_' env1 env2 '-' env1 '_imreg_ref' ref1 '/' str_fissa '/'];
+dir_env2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env2 ...
+            '/group_proc/imreg_' mcorr_method '_' segment_method '/' mouseid '_' env1 env2 '-' env2 '_imreg_ref' ref2 '/' str_fissa '/'];
 
 data_env1 = [dir_env1 mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_PFmap_output.mat'];
 data_env2 = [dir_env2 mouseid '_' env1 env2 '-' env2 '_ref' ref2 '_PFmap_output.mat'];
@@ -94,14 +86,8 @@ end
 
 %% ROI registration across sessions
 tic
-if strcmpi(imreg_method, mcorr_method)
-    fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' ...
-           imreg_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '_imreg_ref' ref1 '-' ref2 '/'];
-else
-    fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' ...
-           imreg_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '_imreg_ref' ref1 '-' ref2 '_' mcorr_method '/'];
-
-end
+fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' ...
+       mcorr_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '_imreg_ref' ref1 '-' ref2 '/'];
 fname_remap = [fdir  mouseid '_' env1 env2 '_remapping_output.mat'];
 fname_remapfig = [fdir  mouseid '_' env1 env2 '_remapping_summary.fig'];
 

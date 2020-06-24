@@ -29,21 +29,14 @@
 % slacknotify : (optional) flag to send Ann Slack notification when processing is started
 %               or has ended (default: false)
 
-function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, imreg_method, refChannel, maxshift_r, maxshift_nr )
+function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, refChannel, maxshift_r, maxshift_nr )
 
 if nargin<3, mcorr_method = 'normcorre'; end
 if nargin<4, force = false; end
 if nargin<5, reffile = []; end
-if nargin<6 || isempty(imreg_method)
-    if ~isempty(mcorr_method)
-        imreg_method = mcorr_method; 
-    else
-        imreg_method = 'normcorre';
-    end
-end
-if nargin<7, refChannel = 'green'; end
-if nargin<8, maxshift_r = 30; end
-if nargin<9, maxshift_nr = 30; end
+if nargin<6, refChannel = 'green'; end
+if nargin<7, maxshift_r = 30; end
+if nargin<8, maxshift_nr = 30; end
 slacknotify = false;
 tic
 
@@ -87,7 +80,6 @@ end
 
 params = neuroSEE_setparams(...
             'mcorr_method', mcorr_method,...
-            'imreg_method', mcorr_method,...
             'refChannel', refChannel,...        % reference channel for motion correction
             'max_shift_r', maxshift_r,...       % maximum rigid shift
             'max_shift_nr', maxshift_nr);         % maximum nonrigid shift
@@ -111,7 +103,7 @@ if slacknotify
 end
 
 % Check if file has been processed 
-check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile, imreg_method );
+check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile );
 
 if force || ~check    
     if ~isempty(reffile) && strcmpi(file,reffile)
@@ -121,7 +113,7 @@ if force || ~check
 
     [imG,imR] = load_imagefile( data_locn, file, false, [] );
     
-    neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, imreg_method, force );
+    neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list );
     
     if slacknotify
         if array_id == size(files,1)

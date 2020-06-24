@@ -37,7 +37,7 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, tsub )
+function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, tsub, bl_prctile )
 
 if nargin<3, dofissa = true; end
 if nargin<4, force = [0; 0; 0; 0; 0; 0]; end
@@ -88,9 +88,7 @@ groupreg_method = 'imreg';      % method for concatenating file data (either reg
 %          true;...              % (4) spike extraction
 %          false;...              % (5) tracking data consolidation
 %          false];                % (6) place field mapping
-imreg_method = 'normcorre';  % image registration method 
-                                % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
-mcorr_method = 'normcorre';  % motion correction method used for reference file
+mcorr_method = 'normcorre';  % image registration method
                                 % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
@@ -107,14 +105,14 @@ doasd = false;                  % flag to do asd pf calculation
 % full set of parameters
 params = neuroSEE_setparams(...
             'groupreg_method', groupreg_method,...
-            'imreg_method', imreg_method,...
             'mcorr_method', mcorr_method,...
             'segment_method', segment_method,...
             'runpatches', runpatches,...
             'dofissa', dofissa,...
             'doasd', doasd,...
             'FOV', FOV,...
-            'tsub', tsub);         % temporal downsampling factor for CaImAn
+            'tsub', tsub,...
+            'bl_prctile', bl_prctile);         % temporal downsampling factor for CaImAn
         
                                % flag to execute step (use if wanting to skip later steps)
 % dostep = [true;...              % (1) image registration 
@@ -153,16 +151,10 @@ if ~any(force) && check_list(6)
 end
 
 %% Location of processed group data for list
-if strcmpi(imreg_method, mcorr_method)
-    grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
-                groupreg_method '_' imreg_method '_' segment_method '_' str_fissa '/'...
-                mouseid '_' expname '_imreg_ref' reffile '/'];
-else
-    grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
-                groupreg_method '_' imreg_method '_' segment_method '_' str_fissa '/'...
-                mouseid '_' expname '_imreg_ref' reffile '_' mcorr_method '/'];
-end
-    if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); end
+grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+            groupreg_method '_' mcorr_method '_' segment_method '/'...
+            mouseid '_' expname '_imreg_ref' reffile '/'];
+if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); end
 
 %% 1) Image registration
 % Load images and do registration if forced to do so or if ROI segmentation data doesn't exist 
@@ -200,11 +192,11 @@ if dostep(1)
 
                 if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
                     [ imG{n}, ~, params.mcorr ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
-                                                            mcorr_method, params.mcorr, reffile, imreg_method, force(1), list );
+                                                            mcorr_method, params.mcorr, reffile, force(1), list );
                     imR = [];
                 else
                     [ imG{n}, ~, params.mcorr, imR{n} ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
-                                                            mcorr_method, params.mcorr, reffile, imreg_method, force(1), list );
+                                                            mcorr_method, params.mcorr, reffile, force(1), list );
                 end
             else
                 imdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/'];
@@ -219,7 +211,7 @@ if dostep(1)
                 newstr = sprintf('%s: Reference image loaded\n', [mouseid '_' expname '_' file]);
                 refreshdisp(newstr, str)
 
-                fname_mat = [grp_sdir mouseid '_' expname '_ref' reffile '_mcorr_template.mat'];
+                fname_mat = [grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template.mat'];
                 fname_fig = [grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template.fig'];
                 if ~exist(fname_mat, 'file') || ~exist(fname_fig, 'file')
                     c = load([imdir reffile '_mcorr_output.mat']);
@@ -274,17 +266,19 @@ if dostep(2)
     
     % divide into cells according to number of files in prep for spike
     % extraction
-    if ~dofissa
-        cdf_f = cell(Nfiles,1);
-        cdf_f{1} = df_f(:,1:framesperfile(1));
-        for n = 2:Nfiles
-            cdf_f{n} = df_f(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
-        end
-    else
-        cdf_f = cell(Nfiles,1);
-        for n = 1:Nfiles
-            cdf_f{n} = [];
-        end
+    cdf_f = cell(Nfiles,1);
+    cdf_f{1} = df_f(:,1:framesperfile(1));
+    segment_output.df_f = cdf_f{1};
+    segment_output.tsG = tsG(:,1:framesperfile(1));
+    fdir = [data_locn 'Data/' file(1:8) '/Processed/' files(1,:) '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
+    save([fdir file '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
+    
+    for n = 2:Nfiles
+        file = files(n,:);
+        cdf_f{n} = df_f(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
+        segment_output.df_f = cdf_f{n};
+        segment_output.tsG = tsG(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
+        save([fdir file '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
     end
 else
     fprintf('%s: ROI segmentation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
@@ -307,7 +301,7 @@ if dostep(3)
             end
 
             fprintf('%s: Saving fissa output\n', [mouseid '_' expname]);
-            grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
+            grp_sname = [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
             if force(3) || ~check_list(2)
                 fissa_output.dtsG = dtsG;
                 fissa_output.ddf_f = ddf_f;
@@ -317,7 +311,7 @@ if dostep(3)
         else
             str = sprintf('%s: Loading fissa data\n', [mouseid '_' expname]);
             cprintf(str);
-            fname_mat = [grp_sdir mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
+            fname_mat = [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
             s = load(fname_mat);
             dtsG = s.dtsG;
             ddf_f = s.ddf_f;
@@ -333,10 +327,10 @@ if dostep(3)
             end
         end
         
-        if ~exist([grp_sdir mouseid '_' expname '_ref' reffile '_fissa_timeseries.fig'],'file')
+        if ~exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_timeseries.fig'],'file')
             multiplot_ts(dtsG, [grp_sdir mouseid '_' expname '_ref' reffile '_fissa_timeseries'], 'Fissa-corrected raw timeseries');
         end
-        if ~exist([grp_sdir mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],'file') 
+        if ~exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],'file') 
             multiplot_ts(ddf_f, [grp_sdir mouseid '_' expname '_ref' reffile '_fissa_df_f'], 'Fissa-corrected dF/F');
         end
     else
@@ -367,7 +361,7 @@ if dostep(4)
         clear ts
             
         fprintf('%s: Saving spike data\n', [mouseid '_' expname]);
-        grp_sname = [grp_sdir mouseid '_' expname '_ref' reffile '_spikes.mat'];
+        grp_sname = [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_spikes.mat'];
         if force(4) || ~check_list(3)
             spike_output.spikes = spikes;
             spike_output.params = params.spkExtract;
@@ -376,15 +370,15 @@ if dostep(4)
     else
         str = sprintf('%s: Loading spike data\n', [mouseid '_' expname]);
         cprintf(str);
-        fname_mat = [grp_sdir mouseid '_' expname '_ref' reffile '_spikes.mat'];
+        fname_mat = [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_spikes.mat'];
         s = load(fname_mat);
         spikes = s.spikes;
         newstr = sprintf('%s: Spike data loaded\n', [mouseid '_' expname]);
         refreshdisp(newstr, str)
     end
     
-    if ~exist([grp_sdir mouseid '_' expname '_ref' reffile '_spikes.fig'],'file')
-        plotSpikes(spikes, [grp_sdir mouseid '_' expname '_ref' reffile '_spikes']);
+    if ~exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_spikes.fig'],'file')
+        plotSpikes(spikes, [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_spikes']);
     end
 else
     fprintf('%s: Spike estimation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
@@ -489,7 +483,7 @@ if dostep(6)
         neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile);
 
     %% Saving all data
-    sname_allData = [ grp_sdir mouseid '_' expname '_ref' reffile '_allData.mat' ];
+    sname_allData = [ grp_sdir mouseid '_' expname '_ref' reffile '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat' ];
 
     fprintf('%s: Saving all data\n', [mouseid '_' expname]);
     save(sname_allData,'list','corr_image','masks','tsG','df_f','spikes',...

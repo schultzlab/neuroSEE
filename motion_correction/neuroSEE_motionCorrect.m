@@ -25,19 +25,12 @@
 %                   template
 %   params_mcorr: parameters for specific motion correction method
 
-function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, imreg_method, force, list )    
+function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list )    
 
-    if isempty(mcorr_method), mcorr_method = 'normcorre'; end
+    if nargin<6, mcorr_method = 'normcorre'; end
     if nargin<7, reffile = []; end
-    if nargin<8 || isempty(imreg_method)
-        if ~isempty(mcorr_method)
-            imreg_method = mcorr_method; 
-        else
-            imreg_method = 'normcorre';
-        end
-    end
-    if nargin<9, force = false; end
-    if nargin<10, list = []; end
+    if nargin<8, force = false; end
+    if nargin<9, list = []; end
     
     refChannel = params_mcorr.refChannel;
     
@@ -53,11 +46,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
             cprintf('Text','File to be registered is the same as template. Skipping registration.');    
             return
         end
-        if strcmpi(imreg_method, mcorr_method)
-            filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '/' ];
-        else
-            filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '_' mcorr_method '/' ];
-        end
+        filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' reffile '/' ];
         fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
         fname_tif_red_mcorr = [filedir file '_2P_XYT_red_imreg_ref' reffile '.tif'];
         fname_mat_mcorr = [filedir file '_imreg_ref' reffile '_output.mat'];
@@ -84,8 +73,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
         end
         cprintf( 'Text', str );
         
-        if and(isempty(reffile), strcmpi(mcorr_method,'normcorre')) || ...
-           and(~isempty(reffile), strcmpi(imreg_method,'normcorre'))     
+        if and(isempty(reffile), strcmpi(mcorr_method,'normcorre'))     
             % rename variables to check if normcorre-r has been done
             if isempty(reffile)
                 filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-r/' ];
@@ -94,11 +82,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
                 fname_mat_mcorr = [filedir file '_mcorr_output.mat'];
                 fname_fig = [filedir file '_mcorr_summary.fig'];
             else
-                if strcmpi(imreg_method, mcorr_method)
-                    filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_normcorre-r_ref' reffile '/' ];
-                else
-                    filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_normcorre-r_ref' reffile '_' mcorr_method '/' ];
-                end
+                filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_normcorre-r_ref' reffile '/' ];
                 fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
                 fname_tif_red_mcorr = [filedir file '_2P_XYT_red_imreg_ref' reffile '.tif'];
                 fname_mat_mcorr = [filedir file '_imreg_ref' reffile '_output.mat'];
@@ -145,11 +129,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
                 fname_mat_mcorr = [filedir file '_mcorr_output.mat'];
                 fname_fig = [filedir file '_mcorr_summary.fig'];
             else
-                if strcmpi(imreg_method, mcorr_method)
-                    filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_normcorre_ref' reffile '/' ];
-                else
-                    filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_normcorre_ref' reffile '_' mcorr_method '/' ];
-                end
+                filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_normcorre_ref' reffile '/' ];
                 fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
                 fname_tif_red_mcorr = [filedir file '_2P_XYT_red_imreg_ref' reffile '.tif'];
                 fname_mat_mcorr = [filedir file '_imreg_ref' reffile '_output.mat'];
@@ -158,8 +138,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
             makeplot(out_g,out_r);
             saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr);
         
-        elseif  and(isempty(reffile), strcmpi(mcorr_method,'normcorre-r')) || ...
-                and(~isempty(reffile), strcmpi(imreg_method,'normcorre-r'))     
+        elseif  and(isempty(reffile), strcmpi(mcorr_method,'normcorre-r'))     
             mcorr_output.params.normcorre_r = params_mcorr.normcorre_r;
             if strcmpi(refChannel,'green')
                 [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params_mcorr.normcorre_r, template );
@@ -170,8 +149,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
             makeplot(out_g,out_r);
             saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.normcorre_r);
         
-        elseif  and(isempty(reffile), strcmpi(mcorr_method,'normcorre-nr')) || ...
-                and(~isempty(reffile), strcmpi(imreg_method,'normcorre-nr'))
+        elseif  and(isempty(reffile), strcmpi(mcorr_method,'normcorre-nr')) 
             mcorr_output.params.normcorre_nr = params_mcorr.normcorre_nr;
             if strcmpi(refChannel,'green')
                 [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params_mcorr.normcorre_nr, template );
@@ -211,7 +189,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
                 [mouseid,expname] = find_mouseIDexpname( list );
                 str = sprintf('%s: Loading registered images...\n', [mouseid '_' expname '_' file]);
             else
-                str = sprintf('%s: Loading registered images...\n', [file '_' reffile]);
+                str = sprintf('%s: Loading registered images...\n', [file '_ref' reffile]);
             end
             cprintf( 'Text', str );
             
@@ -225,7 +203,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
             if ~isempty(list)
                 newstr = sprintf('%s: Registered images loaded\n', [mouseid '_' expname '_' file]);
             else
-                newstr = sprintf('%s: Registered images loaded\n', [file '_' reffile]);
+                newstr = sprintf('%s: Registered images loaded\n', [file '_ref' reffile]);
             end
             refreshdisp( newstr, str )
         end

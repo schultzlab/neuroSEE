@@ -29,12 +29,7 @@ else
         fissadir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ...
                     segment_method '_' mouseid '_' expname '/FISSA/'];
     else
-        imreg_method = params.methods.imreg_method;
-        if strcmpi(imreg_method, mcorr_method)
-            tifdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '/'];
-        else
-            tifdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '_' mcorr_method '/'];
-        end
+        tifdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' reffile '/'];
         tiffile = [tifdir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
         fissadir = [tifdir segment_method '_' mouseid '_' expname '/FISSA/'];
     end

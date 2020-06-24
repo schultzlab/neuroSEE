@@ -31,7 +31,6 @@ if nargin<7, figclose = true; end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Basic settings
 mcorr_method = 'normcorre';
-imreg_method = 'normcorre';
 segment_method = 'CaImAn';
 dofissa = true;
     if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
@@ -71,14 +70,9 @@ if ~exist(fname_remap,'file') || force
         % mouse identity
         mouseid = mouseid_array(n,:);
 
-        if strcmpi(imreg_method, mcorr_method)
-            fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' imreg_method '_' ...
-                   segment_method '_' str_fissa '/' mouseid '_' env1 env2 '_imreg_ref' ref1_array(n,:) '-' ref2_array(n,:) '/'];
-        else
-            fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' imreg_method '_' ...
-                   segment_method '_' str_fissa '/' mouseid '_' env1 env2 '_imreg_ref' ref1_array(n,:) '-' ref2_array(n,:) '_' mcorr_method '/'];
-        end
-
+        fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' mcorr_method '_' ...
+               segment_method '_' str_fissa '/' mouseid '_' env1 env2 '_imreg_ref' ref1_array(n,:) '-' ref2_array(n,:) '/'];
+        
         % Check if data exist for mouse in env1 and env2. Quit if data does not exist
         fname = [fdir  mouseid '_' env1 env2 '_remapping_output.mat'];
         if ~exist(fname,'file')   

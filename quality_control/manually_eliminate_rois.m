@@ -1,7 +1,6 @@
 %% USER INPUT
 list = 'list_m66_fam1fam2-fam1.txt';
 reffile = '20181013_13_57_40';
-imreg_method = 'normcorre';
 mcorr_method = 'normcorre';
 segment_method = 'CaImAn';
 dofissa = true;
@@ -27,15 +26,9 @@ end
 %% Location of processed group data for list
 if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
 
-if strcmpi(imreg_method, mcorr_method)
-    grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
-                groupreg_method '_' imreg_method '_' segment_method '_' str_fissa '/'...
-                mouseid '_' expname '_imreg_ref' reffile '/'];
-else
-    grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
-                groupreg_method '_' imreg_method '_' segment_method '_' str_fissa '/'...
-                mouseid '_' expname '_imreg_ref' reffile '_' mcorr_method '/'];
-end
+grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+            groupreg_method '_' mcorr_method '_' segment_method '/'...
+            mouseid '_' expname '_imreg_ref' reffile '/'];
 
 %% Manually eliminate rois from ROI segmentation data
 load([grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'])    
@@ -80,8 +73,8 @@ plotROIsegmentdata(corr_image, masks, elim_masks, tsG, df_f, [grp_sdir mouseid '
 clear corr_image elim_masks masks tsG df_f F0 GUIdata params
 
 %% Revise fissa data
-if exist([grp_sdir mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file')
-    load([grp_sdir mouseid '_' expname '_ref' reffile '_fissa_output.mat']);
+if exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file')
+    load([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat']);
     
     dtsG = dtsG(inc_idx,:);
     ddf_f = ddf_f(inc_idx,:);
@@ -96,8 +89,8 @@ if exist([grp_sdir mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file
 end
 
 %% Revise spike data
-if exist([grp_sdir mouseid '_' expname '_ref' reffile '_spikes.mat'],'file')
-    load([grp_sdir mouseid '_' expname '_ref' reffile '_spikes.mat']);
+if exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_spikes.mat'],'file')
+    load([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_spikes.mat']);
     
     spikes = spikes(inc_idx,:);
     output.spikes = spikes;

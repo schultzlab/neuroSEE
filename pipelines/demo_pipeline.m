@@ -63,7 +63,7 @@ force = [false;...              % (1) motion correction even if motion corrected
          false;...              % (5) tracking data extraction
          false];                % (6) place field mapping
 
-mcorr_method = 'normcorre-nr';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
+mcorr_method = 'normcorre';  % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
                                     %   normcorre-r (rigid),
@@ -173,17 +173,7 @@ end
 %                       mat with fields {tsG, df_f, masks, corr_image, params}
 %                       in case of CaImAn: other data needed for GUI viewing
 
-% If doing CaImAn, continue only if Matlab version is R2018 or higher
-if runpatches && MatlabVer < 2018
-    beep
-    err = sprintf('%s: Higher Matlab version required. Cannot proceed with ROI segmentation.\n', [mouseid '_' expname]);
-    cprintf('Errors',err);
-    t = toc;
-    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
-    cprintf(str)
-    return
-end
-    
+% If doing CaImAn, continue only if Matlab version is R2018 or higher    
 [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force(2), mean(imR,3) );
 clear imG imR
 

@@ -28,8 +28,10 @@ if nargin < 9, globalvar = false; end
 if nargin < 10, fsave = false; else, fsave = true; end
 if ~isempty(tsG)
     N = size(tsG,1); T = size(tsG,2);
-else
+elseif ~isempty(dtsG)
     N = size(dtsG,1); T = size(dtsG,2);
+elseif ~isempty(df_f)
+    N = size(df_f,1); T = size(df_f,2);
 end 
 
 if globalvar, global spikes params; end    
@@ -224,43 +226,29 @@ function edit_prctile_callback(varargin)
     set(pbutton_reset,'Enable','on'); 
     set(tbutton_applytoall,'Enable','on'); 
     if fsave, set(pbutton_save,'Enable','on'); end
-
+    
+    df_prctile = getappdata(fig_gui,'df_prctile');
     if isnan(val)
-        set(edit_prctile,'string','85');
-        set(slider_prctile,'Value',85);
-        if get(tbutton_applytoall,'Value') 
-            calcC2_all;
-        else
-            calcC2(id);
-        end
+        set(slider_prctile,'Value',df_prctile(id));
     else
         if val < 0 
             set(edit_prctile,'string','0');
             set(slider_prctile,'Value',0);
-            if get(tbutton_applytoall,'Value') 
-                calcC2_all;
-            else
-                calcC2(id);
-            end
         elseif val > 100
             set(edit_prctile,'string','100');
             set(slider_prctile,'Value',100);
-            if get(tbutton_applytoall,'Value') 
-                calcC2_all;
-            else
-                calcC2(id);
-            end
-        else
             set(slider_prctile,'Value',df_prctile(id));
-            if get(tbutton_applytoall,'Value') 
-                calcC2_all;
-            else
-                calcC2(id);
-            end
         end
     end
-    df_prctile = getappdata(fig_gui,'df_prctile');
-    df_prctile(id) = str2double(get(edit_prctile,'string'));
+    if get(tbutton_applytoall,'Value') 
+        for ii = 1:N
+            df_prctile(ii) = val;
+        end
+        calcC2_all;
+    else
+        df_prctile(id) = val;
+        calcC2(id);
+    end
     setappdata(fig_gui,'df_prctile',df_prctile);
 end
 
@@ -270,15 +258,17 @@ function slider_prctile_callback(varargin)
     set(edit_prctile,'string',num2str(val));
     set(pbutton_reset,'Enable','on'); 
     set(tbutton_applytoall,'Enable','on'); 
+    df_prctile = getappdata(fig_gui,'df_prctile');
     if fsave, set(pbutton_save,'Enable','on'); end
     if get(tbutton_applytoall,'Value') 
+        for ii = 1:N
+            df_prctile(ii) = val;
+        end
         calcC2_all;
     else
+        df_prctile(id) = val;
         calcC2(id);
     end
-    
-    df_prctile = getappdata(fig_gui,'df_prctile');
-    df_prctile(id) = val;
     setappdata(fig_gui,'df_prctile',df_prctile);
 end
 
@@ -289,19 +279,14 @@ function rbutton_autoprctile_callback(varargin)
     if get(rbutton_autoprctile,'Value')
         set(edit_prctile,'Enable','off');
         set(slider_prctile,'Enable','off');
-        if get(tbutton_applytoall,'Value') 
-            calcC2_all;
-        else
-            calcC2(id);
-        end
     else
         set(edit_prctile,'Enable','on');
         set(slider_prctile,'Enable','on');
-        if get(tbutton_applytoall,'Value') 
-            calcC2_all;
-        else
-            calcC2(id);
-        end
+    end
+    if get(tbutton_applytoall,'Value') 
+        calcC2_all;
+    else
+        calcC2(id);
     end
 end
         
@@ -309,21 +294,23 @@ function edit_spkSNR_callback(varargin)
     id = str2double(get(edit_cellNum,'string'));
     val = str2double(get(edit_spikeSNR,'string'));
     spk_SNR = getappdata(fig_gui,'spk_SNR');
-    spk_SNR(id) = val;
-    setappdata(fig_gui,'spk_SNR',spk_SNR);
     set(pbutton_reset,'Enable','on'); 
     set(tbutton_applytoall,'Enable','on'); 
     if fsave, set(pbutton_save,'Enable','on'); end
     if get(tbutton_applytoall,'Value') 
+        for ii = 1:N
+            spk_SNR(ii) = val;
+        end
         calcSpikes_all;
     else
+        spk_SNR(id) = val;
         calcSpikes(id);
     end
+    setappdata(fig_gui,'spk_SNR',spk_SNR);
 end
 
 function edit_decaytime_callback(varargin)
     set(pbutton_reset,'Enable','on'); 
-    set(tbutton_applytoall,'Enable','on'); 
     if fsave, set(pbutton_save,'Enable','on'); end
     if get(tbutton_applytoall,'Value') 
         calcSpikes_all;
@@ -337,16 +324,19 @@ function edit_lamprob_callback(varargin)
     id = str2double(get(edit_cellNum,'string'));
     val = str2double(get(edit_lamprob,'string'));
     lam_pr = getappdata(fig_gui,'lam_pr');
-    lam_pr(id) = val;
-    setappdata(fig_gui,'lam_pr',lam_pr);
     set(pbutton_reset,'Enable','on'); 
     set(tbutton_applytoall,'Enable','on'); 
     if fsave, set(pbutton_save,'Enable','on'); end
     if get(tbutton_applytoall,'Value') 
+        for ii = 1:N
+            lam_pr(ii) = val;
+        end
         calcSpikes_all;
     else
+        lam_pr(id) = val;
         calcSpikes(id);
     end
+    setappdata(fig_gui,'lam_pr',lam_pr);
 end
 
 function pbutton_reset_callback(varargin)
@@ -374,8 +364,20 @@ function pbutton_reset_callback(varargin)
 end
 
 function tbutton_applytoall_callback(varargin)
-    if get(tbutton_applytoall,'Value') 
+    if get(tbutton_applytoall,'Value')
+        df_prctile = getappdata(fig_gui,'df_prctile');
+        spk_SNR = getappdata(fig_gui,'spk_SNR');
+        lam_pr = getappdata(fig_gui,'lam_pr');
+        for ii = 1:N
+            df_prctile(ii) = str2double(get(edit_prctile,'string'));
+            spk_SNR(ii) = str2double(get(edit_spikeSNR,'string'));
+            lam_pr(ii) = str2double(get(edit_lamprob,'string'));
+        end
         calcC2_all;
+        
+        setappdata(fig_gui,'df_prctile',df_prctile);
+        setappdata(fig_gui,'spk_SNR',spk_SNR);
+        setappdata(fig_gui,'lam_pr',lam_pr);
     end
 end
 

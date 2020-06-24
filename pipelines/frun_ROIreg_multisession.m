@@ -9,7 +9,6 @@ if nargin<3, force = false; end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Basic settings
 groupreg_method = 'imreg';
-imreg_method = 'normcorre';
 mcorr_method = 'normcorre';
 segment_method = 'CaImAn';
 dofissa = true;
@@ -42,7 +41,7 @@ tic
 % Output directory
 [ mouseid, expname ] = find_mouseIDexpname( list );
 sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
-        groupreg_method '_' imreg_method '_' segment_method '_' str_fissa '/'];
+        groupreg_method '_' mcorr_method '_' segment_method '_' str_fissa '/'];
 
 fname_mat1 = [sdir mouseid '_' expname '_multisessionROIreg_output1.mat'];
 fname_mat2 = [sdir mouseid '_' expname '_multisessionROIreg_output2.mat'];
@@ -63,18 +62,11 @@ if any([ ~exist(fname_mat1,'file'), ~exist(fname_mat2,'file'), force ])
             cprintf('Errors','Invalid list. Not all experiments for a single animal.');   
             return
         end
-        if strcmpi(imreg_method, mcorr_method)
-            fname_pref = [data_locn 'Analysis/' mouseid '/' mouseid '_' exp_n ...
-                       '/group_proc/imreg_' imreg_method '_' segment_method '_' str_fissa '/' ...
+        fname_pref = [data_locn 'Analysis/' mouseid '/' mouseid '_' exp_n ...
+                       '/group_proc/imreg_' mcorr_method '_' segment_method '/' ...
                        mouseid '_' exp_n '_imreg_ref' ref_array(n,:) '/' ...
                        mouseid '_' exp_n '_ref' ref_array(n,:)];
-        else
-            fname_pref = [data_locn 'Analysis/' mouseid '/' mouseid '_' exp_n ...
-                       '/group_proc/imreg_' imreg_method '_' segment_method '_' str_fissa '/' ...
-                       mouseid '_' exp_n '_imreg_ref' ref_array(n,:) '_' mcorr_method '/' ...
-                       mouseid '_' exp_n '_ref' ref_array(n,:)];
-        end
-
+        
         % load roi segmentation output
         M = load([fname_pref '_segment_output.mat']);
         masks{n} = M.masks;
@@ -91,7 +83,7 @@ if any([ ~exist(fname_mat1,'file'), ~exist(fname_mat2,'file'), force ])
         % templatesR{n} = t.template_r;
         
         % load pf mapping data
-        pfdata = load([fname_pref '_PFmap_output.mat']);
+        pfdata = load([fname_pref '/' str_fissa '/_PFmap_output.mat']);
         normrMap_sm{n} = pfdata.hist.normrMap_sm;
         normpfMap_sm{n} = pfdata.hist.SIsec.normpfMap_sm;
         sortIdx{n} = pfdata.hist.SIsec.sortIdx;

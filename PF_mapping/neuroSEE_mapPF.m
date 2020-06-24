@@ -75,14 +75,8 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
     else
         [ mouseid, expname ] = find_mouseIDexpname(list);
         groupreg_method = params.methods.groupreg_method;
-        imreg_method = params.methods.imreg_method;
-        if strcmpi(imreg_method, mcorr_method)
-            filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' imreg_method '_' segment_method '_'...
-                        str_fissa '/' mouseid '_' expname '_imreg_ref' reffile '/'];
-        else
-            filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' imreg_method '_' segment_method '_'...
-                        str_fissa '/' mouseid '_' expname '_imreg_ref' reffile '_' mcorr_method '/'];
-        end
+        filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
+                    mouseid '_' expname '_imreg_ref' reffile '/' str_fissa '/' ];
         fname_pref = [mouseid '_' expname '_ref' reffile];
         fname_mat = [filedir fname_pref '_PFmap_output.mat'];
         fig_sdir = [filedir '/PFdata/'];

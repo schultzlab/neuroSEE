@@ -12,9 +12,7 @@ list = '';
 
 % SETTINGS
 groupreg_method = 'imreg';      % method for concatenating file data (either register images or rois)
-imreg_method = 'normcorre';  % image registration method 
-                                % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
-mcorr_method = 'normcorre';  % motion correction method used for reference file
+mcorr_method = 'normcorre';  % image registration method 
                                 % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
@@ -38,48 +36,32 @@ if ~isempty(list)
     [ mouseid, expname ] = find_mouseIDexpname(list);
     str_out = [ mouseid '_' expname ];
 
-    if strcmpi(imreg_method, mcorr_method)
-        savedir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
-                    groupreg_method '_' imreg_method '_' segment_method '_' str_fissa '/'...
-                    mouseid '_' expname '_imreg_ref' reffile '/'];
-    else
-        savedir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
-                    groupreg_method '_' imreg_method '_' segment_method '_' str_fissa '/'...
-                    mouseid '_' expname '_imreg_ref' reffile '_' mcorr_method '/'];
-    end
-    segment_outfile = [savedir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
+    grpdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+                groupreg_method '_' mcorr_method '_' segment_method '/'...
+                mouseid '_' expname '_imreg_ref' reffile '/'];
+    segment_outfile = [grpdir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
+    savedir = [grpdir '/' str_fissa '/'];
     if dofissa, fissa_outfile = [savedir mouseid '_' expname '_ref' reffile '_fissa_output.mat']; end
     spikes_outfile = [savedir mouseid '_' expname '_ref' reffile '_spikes.mat'];
-    savename_pref = [savedir mouseid '_' expname '_ref' reffile];
+    savename_pref = [mouseid '_' expname '_ref' reffile];
 else
     if ~isempty(reffile)
         str_out = [file '_ref' reffile];
-        if strcmpi(imreg_method, mcorr_method)
-            grpdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
-                        groupreg_method '_' imreg_method '_' segment_method '_' str_fissa '/'...
-                        mouseid '_' expname '_imreg_ref' reffile '/'];
-        else
-            grpdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
-                        groupreg_method '_' imreg_method '_' segment_method '_' str_fissa '/'...
-                        mouseid '_' expname '_imreg_ref' reffile '_' mcorr_method '/'];
-        end
+        grpdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+                    groupreg_method '_' mcorr_method '_' segment_method '/'...
+                    mouseid '_' expname '_imreg_ref' reffile '/'];
         segment_outfile = [grpdir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
     
         if ~strcmpi(file,reffile)
-            if strcmpi(imreg_method, mcorr_method)
-                savedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '/'...
+            savedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' reffile '/'...
                     segment_method '_' mouseid '_' expname '/' str_fissa '/'];
-            else
-                savedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '_' mcorr_method '/'...
-                    segment_method '_' mouseid '_' expname '/' str_fissa '/'];
-            end
         else
             savedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/'...
                     segment_method '_' mouseid '_' expname '/' str_fissa '/'];
         end
         fissa_outfile = [savedir file '_' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
         spikes_outfile = [savedir file '_' mouseid '_' expname '_ref' reffile '_spikes.mat'];
-        savename_pref = [savedir file '_' mouseid '_' expname '_ref' reffile];
+        savename_pref = [file '_' mouseid '_' expname '_ref' reffile];
     else
         str_out = file;
         dir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' segment_method '/'];
@@ -93,7 +75,6 @@ end
 %% GUI
 params = neuroSEE_setparams(...
             'groupreg_method', groupreg_method,...
-            'imreg_method', imreg_method,...
             'mcorr_method', mcorr_method,...
             'segment_method', segment_method,...
             'dofissa', dofissa);

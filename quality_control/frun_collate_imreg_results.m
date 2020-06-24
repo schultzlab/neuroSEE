@@ -13,22 +13,19 @@
 %           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
 % reffile   : (optional) file used as registration template. If none
 %               specified, the first file in the list is used
-% imreg_method : (optional) image registration method (default: normcorre)
+% mcorr_method : (optional) image registration method (default: normcorre)
 %   e.g.    'normcorre'                         - rigid + non-rigid normcorre
 %           'normcorre-nr'                      - non-rigid normcorre
 %           'normcorre-r'                       - rigid normcorre
 %           'fftRigid'                          - Katie's method
 % force     : (optional) flag to force generation of comparison figures even though they
 %               already exist (default: false)
-% mcorr_method : motion correction method used for correcting reffile
-%                (optional, default: same as imreg_method)
 
-function frun_collate_imreg_results( list, imreg_method, reffile, force, mcorr_method )
+function frun_collate_imreg_results( list, mcorr_method, reffile, force )
 
-if nargin<2, imreg_method = 'normcorre'; end
+if nargin<2, mcorr_method = 'normcorre'; end
 % if nargin<3 see line 44
 if nargin<4, force = false; end
-if nargin<5, mcorr_method = imreg_method; end
 
 %% Load module folders and define data directory
 [data_locn,~,err] = load_neuroSEEmodules;
@@ -61,11 +58,7 @@ clear c
 
 %% Load image data for each recording
 % directory where registration results summary is saved: sdir
-if strcmpi(imreg_method, mcorr_method)
-    sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/imreg_' imreg_method '/indiv_imreg_ref' reffile '/'];
-else
-    sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/imreg_' imreg_method '/indiv_imreg_ref' reffile '_' mcorr_method '/'];
-end
+sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/imreg_' mcorr_method '/indiv_imreg_ref' reffile '/'];
 if ~exist(sdir,'dir'), mkdir(sdir); end
     
 if any([ force, ~exist([sdir mouseid '_' expname '_GREEN_imreg_ref' reffile '.fig'],'file'),...
@@ -74,13 +67,8 @@ if any([ force, ~exist([sdir mouseid '_' expname '_GREEN_imreg_ref' reffile '.fi
         file = files(i,:);
         if ~strcmpi(file,reffile)
             % individual image registration result
-            if strcmpi(imreg_method, mcorr_method)
-                fname = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '/'...
-                         file '_imreg_ref' reffile '_output.mat'];
-            else
-                fname = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' imreg_method '_ref' reffile '_' mcorr_method '/'...
-                         file '_imreg_ref' reffile '_output.mat'];
-            end
+            fname = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' reffile '/'...
+                     file '_imreg_ref' reffile '_output.mat'];
             if exist(fname,'file')
                 c = load(fname);
                 M(i).green = c.green;

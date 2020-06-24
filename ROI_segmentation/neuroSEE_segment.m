@@ -91,22 +91,11 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
 
         else
             if runpatches
-                [df_f_all, masks_all, corr_image, F0, GUIdata] = CaImAn_patches( imG, params.ROIsegment.CaImAn );
+                [tsG_all, df_f_all, masks_all, corr_image, F0, GUIdata] = CaImAn_patches( imG, params.ROIsegment.CaImAn );
             else
-                [df_f_all, masks_all, corr_image, F0, GUIdata] = CaImAn( imG, params.ROIsegment.CaImAn );
+                [tsG_all, df_f_all, masks_all, corr_image, F0, GUIdata] = CaImAn( imG, params.ROIsegment.CaImAn );
             end
             df_f_all = full(df_f_all);
-
-            % Extract raw timeseries
-            [d1,d2,T] = size(imG);
-            tsG_all = zeros(size(df_f_all));
-            for n = 1:size(masks_all,3)
-                maskind = masks_all(:,:,n);
-                for j = 1:T
-                    imG_reshaped = reshape( imG(:,:,j), d1*d2, 1);
-                    tsG_all(n,j) = mean( imG_reshaped(maskind) );
-                end
-            end
         end
         
         % Eliminate very small rois and rois touching image border

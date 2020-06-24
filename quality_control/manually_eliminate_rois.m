@@ -1,6 +1,6 @@
 %% USER INPUT
-list = 'list_m66_fam1fam2-fam2.txt';
-reffile = '20181013_14_50_18';
+list = 'list_m66_fam1fam2-fam1.txt';
+reffile = '20181013_13_57_40';
 imreg_method = 'normcorre';
 mcorr_method = 'normcorre';
 segment_method = 'CaImAn';
@@ -10,7 +10,8 @@ groupreg_method = 'imreg';
 roiarea_thr = 70;           % roi area smaller than this will be eliminated
                             % neuroSEE_segment already filtered areas <70
 borderpix = 4;              % thickness (in pix) of image border to be cleared of rois
-removerois = [];            % specific rois to eliminate (e.g. overlapping rois)
+removerois = [7; 9; 13; 17; 18; 20; 23; 25; 43; 44; 45; 48; 49; 51; 57; ...
+              60; 63; 66; 68; 70; 74; 75; 86; 88; 96; 110];            % specific rois to eliminate (e.g. overlapping rois)
 
 %% Load module folders and define data directory
 [data_locn,~,err] = load_neuroSEEmodules;
@@ -41,9 +42,9 @@ load([grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'])
 
 % Eliminate rois with area < roiarea_thr and rois touching image border
 % within borderpix pixels
-area = zeros(size(masks_orig,3),1);
-for j = 1:size(masks_orig,3)
-    mask = masks(borderpix:size(masks_orig,1)-borderpix,borderpix:size(masks,2)-borderpix,j);
+area = zeros(size(masks,3),1);
+for j = 1:size(masks,3)
+    mask = masks(borderpix:size(masks,1)-borderpix,borderpix:size(masks,2)-borderpix,j);
     im = imclearborder(mask);
     c = regionprops(im,'area');
     if ~isempty(c)
@@ -71,7 +72,7 @@ output.tsG = tsG;
 output.df_f = df_f;
 output.F0 = F0;
 output.params = params;
-if exist(GUIdata,'var'), output.GUIdata = GUIdata; end
+% if exist(GUIdata,'var'), output.GUIdata = GUIdata; end
 save([grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'],'-struct','output');
 
 % Save revised figures

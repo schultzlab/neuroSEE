@@ -28,8 +28,10 @@ if nargin < 9, globalvar = false; end
 if nargin < 10, fsave = false; else, fsave = true; end
 if ~isempty(tsG)
     N = size(tsG,1); T = size(tsG,2);
-else
+elseif ~isempty(dtsG)
     N = size(dtsG,1); T = size(dtsG,2);
+elseif ~isempty(df_f)
+    N = size(df_f,1); T = size(df_f,2);
 end 
 
 if globalvar, global spikes params; end    

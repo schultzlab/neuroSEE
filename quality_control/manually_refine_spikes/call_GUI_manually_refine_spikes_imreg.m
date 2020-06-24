@@ -1,11 +1,11 @@
 %% USER INPUT
 % 1) single file
-file = '20181015_09_26_48';
+file = '20181017_10_41_17';
 
 % 2) single registered file
-reffile = '20181015_09_37_54';                       % requires file above
+reffile = '20181017_10_59_54';                       % requires file above
 mouseid = 'm62';                       % required if reffile is specified
-expname = 'fam1nov-fam1';                       % required if reffile is specified
+expname = 'fam2_s2';                       % required if reffile is specified
 
 % 3) list
 list = '';

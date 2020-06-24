@@ -20,7 +20,8 @@ Ncells = size(activespk,1); % number of cells
 spikeMap = zeros(1,Nbins);
 SIsec = zeros(1,Nrand); 
 SIspk = zeros(1,Nrand); 
-
+occMap = histcounts(bin_phi,Nbins);
+                    
 % remove cells 
 % 1) that are not active for more than pfactivet_thr of total dwell time inside place field
 % 2) that are not active for more than activetrials_thr of total number of
@@ -70,7 +71,6 @@ for c = 1:Ncells
                 end
 
                 if strcmpi(mode, 'hist')
-                    occMap = histcounts(bin_phi,Nbins);
                     pcMap = spikeMap./(occMap*dt);
                     pcMap(isnan(pcMap)) = 0; pcMap(isinf(pcMap)) = 0; 
                     pcMap_sm = circularSmooth(pcMap,5);

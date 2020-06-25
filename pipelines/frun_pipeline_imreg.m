@@ -302,6 +302,7 @@ if dostep(3)
             end
 
             fprintf('%s: Saving fissa output\n', [mouseid '_' expname]);
+            if ~exist([grp_sdir '/' str_fissa '/'],'dir'), mkdir([grp_sdir '/' str_fissa '/']); end
             grp_sname = [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
             if force(3) || ~check_list(2)
                 fissa_output.dtsG = dtsG;

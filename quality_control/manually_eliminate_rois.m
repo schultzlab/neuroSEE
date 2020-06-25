@@ -1,6 +1,6 @@
 %% USER INPUT
-list = 'list_m66_fam1fam2-fam1.txt';
-reffile = '20181013_13_57_40';
+list = 'list_m66_fam1nov-fam1.txt';
+reffile = '20181015_12_13_29';
 mcorr_method = 'normcorre';
 segment_method = 'CaImAn';
 dofissa = true;
@@ -9,8 +9,8 @@ groupreg_method = 'imreg';
 roiarea_thr = 70;           % roi area smaller than this will be eliminated
                             % neuroSEE_segment already filtered areas <70
 borderpix = 4;              % thickness (in pix) of image border to be cleared of rois
-removerois = [7; 9; 13; 17; 18; 20; 23; 25; 43; 44; 45; 48; 49; 51; 57; ...
-              60; 63; 66; 68; 70; 74; 75; 86; 88; 96; 110];            % specific rois to eliminate (e.g. overlapping rois)
+removerois = [5; 8; 12; 15; 21; 28; 31; 36;...
+            40; 43; 44; 49; 62; 68; 69; 72; 77; 81];            % specific rois to eliminate (e.g. overlapping rois)
 
 %% Load module folders and define data directory
 [data_locn,~,err] = load_neuroSEEmodules;

@@ -67,7 +67,7 @@ end
 % image registration cannot be done with fftRigid method at the moment
 if strcmpi(mcorr_method,'fftRigid')
     if ~isempty(reffile)
-        str = sprintf('%s: Cannot do image registration with fftRigid method. Choose another method.', list);
+        str = sprintf('%s: Cannot do image registration with fftRigid method. Choose another method.\n', list);
         beep
         cprintf('Errors',str);    
         return;

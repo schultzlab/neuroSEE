@@ -9,8 +9,7 @@ groupreg_method = 'imreg';
 roiarea_thr = 70;           % roi area smaller than this will be eliminated
                             % neuroSEE_segment already filtered areas <70
 borderpix = 4;              % thickness (in pix) of image border to be cleared of rois
-removerois = [5; 8; 12; 15; 21; 28; 31; 36;...
-            40; 43; 44; 49; 62; 68; 69; 72; 77; 81];            % specific rois to eliminate (e.g. overlapping rois)
+removerois = 59;            % specific rois to eliminate (e.g. overlapping rois)
 
 %% Load module folders and define data directory
 [data_locn,~,err] = load_neuroSEEmodules;

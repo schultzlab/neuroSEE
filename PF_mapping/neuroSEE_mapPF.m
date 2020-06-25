@@ -106,7 +106,7 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
            
             % Make plots
             if force || ~exist(fig_sdir,'dir')
-                if force && exist(fig_sdir,'dir'), rmdir(fig_sdir); end
+                if force && exist(fig_sdir,'dir'), rmdir(fig_sdir,'s'); end
                 if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); end
                 plotPF_1d(hist, asd, PFdata, true, true, fig_sdir, fname_pref)
                 
@@ -132,7 +132,7 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
             
             % Make plots
             if force || ~exist(fig_sdir,'dir')
-                if force && exist(fig_sdir,'dir'), rmdir(fig_sdir); end
+                if force && exist(fig_sdir,'dir'), rmdir(fig_sdir,'s'); end
                 if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); end
                 plotPF_2d( hist, asd, true, true, fig_sdir, fname_pref )
             end

@@ -56,9 +56,9 @@ if ~isempty(err)
 end
 
 % Some security measures
-if strcmpi(comp,'hpc')
-    maxNumCompThreads(32);        % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
-end
+% if strcmpi(comp,'hpc')
+%     maxNumCompThreads(32);        % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
+% end
 
 % Mouseid, Experiment name, files
 [ mouseid, expname ] = find_mouseIDexpname(list);
@@ -331,10 +331,10 @@ if dostep(3)
         end
         
         if ~exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_timeseries.fig'],'file')
-            multiplot_ts(dtsG, [grp_sdir mouseid '_' expname '_ref' reffile '_fissa_timeseries'], 'Fissa-corrected raw timeseries');
+            multiplot_ts(dtsG, [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_timeseries'], 'Fissa-corrected raw timeseries');
         end
         if ~exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],'file') 
-            multiplot_ts(ddf_f, [grp_sdir mouseid '_' expname '_ref' reffile '_fissa_df_f'], 'Fissa-corrected dF/F');
+            multiplot_ts(ddf_f, [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_df_f'], 'Fissa-corrected dF/F');
         end
     else
         for n = 1:Nfiles

@@ -17,9 +17,10 @@
 % force  : (optional) flag to force generation of comparison figures even though they
 %           already exist (default: false)
 
-function frun_collate_indivproc_results( list, force )
+function frun_collate_indivproc_results( list, mcorr_method, force )
 
-if nargin<2, force = false; end
+if nargin<3, force = false; end
+if nargin<2, mcorr_method = 'normcorre'; end
     
 %% Load module folders and define data directory
 [data_locn,~,err] = load_neuroSEEmodules;
@@ -29,7 +30,7 @@ if ~isempty(err)
     return
 end
 
-mcorr_method = 'normcorre';
+% mcorr_method = 'normcorre';
 segment_method = 'CaImAn';
 dofissa = true;
     if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end

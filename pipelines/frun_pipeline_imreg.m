@@ -258,6 +258,7 @@ if dostep(1)
     end
 else
     fprintf('%s: No processing steps ticked. Cannot proceed.\n', [mouseid '_' expname]);
+    return
 end
 
 %% 2) ROI segmentation

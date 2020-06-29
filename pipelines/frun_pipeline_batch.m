@@ -194,6 +194,7 @@ if dostep(1)
     end
 else
     fprintf('%s: No processing steps ticked. Cannot proceed.\n', file);
+    return
 end
 
 
@@ -207,6 +208,10 @@ if dostep(2)
     clear imG imR
 else
     fprintf('%s: ROI segmentation step not ticked. Skipping this and later steps.\n', file);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
 end
 
 
@@ -233,6 +238,10 @@ if dostep(3)
 else
     if dofissa
         fprintf('%s: FISSA step not ticked. Skipping this and later steps.\n', file);
+        t = toc;
+        str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+        cprintf(str)
+        return
     end
 end
 
@@ -249,6 +258,10 @@ if dostep(4)
     end
 else
     fprintf('%s: Spike estimation step not ticked. Skipping this and later steps.\n', file);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
 end
 
 
@@ -268,6 +281,10 @@ if dostep(5)
     end
 else
     fprintf('%s: Behaviour tracking step not ticked. Skipping this and later steps.\n', file);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
 end
 
 %% (6) Generate place field maps

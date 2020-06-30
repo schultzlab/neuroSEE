@@ -198,6 +198,6 @@ output.params = params;
 save([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'-struct','output');
 
 fig_sdir = [sdir '/PFdata/'];
-rmdir(fig_sdir,'s'); % mkdir(fig_sdir);
-plotPF_1d(hist, [], pfData, true, true, sdir, [mouseid '_' expname '_imreg_ref' reffile ])
+rmdir(fig_sdir,'s'); mkdir(fig_sdir);
+plotPF_1d(hist, [], pfData, true, true, fig_sdir, [mouseid '_' expname '_imreg_ref' reffile ])
 

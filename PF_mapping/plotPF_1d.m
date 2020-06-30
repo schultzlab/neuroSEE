@@ -218,7 +218,7 @@ function plotPF_1d(hist, asd, pfData, fclose, fsave, sdir, fname_pref)
             fname = [sdir 'hist_SI_bitsperspk/' fname_pref  '_populSummary'];
             plot_populStats(pfData.bintime_trials, pfData.bintime, pfData.bin_activet, pfData.activetrials,...
                 hist.SIspk.sort_pfMap_sm, hist.SIspk.sort_normpfMap_sm, pfData.spk_eventrate, pfData.spk_rate, hist.infoMap(:,2), ...
-                hist.fieldSize, hist.pfLoc, hist.pf_activet, hist.SIspk.pcIdx, hist.SIspk.nonpcIdx, 'bits/s', fsave, fname, fclose );
+                hist.fieldSize, hist.pfLoc, hist.pf_activet, hist.SIspk.pcIdx, hist.SIspk.nonpcIdx, 'bits/spk', fsave, fname, fclose );
         else
             for e = 1:Nepochs
                 pcIdx = hist.SIspk.pcIdx{e};
@@ -237,7 +237,7 @@ function plotPF_1d(hist, asd, pfData, fclose, fsave, sdir, fname_pref)
                 fname = [sdir 'hist_SI_bitsperspk/epoch' num2str(e) fname_pref  '_populSummary'];
                 plot_populStats(pfData.bintime_trials{e}, pfData.bintime{e}, pfData.bin_activet{e}, pfData.activetrials{e},...
                     hist.SIspk.sort_pfMap_sm{e}, hist.SIspk.sort_normpfMap_sm{e}, pfData.spk_eventrate{e}, pfData.spk_rate{e}, hist.infoMap{e}(:,2), ...
-                    hist.fieldSize{e}, hist.pfLoc{e}, hist.pf_activet{e}, hist.SIspk.pcIdx{e}, hist.SIspk.nonpcIdx{e}, 'bits/s', fsave, fname, fclose )
+                    hist.fieldSize{e}, hist.pfLoc{e}, hist.pf_activet{e}, hist.SIspk.pcIdx{e}, hist.SIspk.nonpcIdx{e}, 'bits/spk', fsave, fname, fclose )
             end
         end
     end
@@ -305,7 +305,7 @@ function plotPF_1d(hist, asd, pfData, fclose, fsave, sdir, fname_pref)
                 fname = [sdir 'asd_SI_bitsperspk/' fname_pref  '_populSummary'];
                 plot_populStats(pfData.bintime_trials, pfData.bintime, pfData.bin_activet, pfData.activetrials,...
                     asd.SIspk.sort_pfMap, asd.SIspk.sort_normpfMap, pfData.spk_eventrate, pfData.spk_rate, asd.infoMap(:,2), ...
-                    asd.fieldSize, asd.pfLoc, asd.pf_activet, asd.SIspk.pcIdx, asd.SIspk.nonpcIdx, 'bits/s', fsave, fname, fclose );
+                    asd.fieldSize, asd.pfLoc, asd.pf_activet, asd.SIspk.pcIdx, asd.SIspk.nonpcIdx, 'bits/spk', fsave, fname, fclose );
             else
                 for e = 1:Nepochs
                     pcIdx = asd.SIspk.pcIdx{e};
@@ -324,7 +324,7 @@ function plotPF_1d(hist, asd, pfData, fclose, fsave, sdir, fname_pref)
                     fname = [sdir 'asd_SI_bitsperspk/epoch' num2str(e) fname_pref  '_populSummary'];
                     plot_populStats(pfData.bintime_trials{e}, pfData.bintime{e}, pfData.bin_activet{e}, pfData.activetrials{e},...
                         asd.SIspk.sort_pfMap{e}, asd.SIspk.sort_normpfMap{e}, pfData.spk_eventrate{e}, pfData.spk_rate{e}, asd.infoMap{e}(:,2), ...
-                        asd.fieldSize{e}, asd.pfLoc{e}, asd.pf_activet{e}, asd.SIspk.pcIdx{e}, asd.SIspk.nonpcIdx{e}, 'bits/s', fsave, fname, fclose )
+                        asd.fieldSize{e}, asd.pfLoc{e}, asd.pf_activet{e}, asd.SIspk.pcIdx{e}, asd.SIspk.nonpcIdx{e}, 'bits/spk', fsave, fname, fclose )
                 end
             end
         end

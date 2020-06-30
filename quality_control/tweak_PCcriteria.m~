@@ -1,21 +1,22 @@
-function tweak_PCcriteria( list, reffile, bl_prctile )
+function tweak_PCcriteria( list, reffile, bl_prctile)
 
 %% USER INPUT
-% list = 'list_m62_fam1nov-fam1.txt';
-% reffile = '20181015_09_37_54';
+list = 'list_m62_fam1nov-fam1.txt';
+reffile = '20181015_09_37_54';
 mcorr_method = 'normcorre';
 segment_method = 'CaImAn';
 dofissa = true;
 groupreg_method = 'imreg';
-% bl_prctile = 85;
+bl_prctile = 85;
 
 % parameters to tweak for PC selection
 independent_testing = false;
 doplot = true;
-% pfactivet_thr = 0.05;      % fraction of dwell time in place field cell is required to be active (default: 0.05)
-% activetrials_thr = 0.5;    % fraction of trials cell is required to be active (default: 0.2)
-% prctile_thr = 99.99;
-Nrand = 1000;
+pfactivet_thr = 0.05;      % fraction of dwell time in place field cell is required to be active (default: 0.05)
+activetrials_thr = 0.5;    % fraction of trials cell is required to be active (default: 0.2)
+prctile_thr = 99.99;
+Nrand = 100;
+Vthr = 20; 
 
 
 %% Load module folders and define data directory
@@ -52,8 +53,7 @@ load([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'])
 fprintf('%s: %g total cells\n', [mouseid '_' expname], size(pfData.spkMap,1))
 
 % PC selection via bootstrap shuffle test
-Vthr = params.Vthr;
-Nbins = params.Nbins; 
+Nbins = size(pfData.spkMap,2); 
 activephi   = phi(speed > Vthr);
 activespk   = spikes(:,speed > Vthr);
 activet     = time(speed > Vthr);

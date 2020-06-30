@@ -193,7 +193,7 @@ end
 
 % save data
 output.hist = hist;
-output.pfData = PFdata;
+output.pfData = pfData;
 output.params = params;
 save([sdir mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'-struct','output');
 

@@ -140,7 +140,7 @@ MatlabVer = str2double(release(1:4));
 % check(5)                                       step (6) place field mapping
 % check(6) checks for existing mat file pooling all processed data for list
 
-check_list = checkforExistingProcData(data_locn, list, params.methods, reffile);
+check_list = checkforExistingProcData(data_locn, list, params, reffile);
 
 % Some security measures
 force = logicalForce(force);        % Only allow combinations of force/step values that make sense

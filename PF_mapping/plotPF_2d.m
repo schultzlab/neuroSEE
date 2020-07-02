@@ -27,7 +27,7 @@ function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pre
 
         fname = [sdir 'hist_SI_bitspersec/' fname_pref  '_populSummary_PC'];
         plot_populSummary( PFdata.spk_eventrate, PFdata.spk_rate, hist.infoMap(:,1), hist.fieldSize, ...
-            hist.centroid, hist.SIsec.pcIdx, hist.SIsec.nonpcIdx, hist.bin_pos, activeData.r, fname, fclose );
+            hist.centroid, hist.SIsec.pcIdx, hist.SIsec.nonpcIdx, hist.bin_pos, activeData.r, 'bits/s',fname, fclose );
             
         if Nepochs > 1
             fname = [sdir 'hist_SI_bitspersec/' fname_pref '_remapping_hist_SIsec'];
@@ -70,7 +70,7 @@ function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pre
 
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref  '_populSummary_PC'];
         plot_populSummary( PFdata.spk_eventrate, PFdata.spk_rate, hist.infoMap(:,2), hist.fieldSize, ...
-            hist.centroid, hist.SIspk.pcIdx, hist.SIspk.nonpcIdx, hist.bin_pos, activeData.r, fname, fclose );
+            hist.centroid, hist.SIspk.pcIdx, hist.SIspk.nonpcIdx, hist.bin_pos, activeData.r, 'bits/event', fname, fclose );
             
         if Nepochs > 1
             fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_remapping_hist_SIsec'];

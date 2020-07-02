@@ -365,10 +365,13 @@ if dostep(4)
         clear ts
             
         fprintf('%s: Saving spike data\n', [mouseid '_' expname]);
-        grp_sname = [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_spikes.mat'];
+        grp_sname = [grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes.mat'];
         if force(4) || ~check_list(3)
             spike_output.spikes = spikes;
             spike_output.params = params.spkExtract;
+            if ~exist([grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'],'dir')
+                mkdir([grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/']);
+            end
             save(grp_sname,'-struct','spike_output');
         end
     else

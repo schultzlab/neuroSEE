@@ -487,8 +487,7 @@ if dostep(6)
         neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile);
 
     %% Saving all data
-    sname_allData = [ grp_sdir mouseid '_' expname '_ref' reffile '_' mcorr_method '_' segment_method '_' str_fissa...
-                      '_allData_blprctile' num2str(bl_prctile) '.mat' ];
+    sname_allData = [ grp_sdir mouseid '_' expname '_ref' reffile '_' mcorr_method '_' segment_method '_' str_fissa '_allData_blprctile' num2str(bl_prctile) '.mat' ];
 
     fprintf('%s: Saving all data\n', [mouseid '_' expname]);
     save(sname_allData,'list','corr_image','masks','tsG','df_f','spikes',...

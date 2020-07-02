@@ -56,7 +56,7 @@ function check = checkforExistingProcData(data_locn, text, params, reffile)
             end
             
             % 3) Check for existing consolidated spike data 
-            if exist([dir_proc '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_spikes.mat'],'file')
+            if exist([dir_proc '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes.mat'],'file')
                 check(3) = 1;
             end
             

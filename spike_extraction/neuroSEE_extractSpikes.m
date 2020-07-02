@@ -26,7 +26,7 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
 
     mcorr_method = params.methods.mcorr_method;
     segment_method = params.methods.segment_method;
-
+    bl_prctile = params.spkExtract.bl_prctile;
     if params.methods.dofissa
         str_fissa = 'FISSA';
     else
@@ -45,7 +45,7 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
         [ mouseid, expname ] = find_mouseIDexpname(list);
         if fsave
             filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ...
-                        segment_method '_' mouseid '_' expname '/' str_fissa '/'];
+                        segment_method '_' mouseid '_' expname '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' ];
             fname_mat = [filedir file '_' mouseid '_' expname '_ref' reffile '_spikes.mat'];
             fname_fig = [filedir file '_' mouseid '_' expname '_ref' reffile '_spikes.fig'];
         else

@@ -40,11 +40,11 @@ clear x y phi r speed t
 %% PLACE CELLS
 % Identify place cells. The cells are sorted in descending order of info content
 [hist.SIsec.pcIdx, hist.SIspk.pcIdx, hist.SIsec.nonpcIdx, hist.SIspk.nonpcIdx] ...
-    = identifyPCs_2d( activespk, xh, yh, hist.infoMap, hist.pf_activet, hist.Nbins, prctile_thr, pfactivet_thr, Nrand, 'hist', 2, gaussfiltSigma );
+    = identifyPCs_2d( activespk, xh, yh, hist.infoMap, hist.pf_activet, hist.Nbins, prctile_thr, pfactivet_thr, Nrand, 'hist', 1, gaussfiltSigma );
 
 if doasd
     [asd.SIsec.pcIdx, asd.SIspk.pcIdx, asd.SIsec.nonpcIdx, asd.SIspk.nonpcIdx] ...
-    = identifyPCs_2d( activespk, xa, ya, asd.infoMap, asd.pf_activet, asd.Nbins, prctile_thr, pfactivet_thr, Nrand, 'asd', gaussfiltSigma );
+    = identifyPCs_2d( activespk, xa, ya, asd.infoMap, asd.pf_activet, asd.Nbins, prctile_thr, pfactivet_thr, Nrand, 'asd', 1, gaussfiltSigma );
 end
 
 

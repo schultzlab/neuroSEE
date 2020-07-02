@@ -17,21 +17,21 @@ function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pre
         Npcs = numel(hist.SIsec.pcIdx);
         fname = [sdir 'hist_SI_bitspersec/' fname_pref '_PFmaps_PCs'];
         if ~isempty(asd)
-            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, asd.rMap, hist.SIsec.pcIdx, 'PC', fname, fclose);
+            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, asd.rMap, hist.SIsec.pcIdx, 'PC', fsave, fname, fclose);
         else
-            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, [], hist.SIsec.pcIdx, 'PC', fname, fclose);
+            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, [], hist.SIsec.pcIdx, 'PC', fsave, fname, fclose);
         end
         
         fname = [sdir 'hist_SI_bitspersec/' fname_pref '_centroid_PCs'];
-        plot_pfChar( Npcs, hist.SIsec.normpfMap_sm, hist.centroid(hist.SIsec.pcIdx), 'PC', fname, fclose );
+        plot_pfChar( Npcs, hist.SIsec.normpfMap_sm, hist.centroid(hist.SIsec.pcIdx), 'PC', fsave, fname, fclose );
 
         fname = [sdir 'hist_SI_bitspersec/' fname_pref  '_populSummary_PC'];
         plot_populSummary( PFdata.spk_eventrate, PFdata.spk_rate, hist.infoMap(:,1), hist.fieldSize, ...
-            hist.centroid, hist.SIsec.pcIdx, hist.SIsec.nonpcIdx, hist.bin_pos, activeData.r, 'bits/s', fname, fclose );
+            hist.centroid, hist.SIsec.pcIdx, hist.SIsec.nonpcIdx, hist.bin_pos, activeData.r, 'bits/s', fsave, fname, fclose );
             
         if Nepochs > 1
             fname = [sdir 'hist_SI_bitspersec/' fname_pref '_remapping_hist_SIsec'];
-            plotRemapping( hist.SIsec.normpfMap_sm, fname, fclose );
+            plotRemapping( hist.SIsec.normpfMap_sm, fsave, fname, fclose );
         end
      end
     
@@ -40,13 +40,13 @@ function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pre
         Nnonpcs = numel(hist.SIsec.nonpcIdx);
         fname = [sdir 'hist_SI_bitspersec/' fname_pref '_pfMaps_nonPCs'];
         if ~isempty(asd)
-            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, asd.rMap, hist.SIsec.nonpcIdx, 'nonPC', fname, fclose);
+            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, asd.rMap, hist.SIsec.nonpcIdx, 'nonPC', fsave, fname, fclose);
         else
-            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, [], hist.SIsec.nonpcIdx, 'nonPC', fname, fclose);
+            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, [], hist.SIsec.nonpcIdx, 'nonPC', fsave, fname, fclose);
         end
         
         fname = [sdir 'hist_SI_bitspersec/' fname_pref '_centroid_nonPCs'];
-        plot_pfChar( Nnonpcs, hist.normrMap_sm(:,:,hist.SIsec.nonpcIdx), hist.centroid(hist.SIsec.nonpcIdx), 'nonPC', fname, fclose );
+        plot_pfChar( Nnonpcs, hist.normrMap_sm(:,:,hist.SIsec.nonpcIdx), hist.centroid(hist.SIsec.nonpcIdx), 'nonPC', fsave, fname, fclose );
 
     end
     
@@ -60,21 +60,21 @@ function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pre
         Npcs = numel(hist.SIspk.pcIdx);
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_pfMaps_PCs'];
         if ~isempty(asd)
-            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, asd.rMap, hist.SIspk.pcIdx, 'PC', fname, fclose);
+            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, asd.rMap, hist.SIspk.pcIdx, 'PC', fsave, fname, fclose);
         else
-            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, [], hist.SIspk.pcIdx, 'PC', fname, fclose);
+            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, [], hist.SIspk.pcIdx, 'PC', fsave, fname, fclose);
         end
         
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_centroid_PCs'];
-        plot_pfChar( Npcs, hist.SIspk.normpfMap_sm, hist.centroid(hist.SIspk.pcIdx), 'PC', fname, fclose );
+        plot_pfChar( Npcs, hist.SIspk.normpfMap_sm, hist.centroid(hist.SIspk.pcIdx), 'PC', fsave, fname, fclose );
 
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref  '_populSummary_PC'];
         plot_populSummary( PFdata.spk_eventrate, PFdata.spk_rate, hist.infoMap(:,2), hist.fieldSize, ...
-            hist.centroid, hist.SIspk.pcIdx, hist.SIspk.nonpcIdx, hist.bin_pos, activeData.r, 'bits/event', fname, fclose );
+            hist.centroid, hist.SIspk.pcIdx, hist.SIspk.nonpcIdx, hist.bin_pos, activeData.r, 'bits/event', fsave, fname, fclose );
             
         if Nepochs > 1
             fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_remapping_hist_SIsec'];
-            plotRemapping( hist.SIspk.normpfMap_sm, fname, fclose );
+            plotRemapping( hist.SIspk.normpfMap_sm, fsave, fname, fclose );
         end
     end
     
@@ -119,7 +119,7 @@ function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pre
                     end
                 end
             end
-            if fsave
+            if ~isempty(fname)
                 if Npcs/nPlot <= 1
                     fname_fig = fname;
                 else
@@ -219,7 +219,7 @@ function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pre
                 xlabel('Radius (mm)');
                 ylabel('Fraction of Time');
 
-            if fsave
+            if ~isempty(fname)
                 if Nepochs == 1
                     fname_fig = fname;
                 else

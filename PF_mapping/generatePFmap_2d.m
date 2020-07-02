@@ -151,4 +151,10 @@ activeData.y = activey;
 activeData.t = activet;
 activeData.spikes = activespk;
 
+if Nepochs == 1
+    hist_epochs = [];
+    PFdata_epochs = [];
+    asd_epochs = []; 
+end
+
 end

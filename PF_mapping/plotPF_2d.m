@@ -1,8 +1,8 @@
 function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pref)
-    if nargin < 7, fsave = false; fname_pref = ''; sdir = ''; end
+    if nargin < 8, fsave = false; fname_pref = ''; sdir = ''; end
+    if nargin < 7, fsave = false; end
     if nargin < 6, fsave = false; end
-    if nargin < 5, fsave = false; end
-    if nargin < 4, fclose = false; fsave = false; end
+    if nargin < 5, fclose = false; fsave = false; end
 
     Nepochs = size(hist.occMap,3);
     Nbins = size(hist.occMap(:,:,1));

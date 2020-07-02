@@ -130,7 +130,7 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
             end
             save(fname_mat,'-struct','output');
         else % '2D'
-            [hist, asd, PFdata, activeData] = generatePFmap_2d( spikes, downTrackdata, params );
+            [hist, asd, PFdata, activeData, hist_epochs, asd_epochs, PFdata_epochs] = generatePFmap_2d( spikes, downTrackdata, params );
             
             % Make plots
             if force || ~exist(fig_sdir,'dir')

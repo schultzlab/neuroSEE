@@ -5,60 +5,91 @@
 % Based on Indersmitten et al 2019, Front Neurosci
 
 function [ pcIdx_SIsec, pcIdx_SIspk, nonpcIdx_SIsec, nonpcIdx_SIspk ] ...
-    = identifyPCs_2d( bin_pos, activespikes, infoMap, Nbins, prctile_thr, randN, method )
+    = identifyPCs_2d( activespk, xh, yh, infoMap, pf_activet, Nbins, prctile_thr, pfactivet_thr, Nrand, mode, shuffle_method, gaussfiltSigma )
 
-if nargin<7, method = 'hist'; end
-if nargin<6, randN = 1000; end
-if nargin<5, prctile_thr = 99; end
+if nargin<12, gaussfiltSigma = 1.5; end
+if nargin<11, shuffle_method = 1; end
+if nargin<10, mode = 'hist'; end
+if nargin<9, Nrand = 1000; end
+if nargin<8, pfactivet_thr = 0.05; end
+if nargin<7, prctile_thr = 99.99; end
 
-dt = 1/30.9;
-Ncells = size(activespikes,1); % number of cells
-SIsec = zeros(1,randN); 
-SIspk = zeros(1,randN); 
+params = neuroSEE_setparams;
+fr = params.PFmap.fr;
+dt = 1/fr;
+Ncells = size(activespk,1); % number of cells
+SIsec = zeros(1,Nrand); 
+SIspk = zeros(1,Nrand); 
+occMap = full(sparse( yh , xh, 1, Nbins(1), Nbins(2) ));
 
 include_SIsec = []; exclude_SIsec = [];
 include_SIspk = []; exclude_SIspk = [];
 
-for id = 1:Ncells
-    z = activespikes(id,:);
-
-    for j = 1:randN
-        % shuffling method 4
-        randind = randperm(length(bin_pos));
-        bin_pos = bin_pos(randind);
+for c = 1:Ncells
+    if pf_activet(c) >= pfactivet_thr
+        z = activespk(c,:);
         
-        if strcmpi(method, 'hist')
-            [xh, yh] = ind2sub(Nbins, bin_pos);
-            spikeMap = full(sparse( xh, yh, z, Nbins(1), Nbins(2) ));
-            occMap = full(sparse( xh , yh, 1, Nbins(1), Nbins(2) ));
-            mode = 0; % the mask is obtained by imfill only
-            envMask = getEnvEdgePrior(occMap,mode); % hist
-
-            pcMap = spikeMap./(occMap*dt);
-            pcMap(isnan(pcMap)) = 0; pcMap(isinf(pcMap)) = 0; 
-            pcMap = imgaussfilt(pcMap, 2); 
-            pcMap(~envMask) = 0;
-            [SIsec(j),SIspk(j)] = infoMeasures(pcMap, occMap, 0);
-        else
-            [xa,ya] = ind2sub(Nbins, bin_pos); 
-            occMap = full(sparse(xa, ya, 1, Nbins(1) , Nbins(2)));
-            mode = 2; % the mask is obtained by dilation and imfill
-            envMask_asd = getEnvEdgePrior(occMap,mode); % ASD
-            pcMap = runASD_2d(bin_pos, z', Nbins, envMask_asd);
-            [SIsec(j),SIspk(j)] = infoMeasures(pcMap', ones(Nbins), 0);
+        if shuffle_method == 2
+            % initialisation for shuffling method 2 inside subloop
+            a = 927; % 30s
+            b = size(activespk,2) - a; % length of recording - 30 s
+            r = round((b-a)*rand(Nrand,1) + a);
+            zs = zeros(size(activespk(1,:)));
         end
-    end
 
-    if infoMap(id,1) > prctile(SIsec,prctile_thr)
-        include_SIsec = [include_SIsec; id];
-    else
-        exclude_SIsec = [exclude_SIsec; id];
-    end
+        for j = 1:Nrand
+            if shuffle_method == 1
+                % shuffling method 1 
+                % shuffle spike event times
+                randind = randperm(size(activespk,2));
+                xh = xh(randind);
+                yh = yh(randind);
+                spikeMap = full(sparse( yh, xh, z, Nbins(1), Nbins(2) ));
+            end
+            
+            if shuffle_method == 2
+                % shuffling method 2
+                % offset spike timeseries by a random time between 10s and length
+                % of recording-10 s
+                for k = r(j)+1:size(activespk,2)
+                    zs(k) = z(k-r(j)); 
+                end
+                for k = 1:r(j)
+                    zs(k) = z(size(activespk,2)-r(j)+k);
+                end
+                spikeMap = full(sparse( yh, xh, zs, Nbins(1), Nbins(2) ));
+            end
+            
+            if strcmpi(mode, 'hist')
+                envmode = 0; % the mask is obtained by imfill only
+                envMask = getEnvEdgePrior(occMap,envmode); % hist
+                pcMap = spikeMap./(occMap*dt);
+                pcMap(isnan(pcMap)) = 0; pcMap(isinf(pcMap)) = 0; 
+                pcMap = imgaussfilt(pcMap, gaussfiltSigma); 
+                pcMap(~envMask) = 0;
+                [SIsec(j),SIspk(j)] = infoMeasures(pcMap, occMap, 0);
+            else
+                envmode = 2; % the mask is obtained by dilation and imfill
+                envMask_asd = getEnvEdgePrior(occMap,envmode); % ASD
+                pcMap = runASD_2d(bin_pos, z', Nbins, envMask_asd);
+                [SIsec(j),SIspk(j)] = infoMeasures(pcMap', ones(Nbins), 0);
+            end
+        end
 
-    if infoMap(id,2) > prctile(SIspk,prctile_thr)
-        include_SIspk = [include_SIspk; id];
+        if infoMap(c,1) > prctile(SIsec,prctile_thr)
+            include_SIsec = [include_SIsec; c];
+        else
+            exclude_SIsec = [exclude_SIsec; c];
+        end
+
+        if infoMap(c,2) > prctile(SIspk,prctile_thr)
+            include_SIspk = [include_SIspk; c];
+        else
+            exclude_SIspk = [exclude_SIspk; c];
+        end
     else
-        exclude_SIspk = [exclude_SIspk; id];
+        exclude_SIsec = [exclude_SIsec; c];
+        exclude_SIspk = [exclude_SIspk; c];
     end
 end
 

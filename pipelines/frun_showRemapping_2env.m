@@ -63,12 +63,12 @@ end
 %% Pre-processing
 % Check if data exist for mouseID in env1 and env2. Quit if data does not exist
 dir_env1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env1 ...
-            '/group_proc/imreg_' mcorr_method '_' segment_method '/' mouseid '_' env1 env2 '-' env1 '_imreg_ref' ref1 '/' str_fissa '/'];
+            '/group_proc/imreg_' mcorr_method '_' segment_method '/' mouseid '_' env1 env2 '-' env1 '_imreg_ref' ref1 '/'];
 dir_env2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env2 ...
-            '/group_proc/imreg_' mcorr_method '_' segment_method '/' mouseid '_' env1 env2 '-' env2 '_imreg_ref' ref2 '/' str_fissa '/'];
+            '/group_proc/imreg_' mcorr_method '_' segment_method '/' mouseid '_' env1 env2 '-' env2 '_imreg_ref' ref2 '/'];
 
-data_env1 = [dir_env1 mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_PFmap_output.mat'];
-data_env2 = [dir_env2 mouseid '_' env1 env2 '-' env2 '_ref' ref2 '_PFmap_output.mat'];
+data_env1 = [dir_env1  str_fissa '/' mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_PFmap_output.mat'];
+data_env2 = [dir_env2  str_fissa '/' mouseid '_' env1 env2 '-' env2 '_ref' ref2 '_PFmap_output.mat'];
        
 if ~and(exist(data_env1,'file'), exist(data_env2,'file'))       
     beep
@@ -92,15 +92,16 @@ fname_remap = [fdir  mouseid '_' env1 env2 '_remapping_output.mat'];
 fname_remapfig = [fdir  mouseid '_' env1 env2 '_remapping_summary.fig'];
 
 if ~exist(fname_remap,'file') || force 
-    fprintf('%s: registering ROIs\n',[mouseid '_' env1 env2]);
+    fprintf('%s: loading data\n',[mouseid '_' env1 env2]);
+    
     M1 = load([dir_env1 mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_segment_output.mat']);
     M2 = load([dir_env2 mouseid '_' env1 env2 '-' env2 '_ref' ref2 '_segment_output.mat']);
     
-    PF1 = load([dir_env1 mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_PFmap_output.mat']);
-    PF2 = load([dir_env2 mouseid '_' env1 env2 '-' env2 '_ref' ref2 '_PFmap_output.mat']);
+    PF1 = load([dir_env1  str_fissa '/' mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_PFmap_output.mat']);
+    PF2 = load([dir_env2  str_fissa '/' mouseid '_' env1 env2 '-' env2 '_ref' ref2 '_PFmap_output.mat']);
 
-    masks1 = M1.masks(:,:,PF1.hist.SIsec.pcIdx);
-    masks2 = M2.masks(:,:,PF2.hist.SIsec.pcIdx);
+    masks1 = M1.masks(:,:,PF1.hist.SIsec.sortpcIdx);
+    masks2 = M2.masks(:,:,PF2.hist.SIsec.sortpcIdx);
     A1 = zeros(size(masks1,1)*size(masks1,2),size(masks1,3));
     A2 = zeros(size(masks2,1)*size(masks2,2),size(masks2,3));
     for i = 1:size(masks1,3)
@@ -119,15 +120,19 @@ if ~exist(fname_remap,'file') || force
     params.ROIreg.plot_reg = true;
     params.ROIreg.print_msg = true;
 
-    t1 = load([dir_env1 mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_mcorr_template.mat']);
-    t2 = load([dir_env2 mouseid '_' env1 env2 '-' env2 '_ref' ref2 '_mcorr_template.mat']);
+    t1 = load([dir_env1 mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_imreg_template.mat']);
+    t2 = load([dir_env2 mouseid '_' env1 env2 '-' env2 '_ref' ref2 '_imreg_template.mat']);
     template1 = t1.template_g;
     template2 = t2.template_g;
 
-
+    fprintf('%s: registering ROIs\n',[mouseid '_' env1 env2]);
     fname_fig = [fdir  mouseid '_' env1 env2 '_regROIs_output'];
-    [ matched_ROIs, nonmatched_1, nonmatched_2, A2, R, A_union ] = ...
-        register_ROIs( A1, A2, params.ROIreg, template1, template2, params.ROIreg_mc, fname_fig, true );
+    [ ~, ~, ~, A2_shifted, ~, ~, template2_shifted ] = ...
+       register_ROIs( A1, A2, params.ROIreg, template1, template2, params.ROIreg_mc.r, [], false );
+    [ matched_ROIs, nonmatched_1, nonmatched_2, A2, R, A_union, template2_shifted ] = ...
+       register_ROIs( A1, A2_shifted, params.ROIreg, template1, template2_shifted, params.ROIreg_mc.nr ,fname_fig, false );
+%     [ matched_ROIs, nonmatched_1, nonmatched_2, A2, R, A_union ] = ...
+%         register_ROIs( A1, A2, params.ROIreg, template1, template2, params.ROIreg_mc, fname_fig, true );
     masks_union = reshape(full(A_union), params.ROIreg.d1, params.ROIreg.d2, size(A_union,2));
     masks2_reg = reshape(full(A2), params.ROIreg.d1, params.ROIreg.d2, size(A2,2));
     for j = 1:size(masks_union,3)
@@ -191,7 +196,7 @@ if ~exist(fname_remap,'file') || force
     % PF maps for fam2 in fam1 sorting
     env2PF_env1Sorting = zeros(size([PF1.hist.SIsec.sort_normpfMap_sm]));
     for i = 1:size(masks1,3)
-       [matched,ind] = ismember(PF1.hist.SIsec.sortIdx(i),matched_ROIs(:,1));
+       [matched,ind] = ismember(i,matched_ROIs(:,1));
        if matched
            env2PF_env1Sorting(i,:) = PF2.hist.SIsec.sort_normpfMap_sm(matched_ROIs(ind,2),:);
        end
@@ -201,7 +206,7 @@ if ~exist(fname_remap,'file') || force
     % PF maps for fam2 in fam1 sorting
     env1PF_env2Sorting = zeros(size([PF2.hist.SIsec.sort_normpfMap_sm]));
     for i = 1:size(masks2,3)
-       [matched,ind] = ismember(PF2.hist.SIsec.sortIdx(i),matched_ROIs(:,2));
+       [matched,ind] = ismember(i,matched_ROIs(:,2));
        if matched
            env1PF_env2Sorting(i,:) = PF1.hist.SIsec.sort_normpfMap_sm(matched_ROIs(ind,1),:);
        end
@@ -220,6 +225,8 @@ if ~exist(fname_remap,'file') || force
     remapping_output.aligned_env2_ROIs = A2;
     remapping_output.masks2_reg = masks2_reg;
     remapping_output.params = params.ROIreg;
+    remapping_output.template_env1 = template1;
+    remapping_output.template_env2 = template2_shifted;
 
     remapping_output.im_env1masks = im_env1masks;
     remapping_output.im_env2masks = im_env2masks;

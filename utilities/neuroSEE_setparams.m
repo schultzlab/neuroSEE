@@ -241,6 +241,7 @@ Names = [
     % PF mapping
         'Nepochs            ' % number of epochs into which data will be divided for analysis (default: 1)
         'histsmoothWin      ' % smoothing window for histogram method (default: 5)
+        'gaussfiltSigma     ' % stdev for 2d gaussian filter (default: 1.5)    
         'Vthr               ' % speed threshold (mm/s) Note: David Dupret uses 20 mm/s (default: 20)
                               %                              Neurotar uses 8 mm/s
         'prctile_thr        ' % percentile threshold for filtering nonPCs (default: 99.99)
@@ -562,6 +563,7 @@ Values = [
     % PF mapping
         {1}                   % number of epochs into which data will be divided for analysis (default: 1)
         {5}                   % smoothing window for histogram method (default: 5)
+        {1.5}                 % stdev for 2d gaussian filter (default: 1.5)
         {20}                  % speed threshold (mm/s) Note: David Dupret uses 20 mm/s (default: 20)
                               %                              Neurotar uses 8 mm/s
         {99.99}                  % percentile threshold for filtering nonPCs (default: 99.99)
@@ -659,7 +661,7 @@ if strcmpi(options.mcorr_method,'normcorre') || strcmpi(options.mcorr_method,'no
         'mem_filename'; 'mem_batch_size'; 'plot_flag'; ...
         'output_type'; 'h5_groupname'; 'h5_filename'; 'tiff_filename'; 'output_filename';...
         'use_windowing'; 'window_length'; 'bitsize'; 'correct_bidir'; 'nFrames';...
-        'bidir_us'; 'col_shift'; 'print_msg '};
+        'bidir_us'; 'col_shift'; 'print_msg'};
     fn = fieldnames(options);
     for i = 1:length(fn)
         for j = 1:length(f)
@@ -684,7 +686,7 @@ if strcmpi(options.mcorr_method,'normcorre') || strcmpi(options.mcorr_method,'no
         'mem_filename'; 'mem_batch_size'; 'plot_flag'; ...
         'output_type'; 'h5_groupname'; 'h5_filename'; 'tiff_filename'; 'output_filename';...
         'use_windowing'; 'window_length'; 'bitsize'; 'correct_bidir'; 'nFrames';...
-        'bidir_us'; 'col_shift'; 'print_msg '};
+        'bidir_us'; 'col_shift'; 'print_msg'};
     fn = fieldnames(options);
     for i = 1:length(fn)
         for j = 1:length(f)
@@ -783,7 +785,7 @@ for i = 1:length(fn)
     end
 end
 % PF mapping
-f = {'fr'; 'Nepochs'; 'histsmoothWin'; 'Vthr'; 'prctile_thr'; 'pfactivet_thr'; ...
+f = {'fr'; 'Nepochs'; 'histsmoothWin'; 'gaussfiltSigma'; 'Vthr'; 'prctile_thr'; 'pfactivet_thr'; ...
       'activetrials_thr'; 'Nrand'; 'Nlaps_thr'; 'Nbins_1D'; 'Nbins_2D'};
 fn = fieldnames(options);
 for i = 1:length(fn)

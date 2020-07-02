@@ -5,18 +5,16 @@
 % This can be used to check for processed data for individual files OR for
 % processed data for different experiments of a mouse.
 
-function check = checkforExistingProcData(data_locn, text, params_methods, reffile)
-
+function check = checkforExistingProcData(data_locn, text, params, reffile)
+    
     %if nargin<4, see line 39
     if nargin<3 
-        mcorr_method = 'normcorre-nr';
-        segment_method = 'CaImAn';
-        dofissa = true;
-    else
-        mcorr_method = params_methods.mcorr_method;
-        segment_method = params_methods.segment_method;
-        dofissa = params_methods.dofissa;
+        params = neuroSEE_setparams;
     end
+    mcorr_method = params.methods.mcorr_method;
+    segment_method = params.methods.segment_method;
+    dofissa = params.methods.dofissa;
+    bl_prctile = params.spkExtract.bl_prctile;
     
     if dofissa
         str_fissa = 'FISSA';
@@ -69,12 +67,12 @@ function check = checkforExistingProcData(data_locn, text, params_methods, reffi
             end
             
             % 5) Check for existing collective PF mapping output
-            if exist([dir_proc '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'file')
+            if exist([dir_proc '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'file')
                 check(5) = 1;
             end
             
             % 6) Check if mat file for all proc data for the file exists
-            if exist([dir_proc  mouseid '_' expname '_ref' reffile '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'],'file')
+            if exist([dir_proc  mouseid '_' expname '_ref' reffile '_' mcorr_method '_' segment_method '_' str_fissa '_allData_blprctile' num2str(bl_prctile) '.mat'],'file')
                 check(6) = 1;
             end
         end
@@ -104,7 +102,7 @@ function check = checkforExistingProcData(data_locn, text, params_methods, reffi
             end
 
             % 4) Check for existing spike estimation output
-            if exist([dir_segment '/' str_fissa '/' file '_spikes_output.mat'],'file') || ...
+            if exist([dir_segment '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' file '_spikes_output.mat'],'file') || ...
                exist([dir_segment '/' str_fissa '/' file '_spikes.mat'],'file') 
                 check(4) = 1;
             end
@@ -115,12 +113,12 @@ function check = checkforExistingProcData(data_locn, text, params_methods, reffi
             end
 
             % 6) Check for existing PF mapping output
-            if exist([dir_segment '/' str_fissa 'PFmaps/' file '_PFmap_output.mat'],'file')
+            if exist([dir_segment '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' file '_PFmap_output.mat'],'file')
                 check(6) = 1;
             end
 
             % 7) Check if mat file for all proc data for the file exists
-            if exist([dir_proc file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'],'file')
+            if exist([dir_proc file '_' mcorr_method '_' segment_method '_' str_fissa '_allData_blprctile' num2str(bl_prctile) '.mat'],'file')
                 check(7) = 1;
             end
         end

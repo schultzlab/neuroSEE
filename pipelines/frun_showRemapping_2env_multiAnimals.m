@@ -55,7 +55,7 @@ for n = 1:size(mouseid_array,1)
         mousegrp = mouseid_array(n,:);
     end
 end
-sdir = [data_locn 'Analysis/remapping_multiAnimals/' env1 env2 '/' mousegrp '/'];
+sdir = [data_locn 'Analysis/multiAnimals/remapping/' env1 env2 '/' mousegrp '/'];
 
 fname_remap = [sdir mousegrp '_' env1 env2 '_remapping_output.mat'];
 fname_remapfig = [sdir mousegrp '_' env1 env2 '_remapping_summary.fig'];
@@ -89,8 +89,8 @@ if ~exist(fname_remap,'file') || force
         env2PF = [env2PF; c.env2PF];
     end
 
-    [ ~, maxLoc_env1 ] = prefLoc( env1PF );
-    [ ~, maxLoc_env2 ] = prefLoc( env2PF );
+    [ maxLoc_env1, ~, ~ ] = prefLoc_fieldSize_1d( env1PF );
+    [ maxLoc_env2, ~, ~ ] = prefLoc_fieldSize_1d( env2PF );
 
     [ ~, sortIdx_env1 ] = sort( maxLoc_env1 );
     [ ~, sortIdx_env2 ] = sort( maxLoc_env2 );

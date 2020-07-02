@@ -15,18 +15,18 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
     end
     if ~isempty(hist.SIsec.pcIdx)
         Npcs = numel(hist.SIsec.pcIdx);
-        fname = [sdir 'hist_SI_bitspersec/' fname_pref '_pfMaps_PCs'];
+        fname = [sdir 'hist_SI_bitspersec/' fname_pref '_PFmaps_PCs'];
         if ~isempty(asd)
-            pfMaps_2d(activeData, hist.SIsec.pfMap, hist.SIsec.pfMap_sm, asd.rMap(:,:,hist.SIsec.pcIdx,:), hist.SIsec.pcIdx, 'PC');
+            plotpfMaps_2d(activeData, hist.SIsec.pfMap, hist.SIsec.pfMap_sm, asd.rMap(:,:,hist.SIsec.pcIdx,:), hist.SIsec.pcIdx, 'PC');
         else
-            pfMaps_2d(activeData, hist.SIsec.pfMap, hist.SIsec.pfMap_sm, [], hist.SIsec.pcIdx, 'PC');
+            plotpfMaps_2d(activeData, hist.SIsec.pfMap, hist.SIsec.pfMap_sm, [], hist.SIsec.pcIdx, 'PC');
         end
         
         fname = [sdir 'hist_SI_bitspersec/' fname_pref '_centroid_PCs'];
         plot_pfChar( Npcs, hist.SIsec.normpfMap_sm, hist.SIsec.centroid, 'PC', fsave, fname, fclose );
 
         fname = [sdir 'hist_SI_bitspersec/' fname_pref  '_populSummary_PC'];
-        plot_populSummary( hist.SIsec.spkPeak, hist.SIsec.spkMean, hist.SIsec.infoMap,...
+        plot_populSummary( PFdata.spk_eventrate, PFdata.spk_rate, hist.SIsec.infoMap, hist.SIsec.pcIdx, hist.SIsec.nonpcIdx,...
             hist.SIsec.fieldSize, hist.SIsec.centroid, hist.bin_pos, activeData.r, fsave, fname, fclose );
             
         if Nepochs > 1
@@ -35,15 +35,15 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
         end
      end
     
-    % spike raster plots for NON-place cells 
+    % plots for NON-place cells 
     if ~isempty(hist.SIsec.nonpcIdx)
         Nnonpcs = numel(hist.SIsec.nonpcIdx);
         fname = [sdir 'hist_SI_bitspersec/' fname_pref '_pfMaps_nonPCs'];
         if ~isempty(asd)
-            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIsec.nonpcIdx), hist.rMap_sm(:,:,hist.SIsec.nonpcIdx), ...
+            plotpfMaps_2d(activeData, hist.rMap(:,:,hist.SIsec.nonpcIdx), hist.rMap_sm(:,:,hist.SIsec.nonpcIdx), ...
                         asd.rMap(:,:,hist.SIsec.nonpcIdx), hist.SIsec.nonpcIdx, 'nonPC');
         else
-            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIsec.nonpcIdx), hist.rMap_sm(:,:,hist.SIsec.nonpcIdx), ...
+            plotpfMaps_2d(activeData, hist.rMap(:,:,hist.SIsec.nonpcIdx), hist.rMap_sm(:,:,hist.SIsec.nonpcIdx), ...
                         [], hist.SIsec.nonpcIdx, 'nonPC');
         end
         
@@ -62,16 +62,16 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
         Npcs = numel(hist.SIspk.pcIdx);
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_pfMaps_PCs'];
         if ~isempty(asd)
-            pfMaps_2d(activeData, hist.SIspk.pfMap, hist.SIspk.pfMap_sm, asd.rMap(:,:,hist.SIspk.pcIdx,:), hist.SIspk.pcIdx, 'PC');
+            plotpfMaps_2d(activeData, hist.SIspk.pfMap, hist.SIspk.pfMap_sm, asd.rMap(:,:,hist.SIspk.pcIdx,:), hist.SIspk.pcIdx, 'PC');
         else
-            pfMaps_2d(activeData, hist.SIspk.pfMap, hist.SIspk.pfMap_sm, [], hist.SIspk.pcIdx, 'PC');
+            plotpfMaps_2d(activeData, hist.SIspk.pfMap, hist.SIspk.pfMap_sm, [], hist.SIspk.pcIdx, 'PC');
         end
         
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_centroid_PCs'];
         plot_pfChar( Npcs, hist.SIspk.normpfMap_sm, hist.SIspk.centroid, 'PC', fsave, fname, fclose );
 
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref  '_populSummary_PC'];
-        plot_populSummary( hist.SIspk.spkPeak, hist.SIspk.spkMean, hist.SIspk.infoMap,...
+        plot_populSummary( PFdata.spk_eventrate, PFdata.spk_rate, hist.SIspk.infoMap, hist.SIspk.pcIdx, hist.SIspk.nonpcIdx,...
             hist.SIspk.fieldSize, hist.SIspk.centroid, hist.bin_pos, activeData.r, fsave, fname, fclose );
             
         if Nepochs > 1
@@ -85,10 +85,10 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
         Nnonpcs = numel(hist.SIspk.nonpcIdx);
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_pfMaps_nonPCs'];
         if ~isempty(asd)
-            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), ...
+            plotpfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), ...
                         asd.rMap(:,:,hist.SIspk.nonpcIdx), hist.SIspk.nonpcIdx, 'nonPC');
         else
-            pfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), ...
+            plotpfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), ...
                         [], hist.SIspk.nonpcIdx, 'nonPC');
         end
         
@@ -99,75 +99,6 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
     
     
 %% subfunctions
-    function pfMaps_2d(activeData, pfMap_h, pfMap_sm_h, pfMap_a, pcIdx, cell_str)
-        Nepochs = size( pfMap_h, 4 );
-        Ncells = length(pcIdx);
-        nRow = 4;
-        if isempty(asd)
-            nCol = 3;
-        else
-            nCol = 4;
-        end
-        
-        for e = 1:Nepochs
-            for ii=0:ceil(Ncells/nRow)-1 
-                fh = figure; 
-                ha = tight_subplot(nRow,nCol,[.01 .005],[.01 .07],[.01 .01]);
-                for jj=0:nRow-1
-                    if (ii*nRow+jj+1) <= Ncells
-                        axes(ha(jj*nCol+1));
-                        z = activeData.spikes(pcIdx(ii*nRow+jj+1),:);
-                        hold on; axis off;
-                        plot(activeData.x,-activeData.y,'Color',[0.6 0.6 0.6],'LineWidth',1.2); 
-                        ind = find(z>0);
-                        x = activeData.x(ind);
-                        y = activeData.y(ind);
-                        spikes = z(ind);
-                        [spikes_sorted,sort_ind] = sort(spikes);
-                        scatter(x(sort_ind),-y(sort_ind),20,spikes_sorted,'filled');
-                        title_str = sprintf('%s %d (%0.2g)', cell_str, (ii*nRow+jj+1), max(spikes));
-                        title(title_str,'fontsize',15);
-                        hold off
-
-                        axes(ha(jj*nCol+2));
-                        imagesc(squeeze(pfMap_h(:,:,ii*nRow+jj+1,e))');
-                        axis off; colorbar; % caxis([0 0.06]);
-                        if Nepochs >1 
-                            title(['Epoch ',num2str(e)],'fontsize',15);
-                        end
-                        axes(ha(jj*nCol+3)); 
-                        imagesc(squeeze(pfMap_sm_h(:,:,ii*nRow+jj+1,e))');
-                        axis off; colorbar; % caxis([0 0.005]);
-                        if ~isempty(asd)
-                            axes(ha(jj*nRow+4));
-                            imagesc(squeeze(pfMap_a(:,:,ii*nRow+jj+1,e))');
-                            axis off; colorbar; % caxis([0 0.003]);
-                        end
-                    end
-                end
-
-                if fsave
-                    if Ncells/nRow <= 1
-                        if Nepochs == 1
-                            fname_fig = fname;
-                        else
-                            fname_fig = [fname '_' num2str(e) 'of' num2str(Nepochs) 'ep' ];
-                        end
-                    else
-                        if Nepochs == 1
-                            fname_fig = [fname '_' num2str(ii+1)];
-                        else
-                            fname_fig = [fname '_' num2str(ii+1) '_' num2str(e) 'of' num2str(Nepochs) 'ep' ];
-                        end
-                    end
-                    savefig( fh, fname_fig );
-                    saveas( fh, fname_fig, 'png' );
-                    if fclose, close( fh ); end
-                end
-            end 
-        end
-    end
-
     function plot_pfChar( Ncells, normpfMap_sm, centroid, title_str, fsave, fname, fclose )
         [nRow, nCol] = getnRownCol(Ncells);
         nPlot = nRow*nCol;
@@ -205,28 +136,58 @@ function plotPF_2d(hist, asd, activeData, fclose, fsave, sdir, fname_pref)
         end 
     end
 
-    function plot_populSummary(spkPeak, spkMean, infoMap, fieldSize, centroid, bin_pos, activer, fsave, fname, fclose )
+    function plot_populSummary(spk_eventrate, spk_rate, infoMap, pcIdx, nonpcIdx, fieldSize, centroid, bin_pos, activer, fsave, fname, fclose )
         % summary of population data
         for e = 1:Nepochs
             fh = figure;
-            subplot(241); histogram(spkPeak,'Normalization','probability','FaceColor',[0.5 0.5 0.5],...
-                'LineStyle','none','BinMethod','fd'); 
-                hold on;
-                plot(mean(spkPeak),0.2,'kv','markerfacecolor','k','markersize',6); hold off;
-                xlabel('PSD peak'); 
-                ylabel('Fraction of Cells');
-            subplot(242); histogram(spkMean,'Normalization','probability','FaceColor',[0.5 0.5 0.5],...
-                'LineStyle','none','BinMethod','fd'); 
-                hold on;
-                plot(mean(spkMean),0.3,'kv','markerfacecolor','k','markersize',6); hold off;
-                xlabel('PSD mean'); 
-                ylabel('Fraction of Cells');
-            subplot(243); histogram(infoMap,'Normalization','probability','FaceColor',[0.5 0.5 0.5],...
-                'LineStyle','none','BinMethod','fd'); 
-                hold on;
-                plot(mean(infoMap),0.3,'kv','markerfacecolor','k','markersize',6); hold off;
-                xlabel('Info content');
-                ylabel('Fraction of Cells');
+            subplot(241); 
+                hold on
+                plot(mean(spk_eventrate(pcIdx)),0.2,'v','markerfacecolor',[0.4 0.6 1],...
+                    'markeredgecolor',[0.4 0.6 1],'markersize',4);
+                plot(mean(spk_eventrate(nonpcIdx)),0.2,'v','markerfacecolor',[1 0.6 0.6],...
+                    'markeredgecolor',[1 0.6 0.6],'markersize',4);
+                h = histogram(spk_eventrate(pcIdx),'Normalization','probability','DisplayStyle','bar',...
+                    'BinMethod','sqrt','FaceColor',[0.4 0.6 1],'LineStyle','none',...
+                    'FaceAlpha',0.7);
+                histogram(spk_eventrate(nonpcIdx),'Normalization','probability','DisplayStyle','bar',...
+                    'FaceColor',[1 0.6 0.6],'LineStyle','none',...
+                    'FaceAlpha',0.7, 'BinWidth', h.BinWidth);
+                legend('pc','nonpc'); legend('boxoff');
+                hold off
+                xlabel('Event rate (Hz)'); 
+                ylabel('Prop. of cells');
+            subplot(242); 
+                hold on
+                plot(mean(spk_rate(pcIdx)),0.3,'v','markerfacecolor',[0.4 0.6 1],...
+                    'markeredgecolor',[0.4 0.6 1],'markersize',4);
+                plot(mean(spk_rate(nonpcIdx)),0.3,'v','markerfacecolor',[1 0.6 0.6],...
+                    'markeredgecolor',[1 0.6 0.6],'markersize',4);
+                h = histogram(spk_rate(pcIdx),'Normalization','probability','DisplayStyle','bar',...
+                    'BinMethod','sqrt','FaceColor',[0.4 0.6 1],'LineStyle','none',...
+                    'FaceAlpha',0.7);
+                histogram(spk_rate(nonpcIdx),'Normalization','probability','DisplayStyle','bar',...
+                    'FaceColor',[1 0.6 0.6],'LineStyle','none',...
+                    'FaceAlpha',0.7, 'BinWidth', h.BinWidth);
+                % legend('pc','nonpc'); legend('boxoff');
+                hold off
+                xlabel('Ampl rate (Hz)'); 
+                ylabel('Prop. of cells');
+            subplot(243); 
+                hold on
+                plot(mean(infoMap(pcIdx)),0.3,'v','markerfacecolor',[0.4 0.6 1],...
+                    'markeredgecolor',[0.4 0.6 1],'markersize',4);
+                plot(mean(infoMap(nonpcIdx)),0.3,'v','markerfacecolor',[1 0.6 0.6],...
+                    'markeredgecolor',[1 0.6 0.6],'markersize',4);
+                h = histogram(infoMap(pcIdx),'Normalization','probability','DisplayStyle','bar',...
+                    'BinMethod','sqrt','FaceColor',[0.4 0.6 1],'LineStyle','none',...
+                    'FaceAlpha',0.7);
+                histogram(infoMap(nonpcIdx),'Normalization','probability','DisplayStyle','bar',...
+                    'FaceColor',[1 0.6 0.6],'LineStyle','none',...
+                    'FaceAlpha',0.7, 'BinWidth', h.BinWidth);
+                % legend('pc','nonpc'); legend('boxoff');
+                hold off
+                xlabel(['Information (' info_str ')']); % xlabel('Information');
+                ylabel('Prop. of cells');
             subplot(244); histogram(fieldSize(:,1,e),'Normalization','probability','FaceColor',[0.5 0.5 0.5],...
                 'LineStyle','none','BinMethod','sqrt');
                 hold on;

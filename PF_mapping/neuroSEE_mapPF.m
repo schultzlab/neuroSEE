@@ -136,7 +136,7 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
             if force || ~exist(fig_sdir,'dir')
                 if force && exist(fig_sdir,'dir'), rmdir(fig_sdir,'s'); end
                 if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); end
-                plotPF_2d( hist, asd, activeData, true, true, fig_sdir, fname_pref )
+                plotPF_2d( hist, asd, PFdata, activeData, true, true, fig_sdir, fname_pref )
             end
         
             % Save output

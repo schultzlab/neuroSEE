@@ -1,25 +1,25 @@
-function plotpfMaps_2d(activeData, pfMap_h, pfMap_sm_h, pfMap_a, pcIdx, cell_str, fname, fclose)
+function plotpfMaps_2d(activeData_all, pfMap_h_all, pfMap_sm_h_all, pfMap_a_all, pcIdx, cell_str, fname, fclose)
     if nargin<8, fclose = true; end
     if nargin<7, fname = []; end
 
-    Nepochs = size( pfMap_h, 4 );
+    Nepochs = size( pfMap_h_all, 4 );
     Ncells = length(pcIdx);
     nRow = 4;
-    if isempty(pfMap_a)
+    if isempty(pfMap_a_all)
         nCol = 3;
     else
         nCol = 4;
     end
     
     % find the delineations for the video: find t = 0
-    idx_file = find(diff(activeData.t) < 0);
-    idx_file = [0; idx_file; numel(activeData.t)] +1;
+    idx_file = find(diff(activeData_all.t) < 0);
+    idx_file = [0; idx_file; numel(activeData_all.t)] +1;
     max_spksize = 18;
     spk_col = 'b';
 
     for e = 1:Nepochs
         for ii=0:ceil(Ncells/nRow)-1 
-            if isempty(pfMap_a)
+            if isempty(pfMap_a_all)
                 fh = figure('Position',[680 678 500 550]); 
             end
             ha = tight_subplot(nRow,nCol,[.04 .02],[.02 .05],[.02 .02]);
@@ -31,13 +31,13 @@ function plotpfMaps_2d(activeData, pfMap_h, pfMap_sm_h, pfMap_a, pcIdx, cell_str
                     % to match the image pixel indexing to matrix row and
                     % column indexing
                     for kk = 1: numel(idx_file) - 1
-                        plot(activeData.y(idx_file(kk):idx_file(kk+1)-1),-activeData.x(idx_file(kk):idx_file(kk+1)-1),'Color',[0.8 0.8 0.8],...
+                        plot(activeData_all.y(idx_file(kk):idx_file(kk+1)-1),-activeData_all.x(idx_file(kk):idx_file(kk+1)-1),'Color',[0.8 0.8 0.8],...
                             'LineWidth',1); axis square; 
                     end
-                    z = activeData.spikes(pcIdx(ii*nRow+jj+1),:);
+                    z = activeData_all.spikes(pcIdx(ii*nRow+jj+1),:);
                     ind = find(z>0);
-                    x = activeData.x(ind);
-                    y = activeData.y(ind);
+                    x = activeData_all.x(ind);
+                    y = activeData_all.y(ind);
                     spikes = z(ind);
                     [spkampl_sorted,sort_ind] = sort(spikes);
                     spk_size = spkampl_sorted/max(spkampl_sorted)*max_spksize;
@@ -49,17 +49,17 @@ function plotpfMaps_2d(activeData, pfMap_h, pfMap_sm_h, pfMap_a, pcIdx, cell_str
                     axes(ha(jj*nCol+2));
                     cmap = viridisMap;
                     colormap(cmap);
-                    imagesc(squeeze(pfMap_h(:,:,ii*nRow+jj+1,e))');
+                    imagesc(squeeze(pfMap_h_all(:,:,pcIdx(ii*nRow+jj+1),e))');
                     axis off; colorbar; % caxis([0 0.06]);
                     if Nepochs >1 
                         title(['Epoch ',num2str(e)],'fontsize',11);
                     end
                     axes(ha(jj*nCol+3)); 
-                    imagesc(squeeze(pfMap_sm_h(:,:,ii*nRow+jj+1,e))');
+                    imagesc(squeeze(pfMap_sm_h_all(:,:,pcIdx(ii*nRow+jj+1),e))');
                     axis off; colorbar; % caxis([0 0.005]);
-                    if ~isempty(pfMap_a)
+                    if ~isempty(pfMap_a_all)
                         axes(ha(jj*nRow+4));
-                        imagesc(squeeze(pfMap_a(:,:,ii*nRow+jj+1,e))');
+                        imagesc(squeeze(pfMap_a_all(:,:,pcIdx(ii*nRow+jj+1),e))');
                         axis off; colorbar; % caxis([0 0.003]);
                     end
                 end

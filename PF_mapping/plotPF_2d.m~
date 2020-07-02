@@ -69,8 +69,8 @@ function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pre
         plot_pfChar( Npcs, hist.SIspk.normpfMap_sm, hist.centroid(hist.SIspk.pcIdx), 'PC', fsave, fname, fclose );
 
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref  '_populSummary_PC'];
-        plot_populSummary( PFdata.spk_eventrate, PFdata.spk_rate, hist.infoMap(:,2), hist.fieldSize, ...
-            hist.centroid, hist.SIspk.pcIdx, hist.SIspk.nonpcIdx, hist.bin_pos, activeData.r, fsave, fname, fclose );
+        plot_populSummary( PFdata.spk_eventrate, PFdata.spk_rate, hist.infoMap(:,2), hist.fieldSize(hist.SIspk.pcIdx), hist.centroid(hist.SIspk.pcIdx), hist.SIspk.pcIdx, hist.SIspk.nonpcIdx,...
+            hist.bin_pos, activeData.r, fsave, fname, fclose );
             
         if Nepochs > 1
             fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_remapping_hist_SIsec'];
@@ -78,14 +78,16 @@ function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pre
         end
     end
     
-    % plots for NON-place cells 
+    % spike raster plots for NON-place cells 
     if ~isempty(hist.SIspk.nonpcIdx)
         Nnonpcs = numel(hist.SIspk.nonpcIdx);
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_pfMaps_nonPCs'];
         if ~isempty(asd)
-            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, asd.rMap, hist.SIspk.nonpcIdx, 'nonPC');
+            plotpfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), ...
+                        asd.rMap(:,:,hist.SIspk.nonpcIdx), hist.SIspk.nonpcIdx, 'nonPC');
         else
-            plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, [], hist.SIspk.nonpcIdx, 'nonPC');
+            plotpfMaps_2d(activeData, hist.rMap(:,:,hist.SIspk.nonpcIdx), hist.rMap_sm(:,:,hist.SIspk.nonpcIdx), ...
+                        [], hist.SIspk.nonpcIdx, 'nonPC');
         end
         
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_centroid_nonPCs'];
@@ -132,8 +134,7 @@ function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pre
         end 
     end
 
-    function plot_populSummary(spk_eventrate_all, spk_rate_all, infoMap_all, fieldSize_all, centroid_all, ...
-                                pcIdx, nonpcIdx, bin_pos, activer, fsave, fname, fclose )
+    function plot_populSummary(spk_eventrate_all, spk_rate_all, infoMap_all, fieldSize_all, centroid_all, pcIdx, nonpcIdx, bin_pos, activer, fsave, fname, fclose )
         % summary of population data
         for e = 1:Nepochs
             fh = figure;

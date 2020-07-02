@@ -1,6 +1,6 @@
 % Written by Ann Go, adapted from Giuseppe's PF_ASD_2d.m
 
-function [hist, asd, PFdata] = generatePFmap_2d(spikes, downTrackdata, params)
+function [hist, asd, PFdata, activeData] = generatePFmap_2d(spikes, downTrackdata, params)
 if nargin<3, params = neuroSEE_setparams; end
 
 doasd = params.methods.doasd; 
@@ -145,5 +145,10 @@ if doasd
 else
     asd = [];
 end
+
+activeData.x = activex;
+activeData.y = activey;
+activeData.t = activet;
+activeData.spikes = activespk;
 
 end

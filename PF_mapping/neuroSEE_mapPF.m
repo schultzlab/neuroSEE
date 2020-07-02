@@ -130,19 +130,20 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
             end
             save(fname_mat,'-struct','output');
         else % '2D'
-            [hist, asd, PFdata] = generatePFmap_2d( spikes, downTrackdata, params );
+            [hist, asd, PFdata, activeData] = generatePFmap_2d( spikes, downTrackdata, params );
             
             % Make plots
             if force || ~exist(fig_sdir,'dir')
                 if force && exist(fig_sdir,'dir'), rmdir(fig_sdir,'s'); end
                 if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); end
-                plotPF_2d( hist, asd, true, true, fig_sdir, fname_pref )
+                plotPF_2d( hist, asd, activeData, true, true, fig_sdir, fname_pref )
             end
         
             % Save output
             output.hist = hist;
             if doasd, output.asd = asd; end
             output.PFdata = PFdata;
+            output.activeData = activeData;
             output.params = params.PFmap;
             save(fname_mat,'-struct','output');
         end
@@ -158,6 +159,7 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
         hist = m.hist;
         if doasd, asd = m.asd; else, asd = []; end
         PFdata = m.PFdata;
+        activeData = m.activeData;
         params.PFmap = m.params;
         if params.PFmap.Nepochs > 1
             hist_epochs = m.hist_epochs;
@@ -175,7 +177,7 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
             if strcmpi(params.mode_dim,'1D')
                 plotPF_1d(hist, asd, PFdata, true, true, fig_sdir, fname_pref)
             else
-                plotPF_2d( hist, asd, true, true, fig_sdir, fname_pref )
+                plotPF_2d( hist, asd, activeData, true, true, fig_sdir, fname_pref )
             end
         end
         

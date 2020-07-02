@@ -150,6 +150,7 @@ activeData.x = activex;
 activeData.y = activey;
 activeData.t = activet;
 activeData.spikes = activespk;
+activeData.r = activer;
 
 if Nepochs == 1
     hist_epochs = [];

@@ -249,7 +249,7 @@ Names = [
         'activetrials_thr   ' % fraction of trials cell is required to be active (default: 0.5)
         'Nrand              ' % number of shuffles for bootstrap test
         'Nbins_1D           ' % no. of position bins in 103-cm linear track (default: 50)
-        'Nbins_2D           ' % position bins in 325-mm diameter open field arena (default: [16,16])
+        'Nbins_2D           ' % position bins in 325-mm diameter open field arena (default: [17,17])
    ]; 
    
 [m,~] = size(Names);
@@ -571,7 +571,7 @@ Values = [
         {0.5}                 % fraction of trials cell is required to be active (default: 0.5)
         {1000}                % number of shuffles for bootstrap test
         {50}                  % no. of position bins in 103-cm linear track (default: 50)
-        {[16,16]}             % position bins in 325-mm diameter open field arena (default: [16,16])
+        {[17,17]}             % position bins in 325-mm diameter open field arena (default: [17,17])
     ];
 
 for j = 1:m

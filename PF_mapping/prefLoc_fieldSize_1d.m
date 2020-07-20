@@ -7,6 +7,7 @@ function [ prefLoc, fieldSize, pfBins ] = prefLoc_fieldSize_1d( pfMap )
 
 Ncells = size( pfMap, 1 );
 Nbins = size( pfMap, 2 );
+binsize = 102/Nbins;
 
 fieldSize = zeros( Ncells, 1 );
 prefLoc = zeros( Ncells, 1 );
@@ -52,4 +53,5 @@ for c = 1:Ncells
     end
 end
 
+fieldSize = fieldSize*binsize;
 

@@ -14,7 +14,7 @@ independent_testing = false;
 doplot = true;
 pfactivet_thr = 0.05;      % fraction of dwell time in place field cell is required to be active (default: 0.05)
 activetrials_thr = 0.5;    % fraction of trials cell is required to be active (default: 0.2)
-prctile_thr = 99.99;
+prctile_thr = 99;
 Nrand = 1000;
 
 

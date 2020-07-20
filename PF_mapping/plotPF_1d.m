@@ -28,17 +28,16 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
     if ~isempty(hist.SIsec.pcIdx)
         if Nepochs == 1
             pcIdx = hist.SIsec.pcIdx;
-            Npcs = numel(pcIdx);
             fname = [sdir 'hist_SI_bitspersec/' fname_pref '_normspkRaster_PCs'];
-            plotSpikeRasterTrials( Npcs, PFdata.normspkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+            plotSpikeRasterTrials( PFdata.normspkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
 
             if plotNon_norm
                 fname = [sdir 'hist_SI_bitspersec/' fname_pref '_spkRaster_PCs'];
-                plotSpikeRasterTrials( Npcs, PFdata.spkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                plotSpikeRasterTrials( PFdata.spkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
             end
             
             fname = [sdir 'hist_SI_bitspersec/' fname_pref '_rateplot_PCs'];
-            plot_pfLocSize( Npcs, hist.normrateMap_sm(pcIdx,:), hist.pfLoc(pcIdx), hist.pfBins(pcIdx), 'PC', fsave, fname, fclose );
+            plot_pfLocSize( hist.normrateMap_sm(pcIdx,:), hist.pfLoc(pcIdx), hist.pfBins(pcIdx), 'PC', fsave, fname, fclose );
 
             fname = [sdir 'hist_SI_bitspersec/' fname_pref  '_populSummary'];
             plot_populStats(PFdata.bintime_trials, PFdata.bintime, PFdata.bin_activet, PFdata.activetrials,...
@@ -47,17 +46,16 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
         else
             for e = 1:Nepochs
                 pcIdx = hist.SIsec.pcIdx{e};
-                Npcs = numel(pcIdx);
                 fname = [sdir 'hist_SI_bitspersec/epoch' num2str(e) fname_pref '_normspkRaster_PCs'];
-                plotSpikeRasterTrials( Npcs, PFdata.normspkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                plotSpikeRasterTrials( PFdata.normspkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
 
                 if plotNon_norm
                     fname = [sdir 'hist_SI_bitspersec/epoch' num2str(e) fname_pref '_spkRaster_PCs'];
-                    plotSpikeRasterTrials( Npcs, PFdata.spkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                    plotSpikeRasterTrials( PFdata.spkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
                 end
 
                 fname = [sdir 'hist_SI_bitspersec/epoch' num2str(e) fname_pref '_rateplot_PCs'];
-                plot_pfLocSize( Npcs, hist.normrateMap_sm{e}(pcIdx,:), hist.pfLoc{e}(pcIdx), hist.pfBins{e}(pcIdx), 'PC', fsave, fname, fclose );
+                plot_pfLocSize( hist.normrateMap_sm{e}(pcIdx,:), hist.pfLoc{e}(pcIdx), hist.pfBins{e}(pcIdx), 'PC', fsave, fname, fclose );
 
                 fname = [sdir 'hist_SI_bitspersec/epoch' num2str(e) fname_pref  '_populSummary'];
                 plot_populStats(PFdata.bintime_trials{e}, PFdata.bintime{e}, PFdata.bin_activet{e}, PFdata.activetrials{e},...
@@ -71,31 +69,29 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
     if ~isempty(hist.SIsec.nonpcIdx)
         if Nepochs == 1
             nonpcIdx = hist.SIsec.nonpcIdx;
-            Nnonpcs = numel(nonpcIdx);
             fname = [sdir 'hist_SI_bitspersec/' fname_pref '_normspkRaster_nonPCs'];
-            plotSpikeRasterTrials( Nnonpcs, PFdata.normspkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+            plotSpikeRasterTrials( PFdata.normspkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
 
             if plotNon_norm
                 fname = [sdir 'hist_SI_bitspersec/' fname_pref '_spkRaster_nonPCs'];
-                plotSpikeRasterTrials( Nnonpcs, PFdata.spkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                plotSpikeRasterTrials( PFdata.spkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
             end
 
             fname = [sdir 'hist_SI_bitspersec/' fname_pref '_rateplot_nonPCs'];
-            plot_pfLocSize( Nnonpcs, hist.normrateMap_sm(nonpcIdx,:), hist.pfLoc(nonpcIdx), hist.pfBins(nonpcIdx), 'NonPC', fsave, fname, fclose );
+            plot_pfLocSize( hist.normrateMap_sm(nonpcIdx,:), hist.pfLoc(nonpcIdx), hist.pfBins(nonpcIdx), 'NonPC', fsave, fname, fclose );
         else
             for e = 1:Nepochs
                 nonpcIdx = hist.SIsec.nonpcIdx{e};
-                Nnonpcs = numel(nonpcIdx);
                 fname = [sdir 'hist_SI_bitspersec/epoch' num2str(e) fname_pref '_normspkRaster_nonPCs'];
-                plotSpikeRasterTrials( Nnonpcs, PFdata.normspkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                plotSpikeRasterTrials( PFdata.normspkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
 
                 if plotNon_norm
                     fname = [sdir 'hist_SI_bitspersec/epoch' num2str(e) fname_pref '_spkRaster_nonPCs'];
-                    plotSpikeRasterTrials( Nnonpcs, PFdata.spkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                    plotSpikeRasterTrials( PFdata.spkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
                 end
                 
                 fname = [sdir 'hist_SI_bitspersec/epoch' num2str(e) fname_pref '_rateplot_nonPCs'];
-                plot_pfLocSize( Nnonpcs, hist.normrateMap_sm{e}(nonpcIdx,:), hist.pfLoc{e}(nonpcIdx), hist.pfBins{e}(nonpcIdx), 'NonPC', fsave, fname, fclose );
+                plot_pfLocSize( hist.normrateMap_sm{e}(nonpcIdx,:), hist.pfLoc{e}(nonpcIdx), hist.pfBins{e}(nonpcIdx), 'NonPC', fsave, fname, fclose );
             end
         end
     end
@@ -115,17 +111,16 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
         if ~isempty(asd.SIsec.pcIdx)
             if Nepochs == 1
                 pcIdx = asd.SIsec.pcIdx;
-                Npcs = numel(pcIdx);
                 fname = [sdir 'asd_SI_bitspersec/' fname_pref '_normspkRaster_PCs'];
-                plotSpikeRasterTrials( Npcs, PFdata.normspkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                plotSpikeRasterTrials( PFdata.normspkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
 
                 if plotNon_norm
                     fname = [sdir 'asd_SI_bitspersec/' fname_pref '_spkRaster_PCs'];
-                    plotSpikeRasterTrials( Npcs, PFdata.spkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                    plotSpikeRasterTrials( PFdata.spkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
                 end
 
                 fname = [sdir 'asd_SI_bitspersec/' fname_pref '_rateplot_PCs'];
-                plot_pfLocSize( Npcs, asd.normrateMap(pcIdx,:), asd.pfLoc(pcIdx), asd.pfBins(pcIdx), 'PC', fsave, fname, fclose );
+                plot_pfLocSize( asd.normrateMap(pcIdx,:), asd.pfLoc(pcIdx), asd.pfBins(pcIdx), 'PC', fsave, fname, fclose );
 
                 fname = [sdir 'asd_SI_bitspersec/' fname_pref  '_populSummary'];
                 plot_populStats(PFdata.bintime_trials, PFdata.bintime, PFdata.bin_activet, PFdata.activetrials,...
@@ -134,17 +129,16 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
             else
                 for e = 1:Nepochs
                     pcIdx = asd.SIsec.pcIdx{e};
-                    Npcs = numel(pcIdx);
                     fname = [sdir 'asd_SI_bitspersec/epoch' num2str(e) fname_pref '_normspkRaster_PCs'];
-                    plotSpikeRasterTrials( Npcs, PFdata.normspkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                    plotSpikeRasterTrials( PFdata.normspkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
 
                     if plotNon_norm
                         fname = [sdir 'asd_SI_bitspersec/epoch' num2str(e) fname_pref '_spkRaster_PCs'];
-                        plotSpikeRasterTrials( Npcs, PFdata.spkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                        plotSpikeRasterTrials( PFdata.spkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
                     end
 
                     fname = [sdir 'asd_SI_bitspersec/epoch' num2str(e) fname_pref '_rateplot_PCs'];
-                    plot_pfLocSize( Npcs, asd.normrateMap{e}(pcIdx,:), asd.pfLoc{e}(pcIdx), asd.pfBins{e}(pcIdx), 'PC', fsave, fname, fclose );
+                    plot_pfLocSize( asd.normrateMap{e}(pcIdx,:), asd.pfLoc{e}(pcIdx), asd.pfBins{e}(pcIdx), 'PC', fsave, fname, fclose );
 
                     fname = [sdir 'asd_SI_bitspersec/epoch' num2str(e) fname_pref  '_populSummary'];
                     plot_populStats(PFdata.bintime_trials{e}, PFdata.bintime{e}, PFdata.bin_activet{e}, PFdata.activetrials{e},...
@@ -158,31 +152,29 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
         if ~isempty(asd.SIsec.nonpcIdx)
             if Nepochs == 1
                 nonpcIdx = asd.SIsec.nonpcIdx;
-                Nnonpcs = numel(nonpcIdx);
                 fname = [sdir 'asd_SI_bitspersec/' fname_pref '_normspkRaster_nonPCs'];
-                plotSpikeRasterTrials( Nnonpcs, PFdata.normspkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                plotSpikeRasterTrials( PFdata.normspkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
 
                 if plotNon_norm
                     fname = [sdir 'asd_SI_bitspersec/' fname_pref '_spkRaster_nonPCs'];
-                    plotSpikeRasterTrials( Nnonpcs, PFdata.spkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                    plotSpikeRasterTrials( PFdata.spkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
                 end
 
                 fname = [sdir 'asd_SI_bitspersec/' fname_pref '_rateplot_nonPCs'];
-                plot_pfLocSize( Nnonpcs, asd.normrateMap(nonpcIdx,:), asd.pfLoc(nonpcIdx), asd.pfBins(nonpcIdx), 'NonPC', fsave, fname, fclose );
+                plot_pfLocSize( asd.normrateMap(nonpcIdx,:), asd.pfLoc(nonpcIdx), asd.pfBins(nonpcIdx), 'NonPC', fsave, fname, fclose );
             else
                 for e = 1:Nepochs
                     nonpcIdx = asd.SIsec.nonpcIdx{e};
-                    Nnonpcs = numel(nonpcIdx);
                     fname = [sdir 'asd_SI_bitspersec/epoch' num2str(e) fname_pref '_normspkRaster_nonPCs'];
-                    plotSpikeRasterTrials( Nnonpcs, PFdata.normspkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                    plotSpikeRasterTrials( PFdata.normspkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
 
                     if plotNon_norm
                         fname = [sdir 'asd_SI_bitspersec/epoch' num2str(e) fname_pref '_spkRaster_nonPCs'];
-                        plotSpikeRasterTrials( Nnonpcs, PFdata.spkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                        plotSpikeRasterTrials( PFdata.spkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
                     end
 
                     fname = [sdir 'asd_SI_bitspersec/epoch' num2str(e) fname_pref '_rateplot_nonPCs'];
-                    plot_pfLocSize( Nnonpcs, asd.normrateMap{e}(nonpcIdx,:), asd.pfLoc{e}(nonpcIdx), asd.pfBins{e}(nonpcIdx), 'NonPC', fsave, fname, fclose );
+                    plot_pfLocSize( asd.normrateMap{e}(nonpcIdx,:), asd.pfLoc{e}(nonpcIdx), asd.pfBins{e}(nonpcIdx), 'NonPC', fsave, fname, fclose );
                 end
             end
         end
@@ -203,17 +195,16 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
     if ~isempty(hist.SIspk.pcIdx)
         if Nepochs == 1
             pcIdx = hist.SIspk.pcIdx;
-            Npcs = numel(pcIdx);
             fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_normspkRaster_PCs'];
-            plotSpikeRasterTrials( Npcs, PFdata.normspkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+            plotSpikeRasterTrials( PFdata.normspkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
 
             if plotNon_norm
                 fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_spkRaster_PCs'];
-                plotSpikeRasterTrials( Npcs, PFdata.spkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                plotSpikeRasterTrials( PFdata.spkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
             end
             
             fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_rateplot_PCs'];
-            plot_pfLocSize( Npcs, hist.normrateMap_sm(pcIdx,:), hist.pfLoc(pcIdx), hist.pfBins(pcIdx), 'PC', fsave, fname, fclose );
+            plot_pfLocSize( hist.normrateMap_sm(pcIdx,:), hist.pfLoc(pcIdx), hist.pfBins(pcIdx), 'PC', fsave, fname, fclose );
 
             fname = [sdir 'hist_SI_bitsperspk/' fname_pref  '_populSummary'];
             plot_populStats(PFdata.bintime_trials, PFdata.bintime, PFdata.bin_activet, PFdata.activetrials,...
@@ -222,17 +213,16 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
         else
             for e = 1:Nepochs
                 pcIdx = hist.SIspk.pcIdx{e};
-                Npcs = numel(pcIdx);
                 fname = [sdir 'hist_SI_bitsperspk/epoch' num2str(e) fname_pref '_normspkRaster_PCs'];
-                plotSpikeRasterTrials( Npcs, PFdata.normspkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                plotSpikeRasterTrials( PFdata.normspkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
 
                 if plotNon_norm
                     fname = [sdir 'hist_SI_bitsperspk/epoch' num2str(e) fname_pref '_spkRaster_PCs'];
-                    plotSpikeRasterTrials( Npcs, PFdata.spkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                    plotSpikeRasterTrials( PFdata.spkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
                 end
 
                 fname = [sdir 'hist_SI_bitsperspk/epoch' num2str(e) fname_pref '_rateplot_PCs'];
-                plot_pfLocSize( Npcs, hist.normrateMap_sm{e}(pcIdx,:), hist.pfLoc{e}(pcIdx), hist.pfBins{e}(pcIdx), 'PC', fsave, fname, fclose );
+                plot_pfLocSize( hist.normrateMap_sm{e}(pcIdx,:), hist.pfLoc{e}(pcIdx), hist.pfBins{e}(pcIdx), 'PC', fsave, fname, fclose );
 
                 fname = [sdir 'hist_SI_bitsperspk/epoch' num2str(e) fname_pref  '_populSummary'];
                 plot_populStats(PFdata.bintime_trials{e}, PFdata.bintime{e}, PFdata.bin_activet{e}, PFdata.activetrials{e},...
@@ -246,31 +236,29 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
     if ~isempty(hist.SIspk.nonpcIdx)
         if Nepochs == 1
             nonpcIdx = hist.SIspk.nonpcIdx;
-            Nnonpcs = numel(nonpcIdx);
             fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_normspkRaster_nonPCs'];
-            plotSpikeRasterTrials( Nnonpcs, PFdata.normspkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+            plotSpikeRasterTrials( PFdata.normspkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
 
             if plotNon_norm
                 fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_spkRaster_nonPCs'];
-                plotSpikeRasterTrials( Nnonpcs, PFdata.spkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                plotSpikeRasterTrials( PFdata.spkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
             end
 
             fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_rateplot_nonPCs'];
-            plot_pfLocSize( Nnonpcs, hist.normrateMap_sm(nonpcIdx,:), hist.pfLoc(nonpcIdx), hist.pfBins(nonpcIdx), 'NonPC', fsave, fname, fclose );
+            plot_pfLocSize( hist.normrateMap_sm(nonpcIdx,:), hist.pfLoc(nonpcIdx), hist.pfBins(nonpcIdx), 'NonPC', fsave, fname, fclose );
         else
             for e = 1:Nepochs
                 nonpcIdx = hist.SIspk.nonpcIdx{e};
-                Nnonpcs = numel(nonpcIdx);
                 fname = [sdir 'hist_SI_bitsperspk/epoch' num2str(e) fname_pref '_normspkRaster_nonPCs'];
-                plotSpikeRasterTrials( Nnonpcs, PFdata.normspkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                plotSpikeRasterTrials( PFdata.normspkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
 
                 if plotNon_norm
                     fname = [sdir 'hist_SI_bitsperspk/epoch' num2str(e) fname_pref '_spkRaster_nonPCs'];
-                    plotSpikeRasterTrials( Nnonpcs, PFdata.spkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                    plotSpikeRasterTrials( PFdata.spkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
                 end
                 
                 fname = [sdir 'hist_SI_bitsperspk/epoch' num2str(e) fname_pref '_rateplot_nonPCs'];
-                plot_pfLocSize( Nnonpcs, hist.normrateMap_sm{e}(nonpcIdx,:), hist.pfLoc{e}(nonpcIdx), hist.pfBins{e}(nonpcIdx), 'NonPC', fsave, fname, fclose );
+                plot_pfLocSize( hist.normrateMap_sm{e}(nonpcIdx,:), hist.pfLoc{e}(nonpcIdx), hist.pfBins{e}(nonpcIdx), 'NonPC', fsave, fname, fclose );
             end
         end
     end
@@ -290,17 +278,16 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
         if ~isempty(asd.SIspk.pcIdx)
             if Nepochs == 1
                 pcIdx = asd.SIspk.pcIdx;
-                Npcs = numel(pcIdx);
                 fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_normspkRaster_PCs'];
-                plotSpikeRasterTrials( Npcs, PFdata.normspkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                plotSpikeRasterTrials( PFdata.normspkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
 
                 if plotNon_norm
                     fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_spkRaster_PCs'];
-                    plotSpikeRasterTrials( Npcs, PFdata.spkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                    plotSpikeRasterTrials( PFdata.spkRaster(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
                 end
 
                 fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_rateplot_PCs'];
-                plot_pfLocSize( Npcs, asd.normrateMap(pcIdx,:), asd.pfLoc(pcIdx), asd.pfBins(pcIdx), 'PC', fsave, fname, fclose );
+                plot_pfLocSize( asd.normrateMap(pcIdx,:), asd.pfLoc(pcIdx), asd.pfBins(pcIdx), 'PC', fsave, fname, fclose );
 
                 fname = [sdir 'asd_SI_bitsperspk/' fname_pref  '_populSummary'];
                 plot_populStats(PFdata.bintime_trials, PFdata.bintime, PFdata.bin_activet, PFdata.activetrials,...
@@ -309,17 +296,16 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
             else
                 for e = 1:Nepochs
                     pcIdx = asd.SIspk.pcIdx{e};
-                    Npcs = numel(pcIdx);
                     fname = [sdir 'asd_SI_bitsperspk/epoch' num2str(e) fname_pref '_normspkRaster_PCs'];
-                    plotSpikeRasterTrials( Npcs, PFdata.normspkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                    plotSpikeRasterTrials( PFdata.normspkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
 
                     if plotNon_norm
                         fname = [sdir 'asd_SI_bitsperspk/epoch' num2str(e) fname_pref '_spkRaster_PCs'];
-                        plotSpikeRasterTrials( Npcs, PFdata.spkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
+                        plotSpikeRasterTrials( PFdata.spkRaster{e}(pcIdx), ytick_files, 'PC', fsave, fname, fclose );
                     end
 
                     fname = [sdir 'asd_SI_bitsperspk/epoch' num2str(e) fname_pref '_rateplot_PCs'];
-                    plot_pfLocSize( Npcs, asd.normrateMap{e}(pcIdx,:), asd.pfLoc{e}(pcIdx), asd.pfBins{e}(pcIdx), 'PC', fsave, fname, fclose );
+                    plot_pfLocSize( asd.normrateMap{e}(pcIdx,:), asd.pfLoc{e}(pcIdx), asd.pfBins{e}(pcIdx), 'PC', fsave, fname, fclose );
 
                     fname = [sdir 'asd_SI_bitsperspk/epoch' num2str(e) fname_pref  '_populSummary'];
                     plot_populStats(PFdata.bintime_trials{e}, PFdata.bintime{e}, PFdata.bin_activet{e}, PFdata.activetrials{e},...
@@ -333,31 +319,29 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
         if ~isempty(asd.SIspk.nonpcIdx)
             if Nepochs == 1
                 nonpcIdx = asd.SIspk.nonpcIdx;
-                Nnonpcs = numel(nonpcIdx);
                 fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_normspkRaster_nonPCs'];
-                plotSpikeRasterTrials( Nnonpcs, PFdata.normspkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                plotSpikeRasterTrials( PFdata.normspkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
 
                 if plotNon_norm
                     fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_spkRaster_nonPCs'];
-                    plotSpikeRasterTrials( Nnonpcs, PFdata.spkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                    plotSpikeRasterTrials( PFdata.spkRaster(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
                 end
 
                 fname = [sdir 'asd_SI_bitsperspk/' fname_pref '_rateplot_nonPCs'];
-                plot_pfLocSize( Nnonpcs, asd.normrateMap(nonpcIdx,:), asd.pfLoc(nonpcIdx), asd.pfBins(nonpcIdx), 'NonPC', fsave, fname, fclose );
+                plot_pfLocSize( asd.normrateMap(nonpcIdx,:), asd.pfLoc(nonpcIdx), asd.pfBins(nonpcIdx), 'NonPC', fsave, fname, fclose );
             else
                 for e = 1:Nepochs
                     nonpcIdx = asd.SIspk.nonpcIdx{e};
-                    Nnonpcs = numel(nonpcIdx);
                     fname = [sdir 'asd_SI_bitsperspk/epoch' num2str(e) fname_pref '_normspkRaster_nonPCs'];
-                    plotSpikeRasterTrials( Nnonpcs, PFdata.normspkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                    plotSpikeRasterTrials( PFdata.normspkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
 
                     if plotNon_norm
                         fname = [sdir 'asd_SI_bitsperspk/epoch' num2str(e) fname_pref '_spkRaster_nonPCs'];
-                        plotSpikeRasterTrials( Nnonpcs, PFdata.spkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
+                        plotSpikeRasterTrials( PFdata.spkRaster{e}(nonpcIdx), ytick_files, 'NonPC', fsave, fname, fclose );
                     end
 
                     fname = [sdir 'asd_SI_bitsperspk/epoch' num2str(e) fname_pref '_rateplot_nonPCs'];
-                    plot_pfLocSize( Nnonpcs, asd.normrateMap{e}(nonpcIdx,:), asd.pfLoc{e}(nonpcIdx), asd.pfBins{e}(nonpcIdx), 'NonPC', fsave, fname, fclose );
+                    plot_pfLocSize( asd.normrateMap{e}(nonpcIdx,:), asd.pfLoc{e}(nonpcIdx), asd.pfBins{e}(nonpcIdx), 'NonPC', fsave, fname, fclose );
                 end
             end
         end
@@ -365,7 +349,8 @@ function plotPF_1d(hist, asd, PFdata, fclose, fsave, sdir, fname_pref)
     
 %% PLOTTING FUNCTIONS  
 % pf location and size
-function plot_pfLocSize( Ncells, normpfMap_sm, pfLoc, pfBins, title_str, fsave, fname, fclose )
+function plot_pfLocSize( normpfMap_sm, pfLoc, pfBins, title_str, fsave, fname, fclose )
+    Ncells = size(normpfMap_sm,1);
     [nRow, nCol] = getnRownCol(Ncells);
     nPlot = nRow*nCol;
     Nfig = ceil(Ncells/nPlot)-1;

@@ -244,7 +244,7 @@ Names = [
         'gaussfiltSigma     ' % stdev for 2d gaussian filter (default: 1.5)    
         'Vthr               ' % speed threshold (mm/s) Note: David Dupret uses 20 mm/s (default: 20)
                               %                              Neurotar uses 8 mm/s
-        'prctile_thr        ' % percentile threshold for filtering nonPCs (default: 99.99)
+        'prctile_thr        ' % percentile threshold for filtering nonPCs (default: 99)
         'pfactivet_thr      ' % fraction of dwell time in place field cell is required to be active (default: 0.05)
         'activetrials_thr   ' % fraction of trials cell is required to be active (default: 0.5)
         'Nrand              ' % number of shuffles for bootstrap test
@@ -566,7 +566,7 @@ Values = [
         {1.5}                 % stdev for 2d gaussian filter (default: 1.5)
         {20}                  % speed threshold (mm/s) Note: David Dupret uses 20 mm/s (default: 20)
                               %                              Neurotar uses 8 mm/s
-        {99.99}                  % percentile threshold for filtering nonPCs (default: 99.99)
+        {99}                  % percentile threshold for filtering nonPCs (default: 99)
         {0.05}                % fraction of dwell time in place field cell is required to be active (default: 0.05)
         {0.5}                 % fraction of trials cell is required to be active (default: 0.5)
         {1000}                % number of shuffles for bootstrap test

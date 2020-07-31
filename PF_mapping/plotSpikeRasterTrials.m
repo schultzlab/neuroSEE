@@ -19,7 +19,6 @@ function plotSpikeRasterTrials( spkRaster, ytick_files, title_str, fsave, fname,
         for jj=0:nPlot-1
             if (ii*nPlot+jj+1) <= Ncells
                 axes(ha(jj+1));
-                map = viridisMap; 
                 imagesc(spkRaster{ii*nPlot+jj+1}); colormap(cmap);
                 % only put ylabels for 1st column plots
                 if ii*nPlot+jj+1 < 8

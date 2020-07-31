@@ -84,12 +84,15 @@ for s = 2:n_sessions
    else
        fname_fig = [];
    end
-   [ ~, ~, ~, Aunion_shifted, ~, ~, template_shifted ] = ...
-       register_ROIs( A{s}, A_union, options, templates{s}, templates{s-1}, options_mc.r, [], figclose );
+%    [ ~, ~, ~, Aunion_shifted, ~, ~, template_shifted ] = ...
+%        register_ROIs( A{s}, A_union, options, templates{s}, templates{s-1}, options_mc.r, [], figclose );
+%    [ matched_ROIs, nonmatched_1, nonmatched_2, A2{s-1}, R{s-1}, A_un{s}, templates_shifted{s-1} ] = ...
+%        register_ROIs( A{s}, Aunion_shifted, options, templates{s}, template_shifted, options_mc.nr ,fname_fig, figclose );
    [ matched_ROIs, nonmatched_1, nonmatched_2, A2{s-1}, R{s-1}, A_un{s}, templates_shifted{s-1} ] = ...
-       register_ROIs( A{s}, Aunion_shifted, options, templates{s}, template_shifted, options_mc.nr ,fname_fig, figclose );
+       register_ROIs( A{s}, A_union, options, templates{s}, templates{s-1}, options_mc.nr ,fname_fig, figclose );
    A_union = A_un{s};
-   A_union(:, matched_ROIs(:,2)) = A{s}(:, matched_ROIs(:,1));
+   % A_union(:, matched_ROIs(:,2)) = A{s}(:, matched_ROIs(:,1)); - not
+   % necessary, register_ROIs already does this
    % A_union = [A_union, A{s}(:,nonmatched_1)]; % Ann commented this out as
    % it seems unnecessary
    new_match = zeros(1,size(A{s},2));

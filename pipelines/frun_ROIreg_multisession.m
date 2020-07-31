@@ -1,4 +1,4 @@
-function frun_ROIreg_multisession( list, ref_array, force, figclose )
+function frun_ROIreg_multisession( list, ref_array, bl_array, force, figclose )
 
 if nargin<4, figclose = true; end
 if nargin<3, force = false; end
@@ -17,9 +17,9 @@ dofissa = true;
 % ROI registration parameters
 params.ROIreg.maxthr = [];                     
 params.ROIreg.dist_maxthr = 0.1;        % threshold for turning spatial components into binary masks [default: 0.1]
-params.ROIreg.dist_exp = 0.7;           % power n for distance between masked components: dist = 1 - (and(m1,m2)/or(m1,m2))^n [default: 1]
-params.ROIreg.dist_thr = 0.7;           % threshold for setting a distance to infinity    [default: 0.5]
-params.ROIreg.dist_overlap_thr = 0.6;   % overlap threshold for detecting if one ROI is a subset of another [default: 0.8]
+params.ROIreg.dist_exp = 0.8;           % power n for distance between masked components: dist = 1 - (and(m1,m2)/or(m1,m2))^n [default: 1]
+params.ROIreg.dist_thr = 0.6;           % threshold for setting a distance to infinity    [default: 0.5]
+params.ROIreg.dist_overlap_thr = 0.7;   % overlap threshold for detecting if one ROI is a subset of another [default: 0.8]
 params.ROIreg.plot_reg = true;
 params.ROIreg.print_msg = false;
 
@@ -78,21 +78,30 @@ if any([ ~exist(fname_mat1,'file'), ~exist(fname_mat2,'file'), force ])
         A{n} = sparse(AA); 
         
         % load motion correction templates
-        t = load([fname_pref '_mcorr_template.mat']);
+        t = load([fname_pref '_imreg_template.mat']);
         templates{n} = t.template_g;
         % templatesR{n} = t.template_r;
         
         % load pf mapping data
-        pfdata = load([fname_pref '/' str_fissa '/_PFmap_output.mat']);
-        normrMap_sm{n} = pfdata.hist.normrMap_sm;
-        normpfMap_sm{n} = pfdata.hist.SIsec.normpfMap_sm;
-        sortIdx{n} = pfdata.hist.SIsec.sortIdx;
-        pfLoc{n} = pfdata.hist.maxLoc;
-        normspkRaster{n} = pfdata.pfData.normspkRaster;
-        ytick_files{n} = pfdata.pfData.ytick_files;
+        fname = [data_locn 'Analysis/' mouseid '/' mouseid '_' exp_n ...
+                       '/group_proc/imreg_' mcorr_method '_' segment_method '/' ...
+                       mouseid '_' exp_n '_imreg_ref' ref_array(n,:) '/' str_fissa ...
+                       '/bl_prctile' num2str(bl_array(n)) '/' mouseid '_' exp_n '_ref' ref_array(n,:) '_PFmap_output.mat'];
+        pfMat = load(fname);
+        normrMap_sm{n} = pfMat.hist.normrateMap_sm;
+        normpfMap_sm{n} = pfMat.hist.normrateMap_sm(pfMat.hist.SIsec.pcIdx,:);
+        sortpcIdx{n} = pfMat.hist.SIsec.sortpcIdx;
+        pfLoc{n} = pfMat.hist.pfLoc;
+        try
+            normspkRaster{n} = pfMat.pfData.normspkRaster;
+            ytick_files{n} = pfMat.pfData.ytick_files;
+        catch
+            normspkRaster{n} = pfMat.PFdata.normspkRaster;
+            ytick_files{n} = pfMat.PFdata.ytick_files;
+        end
         
         % PCs only
-        pcIdx{n} = pfdata.hist.SIsec.pcIdx;
+        pcIdx{n} = pfMat.hist.SIsec.pcIdx;
         masks_pcs{n} = M.masks(:,:,pcIdx{n});
         AA = zeros(size(masks_pcs{n},1)*size(masks_pcs{n},2),size(masks_pcs{n},3));
         for i = 1:size(masks_pcs{n},3)
@@ -151,7 +160,7 @@ if any([ ~exist(fname_mat1,'file'), ~exist(fname_mat2,'file'), force ])
     % output needed for paper plots
     output1.normrMap_sm = normrMap_sm;
     output1.normpfMap_sm = normpfMap_sm;
-    output1.sortIdx = sortIdx;
+    output1.sortpcIdx = sortpcIdx;
     output1.pfLoc = pfLoc;
     output1.normspkRaster = normspkRaster;
     output1.ytick_files = ytick_files;
@@ -188,9 +197,9 @@ else
     if ~exist(figdir,'dir')
         % load data for paper plots
         c1 = load(fname_mat1);
-        normrMap_sm = c1.normrMap_sm;
+        normrMap_sm = c1.normrateMap_sm;
         normpfMap_sm = c1.normpfMap_sm;
-        sortIdx = c1.sortIdx;
+        sortpcIdx = c1.sortpcIdx;
         % pfLoc = c1.pfLoc;
         normspkRaster = c1.normspkRaster;
         ytick_files = c1.ytick_files;
@@ -353,22 +362,32 @@ if ~exist(figdir,'dir') || force
     Ncells = size(A_union{end},2);
     nRow = 10;
     nCol = 4;
+    cmap0 = [0.9 0.9 0.9];
+    cmap1 = [0 0 1];
+    cmap = zeros(50,3);
+    for j=1:3
+        cmap(:,j) = linspace(cmap0(j),cmap1(j),50);
+    end
+    colormap(cmap);
+    
     for ii=0:ceil(Ncells/nRow)-1 
-        fh = figure; 
-        ha = tight_subplot(nRow,nCol,[.01 .005],[.01 .07],[.01 .01]);
+        fh = figure('Position',[680 316 535 782]); 
+        ha = tight_subplot(nRow,nCol,[.05 0.04],[.03 .05],[.06 .02]);
         for jj=0:nRow-1
             if (ii*nRow+jj+1) <= Ncells
-                map = viridisMap;
                 for n = 1:Nexps
                     axes(ha(jj*nCol+n));
                     idx = assignments(ii*nRow+jj+1, n);
+                    if n == 1
+                        ylabel(['Cell ' num2str(ii*nRow+jj+1)]);
+                    end
                     if ~isnan(idx)
-                        imagesc( normspkRaster{n}{idx} ); colormap(map);
-                        yticks(ytick_files{n}); yticklabels(ytick_files{n}); 
-                        if n == 1
-                            ylabel(['Cell ' num2str(ii*nRow+jj+1)], 'fontsize', 12);
-                        end
+                        imagesc( normspkRaster{n}{idx} ); colormap(cmap);
+                        yticks([1 ytick_files{n}(end)]); %yticklabels(ytick_files{n}); 
                         xticks([]); 
+                        if n == 1
+                            ylabel(['Cell ' num2str(ii*nRow+jj+1)]);
+                        end
                         if numel(find(pcIdx{n} == idx)) > 0
                             title_str = ['PC ' num2str(idx)];
                         else
@@ -392,9 +411,9 @@ if ~exist(figdir,'dir') || force
     for n = 1:Nexps
         for j = 1:Nexps
             if n ~= j
-                pf_sort{n}{j} = zeros(numel(sortIdx{n}),Nbins);
-                for i = 1:size(sortIdx{n})
-                    iIdx = sortIdx{n}(i);
+                pf_sort{n}{j} = zeros(numel(sortpcIdx{n}),Nbins);
+                for i = 1:size(sortpcIdx{n},1)
+                    iIdx = sortpcIdx{n}(i);
                     kIdx = matchings{n}(iIdx);
                     jIdx = assignments(kIdx,j);
                     if ~isnan(jIdx)
@@ -402,24 +421,26 @@ if ~exist(figdir,'dir') || force
                     end
                 end
             else
-               pf_sort{n}{j} = normpfMap_sm{n}(sortIdx{n},:); 
+               pf_sort{n}{j} = normrMap_sm{n}(sortpcIdx{n},:); 
             end
         end
     end
     
-    fh4 = figure;
+    fh4 = figure('Position', [680 547 446 551]);
     nRow = Nexps; nCol = Nexps; 
     for n = 0:Nexps-1
         for j = 0:Nexps-1
-            if n~=j, k = 1; else, k = 25; end
+            if n~=j, k = 1; else, k = 15; end
             cmap = viridisMap;
             ax = subplot(nRow,nCol,n*nRow+j+1);
             imagesc( pf_sort{n+1}{j+1} );
             colormap(ax,cmap(k:end,:));
-            xticks([]); yticks([]); 
-            title(['Session ' num2str(j+1)], 'fontsize', 10);
+            xticks([]); yticks([1 size(pf_sort{n+1}{j+1},1)]); 
+            if n*nRow+j+1 <= nCol
+                title(['Session ' num2str(j+1)], 'fontsize', 10);
+            end
             if j==0
-                ylabel(['Session ' num2str(n+1) ' sorting']);
+                ylabel(['S' num2str(n+1) ' sorting']);
             end
         end
     end
@@ -433,14 +454,16 @@ if ~exist(figdir,'dir') || force
     Npcs = zeros(Nexps,1);
     for n = 1:Nexps
         Nactivecells(n) = 100*(size(A{n},2)/size(A_union{end},2));
-        Npcs(n) = 100*(numel(sortIdx{n})/size(A{n},2));
+        Npcs(n) = 100*(numel(sortpcIdx{n})/size(A{n},2));
         
     end
-    fh5 = figure;
+    fh5 = figure('Position', [1340 932 560 162]);
     subplot(131); plot(1:Nexps,Nactivecells); xlabel('Session no.'); ylabel('Active cells (%)');
-        hold on; plot(1:Nexps,Nactivecells,'b.','markersize',12); hold off;
+        hold on; plot(1:Nexps,Nactivecells,'b.','markersize',12); 
+        hold off; axis([1 4 0 100]); box off;
     subplot(132); plot(1:Nexps,Npcs); xlabel('Session no.'); ylabel('No. of PCs (%)');
-        hold on; plot(1:Nexps,Npcs,'b.','markersize',12); hold off;
+        hold on; plot(1:Nexps,Npcs,'b.','markersize',12); 
+        hold off; axis([1 4 0 100]); box off;
     subplot(133); xlabel('Elapsed time'); ylabel('Stability');
         
     fprintf('%s: saving population summary on stability\n',[mouseid '_' expname]);

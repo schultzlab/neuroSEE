@@ -73,7 +73,7 @@ for c = 1:Ncells
                                                         % match the matrix row and column indexing
     hhh = hist.spkMap(:,:,c)./hist.occMap;
     hhh(isnan(hhh)) = 0; hhh(isinf(hhh)) = 0; 
-    hhh(~envMask_h) = -0.0001;
+    hhh(~envMask_h) = -0.01;
     hist.rMap(:,:,c) = hhh;
     hhh2 = imgaussfilt(hhh,gaussfiltSigma); 
     hist.rMap_sm(:,:,c) = hhh2;

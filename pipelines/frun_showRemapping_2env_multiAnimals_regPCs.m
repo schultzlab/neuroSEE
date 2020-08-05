@@ -21,12 +21,12 @@
 % The section labeled "USER-DEFINED INPUT" requires user input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function frun_showRemapping_2env_multiAnimals_regallROIs( mouseid_array, env1, env2, ref1_array, ref2_array,...
-                                                        bl1_array, bl2_array, force, figsave, figclose )
+function frun_showRemapping_2env_multiAnimals( mouseid_array, env1, env2, ref1_array, ref2_array,...
+                                                        force, figsave, figclose )
 
-if nargin<8, force = false; end
-if nargin<9. figsave = true; end
-if nargin<10, figclose = true; end
+if nargin<6, force = false; end
+if nargin<7. figsave = true; end
+if nargin<8, figclose = true; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % USER-DEFINED INPUT                         
@@ -72,8 +72,8 @@ if ~exist(fname_remap,'file') || force
         % mouse identity
         mouseid = mouseid_array(n,:);
 
-        fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' mcorr_method '_' segment_method '_' str_fissa ...
-               '/' mouseid '_' env1 env2 '_imreg_ref' ref1_array(n,:) '-' ref2_array(n,:) '/bl_' num2str(bl1_array(n)) '-' num2str(bl2_array(n)) '/' ];
+        fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' mcorr_method '_' ...
+               segment_method '_' str_fissa '/bl_' num2str(bl1) '-' num2str(bl2) '/' mouseid '_' env1 env2 '_imreg_ref' ref1_array(n,:) '-' ref2_array(n,:) '/'];
         
         % Check if data exist for mouse in env1 and env2. Quit if data does not exist
         fname = [fdir  mouseid '_' env1 env2 '_remapping_output.mat'];
@@ -124,7 +124,7 @@ if ~exist(fname_remapfig,'file') || force
     fh = figure;
     fontsize = 16;
     Nbins = size(sort_env1PF,2);
-    subplot(141);
+    subplot(1,4,1);
         cmap = viridisMap;
         imagesc(sort_env1PF); 
         colormap(cmap); %colorbar
@@ -132,24 +132,25 @@ if ~exist(fname_remapfig,'file') || force
         yticks([1 size(sort_env1PF,1)]); yticklabels([1 size(sort_env1PF,1)]);
         xticks([1 Nbins]); xticklabels([1 100]);
         xlabel('Position (cm)'); %ylabel('Cell no.');
-    subplot(142);
+    subplot(1,4,2);
         imagesc(sort_env2PF_env1Sorting); 
         title(env2,'Fontweight','normal','Fontsize',fontsize);
         yticks([]);
         xticks([1 Nbins]); xticklabels([1 100]);
         xlabel('Position (cm)');
-    subplot(143);
+    subplot(1,4,3);
         imagesc(sort_env1PF_env2Sorting); 
         title(env1,'Fontweight','normal','Fontsize',fontsize); 
         yticks([1 size(sort_env2PF,1)]); yticklabels([1 size(sort_env2PF,1)]);
         xticks([1 Nbins]); xticklabels([1 100]);
         xlabel('Position (cm)');
-    subplot(144);
+    subplot(1,4,4);
         imagesc(sort_env2PF); 
         title(env2,'Fontweight','normal','Fontsize',fontsize); 
         yticks([]);
         xticks([1 Nbins]); xticklabels([1 100]);
-        xlabel('Position (cm)');        
+        xlabel('Position (cm)');
+
         
     fprintf('%s: saving remapping summary figure\n',[mousegrp '_' env1 env2]);
     savefig( fh, fname_remapfig(1:end-4) );

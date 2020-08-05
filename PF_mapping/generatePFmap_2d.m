@@ -29,7 +29,11 @@ activex     = x(speed > Vthr);
 activey     = y(speed > Vthr);
 activephi   = phi(speed > Vthr);
 activespk   = spikes(:,speed > Vthr);
-activet     = t(speed > Vthr);
+try
+    activet     = time(speed > Vthr);
+catch
+    activet     = t(speed > Vthr);
+end
 activespeed = speed(speed > Vthr);
 activer     = r(speed > Vthr);
 clear x y phi r speed t

@@ -55,6 +55,8 @@ end
 
 %% rate map calculations
 dt = 1/fr;
+hist.occMap = hist.occMap_orig*dt;
+hist.occMap(hist.occMap < 1) = 0;
 for c = 1:Ncells
     z = activespk(c,:);
     spk_idx = z>0;
@@ -69,12 +71,12 @@ for c = 1:Ncells
     % Histogram estimation
     hist.spkMap(:,:,c) = full(sparse(yh,xh,z,h1,h2));   % the reverse order of y&x lets the image pixel indexing 
                                                         % match the matrix row and column indexing
-    hhh = hist.spkMap(:,:,c)./(hist.occMap(:,:)*dt);
+    hhh = hist.spkMap(:,:,c)./hist.occMap;
     hhh(isnan(hhh)) = 0; hhh(isinf(hhh)) = 0; 
-    hist.rMap(:,:,c) = hhh;
-    hhh = imgaussfilt(hhh,gaussfiltSigma); 
     hhh(~envMask_h) = 0;
-    hist.rMap_sm(:,:,c) = hhh;
+    hist.rMap(:,:,c) = hhh;
+    hhh2 = imgaussfilt(hhh,gaussfiltSigma); 
+    hist.rMap_sm(:,:,c) = hhh2;
     hist.normrMap_sm(:,:,c) = hist.rMap_sm(:,:,c)./max(max(hist.rMap_sm(:,:,c)));
 
     % ASD estimation
@@ -86,7 +88,7 @@ for c = 1:Ncells
     end
 
     % info estimation
-    [hist.infoMap(c,1), hist.infoMap(c,2)] = infoMeasures(hhh,hist.occMap,0);
+    [hist.infoMap(c,1), hist.infoMap(c,2)] = infoMeasures(hhh2,hist.occMap,0);
     if doasd
         [asd.infoMap(c,1), asd.infoMap(c,2)] = infoMeasures(aaa',ones(n1,n2),0);
     end

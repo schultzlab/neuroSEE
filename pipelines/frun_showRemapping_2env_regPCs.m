@@ -21,14 +21,12 @@
 % The section labeled "USER-DEFINED INPUT" requires user input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [A_union, matched_ROIs, env1PF, env2PF] = frun_showRemapping_2env_regallROIs( mouseid, env1, env2, ref1, ref2, bl1, bl2, force, fsave, figclose, histsmoothWin )
+function frun_showRemapping_2env( mouseid, env1, env2, ref1, ref2, bl1, bl2, force, figclose )
 
 if nargin<6, bl1 = 85; end
 if nargin<7, bl2 = 85; end
 if nargin<8, force = false; end
-if nargin<9, fsave = true; end
-if nargin<10, figclose = true; end
-if nargin<11, histsmoothWin = 7; end
+if nargin<9, figclose = true; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % USER-DEFINED INPUT                         
@@ -92,8 +90,8 @@ end
 tic
 fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' ...
        mcorr_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '_imreg_ref' ref1 '-' ref2 '/'];
-fname_remap = [fdir  'bl_' num2str(bl1) '-' num2str(bl2) '/' mouseid '_' env1 env2 '_remapping_output.mat'];
-fname_remapfig = [fdir  'bl_' num2str(bl1) '-' num2str(bl2) '/' mouseid '_' env1 env2 '_remapping_summary.fig'];
+fname_remap = [fdir  mouseid '_' env1 env2 '_remapping_output.mat'];
+fname_remapfig = [fdir  mouseid '_' env1 env2 '_remapping_summary.fig'];
 
 if ~exist(fname_remap,'file') || force 
     fprintf('%s: loading data\n',[mouseid '_' env1 env2]);
@@ -101,11 +99,11 @@ if ~exist(fname_remap,'file') || force
     M1 = load([dir_env1 mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_segment_output.mat']);
     M2 = load([dir_env2 mouseid '_' env1 env2 '-' env2 '_ref' ref2 '_segment_output.mat']);
     
-    PF1 = load(data_env1);
-    PF2 = load(data_env2);
+    PF1 = load([dir_env1  str_fissa '/' mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_PFmap_output.mat']);
+    PF2 = load([dir_env2  str_fissa '/' mouseid '_' env1 env2 '-' env2 '_ref' ref2 '_PFmap_output.mat']);
 
-    masks1 = M1.masks;
-    masks2 = M2.masks;
+    masks1 = M1.masks(:,:,PF1.hist.SIsec.sortpcIdx);
+    masks2 = M2.masks(:,:,PF2.hist.SIsec.sortpcIdx);
     A1 = zeros(size(masks1,1)*size(masks1,2),size(masks1,3));
     A2 = zeros(size(masks2,1)*size(masks2,2),size(masks2,3));
     for i = 1:size(masks1,3)
@@ -130,11 +128,7 @@ if ~exist(fname_remap,'file') || force
     template2 = t2.template_g;
 
     fprintf('%s: registering ROIs\n',[mouseid '_' env1 env2]);
-    if fsave
-        fname_fig = [fdir  'bl_' num2str(bl1) '-' num2str(bl2) '/' mouseid '_' env1 env2 '_regROIs_output'];
-    else
-        fname_fig = [];
-    end
+    fname_fig = [fdir  mouseid '_' env1 env2 '_regROIs_output'];
     [ ~, ~, ~, A2_shifted, ~, ~, template2_shifted ] = ...
        register_ROIs( A1, A2, params.ROIreg, template1, template2, params.ROIreg_mc.r, [], false );
     [ matched_ROIs, nonmatched_1, nonmatched_2, A2, R, A_union, template2_shifted ] = ...
@@ -201,97 +195,52 @@ if ~exist(fname_remap,'file') || force
         im_env1env2masks = im_env1env2masks + cat(3,imR,imG,imB); 
     end
     
-    % PF maps for fam1 and fam2 in their own sorting
-    env1PF = zeros(size(PF1.hist.SIspk.sort_pfMap));
-    for j = 1:length(PF1.hist.SIspk.pcIdx)
-        if PF1.params.histsmoothWin == histsmoothWin
-            env1PF(j,:) = PF1.hist.normrateMap_sm(PF1.hist.SIspk.pcIdx(j),:);
-        else
-            ppp = PF1.hist.rateMap(PF1.hist.SIspk.pcIdx(j),:);
-            ppp_sm = circularSmooth(ppp,histsmoothWin);
-            env1PF(j,:) = ppp_sm./max(ppp_sm);
-        end
-    end
-    
-    env2PF = zeros(size(PF2.hist.SIspk.sort_pfMap));
-    for j = 1:length(PF2.hist.SIspk.pcIdx)
-        if PF2.params.histsmoothWin == histsmoothWin
-            env2PF(j,:) = PF2.hist.normrateMap_sm(PF2.hist.SIspk.pcIdx(j),:);
-        else
-            ppp = PF2.hist.rateMap(PF2.hist.SIspk.pcIdx(j),:);
-            ppp_sm = circularSmooth(ppp,histsmoothWin);
-            env2PF(j,:) = ppp_sm./max(ppp_sm);
-        end
-    end
-    
     % PF maps for fam2 in fam1 sorting
-    env1PF_env2Sorting = zeros(size(env2PF));
-    for j = 1:length(PF2.hist.SIspk.pcIdx)
-       [matched,ind] = ismember(PF2.hist.SIspk.pcIdx(j),matched_ROIs(:,2));
+    env2PF_env1Sorting = zeros(size([PF1.hist.SIsec.sort_normpfMap_sm]));
+    for i = 1:size(masks1,3)
+       [matched,ind] = ismember(i,matched_ROIs(:,1));
        if matched
-           if PF2.params.histsmoothWin == histsmoothWin
-               env1PF_env2Sorting(j,:) = PF1.hist.normrateMap_sm(matched_ROIs(ind,1),:);
-           else
-               ppp = PF1.hist.rateMap(matched_ROIs(ind,1),:);
-               ppp_sm = circularSmooth(ppp,histsmoothWin);
-               env1PF_env2Sorting(j,:) = ppp_sm./max(ppp_sm);
-           end
-       end
-    end
-    
-    % PF maps for fam2 in fam1 sorting
-    env2PF_env1Sorting = zeros(size(env1PF));
-    for j = 1:length(PF1.hist.SIspk.pcIdx)
-       [matched,ind] = ismember(PF1.hist.SIspk.pcIdx(j),matched_ROIs(:,1));
-       if matched
-           if PF1.params.histsmoothWin == histsmoothWin
-               env2PF_env1Sorting(j,:) = PF2.hist.normrateMap_sm(matched_ROIs(ind,2),:);
-           else
-               ppp = PF2.hist.rateMap(matched_ROIs(ind,2),:);
-               ppp_sm = circularSmooth(ppp,histsmoothWin);
-               env2PF_env1Sorting(j,:) = ppp_sm./max(ppp_sm);
-           end
+           env2PF_env1Sorting(i,:) = PF2.hist.SIsec.sort_normpfMap_sm(matched_ROIs(ind,2),:);
        end
     end
     clear matched ind
     
-    % sort maps
-    [ env1_pfLoc, ~, ~ ] = prefLoc_fieldSize_1d( env1PF );
-    [ ~, env1_sortIdx ] = sort( env1_pfLoc );
-    env1PF = env1PF(env1_sortIdx,:);
-    env2PF_env1Sorting = env2PF_env1Sorting(env1_sortIdx,:);
+    % PF maps for fam2 in fam1 sorting
+    env1PF_env2Sorting = zeros(size([PF2.hist.SIsec.sort_normpfMap_sm]));
+    for i = 1:size(masks2,3)
+       [matched,ind] = ismember(i,matched_ROIs(:,2));
+       if matched
+           env1PF_env2Sorting(i,:) = PF1.hist.SIsec.sort_normpfMap_sm(matched_ROIs(ind,1),:);
+       end
+    end
     
-    [ env2_pfLoc, ~, ~ ] = prefLoc_fieldSize_1d( env2PF );
-    [ ~, env2_sortIdx ] = sort( env2_pfLoc );
-    env2PF = env2PF(env2_sortIdx,:);
-    env1PF_env2Sorting = env1PF_env2Sorting(env2_sortIdx,:);
+    env1PF = PF1.hist.SIsec.sort_normpfMap_sm;
+    env2PF = PF2.hist.SIsec.sort_normpfMap_sm;
     
     % save data
-    if fsave
-        remapping_output.masks = masks_union;
-        remapping_output.outlines = outlines;
-        remapping_output.matched_ROIs = matched_ROIs;
-        remapping_output.nonmatched_env1 = nonmatched_1;
-        remapping_output.nonmatched_env2 = nonmatched_2;
-        remapping_output.alignment_matrix = R;
-        remapping_output.aligned_env2_ROIs = A2;
-        remapping_output.masks2_reg = masks2_reg;
-        remapping_output.params = params.ROIreg;
-        remapping_output.template_env1 = template1;
-        remapping_output.template_env2 = template2_shifted;
+    remapping_output.masks = masks_union;
+    remapping_output.outlines = outlines;
+    remapping_output.matched_ROIs = matched_ROIs;
+    remapping_output.nonmatched_env1 = nonmatched_1;
+    remapping_output.nonmatched_env2 = nonmatched_2;
+    remapping_output.alignment_matrix = R;
+    remapping_output.aligned_env2_ROIs = A2;
+    remapping_output.masks2_reg = masks2_reg;
+    remapping_output.params = params.ROIreg;
+    remapping_output.template_env1 = template1;
+    remapping_output.template_env2 = template2_shifted;
 
-        remapping_output.im_env1masks = im_env1masks;
-        remapping_output.im_env2masks = im_env2masks;
-        remapping_output.im_env1env2masks = im_env1env2masks;
-        remapping_output.env1PF = env1PF;
-        remapping_output.env2PF_env1Sorting = env2PF_env1Sorting;
-        remapping_output.env1PF_env2Sorting = env1PF_env2Sorting;
-        remapping_output.env2PF = env2PF;
-
-        fprintf('%s: saving remapping data\n',[mouseid '_' env1 env2]);
-        if ~exist(fdir,'dir'), mkdir(fdir); end
-        save(fname_remap, '-struct', 'remapping_output')
-    end
+    remapping_output.im_env1masks = im_env1masks;
+    remapping_output.im_env2masks = im_env2masks;
+    remapping_output.im_env1env2masks = im_env1env2masks;
+    remapping_output.env1PF = env1PF;
+    remapping_output.env2PF_env1Sorting = env2PF_env1Sorting;
+    remapping_output.env1PF_env2Sorting = env1PF_env2Sorting;
+    remapping_output.env2PF = env2PF;
+    
+    fprintf('%s: saving remapping data\n',[mouseid '_' env1 env2]);
+    if ~exist(fdir,'dir'), mkdir(fdir); end
+    save(fname_remap, '-struct', 'remapping_output')
 else
     if ~exist(fname_remapfig,'file') 
         fprintf('%s: loading remapping data\n',[mouseid '_' env1 env2]);
@@ -346,12 +295,11 @@ if ~exist(fname_remapfig,'file') || force
         xticks([1 Nbins]); xticklabels([1 100]);
         xlabel('Position (cm)');
 
-    if fsave    
-        fprintf('%s: saving remapping summary figure\n',[mouseid '_' env1 env2]);
-        savefig( fh, fname_remapfig(1:end-4) );
-        saveas( fh, fname_remapfig(1:end-4), 'png' );
-        if figclose, close( fh ); end   
-    end
+        
+    fprintf('%s: saving remapping summary figure\n',[mouseid '_' env1 env2]);
+    savefig( fh, fname_remapfig(1:end-4) );
+    saveas( fh, fname_remapfig(1:end-4), 'png' );
+    if figclose, close( fh ); end   
 end
 
     

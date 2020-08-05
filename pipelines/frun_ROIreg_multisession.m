@@ -1,7 +1,8 @@
 function frun_ROIreg_multisession( list, ref_array, bl_array, force, figclose )
 
-if nargin<4, figclose = true; end
-if nargin<3, force = false; end
+if nargin<5, figclose = true; end
+% if nargin<5, figsave = true; end
+if nargin<4, force = false; end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

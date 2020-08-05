@@ -21,12 +21,12 @@
 % The section labeled "USER-DEFINED INPUT" requires user input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [A_union, matched_ROIs, env1PF, env2PF] = frun_showRemapping_2env_regallROIs( mouseid, env1, env2, ref1, ref2, bl1, bl2, force, fsave, figclose, histsmoothWin )
+function [A_union, matched_ROIs, env1PF, env2PF] = frun_showRemapping_2env_regallROIs( mouseid, env1, env2, ref1, ref2, bl1, bl2, force, figsave, figclose, histsmoothWin )
 
 if nargin<6, bl1 = 85; end
 if nargin<7, bl2 = 85; end
 if nargin<8, force = false; end
-if nargin<9, fsave = true; end
+if nargin<9, figsave = true; end
 if nargin<10, figclose = true; end
 if nargin<11, histsmoothWin = 7; end
 
@@ -130,7 +130,7 @@ if ~exist(fname_remap,'file') || force
     template2 = t2.template_g;
 
     fprintf('%s: registering ROIs\n',[mouseid '_' env1 env2]);
-    if fsave
+    if figsave
         fname_fig = [fdir  'bl_' num2str(bl1) '-' num2str(bl2) '/' mouseid '_' env1 env2 '_regROIs_output'];
     else
         fname_fig = [];
@@ -201,59 +201,96 @@ if ~exist(fname_remap,'file') || force
         im_env1env2masks = im_env1env2masks + cat(3,imR,imG,imB); 
     end
     
+%     % PF maps for fam1 and fam2 in their own sorting
+%     c = 0;
+%     env1PF = zeros(numel(find(ismember(PF1.hist.SIspk.pcIdx,matched_ROIs(:,1)))),size(PF1.hist.rateMap,2));
+%     for j = 1:length(PF1.hist.SIspk.pcIdx)
+%         if ismember(PF1.hist.SIspk.pcIdx(j),matched_ROIs(:,1))
+%             c = c +1;
+%             if PF1.params.histsmoothWin == histsmoothWin
+%                 env1PF(c,:) = PF1.hist.normrateMap_sm(PF1.hist.SIspk.pcIdx(j),:);
+%             else
+%                 ppp = PF1.hist.rateMap(PF1.hist.SIspk.pcIdx(j),:);
+%                 ppp_sm = circularSmooth(ppp,histsmoothWin);
+%                 env1PF(c,:) = ppp_sm./max(ppp_sm);
+%             end
+%         end
+%     end
+%     
+%     c = 0;
+%     env2PF = zeros(numel(find(ismember(PF2.hist.SIspk.pcIdx,matched_ROIs(:,2)))),size(PF2.hist.rateMap,2));
+%     for j = 1:length(PF2.hist.SIspk.pcIdx)
+%         if ismember(PF2.hist.SIspk.pcIdx(j),matched_ROIs(:,2))
+%             c = c+1;
+%             if PF2.params.histsmoothWin == histsmoothWin
+%                 env2PF(c,:) = PF2.hist.normrateMap_sm(PF2.hist.SIspk.pcIdx(j),:);
+%             else
+%                 ppp = PF2.hist.rateMap(PF2.hist.SIspk.pcIdx(j),:);
+%                 ppp_sm = circularSmooth(ppp,histsmoothWin);
+%                 env2PF(c,:) = ppp_sm./max(ppp_sm);
+%             end
+%         end
+%     end
+%     
+%     % PF maps for fam2 in fam1 sorting
+%     env1PF_env2Sorting = zeros(size(env2PF));
+%     for j = 1:length(PF2.hist.SIspk.pcIdx)
+%        [matched,ind] = ismember(PF2.hist.SIspk.pcIdx(j),matched_ROIs(:,2));
+%        if matched
+%            if PF2.params.histsmoothWin == histsmoothWin
+%                env1PF_env2Sorting(j,:) = PF1.hist.normrateMap_sm(matched_ROIs(ind,1),:);
+%            else
+%                ppp = PF1.hist.rateMap(matched_ROIs(ind,1),:);
+%                ppp_sm = circularSmooth(ppp,histsmoothWin);
+%                env1PF_env2Sorting(j,:) = ppp_sm./max(ppp_sm);
+%            end
+%        end
+%     end
+%     
+%     % PF maps for fam2 in fam1 sorting
+%     env2PF_env1Sorting = zeros(size(env1PF));
+%     for j = 1:length(PF1.hist.SIspk.pcIdx)
+%        [matched,ind] = ismember(PF1.hist.SIspk.pcIdx(j),matched_ROIs(:,1));
+%        if matched
+%            if PF1.params.histsmoothWin == histsmoothWin
+%                env2PF_env1Sorting(j,:) = PF2.hist.normrateMap_sm(matched_ROIs(ind,2),:);
+%            else
+%                ppp = PF2.hist.rateMap(matched_ROIs(ind,2),:);
+%                ppp_sm = circularSmooth(ppp,histsmoothWin);
+%                env2PF_env1Sorting(j,:) = ppp_sm./max(ppp_sm);
+%            end
+%        end
+%     end
+%     clear matched ind
+    
     % PF maps for fam1 and fam2 in their own sorting
-    env1PF = zeros(size(PF1.hist.SIspk.sort_pfMap));
-    for j = 1:length(PF1.hist.SIspk.pcIdx)
+    env1PF = zeros(numel(matched_ROIs(:,1)),size(PF1.hist.rateMap,2));
+    for j = 1:numel(matched_ROIs(:,1))
         if PF1.params.histsmoothWin == histsmoothWin
-            env1PF(j,:) = PF1.hist.normrateMap_sm(PF1.hist.SIspk.pcIdx(j),:);
+            env1PF(j,:) = PF1.hist.normrateMap_sm(matched_ROIs(j,1),:);
         else
-            ppp = PF1.hist.rateMap(PF1.hist.SIspk.pcIdx(j),:);
+            ppp = PF1.hist.rateMap(matched_ROIs(j,1),:);
             ppp_sm = circularSmooth(ppp,histsmoothWin);
             env1PF(j,:) = ppp_sm./max(ppp_sm);
         end
     end
     
-    env2PF = zeros(size(PF2.hist.SIspk.sort_pfMap));
-    for j = 1:length(PF2.hist.SIspk.pcIdx)
+    env2PF = zeros(numel(matched_ROIs(:,2)),size(PF2.hist.rateMap,2));
+    for j = 1:numel(matched_ROIs(:,2))
         if PF2.params.histsmoothWin == histsmoothWin
-            env2PF(j,:) = PF2.hist.normrateMap_sm(PF2.hist.SIspk.pcIdx(j),:);
+            env2PF(j,:) = PF2.hist.normrateMap_sm(matched_ROIs(j,2),:);
         else
-            ppp = PF2.hist.rateMap(PF2.hist.SIspk.pcIdx(j),:);
+            ppp = PF2.hist.rateMap(matched_ROIs(j,2),:);
             ppp_sm = circularSmooth(ppp,histsmoothWin);
             env2PF(j,:) = ppp_sm./max(ppp_sm);
         end
     end
     
     % PF maps for fam2 in fam1 sorting
-    env1PF_env2Sorting = zeros(size(env2PF));
-    for j = 1:length(PF2.hist.SIspk.pcIdx)
-       [matched,ind] = ismember(PF2.hist.SIspk.pcIdx(j),matched_ROIs(:,2));
-       if matched
-           if PF2.params.histsmoothWin == histsmoothWin
-               env1PF_env2Sorting(j,:) = PF1.hist.normrateMap_sm(matched_ROIs(ind,1),:);
-           else
-               ppp = PF1.hist.rateMap(matched_ROIs(ind,1),:);
-               ppp_sm = circularSmooth(ppp,histsmoothWin);
-               env1PF_env2Sorting(j,:) = ppp_sm./max(ppp_sm);
-           end
-       end
-    end
+    env1PF_env2Sorting = env1PF;
     
     % PF maps for fam2 in fam1 sorting
-    env2PF_env1Sorting = zeros(size(env1PF));
-    for j = 1:length(PF1.hist.SIspk.pcIdx)
-       [matched,ind] = ismember(PF1.hist.SIspk.pcIdx(j),matched_ROIs(:,1));
-       if matched
-           if PF1.params.histsmoothWin == histsmoothWin
-               env2PF_env1Sorting(j,:) = PF2.hist.normrateMap_sm(matched_ROIs(ind,2),:);
-           else
-               ppp = PF2.hist.rateMap(matched_ROIs(ind,2),:);
-               ppp_sm = circularSmooth(ppp,histsmoothWin);
-               env2PF_env1Sorting(j,:) = ppp_sm./max(ppp_sm);
-           end
-       end
-    end
-    clear matched ind
+    env2PF_env1Sorting = env2PF;
     
     % sort maps
     [ env1_pfLoc, ~, ~ ] = prefLoc_fieldSize_1d( env1PF );
@@ -267,7 +304,7 @@ if ~exist(fname_remap,'file') || force
     env1PF_env2Sorting = env1PF_env2Sorting(env2_sortIdx,:);
     
     % save data
-    if fsave
+    if figsave
         remapping_output.masks = masks_union;
         remapping_output.outlines = outlines;
         remapping_output.matched_ROIs = matched_ROIs;
@@ -346,7 +383,7 @@ if ~exist(fname_remapfig,'file') || force
         xticks([1 Nbins]); xticklabels([1 100]);
         xlabel('Position (cm)');
 
-    if fsave    
+    if figsave    
         fprintf('%s: saving remapping summary figure\n',[mouseid '_' env1 env2]);
         savefig( fh, fname_remapfig(1:end-4) );
         saveas( fh, fname_remapfig(1:end-4), 'png' );

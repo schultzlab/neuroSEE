@@ -66,8 +66,19 @@ for c = 1:Ncells
                 pcMap = spikeMap./(occMap*dt);
                 pcMap(isnan(pcMap)) = 0; pcMap(isinf(pcMap)) = 0; 
                 pcMap = imgaussfilt(pcMap, gaussfiltSigma); 
-                pcMap(~envMask) = 0;
+                pcMap(~envMask) = -0.01;
                 [SIsec(j),SIspk(j)] = infoMeasures(pcMap, occMap, 0);
+                
+                hhh = hist.spkMap(:,:,c)./hist.occMap;
+                hhh(isnan(hhh)) = 0; hhh(isinf(hhh)) = 0; 
+                hhh(~envMask_h) = 0;
+                hist.rMap(:,:,c) = hhh;
+                hhh_norm = hhh./max(max(hhh));
+                hhh_norm(~envMask_h) = -0.01;       % this is so pf map can have a circular boundary
+                hist.normrMap(:,:,c) = hhh_norm;
+                hhh = imgaussfilt(hhh,gaussfiltSigma); 
+                hhh(~envMask_h) = 0;
+                [hist.infoMap(c,1), hist.infoMap(c,2)] = infoMeasures(hhh,hist.occMap,0);
             else
                 envmode = 2; % the mask is obtained by dilation and imfill
                 envMask_asd = getEnvEdgePrior(occMap,envmode); % ASD

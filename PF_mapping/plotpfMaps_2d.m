@@ -60,13 +60,13 @@ function plotpfMaps_2d(activeData_all, pfMap_h_all, pfMap_sm_h_all, infoMap_h_al
                     colormap(cmap2);
                     imagesc(squeeze(pfMap_sm_h_all(:,:,pcIdx(ii*nRow+jj+1),e))');
                     axis off; colorbar; % caxis([0 0.005]);
-                    title_str = sprintf('%g %s', infoMap_h_all(pcIdx(ii*nRow+jj+1)), info_str); 
+                    title_str = sprintf('%0.3g %s', infoMap_h_all(pcIdx(ii*nRow+jj+1)), info_str); 
                     title(title_str,'fontsize',12);
                     if ~isempty(pfMap_a_all)
                         axes(ha(jj*nRow+4));
                         imagesc(squeeze(pfMap_a_all(:,:,pcIdx(ii*nRow+jj+1),e))');
                         axis off; colorbar; % caxis([0 0.003]);
-                        title_str = sprintf('%g %s', infoMap_a_all(pcIdx(ii*nRow+jj+1)), info_str); 
+                        title_str = sprintf('%0.3g %s', infoMap_a_all(pcIdx(ii*nRow+jj+1)), info_str); 
                         title(title_str,'fontsize',12);
                     end
                 end

@@ -22,6 +22,6 @@ function [ASD,ASDstats] = runASD_2d(x,z,dims,mask,ml)
     minlens = [dims(1)/ml,dims(2)/ml];  % minimum length scale along each dimension
     [kasd,ASDstats] = fastASD(xx,z,dims,minlens);
     %kasd(kasd<0) = 0; % get rid of possible negative estimates  
-    if MASK; kasd(~mask) = 0; end
+    if MASK; kasd(~mask) = -0.01; end
     ASD = reshape(kasd,dims);
 end

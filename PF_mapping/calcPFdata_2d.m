@@ -73,31 +73,28 @@ for c = 1:Ncells
                                                         % match the matrix row and column indexing
     hhh = hist.spkMap(:,:,c)./hist.occMap;
     hhh(isnan(hhh)) = 0; hhh(isinf(hhh)) = 0; 
-    hhh(~envMask_h) = -0.01;
-    hist.rMap(:,:,c) = hhh;
     hhh(~envMask_h) = 0;
+    hist.rMap(:,:,c) = hhh;
+    hhh_norm = hhh./max(max(hhh));
+    hhh_norm(~envMask_h) = -0.01;       % this is so pf map can have a circular boundary
+    hist.normrMap(:,:,c) = hhh_norm;
     hhh = imgaussfilt(hhh,gaussfiltSigma); 
     hhh(~envMask_h) = 0;
     [hist.infoMap(c,1), hist.infoMap(c,2)] = infoMeasures(hhh,hist.occMap,0);
-    hhh(~envMask_h) = -0.01;     % this is so pf map can have a circular boundary
     hist.rMap_sm(:,:,c) = hhh;
-    hist.normrMap_sm(:,:,c) = hist.rMap_sm(:,:,c)./max(max(hist.rMap_sm(:,:,c)));
-    
-    
+    hhh_norm = hhh./max(max(hhh));
+    hhh_norm(~envMask_h) = -0.01;
+    hist.normrMap_sm(:,:,c) = hhh_norm;
 
     % ASD estimation
     if doasd
         [aaa,~] = runASD_2d(asd.bin_pos, z', asd.Nbins, envMask_asd);
         if min(aaa)<0; aaa = aaa-min(aaa); end
         asd.rMap(:,:,c) = aaa;
-        asd.normrMap(:,:,c) = asd.rMap(:,:,c)./max(max(asd.rMap(:,:,c)));
+        aaa_norm = aaa_norm./max(max(aaa_norm));
+        aaa_norm(aaa_norm<0) = -0.01;  
+        asd.normrMap(:,:,c) = aaa_norm;
         [asd.infoMap(c,1), asd.infoMap(c,2)] = infoMeasures(aaa',ones(n1,n2),0);
-    end
-
-    % info estimation
-    
-    if doasd
-        
     end
 end
 

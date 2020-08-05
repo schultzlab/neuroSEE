@@ -65,10 +65,10 @@ function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pre
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_pfMaps_PCs'];
         if ~isempty(asd)
             plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, hist.infoMap(:,2), asd.rMap, asd.infoMap(:,2), ...
-                            hist.SIspk.pcIdx, 'PC', 'bits/event', fname, fclose);
+                            hist.SIspk.pcIdx, 'PC', 'bits/s', fname, fclose);
         else
             plotpfMaps_2d(activeData, hist.rMap, hist.rMap_sm, hist.infoMap(:,2), [], [], ...
-                            hist.SIspk.pcIdx, 'PC', 'bits/event', fname, fclose);
+                            hist.SIspk.pcIdx, 'PC', fname, fclose);
         end
         
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_centroid_PCs'];
@@ -90,10 +90,10 @@ function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pre
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_pfMaps_nonPCs'];
         if ~isempty(asd)
             plotpfMaps_2d( activeData, hist.rMap, hist.rMap_sm, hist.infoMap(:,2), asd.rMap, asd.infoMap(:,2), ...
-                            hist.SIspk.nonpcIdx, 'NPC', 'bits/event', fname, fclose );
+                            hist.SIspk.nonpcIdx, 'NPC', fname, fclose );
         else
             plotpfMaps_2d( activeData, hist.rMap, hist.rMap_sm, hist.infoMap(:,2), [], [], ...
-                            hist.SIspk.nonpcIdx, 'NPC', 'bits/event', fname, fclose);
+                            hist.SIspk.nonpcIdx, 'NPC', fname, fclose);
         end
         
         fname = [sdir 'hist_SI_bitsperspk/' fname_pref '_centroid_nonPCs'];

@@ -48,7 +48,7 @@ function plotpfMaps_2d(activeData_all, pfMap_h_all, pfMap_sm_h_all, infoMap_h_al
                     hold off; 
 
                     axes(ha(jj*nCol+2));
-                    cmap = viridisMap;
+                    cmap = viridisMap_whitelowest;
                     colormap(cmap);
                     imagesc(squeeze(pfMap_h_all(:,:,pcIdx(ii*nRow+jj+1),e))');
                     axis off; colorbar; % caxis([0 0.06]);

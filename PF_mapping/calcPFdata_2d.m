@@ -55,7 +55,7 @@ end
 
 %% rate map calculations
 dt = 1/fr;
-hist.occMap = hist.occMap_orig*dt;
+hist.occMap = hist.occMap*dt;
 hist.occMap(hist.occMap < 1) = 0;
 for c = 1:Ncells
     z = activespk(c,:);
@@ -73,7 +73,7 @@ for c = 1:Ncells
                                                         % match the matrix row and column indexing
     hhh = hist.spkMap(:,:,c)./hist.occMap;
     hhh(isnan(hhh)) = 0; hhh(isinf(hhh)) = 0; 
-    hhh(~envMask_h) = 0;
+    hhh(~envMask_h) = -0.0001;
     hist.rMap(:,:,c) = hhh;
     hhh2 = imgaussfilt(hhh,gaussfiltSigma); 
     hist.rMap_sm(:,:,c) = hhh2;

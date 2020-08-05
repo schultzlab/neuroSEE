@@ -66,7 +66,7 @@ for c = 1:Ncells
                 pcMap = spikeMap./(occMap*dt);
                 pcMap(isnan(pcMap)) = 0; pcMap(isinf(pcMap)) = 0; 
                 pcMap = imgaussfilt(pcMap, gaussfiltSigma); 
-                pcMap(~envMask) = 0;
+                pcMap(~envMask) = -0.001;
                 [SIsec(j),SIspk(j)] = infoMeasures(pcMap, occMap, 0);
             else
                 envmode = 2; % the mask is obtained by dilation and imfill

@@ -157,7 +157,7 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
     else
         m = load(fname_mat);
         hist = m.hist;
-        if doasd, asd = m.asd; else, asd = []; end
+        if doasd, asd = m.asd; else, asd = []; end      
         PFdata = m.PFdata;
         activeData = m.activeData;
         params.PFmap = m.params;
@@ -177,7 +177,7 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
             if strcmpi(params.mode_dim,'1D')
                 plotPF_1d(hist, asd, PFdata, true, true, fig_sdir, fname_pref)
             else
-                plotPF_2d( hist, asd, activeData, true, true, fig_sdir, fname_pref )
+                plotPF_2d( hist, asd, PFdata, activeData, true, true, fig_sdir, fname_pref )
             end
         end
         

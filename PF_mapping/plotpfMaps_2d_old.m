@@ -1,4 +1,4 @@
-function plotpfMaps_2d(activeData, pfMap_h, pfMap_sm_h, pfMap_a, pcIdx, cell_str, fname, fclose)
+function plotpfMaps_2d_old(activeData, pfMap_h, pfMap_sm_h, pfMap_a, pcIdx, cell_str, fname, fclose)
     if nargin<8, fclose = true; end
     if nargin<7, fname = []; end
 

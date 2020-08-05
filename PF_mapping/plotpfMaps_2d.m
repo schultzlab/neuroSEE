@@ -19,7 +19,7 @@ function plotpfMaps_2d(activeData_all, pfMap_h_all, pfMap_sm_h_all, infoMap_h_al
     spk_col = 'b';
 
     for e = 1:Nepochs
-        for ii=0:ceil(Ncells/nRow)-1 
+        for ii=0%:ceil(Ncells/nRow)-1 
             if isempty(pfMap_a_all)
                 fh = figure('Position',[680 678 500 550]); 
             end
@@ -48,16 +48,15 @@ function plotpfMaps_2d(activeData_all, pfMap_h_all, pfMap_sm_h_all, infoMap_h_al
                     hold off; 
 
                     axes(ha(jj*nCol+2));
-                    cmap1 = viridisMap;
-                    colormap(cmap1);
+                    cmap = viridisMap_whitelowest;
+                    colormap(cmap);
                     imagesc(squeeze(pfMap_h_all(:,:,pcIdx(ii*nRow+jj+1),e))');
                     axis off; colorbar; % caxis([0 0.06]);
                     if Nepochs >1 
                         title(['Epoch ',num2str(e)],'fontsize',11);
                     end
-                    axes(ha(jj*nCol+3)); 
-                    cmap2 = viridisMap_whitelowest;
-                    colormap(cmap2);
+                    
+                    axes(ha(jj*nCol+3));
                     imagesc(squeeze(pfMap_sm_h_all(:,:,pcIdx(ii*nRow+jj+1),e))');
                     axis off; colorbar; % caxis([0 0.005]);
                     title_str = sprintf('%0.3g %s', infoMap_h_all(pcIdx(ii*nRow+jj+1)), info_str); 

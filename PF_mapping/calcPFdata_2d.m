@@ -73,11 +73,13 @@ for c = 1:Ncells
                                                         % match the matrix row and column indexing
     hhh = hist.spkMap(:,:,c)./hist.occMap;
     hhh(isnan(hhh)) = 0; hhh(isinf(hhh)) = 0; 
+    hhh(~envMask_h) = -0.01;
     hist.rMap(:,:,c) = hhh;
+    hhh(~envMask_h) = 0;
     hhh = imgaussfilt(hhh,gaussfiltSigma); 
     hhh(~envMask_h) = 0;
     [hist.infoMap(c,1), hist.infoMap(c,2)] = infoMeasures(hhh,hist.occMap,0);
-    hhh(~envMask_h) = -0.5;     % this is so pf map can have a circular boundary
+    hhh(~envMask_h) = -0.01;     % this is so pf map can have a circular boundary
     hist.rMap_sm(:,:,c) = hhh;
     hist.normrMap_sm(:,:,c) = hist.rMap_sm(:,:,c)./max(max(hist.rMap_sm(:,:,c)));
     

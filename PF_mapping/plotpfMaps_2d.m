@@ -19,7 +19,7 @@ function plotpfMaps_2d(activeData_all, pfMap_h_all, normpfMap_h_all, normpfMap_s
     spk_col = 'b';
 
     for e = 1:Nepochs
-        for ii=0%:ceil(Ncells/nRow)-1 
+        for ii=0:ceil(Ncells/nRow)-1 
             if isempty(normpfMap_a_all)
                 fh = figure('Position',[680 678 500 550]); 
             end

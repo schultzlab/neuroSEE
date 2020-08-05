@@ -240,7 +240,7 @@ Names = [
         'lam_pr             ' % false positive probability for determing lambda penalty (default: 0.99)
     % PF mapping
         'Nepochs            ' % number of epochs into which data will be divided for analysis (default: 1)
-        'histsmoothWin      ' % smoothing window for histogram method (default: 5)
+        'histsmoothWin      ' % smoothing window for histogram method (default: 7)
         'gaussfiltSigma     ' % stdev for 2d gaussian filter (default: 1.5)    
         'Vthr               ' % speed threshold (mm/s) Note: David Dupret uses 20 mm/s (default: 20)
                               %                              Neurotar uses 8 mm/s
@@ -562,7 +562,7 @@ Values = [
         {0.99}                % false positive probability for determing lambda penalty (default: 0.99)
     % PF mapping
         {1}                   % number of epochs into which data will be divided for analysis (default: 1)
-        {5}                   % smoothing window for histogram method (default: 5)
+        {7}                   % smoothing window for histogram method (default: 7)
         {1.5}                 % stdev for 2d gaussian filter (default: 1.5)
         {20}                  % speed threshold (mm/s) Note: David Dupret uses 20 mm/s (default: 20)
                               %                              Neurotar uses 8 mm/s

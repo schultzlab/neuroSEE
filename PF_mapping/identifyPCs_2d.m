@@ -12,7 +12,7 @@ if nargin<11, shuffle_method = 2; end
 if nargin<10, mode = 'hist'; end
 if nargin<9, Nrand = 1000; end
 if nargin<8, pfactivet_thr = 0.05; end
-if nargin<7, prctile_thr = 99.99; end
+if nargin<7, prctile_thr = 99; end
 
 params = neuroSEE_setparams;
 fr = params.PFmap.fr;

@@ -1,12 +1,12 @@
 function plotpfMaps_2d(activeData_all, pfMap_h_all, normpfMap_h_all, normpfMap_sm_h_all, infoMap_h_all, ...
-                        pfMap_a_all, normpfMap_a_all, infoMap_a_all, pcIdx, cell_str, info_str, fname, fclose)
-    if nargin<13, fclose = true; end
-    if nargin<12, fname = []; end
+                        normpfMap_a_all, infoMap_a_all, pcIdx, cell_str, info_str, fname, fclose)
+    if nargin<12, fclose = true; end
+    if nargin<11, fname = []; end
 
     Nepochs = size( pfMap_h_all, 4 );
     Ncells = length(pcIdx);
     nRow = 4;
-    if isempty(pfMap_a_all)
+    if isempty(normpfMap_a_all)
         nCol = 3;
     else
         nCol = 4;
@@ -20,7 +20,7 @@ function plotpfMaps_2d(activeData_all, pfMap_h_all, normpfMap_h_all, normpfMap_s
 
     for e = 1:Nepochs
         for ii=0%:ceil(Ncells/nRow)-1 
-            if isempty(pfMap_a_all)
+            if isempty(normpfMap_a_all)
                 fh = figure('Position',[680 678 500 550]); 
             end
             ha = tight_subplot(nRow,nCol,[.04 .02],[.02 .05],[.02 .02]);
@@ -52,7 +52,7 @@ function plotpfMaps_2d(activeData_all, pfMap_h_all, normpfMap_h_all, normpfMap_s
                     colormap(cmap);
                     imagesc(squeeze(normpfMap_h_all(:,:,pcIdx(ii*nRow+jj+1),e))');
                     axis off; % colorbar; 
-                    title_str = sprintf('Max %0.3g events/s', max(max(pfMap_h_all(:,:,pcIdx(ii*nRow+jj+1)))); 
+                    title_str = sprintf('Max %0.3g events/s', max(max(pfMap_h_all(:,:,pcIdx(ii*nRow+jj+1))))); 
                     title(title_str,'fontsize',12);
                     
                     axes(ha(jj*nCol+3));
@@ -61,7 +61,7 @@ function plotpfMaps_2d(activeData_all, pfMap_h_all, normpfMap_h_all, normpfMap_s
                     title_str = sprintf('%0.3g %s', infoMap_h_all(pcIdx(ii*nRow+jj+1)), info_str); 
                     title(title_str,'fontsize',12);
                     
-                    if ~isempty(pfMap_a_all)
+                    if ~isempty(normpfMap_a_all)
                         axes(ha(jj*nRow+4));
                         imagesc(squeeze(normpfMap_a_all(:,:,pcIdx(ii*nRow+jj+1),e))');
                         axis off; % colorbar; % caxis([0 0.003]);

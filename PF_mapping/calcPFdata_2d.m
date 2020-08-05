@@ -79,7 +79,7 @@ for c = 1:Ncells
     [hist.infoMap(c,1), hist.infoMap(c,2)] = infoMeasures(hhh,hist.occMap,0);
     hhh(~envMask_h) = -0.5;     % this is so pf map can have a circular boundary
     hist.rMap_sm(:,:,c) = hhh;
-    % hist.normrMap_sm(:,:,c) = hist.rMap_sm(:,:,c)./max(max(hist.rMap_sm(:,:,c)));
+    hist.normrMap_sm(:,:,c) = hist.rMap_sm(:,:,c)./max(max(hist.rMap_sm(:,:,c)));
     
     
 

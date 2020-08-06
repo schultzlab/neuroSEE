@@ -115,7 +115,7 @@ function plotPF_2d(hist, asd, PFdata, activeData, fclose, fsave, sdir, fname_pre
             for jj=0:nPlot-1
                 if (ii*nPlot+jj+1) <= Npcs
                     axes(ha(jj+1));
-                    map = viridisMap; 
+                    map = viridisMap_whitelowest; 
                     imagesc(normpfMap_sm(:,:,ii*nPlot+jj+1)); colormap(map);
                     yticks([]); xticks([]); 
                     title([title_str ' ' num2str(ii*nPlot+jj+1)],'fontsize',12);

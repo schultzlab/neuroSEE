@@ -32,8 +32,8 @@ function plotpfMaps_2d(activeData_all, pfMap_h_all, normpfMap_h_all, normpfMap_s
                     % to match the image pixel indexing to matrix row and
                     % column indexing
                     for kk = 1: numel(idx_file) - 1
-                        plot(activeData_all.y(idx_file(kk):idx_file(kk+1)-1),-activeData_all.x(idx_file(kk):idx_file(kk+1)-1),'Color',[0.8 0.8 0.8],...
-                            'LineWidth',1); axis square; 
+                        plot(activeData_all.y(idx_file(kk):idx_file(kk+1)-1),-activeData_all.x(idx_file(kk):idx_file(kk+1)-1),...
+                            'Color',[0.8 0.8 0.8], 'LineWidth',1); axis square; 
                     end
                     z = activeData_all.spikes(pcIdx(ii*nRow+jj+1),:);
                     ind = find(z>0);

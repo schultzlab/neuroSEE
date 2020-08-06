@@ -108,7 +108,7 @@ end
 pcIdx_SIsec = include_SIsec(sort_incSIsec);
 nonpcIdx_SIsec = exclude_SIsec(sort_excSIsec);
 
-[~,sort_incSIspk] = sort(infoMap(include_SIspk,1),'descend');
-[~,sort_excSIspk] = sort(infoMap(exclude_SIspk,1),'descend');
+[~,sort_incSIspk] = sort(infoMap(include_SIspk,2),'descend');
+[~,sort_excSIspk] = sort(infoMap(exclude_SIspk,2),'descend');
 pcIdx_SIspk = include_SIspk(sort_incSIspk);
 nonpcIdx_SIspk = exclude_SIspk(sort_excSIspk);

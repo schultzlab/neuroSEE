@@ -1,6 +1,6 @@
 %% USER INPUT
-list = 'list_m82_open_s1.txt';
-reffile = '20190404_17_41_23';
+list = 'list_m82_open_s2.txt';
+reffile = '20190406_20_56_30';
 mcorr_method = 'normcorre';
 segment_method = 'CaImAn';
 dofissa = true;
@@ -9,7 +9,7 @@ groupreg_method = 'imreg';
 roiarea_thr = 70;           % roi area smaller than this will be eliminated
                             % neuroSEE_segment already filtered areas <70
 borderpix = 4;              % thickness (in pix) of image border to be cleared of rois
-removerois = [80; 102; 117; 146; 152; 158; 172; 183; 184; 211; 253; 258; 268; 269; 294; 307; 308; 310; 313; 314; 317];            % specific rois to eliminate (e.g. overlapping rois)
+removerois = [162];            % specific rois to eliminate (e.g. overlapping rois)
 
 %% Load module folders and define data directory
 [data_locn,~,err] = load_neuroSEEmodules;

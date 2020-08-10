@@ -45,7 +45,7 @@ MatlabVer = str2double(release(1:4));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % USER-DEFINED INPUT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-file = '20190222_12_05_46';     % file to be processed
+file = '20190222_12_26_07';     % file to be processed
 
 % Auto-defined FOV
 if str2double(file(1,1:4)) > 2018

@@ -44,7 +44,7 @@ MatlabVer = str2double(release(1:4));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % USER-DEFINED INPUT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-file = '20181015_09_26_48';     % file to be processed
+file = '20190222_12_05_46';     % file to be processed
 
 % Auto-defined FOV
 if str2double(file(1,1:4)) > 2018
@@ -54,7 +54,7 @@ else
 end
 
 % Basic settings
-test = true;                   % flag to use one of smaller files in test folder
+test = false;                   % flag to use one of smaller files in test folder
                                % flag to force 
 force = [false;...              % (1) motion correction even if motion corrected images exist
          false;...              % (2) roi segmentation
@@ -85,8 +85,14 @@ params = neuroSEE_setparams(...
             'runpatches', runpatches,...
             'dofissa', dofissa, ...
             'doasd', doasd,...
-            'FOV', FOV,...
-            'tsub',1); 
+            'FOV', FOV); 
+                               % flag to execute step (use if wanting to skip later steps)
+dostep = [true;...              % (1) motion correction even if motion corrected images exist
+         true;...               % (2) roi segmentation
+         false;...              % (3) neuropil decontamination
+         false;...              % (4) spike extraction
+         false;...              % (5) tracking data extraction
+         false];                % (6) place field mapping
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -109,61 +115,65 @@ end
 %% Image files
 % Load original image files if forced to do motion correction or if motion corrected files don't exist 
 
-if force(1) || ~check(1)
-    % Continue only if Matlab version on hpc is R2017
-    if strcmpi(comp,'hpc') && MatlabVer > 2017
-        beep
-        err = sprintf('%s: Lower Matlab version required for motion correction. Cannot proceed.\n', [mouseid '_' expname]);
-        cprintf('Errors',err);
-        return
-    end
-    
-    % Send Ann slack message if processing has started
-    if slacknotify
-        slacktext = [file ': Processing started'];
-        neuroSEE_slackNotify( slacktext );
-    end
+if dostep(1)
+    if force(1) || ~check(1)
+        % Continue only if Matlab version on hpc is R2017
+        if strcmpi(comp,'hpc') && MatlabVer > 2017
+            beep
+            err = sprintf('%s: Lower Matlab version required for motion correction. Cannot proceed.\n', [mouseid '_' expname]);
+            cprintf('Errors',err);
+            return
+        end
 
-    if strcmpi(mcorr_method,'normcorre') 
-        filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-r/' ];
-        fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
-        fname_tif_red_mcorr = [filedir file '_2P_XYT_red_mcorr.tif'];
-        % If mcorr_method is 'normcorre' and the rigid correction has been done,
-        % no need to load original image file
-        if exist(fname_tif_gr_mcorr,'file') && exist(fname_tif_red_mcorr,'file')
-            imG = []; imR = [];
+        % Send Ann slack message if processing has started
+        if slacknotify
+            slacktext = [file ': Processing started'];
+            neuroSEE_slackNotify( slacktext );
+        end
+
+        if strcmpi(mcorr_method,'normcorre') 
+            filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-r/' ];
+            fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
+            fname_tif_red_mcorr = [filedir file '_2P_XYT_red_mcorr.tif'];
+            % If mcorr_method is 'normcorre' and the rigid correction has been done,
+            % no need to load original image file
+            if exist(fname_tif_gr_mcorr,'file') && exist(fname_tif_red_mcorr,'file')
+                imG = []; imR = [];
+            else
+                [ imG, imR ] = load_imagefile( data_locn, file, force(1) );
+            end
         else
             [ imG, imR ] = load_imagefile( data_locn, file, force(1) );
         end
     else
-        [ imG, imR ] = load_imagefile( data_locn, file, force(1) );
+        imG = []; imR = [];
+    end
+            
+    %% (1) Motion correction
+    % Saved in file folder: motion corrected tif files
+    %                       summary fig & png, 
+    %                       mat with fields 
+    %                           green.[ meanframe, meanregframe ]
+    %                           red.[ meanframe, meanregframe ]
+    %                           template
+    %                           shifts
+    %                           col_shift
+    %                           params
+
+    if any([ force(2), ~check(2), ~check(1) ]) 
+        if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
+            [ imG, ~, params.mcorr ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
+            imR = [];
+        else
+            [ imG, ~, params.mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
+        end
+    else 
+        fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
+        imG = []; imR = [];
     end
 else
-    imG = []; imR = [];
-end
-
-            
-%% (1) Motion correction
-% Saved in file folder: motion corrected tif files
-%                       summary fig & png, 
-%                       mat with fields 
-%                           green.[ meanframe, meanregframe ]
-%                           red.[ meanframe, meanregframe ]
-%                           template
-%                           shifts
-%                           col_shift
-%                           params
-
-if any([ force(2), ~check(2), ~check(1) ]) 
-    if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
-        [ imG, ~, params.mcorr ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
-        imR = [];
-    else
-        [ imG, ~, params.mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, [], force(1) );
-    end
-else 
-    fprintf('%s: Motion corrected files found. Skipping motion correction\n', file);
-    imG = []; imR = [];
+    fprintf('%s: No processing steps ticked. Cannot proceed.\n', file);
+    return
 end
 
 
@@ -173,29 +183,46 @@ end
 %                       mat with fields {tsG, df_f, masks, corr_image, params}
 %                       in case of CaImAn: other data needed for GUI viewing
 
-% If doing CaImAn, continue only if Matlab version is R2018 or higher    
-[tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force(2), mean(imR,3) );
-clear imG imR
+if dostep(2)
+    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force(2), mean(imR,3) );
+    clear imG imR
+else
+    fprintf('%s: ROI segmentation step not ticked. Skipping this and later steps.\n', file);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
+end
 
 
 %% (3) Run FISSA to extract neuropil-corrected time-series
 % Saved in file folder: mat file with fields {dtsG, ddf_f, masks}
 %                       summary plots of tsG, ddf_f (fig & png)
 
-if dofissa
-    release = version('-release'); % Find out what Matlab release version is running
-    MatlabVer = str2double(release(1:4));
-    if MatlabVer > 2017
-        [dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+if dostep(3)
+    if dofissa
+        release = version('-release'); % Find out what Matlab release version is running
+        MatlabVer = str2double(release(1:4));
+        if MatlabVer > 2017
+            [dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
+        else
+            fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
+            dofissa = false;
+            dtsG = [];
+            ddf_f = [];
+        end
     else
-        fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
-        dofissa = false;
         dtsG = [];
         ddf_f = [];
     end
 else
-    dtsG = [];
-    ddf_f = [];
+    if dofissa
+        fprintf('%s: FISSA step not ticked. Skipping this and later steps.\n', file);
+        t = toc;
+        str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+        cprintf(str)
+        return
+    end
 end
 
 
@@ -203,11 +230,19 @@ end
 % Saved in file folder: mat with fields {tsG, dtsG, df_f, ddf_f, spikes, params}
 %                       summary plot of spikes (fig & png)
 
-[spikes, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
+if dostep(4)
+    [spikes, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4) );
 
-if manually_refine_spikes
-    GUI_manually_refine_spikes( spikes, tsG, dtsG, df_f, ddf_f, data_locn, file, params, corr_image, masks );
-    uiwait 
+    if manually_refine_spikes
+        GUI_manually_refine_spikes( spikes, tsG, dtsG, df_f, ddf_f, data_locn, file, params, corr_image, masks );
+        uiwait 
+    end
+else
+    fprintf('%s: Spike estimation step not ticked. Skipping this and later steps.\n', file);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
 end
 
 
@@ -215,14 +250,22 @@ end
 % Saved in file folder: trajectory plot (fig & png)
 %                       mat with fields {time, r, phi, x, y , speed, w, alpha, TTLout, filename}
 
-trackfile = findMatchingTrackingFile( data_locn, file, force(5) );
-if force(5) || ~check(5)
-    Trackdata = load_trackfile(data_locn, file, trackfile, force(5));
-    downTrackdata = downsample_trackData( Trackdata, size(spikes,2), params.fr );
-    save([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat'],'downTrackdata');
+if dostep(5)
+    trackfile = findMatchingTrackingFile( data_locn, file, force(5) );
+    if force(5) || ~check(5)
+        Trackdata = load_trackfile(data_locn, file, trackfile, force(5));
+        downTrackdata = downsample_trackData( Trackdata, size(spikes,2), params.fr );
+        save([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat'],'downTrackdata');
+    else
+        M = load([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat']);
+        downTrackdata = M.downTrackdata;
+    end
 else
-    M = load([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat']);
-    downTrackdata = M.downTrackdata;
+    fprintf('%s: Behaviour tracking step not ticked. Skipping this and later steps.\n', file);
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
+    cprintf(str)
+    return
 end
 
 
@@ -230,48 +273,52 @@ end
 % Saved: fig & png of several figures showing occMap, spkMap, pfMap, remapping and spkMap_pertrial
 %        mat file with fields {occMap, hist, asd, downData, activeData}
 
-if manually_refine_spikes
-    force(6) = true;
-end
-
-if any(downTrackdata.r < 100)
-    params.mode_dim = '2D';                     % open field
-    params.PFmap.Nbins = params.PFmap.Nbins_2D; % number of location bins in [x y]               
-else 
-    params.mode_dim = '1D';                     % circular linear track
-    params.PFmap.Nbins = params.PFmap.Nbins_1D; % number of location bins    
-    
-    if ~exist([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_phiposition.fig'],'file')
-        fig = figure('position',[680 678 1000 200]);
-        plot(downTrackdata.phi); 
-        title('Mouse phi position','Fontweight','normal','Fontsize',12);
-        savefig(fig,[grp_trackdir mouseid '_' expname '_phiposition']);
-        saveas(fig,[grp_trackdir mouseid '_' expname '_phiposition'],'png');
-        close(fig);
+if dostep(6)
+    if manually_refine_spikes
+        force(6) = true;
     end
-end
-fields = {'Nbins_1D','Nbins_2D'};
-params.PFmap = rmfield(params.PFmap,fields);
 
-if strcmpi(params.mode_dim,'1D')
-    [ hist, asd, pfData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force(6));
+    if any(downTrackdata.r < 100)
+        params.mode_dim = '2D';                     % open field
+        params.PFmap.Nbins = params.PFmap.Nbins_2D; % number of location bins in [x y]               
+    else 
+        params.mode_dim = '1D';                     % circular linear track
+        params.PFmap.Nbins = params.PFmap.Nbins_1D; % number of location bins    
+
+        if ~exist([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_phiposition.fig'],'file')
+            fig = figure('position',[680 678 1000 200]);
+            plot(downTrackdata.phi); 
+            title('Mouse phi position','Fontweight','normal','Fontsize',12);
+            savefig(fig,[grp_trackdir mouseid '_' expname '_phiposition']);
+            saveas(fig,[grp_trackdir mouseid '_' expname '_phiposition'],'png');
+            close(fig);
+        end
+    end
+    fields = {'Nbins_1D','Nbins_2D'};
+    params.PFmap = rmfield(params.PFmap,fields);
+
+    if strcmpi(params.mode_dim,'1D')
+        [ hist, asd, pfData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force(6));
+    else
+        [ occMap, hist, asd, downData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+    end
+
+    %% Save output. These are all the variables needed for viewing data with GUI
+
+    if dofissa
+        str_fissa = 'FISSA';
+    else
+        str_fissa = 'noFISSA';
+    end
+    fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
+
+    save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','trackfile',...
+                        'downTrackdata','pfData','hist','asd','params');
+    if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
+    if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
 else
-    [ occMap, hist, asd, downData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
+    fprintf('%s: PF mapping step not ticked. Skipping step.\n', file);
 end
-
-%% Save output. These are all the variables needed for viewing data with GUI
-
-if dofissa
-    str_fissa = 'FISSA';
-else
-    str_fissa = 'noFISSA';
-end
-fname_allData = [ data_locn 'Data/' file(1:8) '/Processed/' file '/' file '_' mcorr_method '_' segment_method '_' str_fissa '_allData.mat'];
-
-save(fname_allData,'file','corr_image','masks','tsG','df_f','spikes','trackfile',...
-                    'downTrackdata','pfData','hist','asd','params');
-if ~isempty(dtsG), save(fname_allData,'-append','dtsG'); end
-if ~isempty(ddf_f), save(fname_allData,'-append','ddf_f'); end
  
 t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));

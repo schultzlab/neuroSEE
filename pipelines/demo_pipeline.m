@@ -100,7 +100,7 @@ dostep = [true;...              % (1) motion correction even if motion corrected
 % check(1:6) check for existing data in processing steps 1-6
 % check(7) checks for existing mat file pooling all processed data for file
 
-check = checkforExistingProcData(data_locn, file, params.methods);
+check = checkforExistingProcData(data_locn, file, params);
 
 % Some security measures
 force = logicalForce(force);    % Only allow combinations of force values that make sense

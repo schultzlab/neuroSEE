@@ -283,6 +283,8 @@ if dostep(2)
         cdf_f{n} = df_f(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
         segment_output.df_f = cdf_f{n};
         segment_output.tsG = tsG(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
+        fdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
+        if ~exist(fdir,'dir'), mkdir(fdir); end
         save([fdir file '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
     end
 else

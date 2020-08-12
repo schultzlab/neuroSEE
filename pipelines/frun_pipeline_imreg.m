@@ -39,11 +39,10 @@
 
 function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, tsub, bl_prctile, prctile_thr, pfactivet_thr, activetrials_thr )
 
-if nargin<3, dofissa = true; end
-if nargin<4, force = [0; 0; 0; 0; 0; 0]; end
+if nargin<10, activetrials_thr = 0.5; end
 if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
-% if nargin<4, slacknotify = false; end
-slacknotify = false;
+if nargin<4, force = [0; 0; 0; 0; 0; 0]; end
+if nargin<3, dofissa = true; end
 % if nargin<2, see line 121
 tic
 
@@ -124,6 +123,8 @@ params = neuroSEE_setparams(...
 %          true;...              % (4) spike extraction
 %          true;...              % (5) tracking data consolidation
 %          true];                % (6) place field mapping
+
+slacknotify = false;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

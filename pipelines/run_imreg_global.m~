@@ -1,5 +1,7 @@
 file = '20181016_09_09_43';
 templateglob = '20181015_09_37_54';
-imregr_params = load('CtoB_r.mat');
-imregnr_params = load('CtoB_nr.mat');
+load('CtoB-r.mat');
+imregr_params.shifts = CtoBshifts_r
+imregnr_params = load('CtoB-nr.mat');
 imreg_global( file, templateglob, imregr_params, imregnr_params )
+CtoB_r.shifts = 

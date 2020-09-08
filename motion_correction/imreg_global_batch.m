@@ -16,16 +16,10 @@
 % OUTPUT
 %   file registered to global template templateglob
 
-function imG_globalreg = imreg_global( file, templateglob, imregr_params, imregnr_params, templateloc, force )
-    if nargin<5, templateloc = []; end
-    if nargin<6, force = false; end
+function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imregr_params, imregnr_params, templateloc, force )
+    if nargin<6, templateloc = []; end
+    if nargin<7, force = false; end
     
-    if strcmpi(file, templateglob)
-        beep
-        cprintf('Text','File to be registered is the same as template. Skipping registration.');    
-        return
-    end
-        
     tic
     % load image file registered to templateloc
     [data_locn,~,err] = load_neuroSEEmodules;
@@ -35,13 +29,25 @@ function imG_globalreg = imreg_global( file, templateglob, imregr_params, imregn
         return
     end
     
+    listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
+    files = extractFilenamesFromTxtfile( listfile );
+
+    % Image to be registered
+    file = files(array_id,:);
+
+    if strcmpi(file, templateglob)
+        beep
+        cprintf('Text','File to be registered is the same as template. Skipping registration.');    
+        return
+    end
+        
     mcorr_method = 'normcorre';
     if ~isempty(templateloc)
         [ imG, ~ ] = load_imagefile( data_locn, file, false, '_imreg', mcorr_method, false, templateloc, mcorr_method );
     else
         [ imG, ~ ] = load_imagefile( data_locn, file, false, '_mcorr', mcorr_method, false );
     end
-    quarts
+    
     % filenames to save outputs to
     filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' templateglob '/' ];
     fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_imreg_ref' templateglob '.tif'];

@@ -103,7 +103,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
                 end
                 % Save summary figure, tif images, motion correction/registration output matrix
                 if force || ~exist(fname_fig,'file'), makeplot(out_g,out_r); end
-                saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.normcorre_r);
+                saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.normcorre_r, file);
             else
                 % read motion corrected tif files for normcorre-r
                 imG = read_file( fname_tif_gr_mcorr );
@@ -136,7 +136,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
                 fname_fig = [filedir file '_imreg_ref' reffile '_summary.fig'];
             end
             makeplot(out_g,out_r);
-            saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr);
+            saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr, file);
         
         elseif  strcmpi(mcorr_method,'normcorre-r')     
             mcorr_output.params.normcorre_r = params_mcorr.normcorre_r;
@@ -147,7 +147,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
             end
             % Save summary figure, tif images, motion corrections/registration output matrix
             makeplot(out_g,out_r);
-            saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.normcorre_r);
+            saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.normcorre_r, file);
         
         elseif  strcmpi(mcorr_method,'normcorre-nr')
             mcorr_output.params.normcorre_nr = params_mcorr.normcorre_nr;
@@ -158,7 +158,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
             end
             % Save summary figure, tif images, motion corrections/registration output matrix
             makeplot(out_g,out_r);
-            saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.normcorre_nr);
+            saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.normcorre_nr, file);
         
         else
             if ~isempty(template)
@@ -171,7 +171,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
                                                                                 refChannel, params_mcorr.fftRigid.redoT );
                 % Save summary figure, tif images, motion corrections/registration output matrix
                 makeplot(out_g,out_r);
-                saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.fftRigid);
+                saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.fftRigid, file);
             end
         end
         
@@ -282,10 +282,12 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
         close( fh );
     end
 
-    function saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr)
+    function saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr, file)
         % Save output
         mcorr_output.green = out_g;
-        mcorr_output.red = out_r;
+        if ~isempty(out_r)
+            mcorr_output.red = out_r;
+        end
         mcorr_output.shifts = shifts;
         mcorr_output.col_shift = col_shift;
         mcorr_output.template = template;
@@ -302,7 +304,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
         end
         cprintf('Text',prevstr);
             writeTifStack( imG,fname_tif_gr_mcorr );
-            writeTifStack( imR,fname_tif_red_mcorr );
+            if ~isempty(imR), writeTifStack( imR,fname_tif_red_mcorr ); end
         if isempty(reffile)
             str = sprintf( '%s: Motion corrected tif images saved\n', file );
         else

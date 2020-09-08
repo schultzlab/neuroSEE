@@ -41,7 +41,7 @@ function imG_globalreg = imreg_global( file, templateglob, imregr_params, imregn
     else
         [ imG, ~ ] = load_imagefile( data_locn, file, false, '_mcorr', mcorr_method, false );
     end
-    quarts
+    
     % filenames to save outputs to
     filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' templateglob '/' ];
     fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_imreg_ref' templateglob '.tif'];

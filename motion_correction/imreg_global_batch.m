@@ -20,14 +20,7 @@ function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imreg
     if nargin<5, templateloc = []; end
     if nargin<6, force = false; end
     
-    if strcmpi(file, templateglob)
-        beep
-        cprintf('Text','File to be registered is the same as template. Skipping registration.');    
-        return
-    end
-        
     tic
-    
     [data_locn,~,err] = load_neuroSEEmodules;
     if ~isempty(err)
         beep
@@ -41,6 +34,12 @@ function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imreg
 
     % Image to be registered
     file = files(array_id,:);
+
+    if strcmpi(file, templateglob)
+        beep
+        cprintf('Text','File to be registered is the same as template. Skipping registration.');    
+        return
+    end
 
     % filenames to save outputs to
     filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' templateglob '/' ];

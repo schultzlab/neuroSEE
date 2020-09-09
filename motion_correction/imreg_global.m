@@ -76,11 +76,11 @@ function imG_globalreg = imreg_global( file, templateglob, imregr_params, imregn
             imshow(C2); 
             title( 'Green: After registration' );
         subplot(223), 
-            C1 = imfuse( out_g.meanframe, template_g, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
+            C1 = imfuse( out_g.meanframe, template_g, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [2 1 0]);
             imshow(C1);  
             title( 'Reversed colours' );
         subplot(224), 
-            C2 = imfuse( out_g.meanregframe,template_g,'falsecolor','Scaling','joint','ColorChannels',[1 2 0] );
+            C2 = imfuse( out_g.meanregframe,template_g,'falsecolor','Scaling','joint','ColorChannels',[2 1 0] );
             imshow(C2); 
             title( 'Reversed colours' );
         if ~exist( filedir, 'dir' ), mkdir( filedir ); end

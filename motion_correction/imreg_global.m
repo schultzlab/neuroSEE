@@ -27,19 +27,12 @@ function imG_globalreg = imreg_global( file, templateglob, imregr_params, imregn
     end
         
     tic
-    % load image file registered to templateloc
+    
     [data_locn,~,err] = load_neuroSEEmodules;
     if ~isempty(err)
         beep
         cprintf('Errors',err);    
         return
-    end
-    
-    mcorr_method = 'normcorre';
-    if ~isempty(templateloc)
-        [ imG, ~ ] = load_imagefile( data_locn, file, false, '_imreg', mcorr_method, false, templateloc, mcorr_method );
-    else
-        [ imG, ~ ] = load_imagefile( data_locn, file, false, '_mcorr', mcorr_method, false );
     end
     
     % filenames to save outputs to
@@ -48,7 +41,14 @@ function imG_globalreg = imreg_global( file, templateglob, imregr_params, imregn
     fname_mat_mcorr = [filedir file '_imreg_ref' templateglob '_output.mat'];
     fname_fig = [filedir file '_imreg_summary.fig'];
     
-    if any([ force, ~exist(fname_tif_gr_mcorr,'file'), ~exist(fname_mat_mcorr,'file') ])
+    if any([ force, ~exist(fname_tif_gr_mcorr,'file'), ~exist(fname_mat_mcorr,'file') ])    mcorr_method = 'normcorre';
+        % load image file registered to templateloc
+        if ~isempty(templateloc)
+            [ imG, ~ ] = load_imagefile( data_locn, file, false, '_imreg', mcorr_method, false, templateloc, mcorr_method );
+        else
+            [ imG, ~ ] = load_imagefile( data_locn, file, false, '_mcorr', mcorr_method, false );
+        end
+        
         % load templateglob 
         fprintf( '%s: Starting image registration to %s\n', file, templateglob );
         refdir = [data_locn 'Data/' templateglob(1:8) '/Processed/' templateglob '/mcorr_' mcorr_method '/'];

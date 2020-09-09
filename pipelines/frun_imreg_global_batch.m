@@ -18,4 +18,4 @@ if ~isempty(err)
     return
 end
 
-imreg_global_batch( array_id, list, templateglob, imregr_params, imregnr_params, templateloc, force )
+imreg_global_batch( array_id, list, templateglob, imregr_params, imregnr_params, templateloc, force );

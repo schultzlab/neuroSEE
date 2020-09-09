@@ -1,5 +1,6 @@
 function saveTifOutput(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr,...
-                file, fname_mat_mcorr, fname_tif_gr_mcorr, fname_tif_red_mcorr)
+                file, fname_mat_mcorr, fname_tif_gr_mcorr, fname_tif_red_mcorr, reffile)
+    if nargin<15, reffile = []; end
     if nargin<14, fname_tif_red_mcorr = []; end
 
     % Save output

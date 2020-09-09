@@ -40,7 +40,7 @@ function imG_globalreg = imreg_global( file, templateglob, imregr_params, imregn
     filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' templateglob '/' ];
     fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_imreg_ref' templateglob '.tif'];
     fname_mat_mcorr = [filedir file '_imreg_ref' templateglob '_output.mat'];
-    fname_fig = [filedir file '_imreg_summary.fig'];
+    fname_fig = [filedir file '_imreg_ref' templateglob '_summary.fig'];
     
     if any([ force, ~exist(fname_tif_gr_mcorr,'file'), ~exist(fname_mat_mcorr,'file') ])    
         % load image file registered to templateloc

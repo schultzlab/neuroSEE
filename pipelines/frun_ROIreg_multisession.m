@@ -60,7 +60,7 @@ if any([ ~exist(fname_mat1,'file'), ~exist(fname_mat2,'file'), force ])
         [ mouseid_n, exp_n ] = find_mouseIDexpname( exps{n} );
         if ~strcmpi(mouseid_n, mouseid)
             beep
-            cprintf('Errors','Invalid list. Not all experiments for a single animal.');   
+            cprintf('Errors','Invalid list. Experiments must all be for a single animal.');   
             return
         end
         fname_pref = [data_locn 'Analysis/' mouseid '/' mouseid '_' exp_n ...

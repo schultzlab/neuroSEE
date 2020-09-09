@@ -17,8 +17,8 @@
 %   file registered to global template templateglob
 
 function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imregr_params, imregnr_params, templateloc, force )
-    if nargin<5, templateloc = []; end
-    if nargin<6, force = false; end
+    if nargin<6, templateloc = []; end
+    if nargin<7, force = false; end
     
     tic
     [data_locn,~,err] = load_neuroSEEmodules;

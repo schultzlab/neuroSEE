@@ -16,4 +16,4 @@ if ~isempty(err)
     return
 end
 
-imreg_global( file, templateglob, imregr_params, imregnr_params )
+imreg_global( file, templateglob, imregr_params, imregnr_params );

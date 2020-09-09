@@ -17,17 +17,24 @@
 %   file registered to global template templateglob
 
 function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imregr_params, imregnr_params, templateloc, force )
-    if nargin<6, templateloc = []; end
-    if nargin<7, force = false; end
+    if nargin<5, templateloc = []; end
+    if nargin<6, force = false; end
     
+    if strcmpi(file, templateglob)
+        beep
+        cprintf('Text','File to be registered is the same as template. Skipping registration.');    
+        return
+    end
+        
     tic
-    % load image file registered to templateloc
+    
     [data_locn,~,err] = load_neuroSEEmodules;
     if ~isempty(err)
         beep
         cprintf('Errors',err);    
         return
     end
+    mcorr_method = 'normcorre';
     
     listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
     files = extractFilenamesFromTxtfile( listfile );
@@ -35,26 +42,20 @@ function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imreg
     % Image to be registered
     file = files(array_id,:);
 
-    if strcmpi(file, templateglob)
-        beep
-        cprintf('Text','File to be registered is the same as template. Skipping registration.');    
-        return
-    end
-        
-    mcorr_method = 'normcorre';
-    if ~isempty(templateloc)
-        [ imG, ~ ] = load_imagefile( data_locn, file, false, '_imreg', mcorr_method, false, templateloc, mcorr_method );
-    else
-        [ imG, ~ ] = load_imagefile( data_locn, file, false, '_mcorr', mcorr_method, false );
-    end
-    
     % filenames to save outputs to
     filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' templateglob '/' ];
     fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_imreg_ref' templateglob '.tif'];
     fname_mat_mcorr = [filedir file '_imreg_ref' templateglob '_output.mat'];
     fname_fig = [filedir file '_imreg_summary.fig'];
     
-    if any([ force, ~exist(fname_tif_gr_mcorr,'file'), ~exist(fname_mat_mcorr,'file') ])
+    if any([ force, ~exist(fname_tif_gr_mcorr,'file'), ~exist(fname_mat_mcorr,'file') ])    
+        % load image file registered to templateloc
+        if ~isempty(templateloc)
+            [ imG, ~ ] = load_imagefile( data_locn, file, false, '_imreg', mcorr_method, false, templateloc, mcorr_method );
+        else
+            [ imG, ~ ] = load_imagefile( data_locn, file, false, '_mcorr', mcorr_method, false );
+        end
+        
         % load templateglob 
         fprintf( '%s: Starting image registration to %s\n', file, templateglob );
         refdir = [data_locn 'Data/' templateglob(1:8) '/Processed/' templateglob '/mcorr_' mcorr_method '/'];
@@ -71,7 +72,7 @@ function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imreg
         % summary figure
         out_g.meanframe = mean(imG,3);
         out_g.meanregframe = mean(imG_globalreg,3);
-        fh = figure;
+        fh = figure; 
         subplot(221), 
             C1 = imfuse( out_g.meanframe, template_g, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
             imshow(C1);  
@@ -81,11 +82,11 @@ function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imreg
             imshow(C2); 
             title( 'Green: After registration' );
         subplot(223), 
-            C1 = imfuse( out_g.meanframe, template_g, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
+            C1 = imfuse( out_g.meanframe, template_g, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [2 1 0]);
             imshow(C1);  
             title( 'Reversed colours' );
         subplot(224), 
-            C2 = imfuse( out_g.meanregframe,template_g,'falsecolor','Scaling','joint','ColorChannels',[1 2 0] );
+            C2 = imfuse( out_g.meanregframe,template_g,'falsecolor','Scaling','joint','ColorChannels',[2 1 0] );
             imshow(C2); 
             title( 'Reversed colours' );
         if ~exist( filedir, 'dir' ), mkdir( filedir ); end
@@ -94,10 +95,16 @@ function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imreg
         close( fh );
         
         % save globally registered image
-        saveTifOutput( out_g, [], shifts, col_shift, template, imG, [], template_g, [], params_mcorr, ...
-                    file, fname_mat_mcorr, fname_tif_gr_mcorr );
+        shifts.r = imregr_params.shifts;
+        shifts.nr = imregnr_params.shifts;
+        col_shift.r = imregr_params.col_shift;
+        col_shift.nr = imregnr_params.col_shift;
+        params_mcorr.r = imregr_params.options;
+        params_mcorr.nr = imregnr_params.options;
+        saveTifOutput( out_g, [], shifts, col_shift, template_g, imG_globalreg, [], [], [], params_mcorr, ...
+                    file, fname_mat_mcorr, fname_tif_gr_mcorr, [], templateglob )
     else
-        cprintf( '%s already registered to %s. To overwrite existing file, specify force argument as true.\n', file, templateglob );
+        fprintf( '%s already registered to %s. To overwrite existing file, specify force argument as true.\n', file, templateglob );
     end
     
     t = toc;

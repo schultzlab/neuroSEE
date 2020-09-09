@@ -1,6 +1,12 @@
-function frun_imreg_global_batch(array_id, list, templateglob, templateloc, )
-list = 'list_m62_fam1fam2_s2-fam1.txt';
-templateglob = '20181015_09_37_54';
-imregr_params = load('CtoB_r.mat');
-imregnr_params = load('CtoB_nr.mat');
+function frun_imreg_global_batch(array_id, list, templateglob, templateloc, templateloccode)
+imregr_params = load([templateloccode 'toB_r.mat']);
+    shifts = imregr_params.shifts;
+    A = struct('A', repmat(shifts, 7420, 1));
+    imregr_params.shifts = A.A;
+
+imregnr_params = load([templateloccode 'toB_nr.mat']);
+    shifts = imregnr_params.shifts;
+    A = struct('A', repmat(shifts, 7420, 1));
+    imregnr_params.shifts = A.A;
+
 imreg_global( array_id, list, templateglob, imregr_params, imregnr_params, templateloc, false )

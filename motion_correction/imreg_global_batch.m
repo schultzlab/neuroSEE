@@ -56,7 +56,7 @@ function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imreg
         end
         
         % load templateglob 
-        fprintf( '%s: Doing image registration to %s\n', file, templateglob );
+        fprintf( '%s: Registering image to %s\n', file, templateglob );
         refdir = [data_locn 'Data/' templateglob(1:8) '/Processed/' templateglob '/mcorr_' mcorr_method '/'];
         c = load([refdir templateglob '_mcorr_output.mat']);
         template_g = c.green.meanregframe;

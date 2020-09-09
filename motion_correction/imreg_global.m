@@ -85,7 +85,7 @@ function imG_globalreg = imreg_global( file, templateglob, imregr_params, imregn
             title( 'Reversed colours' );
         if ~exist( filedir, 'dir' ), mkdir( filedir ); end
         savefig( fh, fname_fig );
-        saveas( fh, fname_fig, 'png' );
+        saveas( fh, fname_fig(1:end-4), 'png' );
         close( fh );
         
         % save globally registered image

@@ -1,4 +1,4 @@
-file = '20181016_09_14_03';
+file = '20181016_09_18_26';
 templateglob = '20181015_09_37_54';
 imregr_params = load('CtoB_r.mat');
 shifts = imregr_params.shifts;

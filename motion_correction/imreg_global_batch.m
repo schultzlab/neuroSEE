@@ -49,10 +49,10 @@ function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imreg
     
     if any([ force, ~exist(fname_tif_gr_mcorr,'file'), ~exist(fname_mat_mcorr,'file') ])    
         % load image file registered to templateloc
-        if ~isempty(templateloc)
-            [ imG, ~ ] = load_imagefile( data_locn, file, false, '_imreg', mcorr_method, false, templateloc, mcorr_method );
-        else
+        if strcmpi(file, templateloc) || isempty(templateloc)
             [ imG, ~ ] = load_imagefile( data_locn, file, false, '_mcorr', mcorr_method, false );
+        else
+            [ imG, ~ ] = load_imagefile( data_locn, file, false, '_imreg', mcorr_method, false, templateloc, mcorr_method );
         end
         
         % load templateglob 

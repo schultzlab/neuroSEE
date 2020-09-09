@@ -98,7 +98,7 @@ function imG_globalreg = imreg_global( file, templateglob, imregr_params, imregn
         saveTifOutput( out_g, [], shifts, col_shift, template_g, imG_globalreg, [], [], [], params_mcorr, ...
                     file, fname_mat_mcorr, fname_tif_gr_mcorr, [], templateglob )
     else
-        cprintf( '%s already registered to %s. To overwrite existing file, specify force argument as true.\n', file, templateglob );
+        fprintf( '%s already registered to %s. To overwrite existing file, specify force argument as true.\n', file, templateglob );
     end
     
     t = toc;

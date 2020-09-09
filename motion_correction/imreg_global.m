@@ -88,7 +88,13 @@ function imG_globalreg = imreg_global( file, templateglob, imregr_params, imregn
         close( fh );
         
         % save globally registered image
-        saveTifOutput( out_g, [], shifts, col_shift, template, imG, [], template_g, [], params_mcorr, ...
+        shifts.r = imregr_params.shifts;
+        shifts.nr = imregnr_params.shifts;
+        col_shift.r = imregr_params.col_shift;
+        col_shift.nr = imregnr_params.col_shift;
+        params_mcorr.r = imregr_params.options;
+        params_mcorr.nr = imregnr_params.options;
+        saveTifOutput( out_g, [], shifts, col_shift, template_g, imG_globalreg, [], [], [], params_mcorr, ...
                     file, fname_mat_mcorr, fname_tif_gr_mcorr );
     else
         cprintf( '%s already registered to %s. To overwrite existing file, specify force argument as true.\n', file, templateglob );

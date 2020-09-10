@@ -186,7 +186,7 @@ if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); end
 
             if ~strcmpi( file, reffile )
                 % Check if file has been registered to reffile.
-                check_file = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile );
+                check_file = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile, false );
 
                 if force(1) || ~check_file   
                     [fileG,fileR] = load_imagefile( data_locn, file );

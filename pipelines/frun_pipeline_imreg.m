@@ -196,11 +196,11 @@ if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); end
 
                 if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
                     [ imG{n}, ~, params.mcorr ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
-                                                            mcorr_method, params.mcorr, reffile, force(1), list );
+                                                            mcorr_method, params.mcorr, reffile, force(1), list, false );
                     imR = [];
                 else
                     [ imG{n}, ~, params.mcorr, imR{n} ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
-                                                            mcorr_method, params.mcorr, reffile, force(1), list );
+                                                            mcorr_method, params.mcorr, reffile, force(1), list, false );
                 end
             else
                 imdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/'];

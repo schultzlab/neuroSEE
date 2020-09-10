@@ -163,7 +163,7 @@ if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); end
 %% 1) Image registration
 % Load images and do registration if forced to do so or if ROI segmentation data doesn't exist 
 
-if dostep(1)
+%if dostep(1)
     if force(2) || ~check_list(1)
         % Continue only if Matlab version is R2017
         if strcmpi(comp,'hpc') && MatlabVer > 2017
@@ -259,10 +259,10 @@ if dostep(1)
         m = load([grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
         framesperfile = m.framesperfile;
     end
-else
-    fprintf('%s: No processing steps ticked. Cannot proceed.\n', [mouseid '_' expname]);
-    return
-end
+% else
+%     fprintf('%s: No processing steps ticked. Cannot proceed.\n', [mouseid '_' expname]);
+%     return
+% end
 
 %% 2) ROI segmentation
 if dostep(2)

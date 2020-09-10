@@ -21,19 +21,10 @@ function check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile, requi
         fname_mat = [filedir file '_imreg_ref' reffile '_output.mat'];
     end
 
-    if requireRed
-        if all( [exist(fname_tif_gr,'file'),...
-                exist(fname_tif_red,'file'),...
-                exist(fname_mat,'file')] )            
-            check = true;
-        else
-            check = false;
-        end
+    if ~all( [exist(fname_tif_gr,'file'),...
+            and(requireRed, exist(fname_tif_red,'file')),...
+            exist(fname_mat,'file')] )            
+        check = false;
     else
-        if all( [exist(fname_tif_gr,'file'),...
-                exist(fname_mat,'file')] )            
-            check = true;
-        else
-            check = false;
-        end
+        check = true;
     end

@@ -1,5 +1,5 @@
 function [A_union, A2, assignments, matchings, templates_shifted, cmatched_ROIs, cnonmatched_1, cnonmatched_2, R, A_un ] = ...
-            register_multisession_singleref( A, options, templates, options_mc, figname_pref, figclose )
+            register_multisession_singleref( AA, options, templates, templateglobindex, options_mc, figname_pref, figclose )
 % REGISTER_MULTISESSION - register ROIs from multiple recording sessions
 %
 %   [A_UNION, ASSIGNMENTS, MATCHINGS] = REGISTER_MULTISESSION(A,...
@@ -11,7 +11,8 @@ function [A_union, A2, assignments, matchings, templates_shifted, cmatched_ROIs,
 % non-matched components. Then session 3 is aligned to 1 and so on.
 %
 % INPUTS:
-% A:                      cell array with spatial components from each session
+% AA:                     cell array with spatial components from each
+%                           session arranged chronologically
 % options                 parameter structure with inputs:
 %       d1:               number of rows in FOV
 %       d2:               number of columns in FOV
@@ -20,12 +21,12 @@ function [A_union, A2, assignments, matchings, templates_shifted, cmatched_ROIs,
 %       dist_exp:         power n for distance between masked components: dist = 1 - (and(m1,m2)/or(m1,m2))^n (default: 1)
 %       dist_thr:         threshold for setting a distance to infinity. (default: 0.5)
 %       dist_overlap_thr: overlap threshold for detecting if one ROI is a subset of another (default: 0.8)
-%       template1:        template from motion correction of the first session
-%       template2:        template from motion correction of the second session
-%       options_mc:       motion correction options
 %       plot_reg:         create a contour plot of registered ROIs
 % templates:              cell array with a reference image from each session
+% templateglobindex:      index of template in templates to be used as
+%                           global registration reference
 % options_mc:             normcorre options structure (for template alignment) 
+%                           (structure array the length of AA)
 
 % OUTPUTS:
 % A_union:                union of ROIs aligned to session 1 (for matched
@@ -37,7 +38,7 @@ function [A_union, A2, assignments, matchings, templates_shifted, cmatched_ROIs,
 %                               i is represented by component k in A_union
 
 % Ann's addition:
-if nargin < 6, figclose = true; end
+if nargin < 7, figclose = true; end
 
 defoptions = CNMFSetParms;
 if ~exist('options','var'); options = defoptions; end
@@ -58,7 +59,6 @@ if ~isfield(options,'dist_thr') || isempty(options.dist_thr); options.dist_thr =
 if ~isfield(options,'dist_overlap_thr') || isempty(options.dist_overlap_thr); options.dist_overlap_thr = 0.8; end
 options.plot_reg = true;
 
-n_sessions = length(A);
 if ~align_flag
     templates = {[]};
 end
@@ -68,9 +68,23 @@ if length(templates) == 1
     end
 end
 
+% Ann's addition: Rearrange A so that the global template is A{1}
+ses = 1;
+A{ses} = AA{templateglobindex};
+sessionnum(ses) = templateglobindex;
+for n = 1:length(A)
+    if n ~= templateglobindex
+        ses = ses + 1;
+        A{ses} = AA{n}; 
+        sessionnum(ses) = n;
+    end
+end
+
 % siz = [options.d1,options.d2,options.d3];
-options_mc.r.correct_bidir = false;
-options_mc.correct_bidir = false;
+for n = 1:length(A)
+    options_mc(n).r.correct_bidir = false;
+    options_mc(n).correct_bidir = false;
+end
 A_union = A{1};
 A_un{1} = A{1};
 matchings{1} = 1:size(A{1},2);
@@ -107,17 +121,21 @@ for s = 2:n_sessions
    cnonmatched_2{s-1} = nonmatched_2;
 end
 
-% This version aligns all to 1. In the case of matched pairs between 1 and
-% 2, it keeps 1.
-% for session = 2:n_sessions
-%    fname_fig = [figname_pref '_s' num2str(session) '_regto_s1'];
-%    [ matched_ROIs{session-1}, nonmatched_1{session-1}, nonmatched_2{session-1}, A2{session-1}, R{session-1}, A_union ] = ...
-%       register_ROIs( A_union, A{session}, options, templates{1}, templates{session}, options_mc, fname_fig, figclose );
-%    new_match = zeros(1,size(A{session},2));
-%    new_match(matched_ROIs(:,2)) = matched_ROIs(:,1);
-%    new_match(nonmatched_2) = size(A_union,2)-numel(nonmatched_2)+1 : size(A_union,2);
-%    matchings{session} = new_match;
-% end
+% This version aligns all to one global template (1). In the case of
+% matched pairs between 1 and 2, it keeps 1.
+for s = 2:n_sessions
+   if ~isempty(figname_pref)
+        fname_fig = [figname_pref '_s' num2str(sessionnum(s)) '_regto_s' templateglobindex];
+   else
+       fname_fig = [];
+   end     
+   [ matched_ROIs{s-1}, nonmatched_1{s-1}, nonmatched_2{s-1}, A2{s-1}, R{s-1}, A_union ] = ...
+      register_ROIs( A_union, A{s}, options, templates{1}, templates{s}, options_mc, fname_fig, figclose );
+   new_match = zeros(1,size(A{s},2));
+   new_match(matched_ROIs(:,2)) = matched_ROIs(:,1);
+   new_match(nonmatched_2) = size(A_union,2)-numel(nonmatched_2)+1 : size(A_union,2);
+   matchings{s} = new_match;
+end
 
 assignments = NaN(size(A_union,2), n_sessions);
 for s = 1:n_sessions

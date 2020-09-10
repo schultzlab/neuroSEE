@@ -45,7 +45,7 @@ function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imreg
     filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' templateglob '/' ];
     fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_imreg_ref' templateglob '.tif'];
     fname_mat_mcorr = [filedir file '_imreg_ref' templateglob '_output.mat'];
-    fname_fig = [filedir file '_imreg_summary.fig'];
+    fname_fig = [filedir file '_imreg_ref' templateglob '_summary.fig'];
     
     if any([ force, ~exist(fname_tif_gr_mcorr,'file'), ~exist(fname_mat_mcorr,'file') ])    
         % load image file registered to templateloc
@@ -98,8 +98,9 @@ function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imreg
         shifts.nr = imregnr_params.shifts;
         col_shift.r = imregr_params.col_shift;
         col_shift.nr = imregnr_params.col_shift;
-        params_mcorr.r = imregr_params.options;
-        params_mcorr.nr = imregnr_params.options;
+        params_mcorr.normcorre_r = imregr_params.options;
+        params_mcorr.normcorre_nr = imregnr_params.options;
+        params_mcorr.refChannel = 'green';
         saveTifOutput( out_g, [], shifts, col_shift, template_g, imG_globalreg, [], [], [], params_mcorr, ...
                     file, fname_mat_mcorr, fname_tif_gr_mcorr, [], templateglob )
     else

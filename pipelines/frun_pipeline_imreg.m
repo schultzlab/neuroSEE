@@ -189,11 +189,6 @@ if dostep(1)
                 check_file = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile, false );
 
                 if force(1) || ~check_file   
-                    if force(1)
-                        disp('forced to load raw file\n')
-                    elseif ~check_file
-                        disp('imreg file does not exist so loading raw file\n')
-                    end
                     [fileG,fileR] = load_imagefile( data_locn, file );
                 else
                     fileG = []; fileR = [];

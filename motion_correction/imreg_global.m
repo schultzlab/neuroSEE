@@ -93,8 +93,9 @@ function imG_globalreg = imreg_global( file, templateglob, imregr_params, imregn
         shifts.nr = imregnr_params.shifts;
         col_shift.r = imregr_params.col_shift;
         col_shift.nr = imregnr_params.col_shift;
-        params_mcorr.r = imregr_params.options;
-        params_mcorr.nr = imregnr_params.options;
+        params_mcorr.normcorre_r = imregr_params.options;
+        params_mcorr.normcorre_nr = imregnr_params.options;
+        params_mcorr.refChannel = 'green';
         saveTifOutput( out_g, [], shifts, col_shift, template_g, imG_globalreg, [], [], [], params_mcorr, ...
                     file, fname_mat_mcorr, fname_tif_gr_mcorr, [], templateglob );
     else

@@ -25,12 +25,13 @@
 %                   template
 %   params_mcorr: parameters for specific motion correction method
 
-function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list )    
+function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, requireRed )    
 
     if nargin<6, mcorr_method = 'normcorre'; end
     if nargin<7, reffile = []; end
     if nargin<8, force = false; end
     if nargin<9, list = []; end
+    if nargin<10, requireRed = true; end
     
     refChannel = params_mcorr.refChannel;
     
@@ -53,14 +54,17 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
         fname_fig = [filedir file '_imreg_ref' reffile '_summary.fig'];
     end
 
-    if any([ force, ~exist(fname_tif_gr_mcorr,'file'), ~exist(fname_tif_red_mcorr,'file'), ~exist(fname_mat_mcorr,'file') ])
+    if any([ force,...
+             ~exist(fname_tif_gr_mcorr,'file'),...
+             and(requireRed, ~exist(fname_tif_red_mcorr,'file')),...
+             ~exist(fname_mat_mcorr,'file') ])
         if isempty(reffile)
-            str = sprintf( '%s: Starting motion correction\n', file );
+            str = sprintf( '%s: Doing motion correction\n', file );
             template = [];
             template_g = [];
             template_r = [];
         else
-            str = sprintf( '%s: Starting image registration to %s\n', file, reffile );
+            str = sprintf( '%s: Registering image to %s\n', file, reffile );
             refdir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_' mcorr_method '/'];
             c = load([refdir reffile '_mcorr_output.mat']);
             if strcmpi(refChannel,'green')
@@ -89,7 +93,10 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect( imG,
                 fname_fig = [filedir file '_imreg_ref' reffile '_summary.fig'];
             end
             
-            if any([ force, ~exist(fname_tif_gr_mcorr,'file'), ~exist(fname_tif_red_mcorr,'file'), ~exist(fname_mat_mcorr,'file') ])
+            if any([ force,...
+                     ~exist(fname_tif_gr_mcorr,'file'),...
+                     and(requireRed, ~exist(fname_tif_red_mcorr,'file')),...
+                     ~exist(fname_mat_mcorr,'file') ])
                 if isempty(reffile)
                     fprintf( '\tFirst doing rigid correction\n' );
                 else

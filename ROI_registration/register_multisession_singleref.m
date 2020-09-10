@@ -83,7 +83,7 @@ end
 % siz = [options.d1,options.d2,options.d3];
 for n = 1:length(A)
     options_mc(n).r.correct_bidir = false;
-    options_mc(n).correct_bidir = false;
+    options_mc(n).nr.correct_bidir = false;
 end
 A_union = A{1};
 A_un{1} = A{1};

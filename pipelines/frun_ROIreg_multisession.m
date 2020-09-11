@@ -1,8 +1,12 @@
-function frun_ROIreg_multisession( list, ref_array, bl_array, force, figclose )
+% Written by Ann Go
+% INPUTS
+%   list:   in the format explist_mXX_exp... .txt
+%           *The first experiment on the list must correspond to  
 
-if nargin<5, figclose = true; end
-% if nargin<5, figsave = true; end
-if nargin<4, force = false; end
+function frun_ROIreg_multisession( list, ref_array, bl_array, sessionind_array, params_mc_array, force, figclose )
+
+if nargin<6, figclose = true; end
+if nargin<5, force = false; end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -24,7 +28,21 @@ params.ROIreg.dist_overlap_thr = 0.7;   % overlap threshold for detecting if one
 params.ROIreg.plot_reg = true;
 params.ROIreg.print_msg = false;
 
-options = neuroSEE_setparams('mcorr_method', mcorr_method, 'dofissa', dofissa); 
+% options = neuroSEE_setparams('mcorr_method', mcorr_method, 'dofissa', dofissa); 
+g = 64;
+options = neuroSEE_setparams(...
+            'mcorr_method', mcorr_method, ...
+            'segment_method', segment_method,...
+            'dofissa', dofissa, ...
+            'max_shift_r', 80,...       
+            'max_shift_nr', 50,...
+            'grid_size_nr', [g,g],...
+            'iter',1,...
+            'max_dev',15,...     
+            'overlap_pre', [g/4,g/4],... 
+            'min_patch_size', [g/4,g/4],...      
+            'min_diff', [g/8,g/8]);             
+
 params.ROIreg_mc.r = options.mcorr.normcorre_r;
 params.ROIreg_mc.nr = options.mcorr.normcorre_nr;
 
@@ -42,7 +60,7 @@ tic
 % Output directory
 [ mouseid, expname ] = find_mouseIDexpname( list );
 sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
-        groupreg_method '_' mcorr_method '_' segment_method '_' str_fissa '/'];
+        groupreg_method '_' mcorr_method '_' segment_method '/' str_fissa '/'];
 
 fname_mat1 = [sdir mouseid '_' expname '_multisessionROIreg_output1.mat'];
 fname_mat2 = [sdir mouseid '_' expname '_multisessionROIreg_output2.mat'];
@@ -134,8 +152,8 @@ if any([ ~exist(fname_mat1,'file'), ~exist(fname_mat2,'file'), force ])
     params.ROIreg.plot_reg = true;
     params.ROIreg.print_msg = true;
 
-    [~, A_shifted, assignments, matchings, templates_shifted, matched_ROIs, nonmatched_1, nonmatched_2, ~, A_union ] = ...
-        register_multisession(A, params.ROIreg, templates, params.ROIreg_mc, [], false);
+    [A_union, A_shifted, assignments, matchings, templates_shifted, cmatched_ROIs, cnonmatched_1, cnonmatched_2, R ] = ...
+        register_multisession_singleref(A, params.ROIreg, templates, params_mc_array, [], false);
     for nn = 1:Nexps-1
         masks_shifted{nn} = reshape(full(A_shifted{nn}), params.ROIreg.d1, params.ROIreg.d2, size(A_shifted{nn},2));
         masks_union{nn} = reshape(full(A_union{nn+1}), params.ROIreg.d1, params.ROIreg.d2, size(A_union{nn+1},2));
@@ -149,7 +167,7 @@ if any([ ~exist(fname_mat1,'file'), ~exist(fname_mat2,'file'), force ])
     params.ROIreg.print_msg = true;
 
     [~, A_shifted_pcs, assignments_pcs, matchings_pcs, ~, matched_ROIs_pcs, nonmatched_1_pcs, nonmatched_2_pcs, ~, A_union_pcs ] = ...
-        register_multisession(A_pcs, params.ROIreg, templates, params.ROIreg_mc, [], false);
+        register_multisession(A_pcs, params.ROIreg, templates, params_mc_array, [], false);
     for nn = 1:Nexps-1
         masks_shifted_pcs{nn} = reshape(full(A_shifted_pcs{nn}), params.ROIreg.d1, params.ROIreg.d2, size(A_shifted_pcs{nn},2));
         masks_union_pcs{nn} = reshape(full(A_union_pcs{nn}), params.ROIreg.d1, params.ROIreg.d2, size(A_union_pcs{nn},2));
@@ -285,14 +303,19 @@ if ~exist(figdir,'dir') || force
     nCol = Nexps-1;
     fh1 = figure;
     for n = 1:Nexps-1
-        subplot(2,nCol,n); 
-            imshow(imfuse( templates{n}, templates{n+1}, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]) );
-            str = sprintf('%g to %g: Before reg', n, n+1);
+        subplot(3,nCol,n); 
+            imshow(imfuse( templates{1}, templates{n+1}, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [2 1 0]) );
+            str = sprintf('%g to %g: Before reg', sessionind_array(n+1), sessionind_array(1));
             title( str );
         
-        subplot(2,nCol,nCol+n); 
-            imshow( imfuse( templates_shifted{n}, templates{n+1}, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]) );
-            str = sprintf('%g to %g: After reg', n, n+1);
+        subplot(3,nCol,nCol+n); 
+            imshow( imfuse( templates{1}, templates_shifted{n}, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [2 1 0]) );
+            str = sprintf('%g to %g: After reg', sessionind_array(n+1), sessionind_array(1));
+            title( str );
+        
+        subplot(3,nCol,2*nCol+n); 
+            imshow( imfuse( templates{1}, templates_shifted{n}, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]) );
+            str = sprintf('Reversed colours');
             title( str );
     end
     fprintf('%s: saving multisession template registration summary figure\n',[mouseid '_' expname]);
@@ -304,25 +327,26 @@ if ~exist(figdir,'dir') || force
     fh2 = figure;
     for n = 1:Nexps-1
         subplot(2,nCol,n);
-            imagesc(templates{n+1}); colormap(gray); axis off; axis square;
+            imagesc(templates{1}); colormap(gray); axis off; axis square;
             options.plot_bck_image = false;
-            plot_contours( A{n+1}(:,matched_ROIs{n}(:,1)), templates{n+1}, options,0,[],[],'m'); hold on;
-            plot_contours( A_shifted{n}(:,matched_ROIs{n}(:,2)), templates{n+1}, options,0,[],[],'c'); hold on;
-            plot_contours( A{n+1}(:,nonmatched_1{n}), templates{n+1}, options, 0,[],[],'r'); hold on;
-            plot_contours( A_shifted{n}(:,nonmatched_2{n}), templates{n+1}, options, 0,[],[],'b'); hold on;
+            plot_contours( A{n+1}(:,matched_ROIs{n}(:,1)), templates{1}, options,0,[],[],'m'); hold on;
+            plot_contours( A_shifted{n}(:,matched_ROIs{n}(:,2)), templates{1}, options,0,[],[],'c'); hold on;
+            plot_contours( A{n+1}(:,nonmatched_1{n}), templates{1}, options, 0,[],[],'r'); hold on;
+            plot_contours( A_shifted{n}(:,nonmatched_2{n}), templates{1}, options, 0,[],[],'b'); hold on;
             h = zeros(4, 1);
             h(1) = plot(NaN,NaN,'m');
             h(2) = plot(NaN,NaN,'c');
             h(3) = plot(NaN,NaN,'r');
             h(4) = plot(NaN,NaN,'b');
             legend(h, ['M#' num2str(n+1)], ['M#' num2str(n)], ['NoM#' num2str(n+1)], ['NoM#' num2str(n)]); hold off;
-            str = sprintf('%g aligned to %g', n, n+1);
+            str = sprintf('%g aligned to %g', sessionind_array(n+1), sessionind_array(1));
             title( str );
         subplot(2,nCol,nCol+n);
             imagesc(templates{n+1}); colormap(gray); axis off; axis square;
             options.plot_bck_image = false;
             plot_contours( A_union{n}, templates{n+1}, options,0,[],[],'w'); hold on;
-            title( [num2str(n) '\cup' num2str(n+1)] );
+            num = num2str(1:n); num = num(~isspace(num));
+            title( [num2str(n+1) '\cup' num] );
     end    
     fprintf('%s: saving multisession roi registration summary figure\n',[mouseid '_' expname]);
     savefig( fh2, [figdir mouseid '_' expname '_regROIs'] );

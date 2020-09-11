@@ -1,4 +1,4 @@
-function [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union,template2] = register_ROIs(A1,A2,options,template1,template2,options_mc,figname,figclose)
+function [matched_ROIs,nonmatched_1,nonmatched_2,A2,R,A_union,template2_shifted] = register_ROIs(A1,A2,options,template1,template2,options_mc,figname,figclose)
 % REGISTER_ROIs - register ROIs from two different recording sessions
 %
 %   [MATCHED_ROIS, NONMATCHED_1, NONMATCHED_2, A2] = REGISTER_ROIS( ...
@@ -61,12 +61,13 @@ options_mc.correct_bidir = false;
 if align_flag
     options_mc.upd_template = false;
     options_mc.boundary = 'zero';
-    [~,global_shift,template2] = normcorre(template2,options_mc,template1);
+    [template2_shifted,global_shift] = normcorre(template2,options_mc,template1);
     %global_shift(1).diff = 0*global_shift(1).diff;
     
     shifts_fov = reshape(imresize(global_shift.shifts,[options.d1,options.d2]),[],2);
     shifts_components = sparse(diag(1./sum(A2)))*A2'*shifts_fov;
     parfor i = 1:K2
+    % for i = 1:K2    
        %warning('off','MATLAB:mat2cell:TrailingUnityVectorArgRemoved');
        a_temp = reshape(full(A2(:,i)),siz);
        a_temp = shift_reconstruct(a_temp,shifts_components(i,:),0);   

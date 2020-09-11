@@ -247,7 +247,7 @@ Names = [
         'prctile_thr        ' % percentile threshold for filtering nonPCs (default: 99)
         'pfactivet_thr      ' % fraction of dwell time in place field cell is required to be active (default: 0.05)
         'activetrials_thr   ' % fraction of trials cell is required to be active (default: 0.5)
-        'Nrand              ' % number of shuffles for bootstrap test
+        'Nrand              ' % number of shuffles for bootstrap test (default: 1000)
         'Nbins_1D           ' % no. of position bins in 103-cm linear track (default: 50)
         'Nbins_2D           ' % position bins in 325-mm diameter open field arena (default: [16,16])
    ]; 

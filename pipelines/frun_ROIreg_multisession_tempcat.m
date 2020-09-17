@@ -137,6 +137,8 @@ if force || ~exist(fname_mat,'file')
     end
     
     % save output
+    if ~exist([sdir str_fissa '/multisessionROIs_' fname_append '/'],'dir') 
+        mkdir([sdir str_fissa '/multisessionROIs_' fname_append '/']); end
     save(fname_mat)
     
     % make plots

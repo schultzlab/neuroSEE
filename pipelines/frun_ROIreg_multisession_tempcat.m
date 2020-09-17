@@ -136,6 +136,9 @@ if force || ~exist(fname_mat,'file')
         normrMap_sm{s} = hist{s}.normrateMap_sm;
     end
     
+    % save output
+    save(fname_mat)
+    
     % make plots
     % report plots
     %   1. registered templates per session
@@ -167,6 +170,7 @@ if force || ~exist(fname_mat,'file')
         title(['Inactive in session' num2str(s)]);
     end
     if figsave
+        if ~exist(figdir,'dir'), mkdir(figdir); end
         savefig( fh2, [figdir 'activecells'] );
         saveas( fh2, [figdir 'activecells'], 'png' );
     end

@@ -45,7 +45,7 @@ fname_mat = [sdir str_fissa '/multisessionROIreg/' mouseid '_' expname '_ref' ..
 figdir = [sdir str_fissa '/multisessionROIreg/multisession_tempcat_PFdata/'];
 
 if force || ~exist(fname_mat,'file')
-    %% load segmentation output, spike and position data
+    %% load segmentation output, fissa, spike and position data
     M = load([sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'],'masks');
     masks = M.masks;
 

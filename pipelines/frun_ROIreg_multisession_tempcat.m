@@ -12,6 +12,14 @@ if nargin<7, force = false; end
 if nargin<6, activetrials_thr = 0.5; end
 if nargin<5, pfactivet_thr = 0.05; end
 
+% Load module folders and define data directory
+[data_locn,~,err] = load_neuroSEEmodules(false);
+if ~isempty(err)
+    beep
+    cprintf('Errors',err);    
+    return
+end
+
 % Basic settings
 mcorr_method = 'normcorre';            
 segment_method = 'CaImAn';
@@ -23,14 +31,6 @@ params = neuroSEE_setparams(...
             'dofissa',dofissa,...
             'pfactivet_thr',pfactivet_thr,...
             'activetrials_thr',activetrials_thr);
-
-% Load module folders and define data directory
-[data_locn,~,err] = load_neuroSEEmodules(false);
-if ~isempty(err)
-    beep
-    cprintf('Errors',err);    
-    return
-end
 
 tic
 % mouse id and experiment name
@@ -58,6 +58,9 @@ if force || ~exist(fname_mat,'file')
     %% load segmentation output, spike and position data
     M = load([sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'],'masks');
     masks = M.masks;
+    
+    M = load([sdir str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'dtsG');
+    dtsG = M.dtsG;
 
     posdata = load([data_locn 'Analysis/' mouseid '/' mouseid '_' expname ...
             '/group_proc/' mouseid '_' expname '_downTrackdata.mat']);
@@ -99,10 +102,12 @@ if force || ~exist(fname_mat,'file')
         M = load([sdir str_fissa '/bl_prctile' num2str(bl_prctile_array(s)) '/' ...
         mouseid '_' expname '_ref' reffile '_spikes.mat'],'spikes');
         Sspikes{s} = M.spikes(:,t);
+        Sfissa{s} = dtsG(:,t);
 
         % divide spike and position data into sessions
         start = (sdays(s)-1)*7420+1; last = (sdays(s+1)-1)*7420;
         spikes{s} = Sspikes{s}(:,start:last);
+        fissa{s} = Sfissa{s}(:,start:last);
         downTrackdata{s} = structfun(@(x) x(start:last), SdownTrackdata, 'Un', 0);
     
         % for each session
@@ -112,21 +117,19 @@ if force || ~exist(fname_mat,'file')
         
         activephi{s}   = downTrackdata{s}.phi(downTrackdata{s}.speed > Vthr);
         activespk{s}   = spikes{s}(:,downTrackdata{s}.speed > Vthr);
+        activefissa{s} = fissa{s}(:,downTrackdata{s}.speed > Vthr);
         activet{s}     = downTrackdata{s}.time(downTrackdata{s}.speed > Vthr);
         
         [bin_phi{s},~] = discretize(activephi{s},params.PFmap.Nbins);
-        spk = activespk{s}; 
         activecells{s} = []; inactivecells{s} = [];
         for c = 1:size(masks,3)
-            sn = GetSn(spk(c,:));
-            if max(spk(c,:))>3*sn
+            sn = GetSn(activefissa{s}(c,:));
+            if max(activefissa{s}(c,:))>8*sn
                 activecells{s} = [activecells{s}; c ];
             else
                 inactivecells{s} = [inactivecells{s}; c ];
             end
         end
-%         activecells{s} = find(sum(spk,2));
-%         inactivecells{s} = find(sum(spk,2)==0);
     
         % generate place field maps
         [ hist{s}, ~, PFdata{s}, ~, ~, ~ ] = generatePFmap_1d( spikes{s}, downTrackdata{s}, params );

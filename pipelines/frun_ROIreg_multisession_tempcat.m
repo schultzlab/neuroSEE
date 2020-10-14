@@ -1,6 +1,6 @@
 % Written by Ann Go
 % This script compares rois across sessions. There is no need to register
-% the rois as they have been segmented from on image file composed of all
+% the rois as they have been segmented from an image file composed of all
 % images in the file list (temporally concatenated).
 
 function frun_ROIreg_multisession_tempcat( list, reffile, bl_prctile_array, useind, pfactivet_thr, activetrials_thr,...

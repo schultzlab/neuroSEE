@@ -1,13 +1,13 @@
-function frun_imreg_global_batch(array_id, list, templateglob, templateloc, templateloccode, force)
+function frun_imreg_global_batch(array_id, list, templateglob, templateloc, shiftsfile_prefix, force)
 if nargin<6, force = []; end
 
-imregr_params = load([templateloccode 'toB_r.mat']);
-    shifts = imregr_params.shifts;
+imregr_params = load([shiftsfile_prefix '_r.mat']);
+    shifts = imregr_params.params{array_id}.shifts;
     A = struct('A', repmat(shifts, 7420, 1));
     imregr_params.shifts = A.A;
 
-imregnr_params = load([templateloccode 'toB_nr.mat']);
-    shifts = imregnr_params.shifts;
+imregnr_params = load([shiftsfile_prefix '_nr.mat']);
+    shifts = imregnr_params.params{array_id}.shifts;
     A = struct('A', repmat(shifts, 7420, 1));
     imregnr_params.shifts = A.A;
 

@@ -44,11 +44,16 @@ for c = 1:Ncells
         stats = regionprops(CC,rMap,'WeightedCentroid');
         prefLoc(c) = sub2ind(size(rMap), round(stats(useInd).WeightedCentroid(1)), round(stats(useInd).WeightedCentroid(2)));
         % pfBins{c} = CC.PixelIdxList{useInd};
-    else
+        pfBins{c} = find(rMap_BW);
+    elseif CC.NumObjects == 1
         stats = regionprops(CC,rMap,'WeightedCentroid');
         prefLoc(c) = sub2ind(size(rMap), round(stats.WeightedCentroid(1)), round(stats.WeightedCentroid(2)));
         % pfBins{c} = CC.PixelIdxList{1};
+        pfBins{c} = find(rMap_BW);
+    else
+        prefLoc(c) = [];
+        pfBins{c} = [];
     end
     
-    pfBins{c} = find(rMap_BW);
+    
 end

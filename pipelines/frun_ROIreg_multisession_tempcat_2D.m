@@ -52,7 +52,7 @@ for i = 1:length(bl_prctile_array)
 end
 fname_mat = [sdir str_fissa '/multisessionROIs_' bl_str '_pfTthr' num2str(pfactivet_thr) '/' mouseid '_' expname '_ref' ...
             reffile '_multisessionROIreg_tempcat_output.mat'];
-figdir = [sdir str_fissa '/multisessionROIs_' bl_str '/'];
+figdir = [sdir str_fissa '/multisessionROIs_' bl_str '_pfTthr' num2str(pfactivet_thr) '/'];
 
 if force || ~exist(fname_mat,'file')
     %% load segmentation output, spike and position data
@@ -144,6 +144,8 @@ if force || ~exist(fname_mat,'file')
             end
         else
             [hist{s}, ~, PFdata{s}, activeData{s}, ~, ~, ~] = generatePFmap_2d( spikes{s}, downTrackdata{s}, params );
+            normrMap_sm{s} = hist{s}.normrMap_sm;
+            pcIdx{s} = hist{s}.SIspk.pcIdx;
         end
     end
     
@@ -418,7 +420,7 @@ if force || ~exist(fname_mat,'file')
                             hold off; 
                         end
                         
-                        if numel(find(hist{s}.SIspk.pcIdx == c)) > 0
+                        if numel(find(pcIdx{s} == c)) > 0
                             title_str = 'PC';
                         else
                             title_str = 'nonPC';
@@ -428,7 +430,7 @@ if force || ~exist(fname_mat,'file')
                         axes(ha(jj*nCol+(s-1)*2+2));
                         cmap = viridisMap_whitelowest;
                         colormap(cmap);
-                        imagesc(squeeze(hist{s}.normrMap_sm(:,:,c))');
+                        imagesc(squeeze(normrMap_sm{s}(:,:,c))');
                         axis off; axis square; % colorbar; 
                         title_str = sprintf('Max %.2f events/s', max(max(hist{s}.rMap_sm(:,:,c)))); 
                         title(title_str,'fontsize',12);
@@ -487,7 +489,7 @@ if force || ~exist(fname_mat,'file')
                     hold off; 
                 end
 
-                if numel(find(hist{s}.SIspk.pcIdx == c)) > 0
+                if numel(find(pcIdx{s} == c)) > 0
                     title_str = 'PC';
                 else
                     title_str = 'nonPC';
@@ -497,7 +499,7 @@ if force || ~exist(fname_mat,'file')
                 axes(ha(jj*nCol+(s-1)*2+2));
                 cmap = viridisMap_whitelowest;
                 colormap(cmap);
-                imagesc(squeeze(hist{s}.normrMap_sm(:,:,c))');
+                imagesc(squeeze(normrMap_sm{s}(:,:,c))');
                 axis off; axis square; % colorbar; 
                 title_str = sprintf('Max %.2f events/s', max(max(hist{s}.rMap_sm(:,:,c)))); 
                 title(title_str,'fontsize',12);
@@ -573,7 +575,7 @@ if force || ~exist(fname_mat,'file')
         for c = 1:size(masks,3)
             alwaysplaceystat(c) = 1;
             for s = 1:n_sessions
-                if ~ismember(c,hist{s}.SIspk.pcIdx)
+                if ~ismember(c,pcIdx{s})
                     alwaysplaceystat(c) = 0;
                 end
             end
@@ -584,7 +586,7 @@ if force || ~exist(fname_mat,'file')
         subplot(221); 
             for s = 1:n_sessions
                 Nactivecells(s) = length(activecells{s});
-                frac_pcs(s) = length(hist{s}.SIspk.pcIdx)/Nactivecells(s);
+                frac_pcs(s) = length(pcIdx{s})/Nactivecells(s);
             end
             frac_activecells = Nactivecells./size(masks,3);
             plot(1:n_sessions,frac_activecells,'k.-',1:n_sessions,frac_pcs,'r.-','markersize',12); axis([0.95,n_sessions,0,1]);
@@ -599,16 +601,19 @@ if force || ~exist(fname_mat,'file')
             box off; 
             xticks(1:numel(dintervals)); xticklabels(num2str(dintervals));
             xlabel('Days apart')
-
-%         subplot(223);
-%             for i = numel(dintervals):-1:1
-%                 cdfplot(abs(PFS{i})); hold on;
-%             end
-%             hold off; legend(num2str(dintervals)); legend boxoff;
-%             xlabel('Place field shift (cm)'); ylabel('Fraction of place cells');
-%             box off;
-            %axis([-55 53 0 1]);
-
+        
+        try
+            subplot(223);
+            for i = numel(dintervals):-1:1
+                cdfplot(abs(PFS{i})); hold on;
+            end
+            hold off; legend(num2str(dintervals)); legend boxoff;
+            xlabel('Place field shift (cm)'); ylabel('Fraction of place cells');
+            box off;
+            axis([-55 53 0 1]);
+        catch
+        end
+        
         subplot(224);
             g = []; mFC = [];
             for i = 1:numel(dintervals)
@@ -630,7 +635,7 @@ if force || ~exist(fname_mat,'file')
         if fsave
             if ~exist([sdir str_fissa '/multisessionROIs_' bl_str '/'],'dir') 
                 mkdir([sdir str_fissa '/multisessionROIs_' bl_str '/']); end
-            save(fname_mat,'params','daylabels','usefiles',...
+            save(fname_mat,'params','daylabels','usefiles','activedata','pcIdx','normrMap_sm',...
                            'R_ac','R_pc','FC','FC_mean','PFS','PFS_mean','alwaysactive','alwaysplacey',...
                            'n_sessions','frac_activecells','frac_pcs','dintervals');
         end

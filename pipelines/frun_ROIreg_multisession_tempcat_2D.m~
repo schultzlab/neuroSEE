@@ -56,6 +56,7 @@ figdir = [sdir str_fissa '/multisessionROIs_' bl_str '_pfTthr' num2str(pfactivet
 
 if force || ~exist(fname_mat,'file')
     %% load segmentation output, spike and position data
+    fprintf('%s: Loading segmentation, spike and position data\n',[mouseid '_' expname]);
     M = load([sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'],'masks','tsG');
     masks = M.masks;
     
@@ -131,6 +132,7 @@ if force || ~exist(fname_mat,'file')
             end
         end
     
+        fprintf('%s: Generating place field maps\n',[mouseid '_' expname]);
         if strcmpi(params.mode_dim,'1D')
             % generate place field maps
             [ hist{s}, ~, PFdata{s}, ~, ~, ~ ] = generatePFmap_1d( spikes{s}, downTrackdata{s}, params );
@@ -153,6 +155,7 @@ if force || ~exist(fname_mat,'file')
     % //registered templates, active cells and place cells per session
 
     % 1D plots
+    fprintf('%s: Generating \n',[mouseid '_' expname]);
     if strcmpi(params.mode_dim,'1D')
         % //raster plots across sessions
         Ncells = size(masks,3);
@@ -635,7 +638,7 @@ if force || ~exist(fname_mat,'file')
         if fsave
             if ~exist([sdir str_fissa '/multisessionROIs_' bl_str '/'],'dir') 
                 mkdir([sdir str_fissa '/multisessionROIs_' bl_str '/']); end
-            save(fname_mat,'params','daylabels','usefiles','activedata', 'pcIdx',''...
+            save(fname_mat,'params','daylabels','usefiles','activedata','pcIdx','normrMap_sm',...
                            'R_ac','R_pc','FC','FC_mean','PFS','PFS_mean','alwaysactive','alwaysplacey',...
                            'n_sessions','frac_activecells','frac_pcs','dintervals');
         end

@@ -388,7 +388,7 @@ if force || ~exist(fname_mat,'file')
             
             for jj=0:nRow-1
                 c = ii*nRow+jj+1;
-                if c <= Ncells +1
+                if c <= Ncells
                     for s = 1:n_sessions
                         % find the delineations for the video: find t = 0
                         idx_file = find(diff(activeData{s}.t) < 0);
@@ -409,7 +409,7 @@ if force || ~exist(fname_mat,'file')
                                 ylabel(['Cell ' num2str(c)]);
                             end
                         end
-                        z = activeData{s}.spikes(ii*nRow+jj+1,:);
+                        z = activeData{s}.spikes(c,:);
                         ind = find(z>0);
                         if ~isempty(ind)
                             x = activeData{s}.x(ind);

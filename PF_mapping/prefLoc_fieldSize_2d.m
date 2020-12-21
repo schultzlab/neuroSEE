@@ -33,14 +33,16 @@ for c = 1:Ncells
     end
     
     CC = bwconncomp(rMap_BW2);
+    rMap_thr = rMap(find(rMap_BW2));    
     
     if CC.NumObjects > 1
         % find blob where maximum value lies
         for i = 1:CC.NumObjects
-            if numel(intersect(find(rMap == max(max(rMap))), sub2ind(size(rMap), CC.PixelIdxList{i}))) > 0
+            if numel(intersect(find(rMap == max(max(rMap_thr))), sub2ind(size(rMap), CC.PixelIdxList{i}))) > 0
                 useInd = i;
             end
         end
+        
         stats = regionprops(CC,rMap,'WeightedCentroid');
         prefLoc(c) = sub2ind(size(rMap), round(stats(useInd).WeightedCentroid(1)), round(stats(useInd).WeightedCentroid(2)));
         % pfBins{c} = CC.PixelIdxList{useInd};

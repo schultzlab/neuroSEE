@@ -453,7 +453,8 @@ if force || ~exist(fname_mat,'file')
         
         % //plots for chosen cells
         fh2 = figure('Position',[680 678 500 600]); 
-        star = [10; 71; 75; 109; 118; 135; 176; 197];
+        % star = [10; 71; 75; 109; 118; 135; 176; 197]; % m82
+        star = []; % m86
         ha = tight_subplot(length(star),nCol,[.04 .02],[.02 .05],[.02 .02]);
 
         for jj=0:length(star)-1

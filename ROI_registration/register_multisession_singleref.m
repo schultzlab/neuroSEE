@@ -68,6 +68,10 @@ if length(templates) == 1
 end
 
 % siz = [options.d1,options.d2,options.d3];
+if length(options_mc) == 1
+    O = struct('O', repmat(options_mc, length(A)-1, 1));
+    options_mc = O.O;
+end
 for n = 1:length(A)-1
     options_mc(n).r.correct_bidir = false;
     options_mc(n).nr.correct_bidir = false;

@@ -6,7 +6,7 @@ sessionind_array = [1; 3];
 pfactivet_thr = 0.02;
 force = false; 
 figclose = false;
-frun_ROIreg_multisession( 'explist_m82_open_s1-2.txt', ['20190404_17_41_23';'20190406_20_56_30'], [85; 85], 0.02, [1; 3], false, true )
+frun_ROIreg_multisession( 'explist_m82_open_s1-2.txt', ['20190404_17_41_23';'20190406_20_56_30'], [75; 75], 0.02, [1; 3], false, true )
 
 
 % list = 'explist_m62_fam1_s1-4_complete.txt';

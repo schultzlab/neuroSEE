@@ -2,6 +2,7 @@
 %
 % Loads the tracking file depending on its type
 % INPUTS
+%   file        : image file name (optional, specify as [] if NA)
 %   fname_track : tracking file name
 % OUPUT
 % trackdata is a structure with fields
@@ -15,16 +16,28 @@
 %   alpha 
 %   w 
 
-function trackdata = load_trackfile(data_locn,file,fname_track,force)
-    str = sprintf('%s: Loading tracking data\n', file);
-    cprintf(str)
+function trackdata = load_trackfile(data_locn, file, fname_track, force)
     
-    dir_processed = [data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/'];
+    if ~isempty(file)
+        dir_processed = [data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/'];
         if ~exist(dir_processed,'dir'), mkdir(dir_processed); end
+        fname_mat = [dir_processed file '.mat'];
+        fname_fig = [dir_processed file '_mtrajectory.fig'];
+        fname_png = [dir_processed file '_mtrajectory.png'];
+        txt = file;
+    else
+        format = 'Track_yyyy-mm-dd-HH-MM-SS';
+        [filepath,name,ext] = fileparts(fname_track);
+        timestamp  = extractTimeFromFilename( name, format );
+        fname_mat = [filepath '/' name '.mat'];
+        fname_fig = [filepath '/' name '_mtrajectory.fig'];
+        fname_png = [filepath '/' name '_mtrajectory.png'];
+        txt = name;
+    end
     
-    [~,~,ext] = fileparts(fname_track);
-    fname_fig = [dir_processed file '_mtrajectory.fig'];
-    fname_png = [dir_processed file '_mtrajectory.png'];
+    str = sprintf('%s: Loading tracking data\n', txt);
+    cprintf(str)
+        
     switch ext
         case('.mat')
             data = load(fname_track);
@@ -38,8 +51,7 @@ function trackdata = load_trackfile(data_locn,file,fname_track,force)
             trackdata.TTLout = data.TTLout;
             trackdata.speed = data.speed;
         case('.csv') % 2018 files
-            save_fname = [dir_processed fname_track(end-33:end-4) '.mat'];
-            trackdata = csv_import(fname_track,save_fname);
+            trackdata = csv_import(fname_track,fname_mat);
         case('.tdms') % 2019 files
             
             [channelData,~] = TDMS_readChannelOrGroup(fname_track,'Data',[]);
@@ -56,13 +68,7 @@ function trackdata = load_trackfile(data_locn,file,fname_track,force)
             w      = channelData{8}(2:end);    trackdata.w      = w;
             speed  = channelData{9}(2:end);    trackdata.speed  = speed;
             TTLout = channelData{12}(2:end);   trackdata.TTLout = TTLout;
-            try
-                save_fname = [dir_processed fname_track(end-34:end-5) '.mat'];
-                save(save_fname, 'time','r','phi','alpha','x','y','w','speed','TTLout');
-            catch
-                save_fname = [dir_processed fname_track(end-29:end-5) '.mat'];
-                save(save_fname, 'time','r','phi','alpha','x','y','w','speed','TTLout');
-            end
+            save(fname_mat, 'time','r','phi','alpha','x','y','w','speed','TTLout');
     end
     
     yn_fname_fig = exist(fname_fig,'file');
@@ -70,13 +76,18 @@ function trackdata = load_trackfile(data_locn,file,fname_track,force)
     if any([ force, ~yn_fname_fig, ~yn_fname_png ])
         fig = figure; plot(trackdata.x,trackdata.y); axis square; axis off; 
         tmax = (trackdata.time(end))/60; % min
-            titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17) ' (' num2str(round(tmax)) ' min)'];
-            title(titletext);
+            if ~isempty(file)
+                titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17) ' (' num2str(round(tmax)) ' min)'];
+                title(titletext);
+            else
+                titletext = datestr(timestamp, 'yyyy/mm/dd HH:MM:SS');
+                title(titletext);
+            end
         savefig(fig,fname_fig);
         saveas(fig,fname_png);
         close(fig);
     end
     
-    newstr = sprintf( '%s: Tracking data loaded\n', file );
+    newstr = sprintf( '%s: Tracking data loaded\n', txt );
     refreshdisp( newstr, str );
 end

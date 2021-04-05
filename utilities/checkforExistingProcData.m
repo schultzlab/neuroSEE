@@ -11,9 +11,9 @@ function check = checkforExistingProcData(data_locn, text, params, reffile)
     if nargin<3 
         params = neuroSEE_setparams;
     end
-    mcorr_method = params.mcorr_method;
-    segment_method = params.segment_method;
-    dofissa = params.dofissa;
+    mcorr_method = params.methods.mcorr_method;
+    segment_method = params.methods.segment_method;
+    dofissa = params.methods.dofissa;
     bl_prctile = params.spkExtract.bl_prctile;
     
     if dofissa
@@ -38,7 +38,7 @@ function check = checkforExistingProcData(data_locn, text, params, reffile)
             reffile = files(1,:); 
         end
         
-        groupreg_method = params.groupreg_method;
+        groupreg_method = params.methods.groupreg_method;
         dir_proc = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
                     groupreg_method '_' mcorr_method '_' segment_method '/'...
                     mouseid '_' expname '_imreg_ref' reffile '/'];

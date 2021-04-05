@@ -120,7 +120,7 @@ MatlabVer = str2double(release(1:4));
 % check(1:6) check for existing data in processing steps 1-6
 % check(7) checks for existing mat file pooling all processed data for file
 
-check = checkforExistingProcData(data_locn, file, params.methods);
+check = checkforExistingProcData(data_locn, file, params);
 
 % Some security measures
 force = logicalForce(force);        % Only allow combinations of force/step values that make sense

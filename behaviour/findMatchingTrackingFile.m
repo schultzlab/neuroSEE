@@ -19,21 +19,25 @@ function fname_track = findMatchingTrackingFile(data_locn, file, force)
     imgformat   = 'yyyymmdd_HH_MM_SS';
     imgtime     = datevec(file,imgformat);
     matchtype   = '[0-9a-zA-Z ]+'; % match dir & filenames based on alphanumeric chars (but not '_')
-    [tracktimes,trackformat]  = getTrackTimesFromDirectory( dir_track, matchtype );
+    [tracktimes, trackformat, Sind]  = getTrackTimesFromDirectory( dir_track, matchtype );
     finaltracktime = matchImgAndTrackTimes( imgtime, tracktimes );
-    trackfolder = [dir_track datestr( finaltracktime, trackformat, force )];
+    trackfolder = [dir_track trackformat(1:Sind-1) datestr( finaltracktime, trackformat(Sind:end) )];
     fname_track = findTrackFileName( trackfolder, dir_processed, force );
 
-    function [times,format] = getTrackTimesFromDirectory( ddir, matchtype )
+    function [times,format,Sind] = getTrackTimesFromDirectory( ddir, matchtype )
        times = [];  
        if ~exist( ddir, 'dir' ) 
           return;
        end
        timesdir  = dir( ddir );
-       format = 'Track_yyyy-mm-dd-HH-MM-SS'; 
-       trackregexp = genRegExpFromFormat( format, matchtype );
        for i=1:length(timesdir)
           timedir  = timesdir(i).name;
+          if contains(timedir,'Saved')
+            format = 'SavedTrack_yyyy-mm-dd-HH-MM-SS'; Sind = 12;
+          else
+              format = 'Track_yyyy-mm-dd-HH-MM-SS'; Sind = 7;
+          end
+          trackregexp = genRegExpFromFormat( format, matchtype );
           if ~isempty( regexp( timedir, trackregexp, 'once' ) )
              time  = extractTimeFromFilename( timedir, format );
              times = [times; time]; 

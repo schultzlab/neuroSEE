@@ -3,7 +3,7 @@
 % This function extracts ROIs and their decontaminated signals from a green
 % channel image stack using CaImAn
 
-function [tsG, df_f, masks, corr_image, F0, GUIdata] = CaImAn( imG, options, display )
+function [tsG, df_f, masks, corr_image, F0, A_or] = CaImAn( imG, options, display )
 
 if nargin<3, display = false; end
 if nargin<2 
@@ -166,10 +166,10 @@ end
 
 masks = logical(masks);
 
-GUIdata.Yr = Yr; 
-GUIdata.A_or = A_or;
-GUIdata.C_or = C_or;
-GUIdata.b2 = b2;
-GUIdata.f2 = f2;
+% GUIdata.Yr = Yr; 
+% GUIdata.A_or = A_or;
+% GUIdata.C_or = C_or;
+% GUIdata.b2 = b2;
+% GUIdata.f2 = f2;
 
 end

@@ -116,7 +116,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         output.elim_masks = elim_masks;
         output.corr_image = corr_image;
         output.F0 = F0;
-        output.GUIdata = GUIdata;
+        output.A_or = A_or;
         output.params = params.ROIsegment;
         if ~exist( filedir, 'dir' ), mkdir( filedir ); end
         save(fname_mat,'-struct','output');

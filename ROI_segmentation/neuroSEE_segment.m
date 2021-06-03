@@ -34,7 +34,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
     runpatches = params.methods.runpatches;
     dofissa = params.methods.dofissa; 
         if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
-    roiarea_thr = params.ROIsegment.roiarea_thr;      % area of roi to be considered a cell
+    roiareathr = params.ROIsegment.roiareathr;      % area of roi to be considered a cell
         
 
     if isempty(list)
@@ -104,10 +104,10 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
                 area(j) = c.Area;                    % area of each ROI
             end
         end
-        masks = masks_all(:,:,area>roiarea_thr);
-        elim_masks = masks_all(:,:,area<roiarea_thr);
-        tsG = tsG_all(area>roiarea_thr,:);
-        df_f = df_f_all(area>roiarea_thr,:);
+        masks = masks_all(:,:,area>roiareathr);
+        elim_masks = masks_all(:,:,area<roiareathr);
+        tsG = tsG_all(area>roiareathr,:);
+        df_f = df_f_all(area>roiareathr,:);
         
         % Save output
         output.tsG = tsG;

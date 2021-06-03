@@ -85,7 +85,8 @@ Names = [
         'cellrad_FOV330     ' % expected radius of a cell in 330x330 um FOV (pixels) (default: 9)  
         'maxcells_FOV330    ' % estimated number of cells in 330x330 um FOV (default: 400)
         'df_prctile         ' % percentile to be defined as baseline (default: 20)
-        'roiarea_thr        ' % area of roi to be considered a cell (default: 70)
+        'roiareathr_FOV490  ' % min roi area to be considered a cell, 490x490 um FOV (default: 50)
+        'roiareathr_FOV330  ' % min roi area to be considered a cell, 330x330 um FOV (default: 70)
     % ROI segmentation (ABLE)    
         'df_medfilt1        ' % degree of smoothing for df_f (default: 13)
     % ROI segmentation: CaImAn
@@ -407,7 +408,8 @@ Values = [
         {9}                   % expected radius of a cell in 330x330 um FOV (pixels) (default: 9)  
         {400}                 % estimated number of cells in 330x330 um FOV (default: 400)
         {20}                  % percentile to be defined as baseline (default 20)
-        {70}                  % area of roi to be considered a cell (default: 70)
+        {50}                  % min roi area to be considered a cell, 490x490 um FOV (default: 50)
+        {70}                  % min roi area to be considered a cell, 330x330 um FOV (default: 70)
     % ROI segmentation (ABLE)
         {13}                  % degree of smoothing for df_f (default: 13)
     % ROI segmentation: CaImAn
@@ -705,14 +707,15 @@ if strcmpi(options.mcorr_method,'normcorre') || strcmpi(options.mcorr_method,'no
 
 end
 % ROI segmentation
-params.ROIsegment.roiarea_thr = options.roiarea_thr;
 params.ROIsegment.FOV = options.FOV;
 if options.FOV == 330
     maxcells = options.maxcells_FOV330;
     cellrad = options.cellrad_FOV330;
+    params.ROIsegment.roiareathr = options.roiareathr_FOV330;
 else
     maxcells = options.maxcells_FOV490;
     cellrad = options.cellrad_FOV490;
+    params.ROIsegment.roiareathr = options.roiareathr_FOV490;
 end
 if strcmpi(options.segment_method,'ABLE')
     f = {'df_prctile'; 'df_medfilt1'; 'fr'};

@@ -37,8 +37,9 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, tsub, bl_prctile, prctile_thr, pfactivet_thr, activetrials_thr )
+function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, tsub, bl_prctile, prctile_thr, pfactivet_thr, activetrials_thr, runpatches )
 
+if nargin<11, runpatches = false; end
 if nargin<10, activetrials_thr = 0.5; end
 if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
 if nargin<4, force = [0; 0; 0; 0; 0; 0]; end
@@ -95,7 +96,7 @@ mcorr_method = 'normcorre';  % image registration method
                                     %   normcorre-nr (nonrigid), 
                                     % fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-runpatches = false;            % for CaImAn processing, flag to run patches (default: false)
+% runpatches = false;            % for CaImAn processing, flag to run patches (default: false)
 % dofissa = true;                % flag to implement FISSA (when false, overrides force(3) setting)
 doasd = false;                  % flag to do asd pf calculation
 

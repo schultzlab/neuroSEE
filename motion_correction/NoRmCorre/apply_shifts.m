@@ -189,8 +189,7 @@ if col_shift
     end
 end
 
-%if 
-print_msg; prevstr = []; %end
+if print_msg; prevstr = []; end
 bin_width = min([options.mem_batch_size,T,ceil((512^2*3000)/(d1*d2*d3))]);
 for t = 1:bin_width:T
     switch filetype
@@ -297,12 +296,11 @@ for t = 1:bin_width:T
             saveastiff(cast(Mf,data_type),options.tiff_filename,opts_tiff);
     end
     
-    % if print_msg
+    if print_msg
         str = sprintf('%i out of %i frames registered \n',t+lY-1,T);
         refreshdisp(str, prevstr, t);
         prevstr=str;
-    % end
+    end
 end
 
-%if 
-print_msg; fprintf('\n'); %end
+if print_msg; fprintf('\n'); end

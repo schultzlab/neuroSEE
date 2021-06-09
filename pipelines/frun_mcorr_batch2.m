@@ -106,14 +106,24 @@ end
 check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile );
 
 if force || ~check    
-    if ~isempty(reffile) && strcmpi(file,reffile)
-        fprintf('%s: Same as reference file. Skipping image registration\n', file);    
-        return
-    end
-
-    [imG,imR] = load_imagefile( data_locn, file, false, [] );
+    if ~isempty(reffile) 
+        if strcmpi(file,reffile)
+            fprintf('%s: Same as reference file. Skipping image registration\n', file);    
+            return
+        end
     
-    neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list );
+        check_mcorr = checkfor_mcorrIm( data_locn, file, mcorr_method );
+        if check_mcorr % motion-corrected image exists
+            [imG,imR] = load_imagefile( data_locn, file, false, '_mcorr' );
+            neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, 2 );
+        else
+            [imG,imR] = load_imagefile( data_locn, file, false, [] );
+            neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, 1 );
+        end
+    else
+        [imG,imR] = load_imagefile( data_locn, file, false, [] );
+        neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, 1 );
+    end
     
     if slacknotify
         if array_id == size(files,1)

@@ -113,6 +113,8 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect2( imG
                         A = struct('shifts', repmat(shifts, size(imG,3), 1));
                         imG = apply_shifts( imG, A.shifts, params_mcorr.normcorre_r, 0, 0, 0, col_shift );
                         imR = apply_shifts( imR, A.shifts, params_mcorr.normcorre_r, 0, 0, 0, col_shift );
+                        out_g.meanframe = mean(imG,3); out_r
+                        
                     end
                 else
                     if mode == 1

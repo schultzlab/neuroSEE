@@ -189,7 +189,8 @@ if col_shift
     end
 end
 
-if print_msg; prevstr = []; end
+%if 
+print_msg; prevstr = []; %end
 bin_width = min([options.mem_batch_size,T,ceil((512^2*3000)/(d1*d2*d3))]);
 for t = 1:bin_width:T
     switch filetype

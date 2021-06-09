@@ -42,7 +42,7 @@ tic
 
 %% Load module folders and define data directory
 
-test = true;                      % flag to use one of smaller files in test folder)
+test = false;                      % flag to use one of smaller files in test folder)
 [data_locn,comp,err] = load_neuroSEEmodules(test);
 if ~isempty(err)
     beep

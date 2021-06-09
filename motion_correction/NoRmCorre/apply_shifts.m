@@ -296,11 +296,12 @@ for t = 1:bin_width:T
             saveastiff(cast(Mf,data_type),options.tiff_filename,opts_tiff);
     end
     
-    if print_msg
+    % if print_msg
         str = sprintf('%i out of %i frames registered \n',t+lY-1,T);
         refreshdisp(str, prevstr, t);
         prevstr=str;
-    end
+    % end
 end
 
-if print_msg; fprintf('\n'); end
+%if 
+print_msg; fprintf('\n'); %end

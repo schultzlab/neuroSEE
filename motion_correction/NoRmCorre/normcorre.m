@@ -1,4 +1,4 @@
-function [M_final,Y_out,shifts,template,options,col_shift] = normcorre(Y,options,template)
+function [M_final,shifts,template,options,col_shift] = normcorre(Y,options,template)
 
 % online motion correction through DFT subpixel registration
 % Based on the dftregistration.m function from Manuel Guizar and Jim Fienup
@@ -19,7 +19,6 @@ function [M_final,Y_out,shifts,template,options,col_shift] = normcorre(Y,options
 %% first determine filetype
 
 nd = 2 + (options.d3 > 1); %max(length(sizY)-1,2);                    % determine whether imaging is 2d or 3d
-Y_out.meanframe = mean(Y,3);
 
 if isa(Y,'char')
     [~,~,ext] = fileparts(Y);
@@ -471,7 +470,6 @@ for it = 1:iter
                     saveastiff(cast(mem_buffer(:,:,1:rem_mem),data_type),options.tiff_filename,opts_tiff);
                 end                
         end         
-        Y_out.meanregframe = mean(M_final_y,3);
         
         if mod(t,bin_width) == 0 && upd_template
             if print_msg

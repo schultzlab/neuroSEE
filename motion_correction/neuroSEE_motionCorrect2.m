@@ -109,19 +109,23 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect2( imG
                     if mode == 1
                         [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params_mcorr.normcorre_r, template );
                     else
+                        out_g.meanframe = mean(imG,3); out_r.meanframe = mean(imR,3);
                         [~, shifts, ~, params_mcorr.normcorre_r, col_shift] = normcorre(mean(imG,3), params_mcorr.normcorre_r, template);
                         A = struct('shifts', repmat(shifts, size(imG,3), 1));
                         imG = apply_shifts( imG, A.shifts, params_mcorr.normcorre_r, 0, 0, 0, col_shift );
                         imR = apply_shifts( imR, A.shifts, params_mcorr.normcorre_r, 0, 0, 0, col_shift );
+                        out_g.meanregframe = mean(imG,3); out_r.meanregframe = mean(imR,3);
                     end
                 else
                     if mode == 1
                         [ imR, imG, out_r, out_g, col_shift, shifts, template, ~ ] = normcorre_2ch( imR, imG, params_mcorr.normcorre_r, template );
                     else
+                        out_g.meanframe = mean(imG,3); out_r.meanframe = mean(imR,3);
                         [~, shifts, ~, params_mcorr.normcorre_r, col_shift] = normcorre(mean(imR,3), params_mcorr.normcorre_r, template);
                         A = struct('shifts', repmat(shifts, size(imR,3), 1));
                         imG = apply_shifts( imG, A.shifts, params_mcorr.normcorre_r, 0, 0, 0, col_shift );
                         imR = apply_shifts( imR, A.shifts, params_mcorr.normcorre_r, 0, 0, 0, col_shift );
+                        out_g.meanregframe = mean(imG,3); out_r.meanregframe = mean(imR,3);
                     end
                 end
                 % Save summary figure, tif images, motion correction/registration output matrix
@@ -143,19 +147,23 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect2( imG
                 if mode == 1
                     [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params_mcorr.normcorre_nr, template );
                 else
+                    out_g.meanframe = mean(imG,3); out_r.meanframe = mean(imR,3);
                     [~, shifts, ~, params_mcorr.normcorre_nr, col_shift] = normcorre(mean(imG,3), params_mcorr.normcorre_nr, template);
                     A = struct('shifts', repmat(shifts, size(imG,3), 1));
                     imG = apply_shifts( imG, A.shifts, params_mcorr.normcorre_nr, 0, 0, 0, col_shift );
                     imR = apply_shifts( imR, A.shifts, params_mcorr.normcorre_nr, 0, 0, 0, col_shift );
+                    out_g.meanregframe = mean(imG,3); out_r.meanregframe = mean(imR,3);
                 end
             else
                 if mode == 1
                     [ imR, imG, out_r, out_g, col_shift, shifts, template, ~ ] = normcorre_2ch( imR, imG, params_mcorr.normcorre_nr, template );
                 else
+                    out_g.meanframe = mean(imG,3); out_r.meanframe = mean(imR,3);
                     [~, shifts, ~, params_mcorr.normcorre_nr, col_shift] = normcorre(mean(imR,3), params_mcorr.normcorre_nr, template);
                     A = struct('shifts', repmat(shifts, size(imR,3), 1));
                     imG = apply_shifts( imG, A.shifts, params_mcorr.normcorre_nr, 0, 0, 0, col_shift );
                     imR = apply_shifts( imR, A.shifts, params_mcorr.normcorre_nr, 0, 0, 0, col_shift );
+                    out_g.meanregframe = mean(imG,3); out_r.meanregframe = mean(imR,3);
                 end
             end
             % Save summary figure, tif images, motion correction/registration output matrix
@@ -181,19 +189,23 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect2( imG
                 if mode == 1
                     [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params_mcorr.normcorre_r, template );
                 else
+                    out_g.meanframe = mean(imG,3); out_r.meanframe = mean(imR,3);
                     [~, shifts, ~, params_mcorr.normcorre_r, col_shift] = normcorre(mean(imG,3), params_mcorr.normcorre_r, template);
                     A = struct('shifts', repmat(shifts, size(imG,3), 1));
                     imG = apply_shifts( imG, A.shifts, params_mcorr.normcorre_r, 0, 0, 0, col_shift );
                     imR = apply_shifts( imR, A.shifts, params_mcorr.normcorre_r, 0, 0, 0, col_shift );
+                    out_g.meanregframe = mean(imG,3); out_r.meanregframe = mean(imR,3);
                 end
             else
                 if mode == 1
                     [ imR, imG, out_r, out_g, col_shift, shifts, template, ~ ] = normcorre_2ch( imR, imG, params_mcorr.normcorre_r, template );
                 else
+                    out_g.meanframe = mean(imG,3); out_r.meanframe = mean(imR,3);
                     [~, shifts, ~, params_mcorr.normcorre_r, col_shift] = normcorre(mean(imR,3), params_mcorr.normcorre_r, template);
                     A = struct('shifts', repmat(shifts, size(imR,3), 1));
                     imG = apply_shifts( imG, A.shifts, params_mcorr.normcorre_r, 0, 0, 0, col_shift );
                     imR = apply_shifts( imR, A.shifts, params_mcorr.normcorre_r, 0, 0, 0, col_shift );
+                    out_g.meanregframe = mean(imG,3); out_r.meanregframe = mean(imR,3);
                 end
             end
             % Save summary figure, tif images, motion corrections/registration output matrix
@@ -206,19 +218,23 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect2( imG
                 if mode == 1
                     [ imG, imR, out_g, out_r, col_shift, shifts, template, ~ ] = normcorre_2ch( imG, imR, params_mcorr.normcorre_nr, template );
                 else
+                    out_g.meanframe = mean(imG,3); out_r.meanframe = mean(imR,3);
                     [~, shifts, ~, params_mcorr.normcorre_nr, col_shift] = normcorre(mean(imG,3), params_mcorr.normcorre_nr, template);
                     A = struct('shifts', repmat(shifts, size(imG,3), 1));
                     imG = apply_shifts( imG, A.shifts, params_mcorr.normcorre_nr, 0, 0, 0, col_shift );
                     imR = apply_shifts( imR, A.shifts, params_mcorr.normcorre_nr, 0, 0, 0, col_shift );
+                    out_g.meanregframe = mean(imG,3); out_r.meanregframe = mean(imR,3);
                 end
             else
                 if mode == 1
                     [ imR, imG, out_r, out_g, col_shift, shifts, template, ~ ] = normcorre_2ch( imR, imG, params_mcorr.normcorre_nr, template );
                 else
+                    out_g.meanframe = mean(imG,3); out_r.meanframe = mean(imR,3);
                     [~, shifts, ~, params_mcorr.normcorre_nr, col_shift] = normcorre(mean(imR,3), params_mcorr.normcorre_nr, template);
                     A = struct('shifts', repmat(shifts, size(imR,3), 1));
                     imG = apply_shifts( imG, A.shifts, params_mcorr.normcorre_nr, 0, 0, 0, col_shift );
                     imR = apply_shifts( imR, A.shifts, params_mcorr.normcorre_nr, 0, 0, 0, col_shift );
+                    out_g.meanregframe = mean(imG,3); out_r.meanregframe = mean(imR,3);
                 end
             end
             % Save summary figure, tif images, motion corrections/registration output matrix

@@ -86,9 +86,9 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
 
         else
             if runpatches
-                [tsG_all, df_f_all, masks_all, corr_image, F0, GUIdata] = CaImAn_patches( imG, params.ROIsegment.CaImAn );
+                [tsG_all, df_f_all, masks_all, corr_image, F0, A] = CaImAn_patches( imG, params.ROIsegment.CaImAn );
             else
-                [tsG_all, df_f_all, masks_all, corr_image, F0, GUIdata] = CaImAn( imG, params.ROIsegment.CaImAn );
+                [tsG_all, df_f_all, masks_all, corr_image, F0, A] = CaImAn( imG, params.ROIsegment.CaImAn );
             end
             df_f_all = full(df_f_all);
         end
@@ -116,7 +116,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         output.elim_masks = elim_masks;
         output.corr_image = corr_image;
         output.F0 = F0;
-        output.A_or = A_or;
+        output.A = A;
         output.params = params.ROIsegment;
         if ~exist( filedir, 'dir' ), mkdir( filedir ); end
         save(fname_mat,'-struct','output');

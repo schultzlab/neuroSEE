@@ -401,7 +401,7 @@ Values = [
         {50}
         {10}
         {[]}
-        {true}               % flag to print messages (default: false)
+        {false}               % flag to print messages (default: false)
     % ROI segmentation
         {6}                   % expected radius of a cell in 490x490 um FOV (default: 6)
         {500}                 % estimated number of cells in 490x490 um FOV (default: 500)

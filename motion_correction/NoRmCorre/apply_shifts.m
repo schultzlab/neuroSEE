@@ -75,7 +75,7 @@ else
 end
 
 T = length(shifts);
-options.bin_width = min(options.bin_width,T+1);
+bin_width = min(options.bin_width,T+1);
 
 if sizY(end) == T && T > 1
     flag_constant = false;

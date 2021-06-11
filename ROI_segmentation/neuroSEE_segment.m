@@ -34,7 +34,10 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
     runpatches = params.methods.runpatches;
     dofissa = params.methods.dofissa; 
         if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
-    roiareathr = params.ROIsegment.roiareathr;      % area of roi to be considered a cell
+    roiarea_min = params.ROIsegment.roiarea_min;
+    roiarea_max = params.ROIsegment.roiarea_max;
+    invcirc_max = params.ROIsegment.invcirc_max;
+    overlap_thr = params.ROIsegment.overlap_thr;
         
 
     if isempty(list)
@@ -93,21 +96,53 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             df_f_all = full(df_f_all);
         end
         
-        % Eliminate very small rois and rois touching image border
-        area = zeros(size(masks_all,3),1);
+        % Eliminate 
+        %   1. rois touching image border 
+        %   2. very small and very large rois
+        %   3. rois with very high inverse circularity
+        %   4. highly overlapping rois
+        
         borderpix = 4;
+        area = zeros(size(masks_all,3),1);
+        inc = []; exc = []; 
         for j = 1:size(masks_all,3)
             mask = masks_all(borderpix:size(masks_all,1)-borderpix,borderpix:size(masks_all,2)-borderpix,j);
             im = imclearborder(mask);
-            c = regionprops(im,'area');
+            c = regionprops(im,'area','perimeter');
             if ~isempty(c)
                 area(j) = c.Area;                    % area of each ROI
+                circ(j) = (c.Perimeter.^2)/(4*pi*c.Area);
+                if all([area(j)>roiarea_min,...
+                        area(j)<roiarea_max,...
+                        circ>invcirc_max])
+                    inc = [inc; j];
+                else
+                    exc = [exc; j];
+                end
+            else
+                exc = [exc; j];
             end
         end
-        masks = masks_all(:,:,area>roiareathr);
-        elim_masks = masks_all(:,:,area<roiareathr);
-        tsG = tsG_all(area>roiareathr,:);
-        df_f = df_f_all(area>roiareathr,:);
+        % eliminate highly overlapping rois
+        exc2 = [];
+        for j = 1:length(inc)
+            for k = 1:length(inc)
+                if j~=k
+                    [~, overlap1, overlap2] = calcROIoverlap(masks_all(:,:,j), masks_all(:,:,k));
+                    if overlap1>overlap_thr || overlap2>overlap_thr
+                        exc2 = [exc2; j; k];
+                    end
+                end
+            end
+        end
+        
+        exc = unique([exc; exc2]);
+        inc = setdiff(1:size(masks_all,3),exc);
+        masks = masks_all(:,:,inc);
+        elim_masks = masks_all(:,:,exc);
+        
+        tsG = tsG_all(inc,:);
+        df_f = df_f_all(inc,:);
         
         % Save output
         output.tsG = tsG;
@@ -115,6 +150,8 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         output.masks = masks;
         output.elim_masks = elim_masks;
         output.corr_image = corr_image;
+        output.incmasks = inc;
+        output.excmasks = exc;
         output.F0 = F0;
         output.A = A;
         output.params = params.ROIsegment;

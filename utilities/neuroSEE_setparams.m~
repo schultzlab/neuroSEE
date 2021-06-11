@@ -90,7 +90,7 @@ Names = [
         'roiareamin_FOV330  ' % min roi area for cells, 330x330 um FOV (default: 70)
         'roiareamax_FOV330  ' % max roi area for cells, 330x330 um FOV (default: 560)
         'invcirc_max        ' % max inverse circularity for cells (default: 4)
-        'overlap_thr        ' % max allowed overlap between any two cells (default: 0.25)
+        'roiareamax_FOV330  ' % min roi area to be considered a cell, 330x330 um FOV (default: 560)
     % ROI segmentation (ABLE)    
         'df_medfilt1        ' % degree of smoothing for df_f (default: 13)
     % ROI segmentation: CaImAn
@@ -412,12 +412,8 @@ Values = [
         {9}                   % expected radius of a cell in 330x330 um FOV (pixels) (default: 9)  
         {400}                 % estimated number of cells in 330x330 um FOV (default: 400)
         {20}                  % percentile to be defined as baseline (default 20)
-        {50}                  % min roi area for cells, 490x490 um FOV (default: 50)
-        {400}                 % max roi area for cells, 490x490 um FOV (default: 350)
-        {70}                  % min roi area for cells, 330x330 um FOV (default: 70)
-        {560}                 % max roi area for cells, 330x330 um FOV (default: 560)
-        {4}                   % max inverse circularity for cells (default: 4)
-        {0.25}                % max allowed overlap between any two cells (default: 0.25)
+        {50}                  % min roi area to be considered a cell, 490x490 um FOV (default: 50)
+        {70}                  % min roi area to be considered a cell, 330x330 um FOV (default: 70)
     % ROI segmentation (ABLE)
         {13}                  % degree of smoothing for df_f (default: 13)
     % ROI segmentation: CaImAn
@@ -556,7 +552,7 @@ Values = [
         {0.8}                 % threshold for detecting if one ROI is a subset of another (deafult: 0.8)
         {true}                % plot registered ROIs (default: true)
         % parameters for computing event exceptionality (compute_event_exceptionality.m)
-        {1.5}                   % minimum SNR for accepting exceptional events (default: 3)
+        {3}                   % minimum SNR for accepting exceptional events (default: 3)
         {false}               % use robust std for computing noise in traces (false)
         {[]}                  % number of samples over which to compute (default: ceil(decay_time*fr))
         {[]}                  % threshold on time variability  (default: log(normcdf(-min_SNR))*N_samples_exc)    
@@ -716,18 +712,14 @@ if strcmpi(options.mcorr_method,'normcorre') || strcmpi(options.mcorr_method,'no
 end
 % ROI segmentation
 params.ROIsegment.FOV = options.FOV;
-params.ROIsegment.invcirc_max = options.invcirc_max;
-params.ROIsegment.overlap_thr = options.overlap_thr;
 if options.FOV == 330
     maxcells = options.maxcells_FOV330;
     cellrad = options.cellrad_FOV330;
-    params.ROIsegment.roiarea_min = options.roiareamin_FOV330;
-    params.ROIsegment.roiarea_max = options.roiareamax_FOV330;    
+    params.ROIsegment.roiareathr = options.roiareathr_FOV330;
 else
     maxcells = options.maxcells_FOV490;
     cellrad = options.cellrad_FOV490;
-    params.ROIsegment.roiarea_min = options.roiareamin_FOV490;
-    params.ROIsegment.roiarea_max = options.roiareamax_FOV490;    
+    params.ROIsegment.roiareathr = options.roiareathr_FOV490;
 end
 if strcmpi(options.segment_method,'ABLE')
     f = {'df_prctile'; 'df_medfilt1'; 'fr'};

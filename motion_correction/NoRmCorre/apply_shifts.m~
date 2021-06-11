@@ -302,9 +302,9 @@ for t = 1:bin_width:T
     if print_msg 
         % str = sprintf('%i out of %i frames registered \n',t+lY-1,T);
         str = sprintf('%i out of %i frames registered \n',t,T);
-        refreshdisp(str, prevstr);
+        refreshdisp(str, prevstr, t);
         prevstr=str;
     end
 end
 
-% if print_msg; fprintf('\n'); end
+if print_msg; fprintf('\n'); end

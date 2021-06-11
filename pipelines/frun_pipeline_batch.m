@@ -30,7 +30,10 @@
 %   CaImAn requires at least Matlab R2017b
 %   FISSA requires at least Matlab R2018
 
-function frun_pipeline_batch( array_id, list, force, dostep, min_SNR, cnn_thr )
+function frun_pipeline_batch( array_id, list, force, dostep, min_SNR, cnn_thr, merge_thr )
+if nargin<7, merge_thr = 0.8; end
+if nargin<6, cnn_thr = 3; end
+if nargin<5, min_SNR = 0.2; end
 if nargin<4, dostep = [1;1;0;0;0;0]; end
 if nargin<3, force  = [0;0;0;0;0;0]; end
 
@@ -100,7 +103,8 @@ params = neuroSEE_setparams(...
             'FOV', FOV,...
             'tsub', 1,...
             'min_SNR', min_SNR,...
-            'cnn_thr',cnn_thr); 
+            'cnn_thr', cnn_thr,...
+            'merge_thr', merge_thr); 
 
                                % flag to execute step (use if wanting to skip later steps)
 % dostep = [true;...              % (1) motion correction even if motion corrected images exist

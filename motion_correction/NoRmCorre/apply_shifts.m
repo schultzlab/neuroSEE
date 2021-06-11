@@ -75,6 +75,7 @@ else
 end
 
 T = length(shifts);
+print_msg_binwidth = options.bin_width;
 
 if sizY(end) == T && T > 1
     flag_constant = false;
@@ -190,8 +191,7 @@ if col_shift
 end
 
 if print_msg; prevstr = []; end
-%bin_width = min([options.mem_batch_size,T,ceil((512^2*3000)/(d1*d2*d3))]);
-bin_width = min(options.mem_batch_size,T);
+bin_width = min([options.mem_batch_size,T,ceil((512^2*3000)/(d1*d2*d3))]);
 for t = 1:bin_width:T
     switch filetype
         case 'tif'
@@ -299,9 +299,9 @@ for t = 1:bin_width:T
             saveastiff(cast(Mf,data_type),options.tiff_filename,opts_tiff);
     end
     
-    if print_msg 
-        str = sprintf('%i out of %i frames registered \n',t+lY-1,T);
-        % str = sprintf('%i out of %i frames registered \n',t,T);
+    if print_msg && mod(t,print_msg_binwidth) == 0
+        % str = sprintf('%i out of %i frames registered \n',t+lY-1,T);
+        str = sprintf('%i out of %i frames registered \n',t,T);
         refreshdisp(str, prevstr);
         prevstr=str;
     end

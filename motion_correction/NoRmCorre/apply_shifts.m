@@ -75,6 +75,7 @@ else
 end
 
 T = length(shifts);
+options.bin_width = min(options.bin_width,T+1);
 
 if sizY(end) == T && T > 1
     flag_constant = false;
@@ -190,7 +191,7 @@ if col_shift
 end
 
 if print_msg; prevstr = []; end
-bin_width = min([options.mem_batch_size,T,ceil((512^2*3000)/(d1*d2*d3))]);
+%bin_width = min([options.mem_batch_size,T,ceil((512^2*3000)/(d1*d2*d3))]);
 for t = 1:bin_width:T
     switch filetype
         case 'tif'
@@ -222,7 +223,8 @@ for t = 1:bin_width:T
     
     switch lower(options.shifts_method)
         case 'fft'            
-            parfor ii = 1:lY 
+            % parfor ii = 1:lY 
+            for ii = 1:lY
                 Yc = mat2cell_ov(Ytc{ii},xx_us,xx_uf,yy_us,yy_uf,zz_us,zz_uf,options.overlap_post,[d1,d2,d3]);
                 Yfft = cellfun(@(x) fftn(x),Yc,'un',0);
                 minY = min(Ytc{ii}(:));
@@ -252,7 +254,8 @@ for t = 1:bin_width:T
                 Mf{ii}(Mf{ii}>maxY) = maxY;    
             end
         otherwise
-            parfor ii = 1:lY
+            % parfor ii = 1:lY
+            for ii = 1:lY
                 minY = min(Ytc{ii}(:));
                 maxY = max(Ytc{ii}(:));
                 shifts_temp(ii).shifts_up = shifts_temp(ii).shifts;
@@ -296,8 +299,9 @@ for t = 1:bin_width:T
             saveastiff(cast(Mf,data_type),options.tiff_filename,opts_tiff);
     end
     
-    if print_msg
-        str = sprintf('%i out of %i frames registered \n',t+lY-1,T);
+    if print_msg && mod(t,bin_width) == 0
+        % str = sprintf('%i out of %i frames registered \n',t+lY-1,T);
+        str = sprintf('%i out of %i frames registered \n',t,T);
         refreshdisp(str, prevstr, t);
         prevstr=str;
     end

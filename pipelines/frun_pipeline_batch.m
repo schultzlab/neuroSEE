@@ -32,8 +32,8 @@
 
 function frun_pipeline_batch( array_id, list, force, dostep, min_SNR, cnn_thr, merge_thr )
 if nargin<7, merge_thr = 0.8; end
-if nargin<6, cnn_thr = 3; end
-if nargin<5, min_SNR = 0.2; end
+if nargin<6, cnn_thr = 0.2; end
+if nargin<5, min_SNR = 3; end
 if nargin<4, dostep = [1;1;0;0;0;0]; end
 if nargin<3, force  = [0;0;0;0;0;0]; end
 

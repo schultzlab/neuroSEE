@@ -299,9 +299,8 @@ for t = 1:bin_width:T
             saveastiff(cast(Mf,data_type),options.tiff_filename,opts_tiff);
     end
     
-    if mod(t,print_msg_binwidth) == 0
-        % str = sprintf('%i out of %i frames registered \n',t+lY-1,T);
-        str = sprintf('%i out of %i frames registered \n',t,T);
+    if print_msg && mod(t,print_msg_binwidth) == 0
+        str = sprintf('%i out of %i frames registered \n',t+lY-1,T);
         refreshdisp(str, prevstr);
         prevstr=str;
     end

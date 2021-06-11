@@ -764,6 +764,7 @@ if strcmpi(options.segment_method,'CaImAn')
     params.ROIsegment.CaImAn.name = options.name_roiavi;   
     params.ROIsegment.CaImAn.maxcells = maxcells;
     params.ROIsegment.CaImAn.gSig = cellrad;
+    params.ROIsegment.CaImAn.runpatches = options.runpatches;
 end
 % neuropil correction
 if options.dofissa

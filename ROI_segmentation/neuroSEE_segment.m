@@ -114,7 +114,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
                 circ(j) = (c.Perimeter.^2)/(4*pi*c.Area);
                 if all([area(j)>roiarea_min,...
                         area(j)<roiarea_max,...
-                        circ>invcirc_max])
+                        circ<invcirc_max])
                     inc = [inc; j];
                 else
                     exc = [exc; j];

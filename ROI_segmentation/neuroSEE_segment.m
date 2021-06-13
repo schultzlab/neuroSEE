@@ -138,20 +138,16 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         
         exc = unique([exc; exc2]);
         inc = setdiff(1:size(masks_all,3),exc);
-        masks = masks_all(:,:,inc);
-        elim_masks = masks_all(:,:,exc);
-        
-        tsG = tsG_all(inc,:);
-        df_f = df_f_all(inc,:);
+        masks = masks_all(:,:,inc);     elim_masks = masks_all(:,:,exc);
+        tsG = tsG_all(inc,:);           elim_tsG = tsG_all(exc,:);
+        df_f = df_f_all(inc,:);         elim_df_f = df_f_all(exc,:);
         
         % Save output
-        output.tsG = tsG;
-        output.df_f = df_f;
-        output.masks = masks;
-        output.elim_masks = elim_masks;
+        output.incmasks = inc;  output.excmasks = exc;
+        output.tsG = tsG;       output.elim_tsG = elim_tsG;
+        output.df_f = df_f;     output.elim_df_f = elim_df_f;
+        output.masks = masks;   output.elim_masks = elim_masks;
         output.corr_image = corr_image;
-        output.incmasks = inc;
-        output.excmasks = exc;
         output.F0 = F0;
         output.A = A;
         output.params = params.ROIsegment;

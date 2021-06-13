@@ -556,7 +556,7 @@ Values = [
         {0.8}                 % threshold for detecting if one ROI is a subset of another (deafult: 0.8)
         {true}                % plot registered ROIs (default: true)
         % parameters for computing event exceptionality (compute_event_exceptionality.m)
-        {1.5}                 % minimum SNR for accepting exceptional events (default: 3)
+        {2.5}                 % minimum SNR for accepting exceptional events (default: 3)
         {false}               % use robust std for computing noise in traces (false)
         {[]}                  % number of samples over which to compute (default: ceil(decay_time*fr))
         {[]}                  % threshold on time variability  (default: log(normcdf(-min_SNR))*N_samples_exc)    

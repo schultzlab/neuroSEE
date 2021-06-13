@@ -39,7 +39,7 @@
 
 function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, tsub, bl_prctile, prctile_thr, pfactivet_thr, activetrials_thr, min_SNR )
 
-if nargin<11, min_SNR = 1.5; end
+if nargin<11, min_SNR = 2.5; end
 if nargin<10, activetrials_thr = 0.5; end
 if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
 if nargin<4, force = [0; 0; 0; 0; 0; 0]; end

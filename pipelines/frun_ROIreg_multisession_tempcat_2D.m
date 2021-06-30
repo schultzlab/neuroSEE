@@ -33,16 +33,22 @@ params = neuroSEE_setparams(...
 
 tic
 % mouse id and experiment name
-[ mouseid, expname ] = find_mouseIDexpname( list );
+[ mouseid, expname, fov ] = find_mouseIDexpname( list );
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 if nargin<4 || isempty(useind), useind = 1:size(files,1); end
 if nargin<2, reffile = files(1,:); end
 
 % Location of processed group data for list
-sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname ...
+if ~isempty(fov)
+    sdir = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname ...
        '/group_proc/imreg_' mcorr_method '_' segment_method '/' ...
        mouseid '_' expname '_imreg_ref' reffile '/'];
+else
+    sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname ...
+       '/group_proc/imreg_' mcorr_method '_' segment_method '/' ...
+       mouseid '_' expname '_imreg_ref' reffile '/'];
+end
 for i = 1:length(bl_prctile_array)   
     if i == 1
         bl_str = num2str(bl_prctile_array(i));
@@ -67,8 +73,13 @@ if force || ~exist(fname_mat,'file')
         MtsG = M.tsG;
     end
 
-    posdata = load([data_locn 'Analysis/' mouseid '/' mouseid '_' expname ...
+    if ~isempty(fov)
+        posdata = load([data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname ...
             '/group_proc/' mouseid '_' expname '_downTrackdata.mat']);
+    else
+        posdata = load([data_locn 'Analysis/' mouseid '/' mouseid '_' expname ...
+            '/group_proc/' mouseid '_' expname '_downTrackdata.mat']);
+    end
     if any(posdata.r < 100)
         params.mode_dim = '2D';                     % open field
         params.PFmap.Nbins = params.PFmap.Nbins_2D; % number of location bins in [x y]               

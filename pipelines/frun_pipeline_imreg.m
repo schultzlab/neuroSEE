@@ -61,7 +61,7 @@ end
 % end
 
 % Mouseid, Experiment name, files
-[ mouseid, expname ] = find_mouseIDexpname(list);
+[ mouseid, expname, fov ] = find_mouseIDexpname(list);
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 if nargin<2, reffile = files(1,:); end
@@ -157,9 +157,15 @@ if ~any(force) && check_list(6)
 end
 
 %% Location of processed group data for list
-grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+if ~isempty(fov)
+    grp_sdir = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/'...
             groupreg_method '_' mcorr_method '_' segment_method '/'...
             mouseid '_' expname '_imreg_ref' reffile '/'];
+else
+    grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+            groupreg_method '_' mcorr_method '_' segment_method '/'...
+            mouseid '_' expname '_imreg_ref' reffile '/'];
+end
 if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); fileattrib grp_sdir +w '' s; end
 
 %% 1) Image registration

@@ -31,7 +31,7 @@ function check = checkforExistingProcData(data_locn, text, params, reffile)
     
     % if an experiment (i.e. list of files)
     if tlist
-        [mouseid,expname] = find_mouseIDexpname(list);
+        [mouseid,expname,fov] = find_mouseIDexpname(list);
         if nargin<4 
             listfile = [data_locn 'Digital_Logbook/lists/' list];
             files = extractFilenamesFromTxtfile(listfile);
@@ -39,9 +39,15 @@ function check = checkforExistingProcData(data_locn, text, params, reffile)
         end
         
         groupreg_method = params.methods.groupreg_method;
-        dir_proc = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+        if ~isempty(fov)
+            dir_proc = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/'...
                     groupreg_method '_' mcorr_method '_' segment_method '/'...
                     mouseid '_' expname '_imreg_ref' reffile '/'];
+        else
+            dir_proc = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+                    groupreg_method '_' mcorr_method '_' segment_method '/'...
+                    mouseid '_' expname '_imreg_ref' reffile '/'];
+        end
         
         check = zeros(1,6);
         if exist(dir_proc,'dir')

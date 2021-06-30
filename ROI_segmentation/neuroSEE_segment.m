@@ -48,11 +48,16 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         fname_fig3 = [filedir file '_df_f.fig'];
         fname_pref = [filedir file];
     else
-        [ mouseid, expname ] = find_mouseIDexpname(list);
+        [ mouseid, expname, fov ] = find_mouseIDexpname(list);
         groupreg_method = params.methods.groupreg_method;
         mcorr_method = params.methods.mcorr_method;
-        filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
+        if ~isempty(fov)
+            filedir = [ data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
                     mouseid '_' expname '_imreg_ref' reffile '/'];
+        else
+            filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
+                    mouseid '_' expname '_imreg_ref' reffile '/'];
+        end
         fname_mat = [filedir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
         fname_fig1 = [filedir mouseid '_' expname '_ref' reffile '_ROIs.fig'];
         fname_fig2 = [filedir mouseid '_' expname '_ref' reffile '_raw_timeseries.fig'];

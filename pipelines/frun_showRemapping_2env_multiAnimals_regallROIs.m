@@ -21,12 +21,12 @@
 % The section labeled "USER-DEFINED INPUT" requires user input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function frun_showRemapping_2env_multiAnimals_regallROIs( mouseid_array, env1, env2, ref1_array, ref2_array,...
+function frun_showRemapping_2env_multiAnimals_regallROIs( mouseid_array, env1, env2, fov_array, ref1_array, ref2_array,...
                                                         bl1_array, bl2_array, force, figsave, figclose )
 
-if nargin<8, force = false; end
-if nargin<9. figsave = true; end
-if nargin<10, figclose = true; end
+if nargin<9, force = false; end
+if nargin<10, figsave = true; end
+if nargin<11, figclose = true; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % USER-DEFINED INPUT                         
@@ -71,9 +71,19 @@ if ~exist(fname_remap,'file') || force
     for n = 1:size(mouseid_array,1)
         % mouse identity
         mouseid = mouseid_array(n,:);
-
-        fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' mcorr_method '_' segment_method '_' str_fissa ...
-               '/' mouseid '_' env1 env2 '_imreg_ref' ref1_array(n,:) '-' ref2_array(n,:) '/bl_' num2str(bl1_array(n)) '-' num2str(bl2_array(n)) '/' ];
+        fov = fov_array(n,:);
+        
+        if ~isempty(fov)
+            fdir = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' fov '_' env1 env2 '/remapping/imreg_' ...
+                mcorr_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 ...
+                '_imreg_ref' ref1_array(n,:) '-' ref2_array(n,:) '/bl_' num2str(bl1_array(n)) ...
+                '-' num2str(bl2_array(n)) '/' ];
+        else
+            fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' ...
+                mcorr_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 ...
+                '_imreg_ref' ref1_array(n,:) '-' ref2_array(n,:) '/bl_' num2str(bl1_array(n)) ...
+                '-' num2str(bl2_array(n)) '/' ];
+        end
         
         % Check if data exist for mouse in env1 and env2. Quit if data does not exist
         fname = [fdir  mouseid '_' env1 env2 '_remapping_output.mat'];
@@ -152,8 +162,10 @@ if ~exist(fname_remapfig,'file') || force
         xlabel('Position (cm)');        
         
     fprintf('%s: saving remapping summary figure\n',[mousegrp '_' env1 env2]);
-    savefig( fh, fname_remapfig(1:end-4) );
-    saveas( fh, fname_remapfig(1:end-4), 'png' );
+    if figsave
+        savefig( fh, fname_remapfig(1:end-4) );
+        saveas( fh, fname_remapfig(1:end-4), 'png' );
+    end
     if figclose, close( fh ); end   
 end
 

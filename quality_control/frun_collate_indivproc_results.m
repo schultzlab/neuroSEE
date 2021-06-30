@@ -36,7 +36,7 @@ dofissa = true;
     if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
 
 %% MouseID and experiment name
-[ mouseid, expname ] = find_mouseIDexpname(list);
+[ mouseid, expname, fov ] = find_mouseIDexpname(list);
 
 %% Files
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
@@ -50,8 +50,13 @@ if Nfig < 0, Nfig = 0; end
 
 
 %% Load image data for each recording
-sdir1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/indiv_' ...
+if ~isempty(fov)
+    sdir1 = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/individual_proc/indiv_' ...
          mcorr_method '_' segment_method '_' str_fissa '/indiv_mcorr/'];
+else
+    sdir1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/indiv_' ...
+         mcorr_method '_' segment_method '_' str_fissa '/indiv_mcorr/'];
+end
     
 if any([ force, ~exist([sdir1 mouseid '_' expname '_GREEN_mcorr.fig'],'file'),...
                 ~exist([sdir1 mouseid '_' expname '_RED_mcorr.fig'],'file') ])
@@ -130,8 +135,13 @@ end
 
 
 %% Load tracking data for each recording
-sdir2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/indiv_' ...
+if ~isempty(fov)
+    sdir2 = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/individual_proc/indiv_' ...
          mcorr_method '_' segment_method '_' str_fissa '/indiv_trajectories/'];
+else
+    sdir2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/indiv_' ...
+         mcorr_method '_' segment_method '_' str_fissa '/indiv_trajectories/'];
+end
     
 if force || ~exist([sdir2 mouseid '_' expname '_traj.fig'],'file')
     for i = 1:Nfiles
@@ -192,8 +202,13 @@ else
     mode_dim = '1D'; % circular linear track
 end
 
-sdir3 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/indiv_' ...
+if ~isempty(fov)
+    sdir3 = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/individual_proc/indiv_' ...
          mcorr_method '_' segment_method '_' str_fissa '/indiv_PFmaps/'];
+else 
+    sdir3 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/indiv_' ...
+         mcorr_method '_' segment_method '_' str_fissa '/indiv_PFmaps/'];
+end
     
 if (force || ~exist([sdir3 mouseid '_' expname '_PFmaps.fig'],'file')) && strcmpi(mode_dim,'1D')
     for i = 1:Nfiles
@@ -242,8 +257,13 @@ end
 
 
 %% Load ROIs
-sdir4 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/indiv_' ...
+if ~isempty(fov)
+    sdir4 = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/individual_proc/indiv_' ...
          mcorr_method '_' segment_method '_' str_fissa '/indiv_ROIs/'];
+else
+    sdir4 = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/indiv_' ...
+         mcorr_method '_' segment_method '_' str_fissa '/indiv_ROIs/'];
+end
     
 if (force || ~exist([sdir4 mouseid '_' expname '_ROIs.fig'],'file')) 
     for i = 1:Nfiles

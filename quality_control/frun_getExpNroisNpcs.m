@@ -18,12 +18,18 @@ params = neuroSEE_setparams;
 roiarea_thr = params.ROIsegment.roiarea_thr;
 
 % Mouseid, Experiment name, files
-[ mouseid, expname ] = find_mouseIDexpname(list);
+[ mouseid, expname, fov ] = find_mouseIDexpname(list);
 
 % Location of processed group data for list
-grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+if ~isempty(fov)
+    grp_sdir = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/'...
             groupreg_method '_' mcorr_method '_' segment_method '/'...
             mouseid '_' expname '_imreg_ref' reffile '/'];
+else 
+    grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+            groupreg_method '_' mcorr_method '_' segment_method '/'...
+            mouseid '_' expname '_imreg_ref' reffile '/'];
+end
     
 if exist([grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'],'file')
     M = load([grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat']);

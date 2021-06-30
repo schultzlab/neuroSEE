@@ -36,7 +36,7 @@ if ~isempty(err)
 end
 
 %% MouseID and experiment name
-[ mouseid, expname ] = find_mouseIDexpname(list);
+[ mouseid, expname, fov ] = find_mouseIDexpname(list);
 
 %% Files
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
@@ -58,7 +58,11 @@ clear c
 
 %% Load image data for each recording
 % directory where registration results summary is saved: sdir
-sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/imreg_' mcorr_method '/indiv_imreg_ref' reffile '/'];
+if ~isempty(fov)
+    sdir = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/individual_proc/imreg_' mcorr_method '/indiv_imreg_ref' reffile '/'];
+else
+    sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/imreg_' mcorr_method '/indiv_imreg_ref' reffile '/'];
+end
 if ~exist(sdir,'dir'), mkdir(sdir); fileattrib sdir +w '' s; end
     
 if any([ force, ~exist([sdir mouseid '_' expname '_GREEN_imreg_ref' reffile '.fig'],'file'),...

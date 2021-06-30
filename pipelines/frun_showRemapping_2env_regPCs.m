@@ -21,12 +21,12 @@
 % The section labeled "USER-DEFINED INPUT" requires user input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function frun_showRemapping_2env( mouseid, env1, env2, ref1, ref2, bl1, bl2, force, figclose )
+function frun_showRemapping_2env_regPCs( mouseid, fov, env1, env2, ref1, ref2, bl1, bl2, force, figclose )
 
-if nargin<6, bl1 = 85; end
-if nargin<7, bl2 = 85; end
-if nargin<8, force = false; end
-if nargin<9, figclose = true; end
+if nargin<7, bl1 = 85; end
+if nargin<8, bl2 = 85; end
+if nargin<9, force = false; end
+if nargin<10, figclose = true; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % USER-DEFINED INPUT                         
@@ -64,10 +64,17 @@ end
 
 %% Pre-processing
 % Check if data exist for mouseID in env1 and env2. Quit if data does not exist
-dir_env1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env1 ...
+if ~isempty(fov)
+    dir_env1 = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' fov '_' env1 env2 '-' env1 ...
             '/group_proc/imreg_' mcorr_method '_' segment_method '/' mouseid '_' env1 env2 '-' env1 '_imreg_ref' ref1 '/'];
-dir_env2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env2 ...
+    dir_env2 = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' fov '_' env1 env2 '-' env2 ...
             '/group_proc/imreg_' mcorr_method '_' segment_method '/' mouseid '_' env1 env2 '-' env2 '_imreg_ref' ref2 '/'];
+else
+    dir_env1 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env1 ...
+            '/group_proc/imreg_' mcorr_method '_' segment_method '/' mouseid '_' env1 env2 '-' env1 '_imreg_ref' ref1 '/'];
+    dir_env2 = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '-' env2 ...
+            '/group_proc/imreg_' mcorr_method '_' segment_method '/' mouseid '_' env1 env2 '-' env2 '_imreg_ref' ref2 '/'];
+end
 
 data_env1 = [dir_env1  str_fissa '/bl_prctile' num2str(bl1) '/' mouseid '_' env1 env2 '-' env1 '_ref' ref1 '_PFmap_output.mat'];
 data_env2 = [dir_env2  str_fissa '/bl_prctile' num2str(bl2) '/' mouseid '_' env1 env2 '-' env2 '_ref' ref2 '_PFmap_output.mat'];
@@ -88,8 +95,13 @@ end
 
 %% ROI registration across sessions
 tic
-fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' ...
+if ~isempty(fov)
+    fdir = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' fov '_' env1 env2 '/remapping/imreg_' ...
        mcorr_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '_imreg_ref' ref1 '-' ref2 '/'];
+else
+    fdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' env1 env2 '/remapping/imreg_' ...
+       mcorr_method '_' segment_method '_' str_fissa '/' mouseid '_' env1 env2 '_imreg_ref' ref1 '-' ref2 '/'];
+end
 fname_remap = [fdir  mouseid '_' env1 env2 '_remapping_output.mat'];
 fname_remapfig = [fdir  mouseid '_' env1 env2 '_remapping_summary.fig'];
 

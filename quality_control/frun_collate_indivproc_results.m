@@ -94,9 +94,9 @@ if any([ force, ~exist([sdir1 mouseid '_' expname '_GREEN_mcorr.fig'],'file'),..
                 titletext = [mouseid '-' expname ': GREEN channel'];
                 ind = strfind(titletext,'_');
                 titletext(ind) = '-';
-                text('Position',[0.25 0.99], 'FontSize',14, 'String',titletext);
+                text('Position',[0.01 0.99], 'FontSize',14, 'String',titletext);
 
-            if ~exist(sdir1,'dir'), mkdir(sdir1); fileattrib sdir1 +w '' s; end    
+            if ~exist(sdir1,'dir'), mkdir(sdir1); fileattrib(sdir1,'+w','g','s'); end    
             fname_fig = [sdir1 mouseid '_' expname '_GREEN_mcorr.fig'];
             savefig( fh, fname_fig );
             saveas( fh, fname_fig(1:end-4), 'png' );
@@ -122,7 +122,7 @@ if any([ force, ~exist([sdir1 mouseid '_' expname '_GREEN_mcorr.fig'],'file'),..
                 titletext = [mouseid '-' expname ': RED channel'];
                 ind = strfind(titletext,'_');
                 titletext(ind) = '-';
-                text('Position',[0.25 0.99], 'FontSize',14, 'String',titletext);
+                text('Position',[0.01 0.99], 'FontSize',14, 'String',titletext);
             fname_fig = [sdir1 mouseid '_' expname '_RED_mcorr.fig'];
             savefig( fh, fname_fig );
             saveas( fh, fname_fig(1:end-4), 'png' );
@@ -177,8 +177,8 @@ if force || ~exist([sdir2 mouseid '_' expname '_traj.fig'],'file')
                 titletext = [mouseid '-' expname ': trajectories'];
                 ind = strfind(titletext,'_');
                 titletext(ind) = '-';
-                text('Position',[0.4 0.99], 'FontSize',14, 'String',titletext);
-            if ~exist(sdir2,'dir'), mkdir(sdir2); fileattrib sdir2 +w '' s; end
+                text('Position',[0.01 0.99], 'FontSize',14, 'String',titletext);
+            if ~exist(sdir2,'dir'), mkdir(sdir2); fileattrib(sdir2,'+w','g','s'); end
             fname_fig = [sdir2 mouseid '_' expname '_traj.fig'];
             savefig( fh, fname_fig );
             saveas( fh, fname_fig(1:end-4), 'png' );
@@ -243,8 +243,8 @@ if (force || ~exist([sdir3 mouseid '_' expname '_PFmaps.fig'],'file')) && strcmp
                 titletext = [mouseid '-' expname ': PF maps'];
                 ind = strfind(titletext,'_');
                 titletext(ind) = '-';
-                text('Position',[0.25 0.99], 'FontSize',14, 'String',titletext);
-            if ~exist(sdir3,'dir'), mkdir(sdir3); fileattrib sdir3 +w '' s; end
+                text('Position',[0.01 0.99], 'FontSize',14, 'String',titletext);
+            if ~exist(sdir3,'dir'), mkdir(sdir3); fileattrib(sdir3,'+w','g','s'); end
             fname_fig = [sdir3 mouseid '_' expname '_PFmaps.fig'];
             savefig( fh, fname_fig );
             saveas( fh, fname_fig(1:end-4), 'png' );
@@ -306,8 +306,8 @@ if (force || ~exist([sdir4 mouseid '_' expname '_ROIs.fig'],'file'))
                 titletext = [mouseid '-' expname ': ROIs'];
                 ind = strfind(titletext,'_');
                 titletext(ind) = '-';
-                text('Position',[0.25 0.99], 'FontSize',14, 'String',titletext);
-            if ~exist(sdir4,'dir'), mkdir(sdir4); fileattrib sdir4 +w '' s; end
+                text('Position',[0.01 0.99], 'FontSize',14, 'String',titletext);
+            if ~exist(sdir4,'dir'), mkdir(sdir4); fileattrib(sdir4,'+w','g','s'); end
             fname_fig = [sdir4 mouseid '_' expname '_ROIs.fig'];
             savefig( fh, fname_fig );
             saveas( fh, fname_fig(1:end-4), 'png' );

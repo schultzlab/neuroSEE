@@ -77,7 +77,7 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
         if fsave
             % Save output
             spike_output.spikes = spikes;
-            if ~exist(filedir,'dir'), mkdir(filedir); fileattrib filedir +w '' s; end
+            if ~exist(filedir,'dir'), mkdir(filedir); fileattrib(filedir,'+w','g','s'); end
             spike_output.params = params.spkExtract;
             save(fname_mat,'-struct','spike_output');
 

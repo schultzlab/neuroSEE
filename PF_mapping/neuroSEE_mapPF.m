@@ -114,11 +114,11 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
             % Make plots
             if force || ~exist(fig_sdir,'dir')
                 if force && exist(fig_sdir,'dir'), rmdir(fig_sdir,'s'); end
-                if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); fileattrib fig_sdir +w '' s; end
+                if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); fileattrib(fig_sdir,'+w','g','s'); end
                 plotPF_1d(hist, asd, PFdata, true, true, fig_sdir, fname_pref)
                 
                 if params.PFmap.Nepochs > 1
-                    if ~exist(fig_sdir_epochs,'dir'), mkdir(fig_sdir_epochs); fileattrib fig_sdir_epochs +w '' s; end
+                    if ~exist(fig_sdir_epochs,'dir'), mkdir(fig_sdir_epochs); fileattrib(fig_sdir_epochs,'+w','g','s'); end
                     plotPF_1d(hist_epochs, asd_epochs, PFdata_epochs, true, true, fig_sdir_epochs, fname_pref)
                 end
             end
@@ -140,7 +140,7 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
             % Make plots
             if force || ~exist(fig_sdir,'dir')
                 if force && exist(fig_sdir,'dir'), rmdir(fig_sdir,'s'); end
-                if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); fileattrib fig_sdir +w '' s; end
+                if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); fileattrib(fig_sdir,'+w','g','s'); end
                 plotPF_2d( hist, asd, PFdata, activeData, true, true, fig_sdir, fname_pref )
             end
         
@@ -178,7 +178,7 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
         
         % Make plots if necessary
         if ~exist(fig_sdir,'dir')
-            mkdir(fig_sdir); fileattrib fig_sdir +w '' s;
+            mkdir(fig_sdir); fileattrib(fig_sdir,'+w','g','s');
             if strcmpi(params.mode_dim,'1D')
                 plotPF_1d(hist, asd, PFdata, true, true, fig_sdir, fname_pref)
             else
@@ -188,7 +188,7 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
         
         if params.PFmap.Nepochs > 1
             if ~exist(fig_sdir_epochs,'dir')
-                mkdir(fig_sdir_epochs); fileattrib fig_sdir_epochs +w '' s;
+                mkdir(fig_sdir_epochs); fileattrib(fig_sdir_epochs,'+w','g','s');
                 if strcmpi(params.mode_dim,'1D')
                     plotPF_1d( hist_epochs, asd_epochs, PFdata_epochs, true, true, fig_sdir_epochs, fname_pref )
                 else

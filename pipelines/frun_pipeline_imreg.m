@@ -166,7 +166,7 @@ else
             groupreg_method '_' mcorr_method '_' segment_method '/'...
             mouseid '_' expname '_imreg_ref' reffile '/'];
 end
-if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); fileattrib grp_sdir +w '' s; end
+if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); fileattrib(grp_sdir,'+w','g','s'); end
 
 %% 1) Image registration
 % Load images and do registration if forced to do so or if ROI segmentation data doesn't exist 
@@ -284,7 +284,7 @@ if dostep(2)
     segment_output.df_f = cdf_f{1};
     segment_output.tsG = tsG(:,1:framesperfile(1));
     fdir = [data_locn 'Data/' files(1,1:8) '/Processed/' files(1,:) '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
-    if ~exist(fdir,'dir'), mkdir(fdir); fileattrib fdir +w '' s; end
+    if ~exist(fdir,'dir'), mkdir(fdir); fileattrib(fdir,'+w','g','s'); end
     save([fdir files(1,:) '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
     
     for n = 2:Nfiles
@@ -293,7 +293,7 @@ if dostep(2)
         segment_output.df_f = cdf_f{n};
         segment_output.tsG = tsG(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
         fdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
-        if ~exist(fdir,'dir'), mkdir(fdir); fileattrib fdir +w '' s; end
+        if ~exist(fdir,'dir'), mkdir(fdir); fileattrib(fdir,'+w','g','s'); end
         save([fdir file '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
     end
 else
@@ -319,7 +319,7 @@ if dostep(3)
             fprintf('%s: Saving fissa output\n', [mouseid '_' expname]);
             if ~exist([grp_sdir '/' str_fissa '/'],'dir')
                 mkdir([grp_sdir '/' str_fissa '/']); 
-                fileattrib [grp_sdir '/' str_fissa '/'] +w '' s;
+                fileattrib([grp_sdir '/' str_fissa '/'],'+w','g','s');
             end
             grp_sname = [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
             if force(3) || ~check_list(2)
@@ -387,7 +387,7 @@ if dostep(4)
             spike_output.params = params.spkExtract;
             if ~exist([grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'],'dir')
                 mkdir([grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/']);
-                fileattrib [grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'] +w '' s
+                fileattrib([grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'],'+w','g','s');
             end
             save(grp_sname,'-struct','spike_output');
         end

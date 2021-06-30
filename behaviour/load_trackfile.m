@@ -20,7 +20,7 @@ function trackdata = load_trackfile(data_locn,file,fname_track,force)
     cprintf(str)
     
     dir_processed = [data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/'];
-        if ~exist(dir_processed,'dir'), mkdir(dir_processed); fileattrib dir_processed +w '' s; end
+        if ~exist(dir_processed,'dir'), mkdir(dir_processed); fileattrib(dir_processed,'+w','g','s'); end
     
     [~,~,ext] = fileparts(fname_track);
     fname_fig = [dir_processed file '_mtrajectory.fig'];

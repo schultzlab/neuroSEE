@@ -111,7 +111,7 @@ if ~exist(fname_remap,'file') || force
     sort_env2PF = env2PF(sortIdx_env2,:);
     
     % Save output
-    if ~exist(sdir,'dir'), mkdir(sdir); fileattrib sdir +w '' s; end
+    if ~exist(sdir,'dir'), mkdir(sdir); fileattrib(sdir,'+w','g','s'); end
     output.sort_env1PF = sort_env1PF;
     output.sort_env2PF_env1Sorting = sort_env2PF_env1Sorting;
     output.sort_env1PF_env2Sorting = sort_env1PF_env2Sorting;

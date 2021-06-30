@@ -63,7 +63,7 @@ if ~isempty(fov)
 else
     sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/imreg_' mcorr_method '/indiv_imreg_ref' reffile '/'];
 end
-if ~exist(sdir,'dir'), mkdir(sdir); fileattrib sdir +w '' s; end
+if ~exist(sdir,'dir'), mkdir(sdir); fileattrib(sdir,'+w','g','s'); end
     
 if any([ force, ~exist([sdir mouseid '_' expname '_GREEN_imreg_ref' reffile '.fig'],'file'),...
                 ~exist([sdir mouseid '_' expname '_RED_imreg_ref' reffile '.fig'],'file') ])
@@ -116,7 +116,7 @@ if any([ force, ~exist([sdir mouseid '_' expname '_GREEN_imreg_ref' reffile '.fi
                              reffile];
             ind = strfind(titletext,'_');
             titletext(ind) = '-';
-            text('Position',[0.35 0.99], 'FontSize',14, 'String',titletext);
+            text('Position',[0.01 0.99], 'FontSize',14, 'String',titletext);
     end 
     fname_fig = [sdir mouseid '_' expname '_GREEN_imreg_ref' reffile '.fig'];
         savefig( fh, fname_fig );
@@ -145,7 +145,7 @@ if any([ force, ~exist([sdir mouseid '_' expname '_GREEN_imreg_ref' reffile '.fi
                 titletext = [mouseid '_' expname ': RED channel registered to ' reffile];
                 ind = strfind(titletext,'_');
                 titletext(ind) = '-';
-                text('Position',[0.35 0.99], 'FontSize',14, 'String',titletext);
+                text('Position',[0.01 0.99], 'FontSize',14, 'String',titletext);
         end 
         fname_fig = [sdir mouseid '_' expname '_RED_imreg_ref' reffile '.fig'];
             savefig( fh, fname_fig );

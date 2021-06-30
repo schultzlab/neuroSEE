@@ -156,7 +156,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         output.F0 = F0;
         output.A = A;
         output.params = params.ROIsegment;
-        if ~exist( filedir, 'dir' ), mkdir( filedir ); fileattrib filedir +w '' s; end
+        if ~exist( filedir, 'dir' ), mkdir( filedir ); fileattrib(filedir,'+w','g','s'); end
         save(fname_mat,'-struct','output');
 
         % Plot masks on correlation image and save plot

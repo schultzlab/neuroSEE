@@ -88,7 +88,7 @@ function imG_globalreg = imreg_global_batch( array_id, list, templateglob, imreg
             C2 = imfuse( out_g.meanregframe,template_g,'falsecolor','Scaling','joint','ColorChannels',[2 1 0] );
             imshow(C2); 
             title( 'Reversed colours' );
-        if ~exist( filedir, 'dir' ), mkdir( filedir ); fileattrib filedir +w '' s; end
+        if ~exist( filedir, 'dir' ), mkdir( filedir ); fileattrib(filedir,'+w','g','s'); end
         savefig( fh, fname_fig );
         saveas( fh, fname_fig(1:end-4), 'png' );
         close( fh );

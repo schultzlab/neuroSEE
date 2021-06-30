@@ -85,7 +85,7 @@ if force || ~exist(fname_mat,'file')
     output.dtsG = dtsG;
     output.ddf_f = ddf_f;
     output.params = params.fissa;
-    if ~exist( fissadir, 'dir' ), mkdir( fissadir ); fileattrib fissadir +w '' s; end
+    if ~exist( fissadir, 'dir' ), mkdir( fissadir ); fileattrib(fissadir,'+w','g','s'); end
     save(fname_mat,'-struct','output');
     if isempty(list)
         str = sprintf('%s: FISSA correction done\n',file);

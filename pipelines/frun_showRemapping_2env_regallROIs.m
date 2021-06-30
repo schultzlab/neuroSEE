@@ -326,7 +326,7 @@ if ~exist(fname_remap,'file') || force
         remapping_output.env2PF = env2PF;
 
         fprintf('%s: saving remapping data\n',[mouseid '_' env1 env2]);
-        if ~exist(fdir,'dir'), mkdir(fdir); end
+        if ~exist(fdir,'dir'), mkdir(fdir); fileattrib fdir +w '' s; end
         save(fname_remap, '-struct', 'remapping_output')
     end
 else

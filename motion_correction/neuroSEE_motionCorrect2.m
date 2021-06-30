@@ -357,7 +357,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect2( imG
         else
             fname_fig = [filedir file '_imreg_ref' reffile '_summary'];
         end
-            if ~exist( filedir, 'dir' ), mkdir( filedir ); end
+            if ~exist( filedir, 'dir' ), mkdir( filedir ); fileattrib filedir +w '' s; end
             savefig( fh, fname_fig );
             saveas( fh, fname_fig, 'png' );
         close( fh );

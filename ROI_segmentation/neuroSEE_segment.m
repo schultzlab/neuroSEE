@@ -99,7 +99,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         % Eliminate 
         %   1. rois touching image border 
         %   2. very small and very large rois
-        %   3. rois with very high inverse circularity
+        %   3. rois with very high inverse circularity (not round)
         %   4. highly overlapping rois
         
         borderpix = 4;
@@ -111,10 +111,10 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             c = regionprops(im,'area','perimeter');
             if ~isempty(c)
                 area(j) = c.Area;                    % area of each ROI
-                circ(j) = (c.Perimeter.^2)/(4*pi*c.Area);
+                invcirc(j) = (c.Perimeter.^2)/(4*pi*c.Area);
                 if all([area(j)>roiarea_min,...
                         area(j)<roiarea_max,...
-                        circ<invcirc_max])
+                        invcirc<invcirc_max])
                     inc = [inc; j];
                 else
                     exc = [exc; j];
@@ -151,7 +151,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         output.F0 = F0;
         output.A = A;
         output.params = params.ROIsegment;
-        if ~exist( filedir, 'dir' ), mkdir( filedir ); end
+        if ~exist( filedir, 'dir' ), mkdir( filedir ); fileattrib filedir +w '' s; end
         save(fname_mat,'-struct','output');
 
         % Plot masks on correlation image and save plot

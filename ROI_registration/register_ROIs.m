@@ -149,7 +149,7 @@ if options.plot_reg
         titletext(ind) = '-';
         title(titletext);
 
-        if ~exist(dirname,'dir'), mkdir(dirname); end
+        if ~exist(dirname,'dir'), mkdir(dirname); fileattrib dirname +w '' s; end
         % save figure
         savefig( fh, figname );
         saveas( fh, figname, 'png' );

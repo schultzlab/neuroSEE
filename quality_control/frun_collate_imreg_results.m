@@ -59,7 +59,7 @@ clear c
 %% Load image data for each recording
 % directory where registration results summary is saved: sdir
 sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/individual_proc/imreg_' mcorr_method '/indiv_imreg_ref' reffile '/'];
-if ~exist(sdir,'dir'), mkdir(sdir); end
+if ~exist(sdir,'dir'), mkdir(sdir); fileattrib sdir +w '' s; end
     
 if any([ force, ~exist([sdir mouseid '_' expname '_GREEN_imreg_ref' reffile '.fig'],'file'),...
                 ~exist([sdir mouseid '_' expname '_RED_imreg_ref' reffile '.fig'],'file') ])

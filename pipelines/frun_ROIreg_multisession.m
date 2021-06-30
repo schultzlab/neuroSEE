@@ -271,7 +271,7 @@ if any([ ~exist(fname_mat_ROIreg,'file'), ~exist(fname_mat_PFdata,'file'), force
     % output1.assignments_pcs = assignments_pcs;
     output1.matchings = matchings;
     % output1.matchings_pcs = matchings_pcs;
-    if ~exist(sdir,'dir'); mkdir(sdir); end
+    if ~exist(sdir,'dir'); mkdir(sdir); fileattrib sdir +w '' s; end
     save(fname_mat_ROIreg,'-struct','output1');
 
     % PF data
@@ -286,7 +286,7 @@ if any([ ~exist(fname_mat_ROIreg,'file'), ~exist(fname_mat_PFdata,'file'), force
         output2.sortpcIdx = sortpcIdx;
     end
     fprintf('%s: saving multisession roi registration output\n',[mouseid '_' expname]);
-    if ~exist(figdir,'dir'), mkdir(figdir); end
+    if ~exist(figdir,'dir'), mkdir(figdir); fileattrib figdir +w '' s; end
     save(fname_mat_PFdata,'-struct','output2');
         
 else
@@ -512,7 +512,10 @@ if strcmp(params.mode_dim,'1D')
             end
             if ii == 0
                 fprintf('%s: saving spike trial raster plots\n',[mouseid '_' expname]);
-                if ~exist([figdir 'rasterplots/'],'dir'), mkdir([figdir 'rasterplots/']); end
+                if ~exist([figdir 'rasterplots/'],'dir')
+                    mkdir([figdir 'rasterplots/']); 
+                    fileattrib [figdir 'rasterplots/'] +w '' s;
+                end
             end
             savefig( fh, [figdir 'rasterplots/' mouseid '_' expname '_normspkRaster_' num2str(ii+1)] );
             saveas( fh, [figdir 'rasterplots/' mouseid '_' expname '_normspkRaster_' num2str(ii+1)], 'png' );
@@ -633,7 +636,10 @@ else % 2D
             end
             if ii == 0
                 fprintf('%s: saving multisession firing locations and pf maps\n',[mouseid '_' expname]);
-                if ~exist([figdir 'pfmaps/'],'dir'), mkdir([figdir 'pfmaps/']); end
+                if ~exist([figdir 'pfmaps/'],'dir')
+                    mkdir([figdir 'pfmaps/']); 
+                    fileattrib [figdir 'pfmaps/'] +w '' s; 
+                end
             end
             savefig( fh, [figdir 'pfmaps/' mouseid '_' expname '_pfmaps_' num2str(ii+1)] );
             saveas( fh, [figdir 'pfmaps/' mouseid '_' expname '_pfmaps_' num2str(ii+1)], 'png' );

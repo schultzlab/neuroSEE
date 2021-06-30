@@ -7,13 +7,13 @@ function runFISSA( masks, tiffile, fissadir )
 roidir = [fissadir 'roi/'];
 % if roi directory doesn't exist, create it
 if ~exist( roidir, 'dir' )
-   mkdir( roidir );
+   mkdir( roidir ); fileattrib roidir +w '' s;
 end
 
 outdir = [fissadir 'FISSAout/'];
 % if output directory doesn't exist, create it
 if ~exist( outdir, 'dir' )
-   mkdir( outdir );
+   mkdir( outdir ); fileattrib outdir +w '' s;
 end
 
 %% Generate ROI files

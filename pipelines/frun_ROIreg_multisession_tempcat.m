@@ -197,7 +197,10 @@ if force || ~exist(fname_mat,'file')
         if fsave
             if ii == 0
                 fprintf('%s: saving spike trial raster plots\n',[mouseid '_' expname]);
-                if ~exist([figdir 'rasterplots/'],'dir'), mkdir([figdir 'rasterplots/']); end
+                if ~exist([figdir 'rasterplots/'],'dir')
+                    mkdir([figdir 'rasterplots/']); 
+                    fileattrib [figdir 'rasterplots/'] +w '' s;
+                end
             end
             savefig( fh3, [figdir 'rasterplots/' mouseid '_' expname '_normspkRaster_' num2str(ii+1)] );
             saveas( fh3, [figdir 'rasterplots/' mouseid '_' expname '_normspkRaster_' num2str(ii+1)], 'png' );
@@ -401,7 +404,9 @@ if force || ~exist(fname_mat,'file')
     % save output
     if fsave
         if ~exist([sdir str_fissa '/multisessionROIs_' fname_append '/'],'dir') 
-            mkdir([sdir str_fissa '/multisessionROIs_' fname_append '/']); end
+            mkdir([sdir str_fissa '/multisessionROIs_' fname_append '/']);
+            fileattrib [sdir str_fissa '/multisessionROIs_' fname_append '/'] +w '' s
+        end
         save(fname_mat,'params','daylabels','usefiles','normspkRaster','pcIdx','sortpcIdx','normrMap_sm',...
                        'R_ac','R_pc','FC','FC_mean','PFS','PFS_mean','alwaysactive','alwaysplacey',...
                        'n_sessions','frac_activecells','frac_pcs','dintervals','PFSbin');

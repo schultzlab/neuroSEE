@@ -200,7 +200,10 @@ if force || ~exist(fname_mat,'file')
             if fsave
                 if ii == 0
                     fprintf('%s: saving spike trial raster plots\n',[mouseid '_' expname]);
-                    if ~exist([figdir 'rasterplots/'],'dir'), mkdir([figdir 'rasterplots/']); end
+                    if ~exist([figdir 'rasterplots/'],'dir')
+                        mkdir([figdir 'rasterplots/']); 
+                        fileattrib [figdir 'rasterplots/'] +w '' s;
+                    end
                 end
                 savefig( fh3, [figdir 'rasterplots/' mouseid '_' expname '_normspkRaster_' num2str(ii+1)] );
                 saveas( fh3, [figdir 'rasterplots/' mouseid '_' expname '_normspkRaster_' num2str(ii+1)], 'png' );
@@ -370,7 +373,9 @@ if force || ~exist(fname_mat,'file')
         % save output
         if fsave
             if ~exist([sdir str_fissa '/multisessionROIs_' bl_str '/'],'dir') 
-                mkdir([sdir str_fissa '/multisessionROIs_' bl_str '/']); end
+                mkdir([sdir str_fissa '/multisessionROIs_' bl_str '/']); 
+                fileattrib [sdir str_fissa '/multisessionROIs_' bl_str '/'] +w '' s
+            end
             save(fname_mat,'params','daylabels','usefiles','normspkRaster','pcIdx','sortpcIdx','normrMap_sm',...
                            'R_ac','R_pc','FC','FC_mean','PFS','PFS_mean','alwaysactive','alwaysplacey',...
                            'n_sessions','frac_activecells','frac_pcs','dintervals','PFSbin');
@@ -443,7 +448,10 @@ if force || ~exist(fname_mat,'file')
             if fsave
                 if ii == 0
                     fprintf('%s: saving multisession firing locations and pf maps\n',[mouseid '_' expname]);
-                    if ~exist([figdir 'pfmaps/'],'dir'), mkdir([figdir 'pfmaps/']); end
+                    if ~exist([figdir 'pfmaps/'],'dir')
+                        mkdir([figdir 'pfmaps/']); 
+                        fileattrib [figdir 'pfmaps/'] +w '' s;
+                    end
                 end
                 savefig( fh, [figdir 'pfmaps/' mouseid '_' expname '_pfmaps_' num2str(ii+1)] );
                 saveas( fh, [figdir 'pfmaps/' mouseid '_' expname '_pfmaps_' num2str(ii+1)], 'png' );
@@ -638,7 +646,9 @@ if force || ~exist(fname_mat,'file')
         % save output
         if fsave
             if ~exist([sdir str_fissa '/multisessionROIs_' bl_str '/'],'dir') 
-                mkdir([sdir str_fissa '/multisessionROIs_' bl_str '/']); end
+                mkdir([sdir str_fissa '/multisessionROIs_' bl_str '/']); 
+                fileattrib [sdir str_fissa '/multisessionROIs_' bl_str '/'] +w '' s;
+            end
             save(fname_mat,'params','daylabels','usefiles','activeData','pcIdx','normrMap_sm',...
                            'R_ac','R_pc','FC','FC_mean','PFS','PFS_mean','alwaysactive','alwaysplacey',...
                            'n_sessions','frac_activecells','frac_pcs','dintervals');

@@ -414,7 +414,11 @@ end
 
 %% 5) Behaviour tracking data
 if dostep(5)
-    grp_trackdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'];
+    if ~isempty(fov)
+        grp_trackdir = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/'];
+    else
+        grp_trackdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'];
+    end
     if force(5) || ~check_list(4)
         SdownTrackdata.phi = [];            
         SdownTrackdata.x = [];              

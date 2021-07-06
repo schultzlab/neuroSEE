@@ -24,12 +24,8 @@ files = extractFilenamesFromTxtfile( listfile );
 
 % check if data have been processed
 sname_mat = [data_locn 'Analysis/' mouseid '/training_data/' mouseid '_trainingdata.mat'];
-if exist(sname_mat,'file') && ~force
-    M = load(sname_mat);
-    activity = M.activity;
-    meanspeed = M.meanspeed;
-    fprintf('%s: Processed training data found and loaded.\n', mouseid);
-    return
+if exist(sname_mat)
+    check = 1;
 end
 
 % convert filenames to timestamps

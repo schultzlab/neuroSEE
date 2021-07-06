@@ -229,7 +229,7 @@ Names = [
         'dist_overlap_thr   ' % threshold for detecting if one ROI is a subset of another (deafult: 0.8)
         'plot_reg           ' % plot registered ROIs (default: true)
         % parameters for computing event exceptionality (compute_event_exceptionality.m)
-        'min_SNR            ' % minimum SNR for accepting exceptional events (default: 3)
+        'min_SNR            ' % minimum SNR for accepting exceptional events (default: 2.5)
         'robust_std         ' % use robust std for computing noise in traces (false)
         'N_samples_exc      ' % number of samples over which to compute (default: ceil(decay_time*fr))
         'min_fitness        ' % threshold on time variability  (default: log(normcdf(-min_SNR))*N_samples_exc)    

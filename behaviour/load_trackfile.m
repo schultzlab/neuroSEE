@@ -15,12 +15,20 @@
 %   alpha 
 %   w 
 
-function trackdata = load_trackfile(data_locn,file,fname_track,force)
+function trackdata = load_trackfile( data_locn, file, fname_track, force, BT )
+if nargin<5, BT = false; end
+
     str = sprintf('%s: Loading tracking data\n', file);
     cprintf(str)
     
-    dir_processed = [data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/'];
+    if ~BT
+        dir_processed = [data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/'];
         if ~exist(dir_processed,'dir'), mkdir(dir_processed); fileattrib(dir_processed,'+w','g','s'); end
+    else
+        timestamp  = extractTimeFromFilename( file, 'Track_yyyy-mm-dd-HH-MM-SS' );
+        dir_processed = [data_locn 'Data/' datestr(timestamp,'yyyymmdd') '/Neurotar/' file '/'];
+    end
+    
     
     [~,~,ext] = fileparts(fname_track);
     fname_fig = [dir_processed file '_mtrajectory.fig'];
@@ -70,7 +78,11 @@ function trackdata = load_trackfile(data_locn,file,fname_track,force)
     if any([ force, ~yn_fname_fig, ~yn_fname_png ])
         fig = figure; plot(trackdata.x,trackdata.y); axis square; axis off; 
         tmax = (trackdata.time(end))/60; % min
-            titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17) ' (' num2str(round(tmax)) ' min)'];
+            if ~BT
+                titletext = [file(1:8) '-' file(10:11) '.' file(13:14) '.' file(16:17) ' (' num2str(round(tmax)) ' min)'];
+            else
+                titletext = [datestr(timestamp,'yyyymmdd HH:MM:SS') ' (' num2str(round(tmax)) ' min)'];
+            end
             title(titletext);
         savefig(fig,fname_fig);
         saveas(fig,fname_png);

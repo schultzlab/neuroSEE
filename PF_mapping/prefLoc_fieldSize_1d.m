@@ -1,7 +1,4 @@
 % Adapted from prefLoc.m by Simon Schultz
-% This script finds the preferred location of a place cell by
-%   phi_pref1 : calculating vector average place preference
-%   phi_pref2 : finding peak of place field map (firing rate/occupancy)
 
 function [ prefLoc, fieldSize, pfBins ] = prefLoc_fieldSize_1d( pfMap )
 
@@ -12,6 +9,8 @@ binsize = 102/Nbins;
 fieldSize = zeros( Ncells, 1 );
 prefLoc = zeros( Ncells, 1 );
 pfBins = cell(Ncells, 1);
+
+rInd = []; lInd = [];
 for c = 1:Ncells
     % preferred location
     [maxval,maxloc] = max( pfMap(c,:) );
@@ -43,6 +42,8 @@ for c = 1:Ncells
         end
     end   
     
+    if isempty(rInd), rInd = round(Nbins/2); end
+    if isempty(lInd), lInd = round(Nbins/2); end
     % exact field location
     if lInd >= 1 && rInd <= Nbins
         pfBins{c} = (lInd:rInd);

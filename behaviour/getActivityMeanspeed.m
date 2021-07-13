@@ -79,15 +79,29 @@ for n = 1:size(files,1)
     if n>1
         % concatenate files for which timestamps are less than an hour apart
         if etime(timestamps(n,:), timestamps(n-1,:)) < 60*60
-            trackdata{Nsessions}.time   = [trackdata{Nsessions}.time    trackdata{Nsessions}.time(end) + trackdata_temp{n}.time];
-            trackdata{Nsessions}.r      = [trackdata{Nsessions}.r       trackdata_temp{n}.r];
-            trackdata{Nsessions}.phi    = [trackdata{Nsessions}.phi     trackdata_temp{n}.phi];
-            trackdata{Nsessions}.alpha  = [trackdata{Nsessions}.alpha   trackdata_temp{n}.alpha];
-            trackdata{Nsessions}.x      = [trackdata{Nsessions}.x       trackdata_temp{n}.x];
-            trackdata{Nsessions}.y      = [trackdata{Nsessions}.y       trackdata_temp{n}.y];
-            trackdata{Nsessions}.w      = [trackdata{Nsessions}.w       trackdata_temp{n}.w];
-            trackdata{Nsessions}.TTLout = [trackdata{Nsessions}.TTLout  trackdata_temp{n}.TTLout];
-            trackdata{Nsessions}.speed  = [trackdata{Nsessions}.speed   trackdata_temp{n}.speed];
+            if ~isempty(trackdata_temp{n})
+                if size(trackdata_temp{n}.time,2) > size(trackdata_temp{n}.time,2)
+                    trackdata{Nsessions}.time   = [trackdata{Nsessions}.time';    trackdata{Nsessions}.time(end) + trackdata_temp{n}.time'];
+                    trackdata{Nsessions}.r      = [trackdata{Nsessions}.r';       trackdata_temp{n}.r'];
+                    trackdata{Nsessions}.phi    = [trackdata{Nsessions}.phi';     trackdata_temp{n}.phi'];
+                    trackdata{Nsessions}.alpha  = [trackdata{Nsessions}.alpha';   trackdata_temp{n}.alpha'];
+                    trackdata{Nsessions}.x      = [trackdata{Nsessions}.x';       trackdata_temp{n}.x'];
+                    trackdata{Nsessions}.y      = [trackdata{Nsessions}.y';       trackdata_temp{n}.y'];
+                    trackdata{Nsessions}.w      = [trackdata{Nsessions}.w';       trackdata_temp{n}.w'];
+                    trackdata{Nsessions}.TTLout = [trackdata{Nsessions}.TTLout';  trackdata_temp{n}.TTLout'];
+                    trackdata{Nsessions}.speed  = [trackdata{Nsessions}.speed';   trackdata_temp{n}.speed'];
+                else
+                    trackdata{Nsessions}.time   = [trackdata{Nsessions}.time;    trackdata{Nsessions}.time(end) + trackdata_temp{n}.time];
+                    trackdata{Nsessions}.r      = [trackdata{Nsessions}.r;       trackdata_temp{n}.r];
+                    trackdata{Nsessions}.phi    = [trackdata{Nsessions}.phi;     trackdata_temp{n}.phi];
+                    trackdata{Nsessions}.alpha  = [trackdata{Nsessions}.alpha;   trackdata_temp{n}.alpha];
+                    trackdata{Nsessions}.x      = [trackdata{Nsessions}.x;       trackdata_temp{n}.x];
+                    trackdata{Nsessions}.y      = [trackdata{Nsessions}.y;       trackdata_temp{n}.y];
+                    trackdata{Nsessions}.w      = [trackdata{Nsessions}.w;       trackdata_temp{n}.w];
+                    trackdata{Nsessions}.TTLout = [trackdata{Nsessions}.TTLout;  trackdata_temp{n}.TTLout];
+                    trackdata{Nsessions}.speed  = [trackdata{Nsessions}.speed;   trackdata_temp{n}.speed];
+                end
+            end
         else
             Nsessions = Nsessions + 1;
             trackdata{Nsessions} = trackdata_temp{n};

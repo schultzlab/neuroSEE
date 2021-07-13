@@ -13,8 +13,7 @@ if iscell(trackData)
         speed = trackData{jj}.speed;
         tracktime = trackData{jj}.time;
         if isfield(trackData{jj},'zone')
-            dozone = true;
-            zone = single(trackData{jj}.zone);
+            zone = trackData{jj}.zone;
         end
 
         % Pre-process tracking data
@@ -39,9 +38,6 @@ if iscell(trackData)
         downData{jj}.y = interp1( tracktime, y(ind), imtime, 'nearest' );
         downData{jj}.speed = interp1( tracktime, speed(ind), imtime, 'nearest' ); % mm/s
         downData{jj}.r = interp1( tracktime, r(ind), imtime, 'nearest' ); % mm/s
-        if dozone
-            downData{jj}.zone = interp1( tracktime, zone(ind), imtime, 'nearest' ); % mm/s
-        end
         downData{jj}.time = imtime;
         r_all = [r_all; downData{jj}.r];
         clear ind
@@ -56,10 +52,6 @@ else
     phi = trackData.phi;
     speed = trackData.speed;
     tracktime = trackData.time;
-    if isfield(trackData,'zone')
-        dozone = true;
-        zone = single(trackData.zone);
-    end
 
     % Pre-process tracking data
     t0 = tracktime(1);                  % initial time in tracking data
@@ -83,9 +75,6 @@ else
     downData.y = interp1( tracktime, y(ind), imtime, 'nearest');
     downData.speed = interp1( tracktime, speed(ind), imtime, 'nearest'); % mm/s
     downData.r = interp1( tracktime, r(ind), imtime, 'nearest'); % mm/s
-    if dozone
-        downData.zone = interp1( tracktime, zone(ind), imtime, 'nearest' ); % mm/s
-    end
     downData.time = imtime;
     % downData.time = interp1( tracktime, tracktime, imtime, 'nearest' );
     

@@ -1,4 +1,11 @@
-function [ laps_per_file, phi_trials ] = frun_getFileLaps( list, force )
+% Written by Ann Go
+% Script which takes as input a list of circular track experiment files and
+% outputs the number of laps per file and the angular position (phi) data
+% per file divided into laps (or trials). Only active parts (V>Vthr) are
+% considered.
+% Flag force to load tracking data from raw file instead of mat file.
+
+function [ laps_per_file, phi_trials ] = frun_getFileCircLaps( list, force )
 if nargin<2, force = false; end
 Nt = 7420;
 params = neuroSEE_setparams;
@@ -23,7 +30,7 @@ for n = 1:size(files,1)
     file = files(n,:);
 
     % find tracking file then load it
-    trackfile = findMatchingTrackingFile( data_locn, file );
+    trackfile = findMatchingTrackingFile( data_locn, file, force );
     dir_proc = [data_locn 'Data/' file(1:8) '/Processed/' file '/'];
     if ~exist([dir_proc 'behaviour/' file '_downTrackdata.mat'],'file')
         Trackdata = load_trackfile(data_locn, file, trackfile, force);

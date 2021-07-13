@@ -45,6 +45,9 @@ if nargin<5, BT = false; end
             trackdata.w = data.w;
             trackdata.TTLout = data.TTLout;
             trackdata.speed = data.speed;
+            if isfield(trackdata,'zone')
+                trackdata.zone = data.zone;
+            end
         case('.csv') % 2018 files
             save_fname = [dir_processed fname_track(end-33:end-4) '.mat'];
             trackdata = csv_import(fname_track,save_fname);
@@ -63,6 +66,7 @@ if nargin<5, BT = false; end
             y      = channelData{7}(2:end);    trackdata.y      = y;
             w      = channelData{8}(2:end);    trackdata.w      = w;
             speed  = channelData{9}(2:end);    trackdata.speed  = speed;
+            zone   = channelData{10}(2:end);   trackdata.zone   = zone;
             TTLout = channelData{12}(2:end);   trackdata.TTLout = TTLout;
             try
                 save_fname = [dir_processed fname_track(end-34:end-5) '.mat'];

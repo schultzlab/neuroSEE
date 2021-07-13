@@ -1,3 +1,8 @@
+% Written by Ann Go
+% Script which takes as input a list of experiment files and outputs the
+% number of ROIs detected in each file
+% mcorr_method - the motion correction method used
+
 function Nrois = frun_getFileNrois( list, mcorr_method )
 
 if nargin<2, mcorr_method = 'normcorre'; end     % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 

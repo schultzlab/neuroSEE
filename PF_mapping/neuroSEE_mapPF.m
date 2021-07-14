@@ -134,7 +134,7 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
                 output.PFdata_epochs = PFdata_epochs;
             end
             save(fname_mat,'-struct','output');
-        else % '2D'
+        elseif strcmpi(params.mode_dim,'2D') % '2D'
             [hist, asd, PFdata, activeData, hist_epochs, asd_epochs, PFdata_epochs] = generatePFmap_2d( spikes, downTrackdata, params );
             
             % Make plots
@@ -142,6 +142,23 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
                 if force && exist(fig_sdir,'dir'), rmdir(fig_sdir,'s'); end
                 if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); fileattrib(fig_sdir,'+w','g','s'); end
                 plotPF_2d( hist, asd, PFdata, activeData, true, true, fig_sdir, fname_pref )
+            end
+        
+            % Save output
+            output.hist = hist;
+            if doasd, output.asd = asd; end
+            output.PFdata = PFdata;
+            output.activeData = activeData;
+            output.params = params.PFmap;
+            save(fname_mat,'-struct','output');
+        else % 'Y'
+            [hist, asd, PFdata, activeData, hist_epochs, asd_epochs, PFdata_epochs] = generatePFmap_Ymaze( spikes, downTrackdata, params );
+            
+            % Make plots
+            if force || ~exist(fig_sdir,'dir')
+                if force && exist(fig_sdir,'dir'), rmdir(fig_sdir,'s'); end
+                if ~exist(fig_sdir,'dir'), mkdir(fig_sdir); fileattrib(fig_sdir,'+w','g','s'); end
+                plotPF_Ymaze( hist, asd, PFdata, activeData, true, true, fig_sdir, fname_pref )
             end
         
             % Save output

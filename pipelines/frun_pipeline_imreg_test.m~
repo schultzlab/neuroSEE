@@ -497,10 +497,7 @@ end
 if dostep(6)
     if any(downTrackdata.r < 100)
         if max(downTrackdata.zone) < 9
-            params.mode_dim = '2D';                 % open field
-        else
-            params.mode_dim = 'Y';                  % Y-maze
-        end
+        params.mode_dim = '2D';                     % open field
         params.PFmap.Nbins = params.PFmap.Nbins_2D; % number of location bins in [x y]               
     else 
         params.mode_dim = '1D';                     % circular linear track

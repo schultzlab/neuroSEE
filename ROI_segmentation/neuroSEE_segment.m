@@ -116,7 +116,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             c = regionprops(im,'area','perimeter');
             if ~isempty(c)
                 area(j) = c.Area;                    % area of each ROI
-                invcirc(j) = (c.Perimeter^2)/(4*pi*c.Area);
+                invcirc(j) = (c.Perimeter.^2)/(4*pi*c.Area);
                 if all([area(j)>roiarea_min,...
                         area(j)<roiarea_max,...
                         invcirc<invcirc_max])

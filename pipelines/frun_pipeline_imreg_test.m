@@ -503,7 +503,7 @@ if dostep(6)
         end
         params.PFmap.Nbins = params.PFmap.Nbins_2D; % number of location bins in [x y]               
     else 
-        params.mode_dim = '1D';                     % circular linear track
+        params.mode_dim = '1D';                     % circular track
         params.PFmap.Nbins = params.PFmap.Nbins_1D; % number of location bins         
         
         if ~exist([grp_trackdir mouseid '_' expname '_phiposition.fig'],'file')

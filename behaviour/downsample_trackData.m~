@@ -62,7 +62,6 @@ else
         dozone = true;
         zone = single(trackData.zone);
     else
-        dozone = false;
     end
 
     % Pre-process tracking data

@@ -159,14 +159,14 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             output.params = params.ROIsegment;
         catch
             % Save output
-            output.tsG = tsG_all;       
-            output.df_f = df_f_all;     
-            output.masks = masks_all;   
+            output.incmasks = inc;  output.excmasks = exc;
+            output.tsG = tsG;       output.elim_tsG = elim_tsG;
+            output.df_f = df_f;     output.elim_df_f = elim_df_f;
+            output.masks = masks;   output.elim_masks = elim_masks;
             output.corr_image = corr_image;
             output.F0 = F0;
             output.A = A;
             output.params = params.ROIsegment;
-            fprintf('%s: Error in ROI elimination step, skipping step and saving all data.\n',file);
         end
         
         if ~exist( filedir, 'dir' ), mkdir( filedir ); fileattrib(filedir,'+w','g','s'); end

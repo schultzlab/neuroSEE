@@ -158,10 +158,14 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             output.A = A;
             output.params = params.ROIsegment;
         catch
+            masks = masks_all;     
+            tsG = tsG_all;           
+            df_f = df_f_all;         
+
             % Save output
-            output.tsG = tsG_all;       
-            output.df_f = df_f_all;     
-            output.masks = masks_all;   
+            output.tsG = tsG;       
+            output.df_f = df_f;     
+            output.masks = masks;   
             output.corr_image = corr_image;
             output.F0 = F0;
             output.A = A;

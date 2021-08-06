@@ -286,32 +286,34 @@ if dostep(2)
     % If doing CaImAn and running patches, continue only if Matlab version is R2018 or higher
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, [], params, force(2), mean(imR,3), list, reffile );
     
-    % divide into cells according to number of files in prep for spike
-    % extraction
-    cdf_f = cell(Nfiles,1);
-    cdf_f{1} = df_f(:,1:framesperfile(1));
-    segment_output.df_f = cdf_f{1};
-    segment_output.tsG = tsG(:,1:framesperfile(1));
-    if strcmpi(files(1,:), reffile)
-        fdir = [data_locn 'Data/' files(1,1:8) '/Processed/' files(1,:) '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
-    else
-        fdir = [data_locn 'Data/' files(1,1:8) '/Processed/' files(1,:) '/imreg_' mcorr_method '_ref' reffile '/' segment_method '_' mouseid '_' expname '/'];
-    end
-    if ~exist(fdir,'dir'), mkdir(fdir); fileattrib(fdir,'+w','g','s'); end
-    save([fdir files(1,:) '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
-    
-    for n = 2:Nfiles
-        file = files(n,:);
-        cdf_f{n} = df_f(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
-        segment_output.df_f = cdf_f{n};
-        segment_output.tsG = tsG(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
-        if strcmpi(file, reffile)
-            fdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
+    if force(2) || ~check_list(2)
+        % divide into cells according to number of files in prep for spike
+        % extraction
+        cdf_f = cell(Nfiles,1);
+        cdf_f{1} = df_f(:,1:framesperfile(1));
+        segment_output.df_f = cdf_f{1};
+        segment_output.tsG = tsG(:,1:framesperfile(1));
+        if strcmpi(files(1,:), reffile)
+            fdir = [data_locn 'Data/' files(1,1:8) '/Processed/' files(1,:) '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
         else
-            fdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' reffile '/' segment_method '_' mouseid '_' expname '/'];
+            fdir = [data_locn 'Data/' files(1,1:8) '/Processed/' files(1,:) '/imreg_' mcorr_method '_ref' reffile '/' segment_method '_' mouseid '_' expname '/'];
         end
         if ~exist(fdir,'dir'), mkdir(fdir); fileattrib(fdir,'+w','g','s'); end
-        save([fdir file '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
+        save([fdir files(1,:) '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
+
+        for n = 2:Nfiles
+            file = files(n,:);
+            cdf_f{n} = df_f(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
+            segment_output.df_f = cdf_f{n};
+            segment_output.tsG = tsG(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
+            if strcmpi(file, reffile)
+                fdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
+            else
+                fdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' reffile '/' segment_method '_' mouseid '_' expname '/'];
+            end
+            if ~exist(fdir,'dir'), mkdir(fdir); fileattrib(fdir,'+w','g','s'); end
+            save([fdir file '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
+        end
     end
 else
     fprintf('%s: ROI segmentation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);

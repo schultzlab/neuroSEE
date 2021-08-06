@@ -292,7 +292,7 @@ if dostep(2)
     cdf_f{1} = df_f(:,1:framesperfile(1));
     segment_output.df_f = cdf_f{1};
     segment_output.tsG = tsG(:,1:framesperfile(1));
-    if strcmpi(file, reffile)
+    if strcmpi(files(1,:), reffile)
         fdir = [data_locn 'Data/' files(1,1:8) '/Processed/' files(1,:) '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
     else
         fdir = [data_locn 'Data/' files(1,1:8) '/Processed/' files(1,:) '/imreg_' mcorr_method '_ref' reffile '/' segment_method '_' mouseid '_' expname '/'];

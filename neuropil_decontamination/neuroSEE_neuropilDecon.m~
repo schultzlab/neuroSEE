@@ -34,21 +34,37 @@ else
     [ mouseid, expname ] = find_mouseIDexpname(list);
     if conc_env
         concenvname = find_concenvname( list );
-        expname = concenvname;
-    end
-    if strcmpi(file, reffile)
-        tiffile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' file '_2P_XYT_green_mcorr.tif'];
-        fissadir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ...
-                    segment_method '_' mouseid '_' expname '/FISSA/'];
+        expname = 
+        if strcmpi(file, reffile)
+            tiffile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' file '_2P_XYT_green_mcorr.tif'];
+            fissadir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ...
+                        segment_method '_' mouseid '_' expname '/FISSA/'];
+        else
+            tifdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' reffile '/'];
+            tiffile = [tifdir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
+            fissadir = [tifdir segment_method '_' mouseid '_' expname '/FISSA/'];
+        end
+        fname_mat = [fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
+        fname_mat_temp = [fissadir 'FISSAout/matlab.mat'];
+        fname_fig1 = [fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_result.fig'];
+        fname_fig2 = [fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'];
+
     else
-        tifdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' reffile '/'];
-        tiffile = [tifdir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
-        fissadir = [tifdir segment_method '_' mouseid '_' expname '/FISSA/'];
+        
+        if strcmpi(file, reffile)
+            tiffile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' file '_2P_XYT_green_mcorr.tif'];
+            fissadir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ...
+                        segment_method '_' mouseid '_' concenvname '/FISSA/'];
+        else
+            tifdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' reffile '/'];
+            tiffile = [tifdir file '_2P_XYT_green_imreg_ref' reffile '.tif'];
+            fissadir = [tifdir segment_method '_' mouseid '_' concenvname '/FISSA/'];
+        end
+        fname_mat = [fissadir file '_' mouseid '_' concenvname '_ref' reffile '_fissa_output.mat'];
+        fname_mat_temp = [fissadir 'FISSAout/matlab.mat'];
+        fname_fig1 = [fissadir file '_' mouseid '_' concenvname '_ref' reffile '_fissa_result.fig'];
+        fname_fig2 = [fissadir file '_' mouseid '_' concenvname '_ref' reffile '_fissa_df_f.fig'];
     end
-    fname_mat = [fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
-    fname_mat_temp = [fissadir 'FISSAout/matlab.mat'];
-    fname_fig1 = [fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_result.fig'];
-    fname_fig2 = [fissadir file '_' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'];
 end
 
 prevstr = [];

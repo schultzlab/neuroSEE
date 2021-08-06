@@ -26,6 +26,11 @@
 %               specified, first file on the list is used.
 % slacknotify : (optional) flag to send Ann Slack notification when processing is started
 %               or has ended (default: false)
+% conc_env  : flag if rois were segmented from concatenated files from
+%               different environments e.g. fam1fam2fam1-fam1 but rois are
+%               for fam1fam2fam1. DO NOT flag for fam1fam2fam1 since in
+%               this case it is understood that the rois are from the
+%               concatenated environments.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The section labeled "USER-DEFINED INPUT" requires user input
@@ -37,8 +42,9 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, tsub, bl_prctile, prctile_thr, pfactivet_thr, activetrials_thr, min_SNR )
+function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, tsub, bl_prctile, prctile_thr, pfactivet_thr, activetrials_thr, min_SNR, conc_env )
 
+if nargin<12, conc_env = false; end
 if nargin<11, min_SNR = 2.5; end
 if nargin<10, activetrials_thr = 0.5; end
 if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
@@ -145,7 +151,7 @@ MatlabVer = str2double(release(1:4));
 % check(5)                                       step (6) place field mapping
 % check(6) checks for existing mat file pooling all processed data for list
 
-check_list = checkforExistingProcData(data_locn, list, params, reffile);
+check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_env);
 
 % Some security measures
 force = logicalForce(force);        % Only allow combinations of force/step values that make sense
@@ -165,6 +171,9 @@ else
     grp_sdir = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
             groupreg_method '_' mcorr_method '_' segment_method '/'...
             mouseid '_' expname '_imreg_ref' reffile '/'];
+end
+if conc_env
+    grp_sdir = [grp_sdir(1:end-1) '_concenvrois/'];
 end
 if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); fileattrib(grp_sdir,'+w','g','s'); end
 
@@ -283,7 +292,11 @@ if dostep(2)
     cdf_f{1} = df_f(:,1:framesperfile(1));
     segment_output.df_f = cdf_f{1};
     segment_output.tsG = tsG(:,1:framesperfile(1));
-    fdir = [data_locn 'Data/' files(1,1:8) '/Processed/' files(1,:) '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
+    if strcmpi(file, reffile)
+        fdir = [data_locn 'Data/' files(1,1:8) '/Processed/' files(1,:) '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
+    else
+        fdir = [data_locn 'Data/' files(1,1:8) '/Processed/' files(1,:) '/imreg_' mcorr_method '_ref' reffile '/' segment_method '_' mouseid '_' expname '/'];
+    end
     if ~exist(fdir,'dir'), mkdir(fdir); fileattrib(fdir,'+w','g','s'); end
     save([fdir files(1,:) '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
     
@@ -292,7 +305,11 @@ if dostep(2)
         cdf_f{n} = df_f(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
         segment_output.df_f = cdf_f{n};
         segment_output.tsG = tsG(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
-        fdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
+        if strcmpi(file, reffile)
+            fdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
+        else
+            fdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' reffile '/' segment_method '_' mouseid '_' expname '/'];
+        end
         if ~exist(fdir,'dir'), mkdir(fdir); fileattrib(fdir,'+w','g','s'); end
         save([fdir file '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
     end
@@ -311,7 +328,7 @@ if dostep(3)
         if force(3) || ~check_list(2)
             for n = 1:Nfiles
                 file = files(n,:);
-                [ cdtsG{n}, cddf_f{n}, params ] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3), list, reffile );
+                [ cdtsG{n}, cddf_f{n}, params ] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3), list, reffile, conc_env );
                 dtsG = [dtsG cdtsG{n}];
                 ddf_f = [ddf_f cddf_f{n}];
             end
@@ -375,7 +392,7 @@ if dostep(4)
         
         for n = 1:Nfiles
             file = files(n,:);
-            [ cspikes{n}, params ] = neuroSEE_extractSpikes( cdf_f{n}, cddf_f{n}, data_locn, file, params, force(4), list, reffile );
+            [ cspikes{n}, params ] = neuroSEE_extractSpikes( cdf_f{n}, cddf_f{n}, data_locn, file, params, force(4), list, reffile, true, conc_env );
             spikes = [spikes cspikes{n}];
         end
         clear ts

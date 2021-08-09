@@ -286,10 +286,10 @@ if dostep(2)
     % If doing CaImAn and running patches, continue only if Matlab version is R2018 or higher
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, [], params, force(2), mean(imR,3), list, reffile );
     
+    cdf_f = cell(Nfiles,1);
     if force(2) || ~check_list(2)
         % divide into cells according to number of files in prep for spike
         % extraction
-        cdf_f = cell(Nfiles,1);
         cdf_f{1} = df_f(:,1:framesperfile(1));
         segment_output.df_f = cdf_f{1};
         segment_output.tsG = tsG(:,1:framesperfile(1));
@@ -313,6 +313,10 @@ if dostep(2)
             end
             if ~exist(fdir,'dir'), mkdir(fdir); fileattrib(fdir,'+w','g','s'); end
             save([fdir file '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
+        end
+    else
+        for n = 1:Nfiles
+            cdf_f{n} = [];
         end
     end
 else

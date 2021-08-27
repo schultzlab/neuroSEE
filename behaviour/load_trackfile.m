@@ -70,7 +70,7 @@ if nargin<5, BT = false; end
             TTLout = channelData{12}(2:end);   trackdata.TTLout = TTLout;
             try
                 save_fname = [dir_processed fname_track(end-34:end-5) '.mat'];
-                save(save_fname, 'time','r','phi','alpha','x','y','w','speed','TTLout');
+                save(save_fname, 'time','r','phi','a lpha','x','y','w','speed','TTLout');
             catch
                 save_fname = [dir_processed fname_track(end-29:end-5) '.mat'];
                 save(save_fname, 'time','r','phi','alpha','x','y','w','speed','TTLout');

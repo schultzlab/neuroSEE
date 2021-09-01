@@ -50,7 +50,7 @@ function check = checkforExistingProcData(data_locn, text, params, reffile, conc
                     mouseid '_' expname '_imreg_ref' reffile '/'];
         end
         if conc_env
-            dir_proc = [dir proc(1:end-1) '_concenvrois/'];
+            dir_proc = [dir_proc(1:end-1) '_concenvrois/'];
         end
         
         check = zeros(1,6);

@@ -533,7 +533,7 @@ if dostep(6)
     params.PFmap = rmfield(params.PFmap,fields);
 
     [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] = ...
-        neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile, conc_env);
+        neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile);
 
     %% Saving all data
     sname_allData = [ grp_sdir mouseid '_' expname '_ref' reffile '_' mcorr_method '_' segment_method '_' str_fissa...

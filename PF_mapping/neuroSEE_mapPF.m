@@ -49,7 +49,8 @@
 %   sortIdx : sorted row indices corresponding to sorted_pfMap
 
 function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] = ...
-            neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force, list, reffile)
+            neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force, list, reffile, conc_env)
+    if nargin<9, conc_env = false; end
     if nargin<8, reffile = []; end
     if nargin<7, list = []; end
     if nargin<6, force = 0; end
@@ -76,6 +77,10 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
         fname_mat = [fig_sdir fname_pref '_PFmap_output.mat'];
     else
         [ mouseid, expname, fov ] = find_mouseIDexpname(list);
+        if conc_env
+            concenvname = find_concenvname( list );
+            expname = concenvname;
+        end
         groupreg_method = params.methods.groupreg_method;
         if ~isempty(fov)
             filedir = [ data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...

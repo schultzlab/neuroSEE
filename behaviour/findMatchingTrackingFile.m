@@ -96,7 +96,7 @@ function fname_track = findMatchingTrackingFile(data_locn, file, force)
        % now go through tracking files, & find the files that
        % are within a few minutes of imaging time
        timediff = etime(tracktimes,imgtime);
-       valid_ind =  timediff>0 & timediff<=maxtrackdelay*60;
+       valid_ind =  timediff>=0 & timediff<=maxtrackdelay*60;
        finaltracktime = tracktimes(timediff==min(timediff(valid_ind)),:);
     end
 

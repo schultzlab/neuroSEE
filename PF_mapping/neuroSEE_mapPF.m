@@ -77,18 +77,25 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
         fname_mat = [fig_sdir fname_pref '_PFmap_output.mat'];
     else
         [ mouseid, expname, fov ] = find_mouseIDexpname(list);
-        if conc_env
-            concenvname = find_concenvname( list );
-            expname = concenvname;
-        end
         groupreg_method = params.methods.groupreg_method;
-        if ~isempty(fov)
-            filedir = [ data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
-                    mouseid '_' expname '_imreg_ref' reffile '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
+        if conc_env
+            if ~isempty(fov)
+                filedir = [ data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
+                        mouseid '_' expname '_imreg_ref' reffile '_concenvrois/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
+            else
+                filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
+                        mouseid '_' expname '_imreg_ref' reffile '_concenvrois/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
+            end
         else
-            filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
-                    mouseid '_' expname '_imreg_ref' reffile '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
+            if ~isempty(fov)
+                filedir = [ data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
+                        mouseid '_' expname '_imreg_ref' reffile '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
+            else
+                filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
+                        mouseid '_' expname '_imreg_ref' reffile '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
+            end
         end
+        
         fname_pref = [mouseid '_' expname '_ref' reffile];
         fname_mat = [filedir fname_pref '_PFmap_output.mat'];
         fig_sdir = [filedir '/PFdata/'];

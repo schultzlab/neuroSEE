@@ -1,4 +1,4 @@
-% Written by Ann Go
+ % Written by Ann Go
 %
 % When force = 1 or if figure with ROIs don't yet exist in filedir, this function
 % implements either
@@ -22,9 +22,8 @@
 %   corr_image  : correlation image from green channel
 %   params      : parameters for specific roi segmentation method
 
-function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force, mean_imR, list, reffile, conc_env )
+function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force, mean_imR, list, reffile )
     
-    if nargin<9, conc_env = false; end
     if nargin<8, reffile = []; end
     if nargin<7, list = []; end
     if nargin<6, mean_imR = []; end
@@ -50,10 +49,6 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         fname_pref = [filedir file];
     else
         [ mouseid, expname, fov ] = find_mouseIDexpname(list);
-        if conc_env
-            concenvname = find_concenvname( list );
-            expname = concenvname;
-        end
         groupreg_method = params.methods.groupreg_method;
         mcorr_method = params.methods.mcorr_method;
         if ~isempty(fov)

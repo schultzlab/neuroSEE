@@ -12,3 +12,4 @@ activetrials_thr = 0.3;
 min_SNR = 3.0; 
 conc_env = true;
 
+Nrois = frun_getFileNrois( 'list_ADnew_test.txt' )

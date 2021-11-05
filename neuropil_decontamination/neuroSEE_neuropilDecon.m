@@ -3,7 +3,7 @@
 % INPUTS
 %   conc_env  : flag if rois were segmented from concatenated files from
 %               different environments e.g. fam1fam2fam1-fam1 but rois are
-%               for fam1fam2fam1. DO NOT flag for fam1fam2fam1 since in
+%               for fam1fam2fam1. DO NOT flag for fam1fam2fam1 files since in
 %               this case it is understood that the rois are from the
 %               concatenated environments.
 % OUTPUTS

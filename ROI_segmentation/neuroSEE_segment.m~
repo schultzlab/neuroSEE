@@ -15,11 +15,6 @@
 %   params      : parameters for specific roi segmentation method
 %   force       : if =1, roi segmentation will be done even though roi
 %               segmentation output already exists
-%   conc_env  : flag if rois were segmented from concatenated files from
-%               different environments e.g. fam1fam2fam1-fam1 but rois are
-%               for fam1fam2fam1. DO NOT flag for fam1fam2fam1 files since in
-%               this case it is understood that the rois are from the
-%               concatenated environments.
 % OUTPUTS
 %   tsG         : raw time series from green channel
 %   df_f
@@ -65,8 +60,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
                     mouseid '_' expname '_imreg_ref' reffile '/'];
         end
         if conc_env
-            filedir = [filedir(1:end-1) '_concenvrois/'];
-        end
+            filedir = 
         fname_mat = [filedir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
         fname_fig1 = [filedir mouseid '_' expname '_ref' reffile '_ROIs.fig'];
         fname_fig2 = [filedir mouseid '_' expname '_ref' reffile '_raw_timeseries.fig'];

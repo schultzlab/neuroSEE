@@ -25,8 +25,6 @@ for j = 1:size(masks_all,3)
         else
             exc = [exc; j];
         end
-    catch
-        exc = [exc; j];
     end
 end
 % eliminate highly overlapping rois
@@ -37,8 +35,6 @@ for j = 1:length(inc)
             [~, overlap1, overlap2] = calcROIoverlap(masks_all(:,:,j), masks_all(:,:,k));
             if overlap1>overlap_thr || overlap2>overlap_thr
                 exc2 = [exc2; j; k];
-                inc(inc == j) = [];
-                inc(inc == k) = [];
             end
         end
     end
@@ -47,4 +43,4 @@ end
 exc = unique([exc; exc2]);
             
             
-frun_pipeline_imreg( 'list_m62_fov2_fam1nov-fam1.txt', '20181015_09_37_54', true, [0;0;0;0;0;0], [1;1;1;1;1;1], 5, 87, 99, 0.05, 0.5, 3.0 )
+frun_pipeline_imreg( 'list_m62_fov2_fam1nov-fam1.txt', '20181015_09_37_54', true, [0;0;0;0;0;0], [1;1;1;1;1;1], 5, 80, 99, 0.05, 0.5, 3.0 )

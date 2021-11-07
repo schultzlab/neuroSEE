@@ -124,17 +124,21 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
                 mask = masks_all(borderpix:size(masks_all,1)-borderpix,borderpix:size(masks_all,2)-borderpix,j);
                 im = imclearborder(mask);
                 c = regionprops(im,'area','perimeter');
-                if ~isempty(c)
-                    area(j) = c.Area;                    % area of each ROI
-                    invcirc(j) = (c.Perimeter.^2)/(4*pi*c.Area);
-                    if all([area(j)>roiarea_min,...
-                            area(j)<roiarea_max,...
-                            invcirc<invcirc_max])
-                        inc = [inc; j];
+                try
+                    if ~isempty(c)
+                        area(j) = c.Area;                    % area of each ROI
+                        invcirc(j) = (c.Perimeter.^2)/(4*pi*c.Area);
+                        if all([area(j)>roiarea_min,...
+                                area(j)<roiarea_max,...
+                                invcirc<invcirc_max])
+                            inc = [inc; j];
+                        else
+                            exc = [exc; j];
+                        end
                     else
                         exc = [exc; j];
                     end
-                else
+                catch % happens when the ROI is composed of 2 rois
                     exc = [exc; j];
                 end
             end
@@ -146,6 +150,8 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
                         [~, overlap1, overlap2] = calcROIoverlap(masks_all(:,:,j), masks_all(:,:,k));
                         if overlap1>overlap_thr || overlap2>overlap_thr
                             exc2 = [exc2; j; k];
+                            inc(inc == j) = [];
+                            inc(inc == k) = [];
                         end
                     end
                 end

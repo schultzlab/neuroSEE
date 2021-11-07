@@ -372,10 +372,10 @@ if dostep(3)
             end
         end
         
-        if ~exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_timeseries.fig'],'file')
+        if force(3) || ~exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_timeseries.fig'],'file')
             multiplot_ts(dtsG, [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_timeseries'], 'Fissa-corrected raw timeseries');
         end
-        if ~exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],'file') 
+        if force(3) || ~exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],'file') 
             multiplot_ts(ddf_f, [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_df_f'], 'Fissa-corrected dF/F');
         end
     else
@@ -426,7 +426,7 @@ if dostep(4)
         refreshdisp(newstr, str)
     end
     
-    if ~exist([grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes.fig'],'file')
+    if force(4) || ~exist([grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes.fig'],'file')
         plotSpikes(spikes, [grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes']);
     end
 else

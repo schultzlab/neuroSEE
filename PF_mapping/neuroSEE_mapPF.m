@@ -193,8 +193,8 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
         hist = m.hist;
         if doasd, asd = m.asd; else, asd = []; end      
         PFdata = m.PFdata;
-        activeData = m.activeData;
         params.PFmap = m.params;
+        if strcmpi(params.mode_dim,'2D'), activeData = m.activeData; end
         if params.PFmap.Nepochs > 1
             hist_epochs = m.hist_epochs;
             asd_epochs = m.asd_epochs;

@@ -118,6 +118,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         
         borderpix = 4;
         area = zeros(size(masks_all,3),1);
+        invcirc = zeros(size(masks_all,3),1);
         inc = []; exc = []; 
         try
             for j = 1:size(masks_all,3)
@@ -130,7 +131,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
                         invcirc(j) = (c.Perimeter.^2)/(4*pi*c.Area);
                         if all([area(j)>roiarea_min,...
                                 area(j)<roiarea_max,...
-                                invcirc<invcirc_max])
+                                invcirc(j)<invcirc_max])
                             inc = [inc; j];
                         else
                             exc = [exc; j];

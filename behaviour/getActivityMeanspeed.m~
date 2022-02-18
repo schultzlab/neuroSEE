@@ -4,7 +4,7 @@
 % Flag 'force' to override previous processing.
 
 function [ activity, meanspeed ] = getActivityMeanspeed( list_BT, Vthr, force, fsave, figclose )
-if nargin<2, Vthr = 13; end %(mm/s) - speed threshold for qualifying presence of activity
+if nargin<2, Vthr = 8; end %(mm/s) - speed threshold for qualifying presence of activity
 if nargin<3, force = false; end
 if nargin<4, fsave = true; end
 if nargin<5, figclose = true; end
@@ -81,7 +81,7 @@ for n = 1:size(lines,1)
 
         if n>1
             % concatenate files for which timestamps are less than an hour apart
-            if all( timestamps(n-1,:) ~= 0 ) && ( etime(timestamps(n,:), timestamps(n-1,:)) < 60*60 )
+            if ~isempty(timestamps(n-1,:)) && ( etime(timestamps(n,:), timestamps(n-1,:)) < 60*60 )
                 if ~isempty(trackdata_temp{n})
                     if size(trackdata_temp{n}.time,2) > size(trackdata_temp{n}.time,2)
                         trackdata{Nsessions}.time   = [trackdata{Nsessions}.time';    trackdata{Nsessions}.time(end) + trackdata_temp{n}.time'];
@@ -117,10 +117,10 @@ for n = 1:size(lines,1)
         end
     else
         Nsessions = Nsessions + 1;
-        activity(Nsessions) = str2double(file)/100;
+        activity(Nsessions) = str2double(file);
         meanspeed(Nsessions) = str2double(file);
         trackdata{Nsessions} = [];
-        timestamps(n,:) = zeros(1,6);
+        timestamps(n-1,:) = [];
     end
 end
 
@@ -128,14 +128,14 @@ end
 for s = 1:Nsessions
     if ~isempty(trackdata{s})
         ind = find(trackdata{s}.time>45*60);
-        if ~isempty(ind)
-            k = ind(1);
+        k = ind(1);
+        if ~isempty(k)
             speed = trackdata{s}.speed(1:k);
             activity(s) = numel(find(speed>Vthr))/k;
             meanspeed(s) = mean(speed);
         else
             speed = trackdata{s}.speed;
-            activity(s) = numel(find(speed>Vthr))/numel(speed);
+            activity(s) = numel(find(speed>Vthr))/k;
             meanspeed(s) = mean(speed);
         end
     end
@@ -148,8 +148,8 @@ meanspeed = meanspeed';
 if fsave
     sdir = [data_locn 'Analysis/' mouseid '/training_data/'];
         if ~exist(sdir,'dir'), mkdir(sdir); end
-    save([sdir mouseid '_trainingdata.mat'], 'trackdata', 'activity', 'meanspeed');
-    save([sdir mouseid '_trainingdata_summary.mat'], 'activity', 'meanspeed');
+    sname_mat = [sdir mouseid '_trainingdata.mat'];
+    save(sname_mat, 'trackdata', 'activity', 'meanspeed');
 end
 
 fh1 = figure;

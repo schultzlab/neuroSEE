@@ -83,7 +83,7 @@ for n = 1:size(lines,1)
             % concatenate files for which timestamps are less than an hour apart
             if all( timestamps(n-1,:) ~= 0 ) && ( etime(timestamps(n,:), timestamps(n-1,:)) < 60*60 )
                 if ~isempty(trackdata_temp{n})
-                    if size(trackdata_temp{n}.time,2) > size(trackdata_temp{n}.time,2)
+                    if size(trackdata_temp{n}.time,2) > size(trackdata_temp{n-1}.time,2)
                         trackdata{Nsessions}.time   = [trackdata{Nsessions}.time';    trackdata{Nsessions}.time(end) + trackdata_temp{n}.time'];
                         trackdata{Nsessions}.r      = [trackdata{Nsessions}.r';       trackdata_temp{n}.r'];
                         trackdata{Nsessions}.phi    = [trackdata{Nsessions}.phi';     trackdata_temp{n}.phi'];

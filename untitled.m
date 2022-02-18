@@ -91,4 +91,4 @@ frun_pipeline_imreg( 'list_m125_fam1fam2fam1-fam2.txt', '20210907_18_11_49', tru
 frun_pipeline_imreg( 'list_m77_fam1fam2-fam1.txt', '20190302_15_38_59', true, [0;0;0;1;0;0], [1;1;1;1;1;1], 5, 85, 99, 0.03, 0.3 )
 frun_pipeline_imreg( 'list_m79_fam1nov-fam1.txt', '20190305_09_18_25', true, [0;0;0;0;0;0], [1;1;1;1;1;1], 5, 87, 99, 0.03, 0.3 )
 
-[ activity, meanspeed ] = getActivityMeanspeed( 'list_m123_BT.txt', 13, true )
+[ activity, meanspeed ] = getActivityMeanspeed( 'list_m104_BT.txt', 13, true )

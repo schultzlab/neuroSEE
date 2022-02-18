@@ -3,8 +3,7 @@
 % for the list of training sessions in list_BT.
 % Flag 'force' to override previous processing.
 
-function [ activity, meanspeed ] = getActivityMeanspeed( list_BT, Vthr, force, fsave, figclose )
-if nargin<2, Vthr = 13; end %(mm/s) - speed threshold for qualifying presence of activity
+function meanspeed = getImagingmeanspeed( list_Bimaging, force, fsave, figclose )
 if nargin<3, force = false; end
 if nargin<4, fsave = true; end
 if nargin<5, figclose = true; end
@@ -18,23 +17,27 @@ if ~isempty(err)
 end
 
 % list
-[mouseid,~] = find_mouseIDexpname( list_BT );
-listfile = [data_locn 'Digital_Logbook/lists_BT/' list_BT];
+[mouseid,~] = find_mouseIDexpname( list_Bimaging );
+listfile = [data_locn 'Digital_Logbook/lists_BT/' list_Bimaging];
 fileID = fopen(listfile);
 lines = textscan(fileID,'%s','delimiter','\n');
 fclose(fileID);
 lines = lines{1}; 
 
 % check if data have been processed
-sname_mat = [data_locn 'Analysis/' mouseid '/training_data/' mouseid '_trainingdata.mat'];
+sname_mat = [data_locn 'Analysis/' mouseid '/imaging_behaviour/' mouseid '_imaging_meanspeed.mat'];
 if exist(sname_mat,'file') && ~force
     M = load(sname_mat);
     activity = M.activity;
     meanspeed = M.meanspeed;
-    fprintf('%s: Processed training data found and loaded.\n', mouseid);
+    fprintf('%s: Processed imaging behaviour data found and loaded.\n', mouseid);
     return
 end
 
+if force(5) || ~exist([file_sdir file '_downTrackdata.mat'],'file')
+                trackfile = findMatchingTrackingFile(data_locn, file, force(5));
+                c = load_trackfile(data_locn, files(n,:), trackfile, force(5));
+                
 % convert filenames to timestamps
 format = 'Track_yyyy-mm-dd-HH-MM-SS'; 
 Nsessions = 1;
@@ -131,12 +134,10 @@ for s = 1:Nsessions
         if ~isempty(ind)
             k = ind(1);
             speed = trackdata{s}.speed(1:k);
-            speed(isinf(speed)) = [];
-            activity(s) = numel(find(speed>Vthr))/numel(speed);
+            activity(s) = numel(find(speed>Vthr))/k;
             meanspeed(s) = mean(speed);
         else
             speed = trackdata{s}.speed;
-            speed(isinf(speed)) = [];
             activity(s) = numel(find(speed>Vthr))/numel(speed);
             meanspeed(s) = mean(speed);
         end

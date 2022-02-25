@@ -1,10 +1,10 @@
 masks_all = masks;
-%masks_all(:,:,size(masks_all,3)+1:size(masks,3)+size(elim_masks,3)) = elim_masks;
+masks_all(:,:,size(masks_all,3)+1:size(masks,3)+size(elim_masks,3)) = elim_masks;
 elim_masks0 = elim_masks;
 tsG_all(1:size(masks,3),:) = tsG;
-%tsG_all(size(masks,3)+1:size(masks,3)+size(elim_masks,3),:) = elim_tsG;
+tsG_all(size(masks,3)+1:size(masks,3)+size(elim_masks,3),:) = elim_tsG;
 df_f_all(1:size(masks,3),:) = df_f;
-%df_f_all(size(masks,3)+1:size(masks,3)+size(elim_masks,3),:) = elim_df_f;
+df_f_all(size(masks,3)+1:size(masks,3)+size(elim_masks,3),:) = elim_df_f;
 
 roiarea_min = 50;
 roiarea_max = 400;
@@ -84,11 +84,11 @@ dtsG = dtsG(:,a:b);
 clear a b
 save('m125_fam1fam2fam1-fam1r2_ref20210907_18_11_49_fissa_output.mat')
 
-frun_pipeline_imreg( 'list_m118_fov2_fam1fam2fam1-fam1.txt', '20210313_12_52_20', true, [0;0;0;0;0;0], [1;1;1;1;1;1], 5, 84, 99, 0.03, 0.3, 2.5, true )
+frun_pipeline_imreg( 'list_m111_fam1fam2-fam1.txt', '20201208_14_55_28', true, [0;0;0;0;0;0], [1;1;1;1;1;1], 5, 89, 99, 0.03, 0.3, 2.5 )
 
 frun_pipeline_imreg( 'list_m125_fam1fam2fam1-fam2.txt', '20210907_18_11_49', true, [0;0;0;0;0;0], [1;1;1;1;1;1], 5, 87, 99, 0.03, 0.3, 2.5, true )
 
 frun_pipeline_imreg( 'list_m77_fam1fam2-fam1.txt', '20190302_15_38_59', true, [0;0;0;1;0;0], [1;1;1;1;1;1], 5, 85, 99, 0.03, 0.3 )
-frun_pipeline_imreg( 'list_m79_fam1nov-fam1.txt', '20190305_09_18_25', true, [0;0;0;0;0;0], [1;1;1;1;1;1], 5, 87, 99, 0.03, 0.3 )
+frun_pipeline_imreg( 'list_m70_fam1nov-fam1.txt', '20181101_13_09_55', true, [0;0;0;0;0;0], [1;1;1;1;1;1], 5, 90, 99, 0.05, 0.5 )
 
 [ activity, meanspeed ] = getActivityMeanspeed( 'list_m62_BT.txt', 13, true )

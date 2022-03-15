@@ -12,6 +12,7 @@ addpath(genpath('../behaviour'));
 addpath(genpath('../motion_correction'));
 addpath(genpath('../neuropil_decontamination'));
 addpath(genpath('../PF_mapping'));
+addpath(genpath('../quality_control'));
 addpath(genpath('../ROI_registration'));
 addpath(genpath('../ROI_segmentation'));
 addpath(genpath('../spike_extraction'));

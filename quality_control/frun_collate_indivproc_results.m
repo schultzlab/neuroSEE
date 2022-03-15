@@ -21,7 +21,9 @@ function frun_collate_indivproc_results( list, mcorr_method, force )
 
 if nargin<3, force = false; end
 if nargin<2, mcorr_method = 'normcorre'; end
-    
+
+addpath(genpath('../quality_control'));
+
 %% Load module folders and define data directory
 [data_locn,~,err] = load_neuroSEEmodules;
 if ~isempty(err)

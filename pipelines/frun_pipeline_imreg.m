@@ -46,7 +46,11 @@ function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, tsub, bl_pr
 
 if nargin<12, conc_env = false; end
 if nargin<11, min_SNR = 2.5; end
-if nargin<10, activetrials_thr = 0.5; end
+if nargin<10, activetrials_thr = 0.3; end
+if nargin<9, pfactivet_thr = 0.03; end
+if nargin<8, prctile_thr = 99; end
+if nargin<7, bl_prctile = 85; end
+if nargin<6, tsub = 5; end
 if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
 if nargin<4, force = [0; 0; 0; 0; 0; 0]; end
 if nargin<3, dofissa = true; end

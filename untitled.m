@@ -1,13 +1,13 @@
 masks_all = masks;
-masks_all(:,:,size(masks_all,3)+1:size(masks,3)+size(elim_masks,3)) = elim_masks;
+% masks_all(:,:,size(masks_all,3)+1:size(masks,3)+size(elim_masks,3)) = elim_masks;
 elim_masks0 = elim_masks;
 tsG_all(1:size(masks,3),:) = tsG;
-tsG_all(size(masks,3)+1:size(masks,3)+size(elim_masks,3),:) = elim_tsG;
+%tsG_all(size(masks,3)+1:size(masks,3)+size(elim_masks,3),:) = elim_tsG;
 df_f_all(1:size(masks,3),:) = df_f;
-df_f_all(size(masks,3)+1:size(masks,3)+size(elim_masks,3),:) = elim_df_f;
+%df_f_all(size(masks,3)+1:size(masks,3)+size(elim_masks,3),:) = elim_df_f;
 
-roiarea_min = 50;
-roiarea_max = 400;
+roiarea_min = 70; %50;
+roiarea_max = 560; %400;
 invcirc_max = 4;
 overlap_thr = 0.25;
 borderpix = 4;
@@ -67,7 +67,7 @@ output.corr_image = corr_image;
 output.F0 = F0;
 output.A = A;
 output.params = params;       
-save('m77_fam1fam2-fam1_ref20190302_15_38_59_segment_output.mat','-struct','output');
+save('m62_fov2_fam1_s1-4_ref20181015_09_37_54_segment_output.mat','-struct','output');
 
 %%%%%%%%
 a = 5*7420+1; b = 10*7420;

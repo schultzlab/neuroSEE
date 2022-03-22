@@ -42,7 +42,7 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, tsub, bl_prctile, prctile_thr, pfactivet_thr, activetrials_thr, min_SNR, conc_env )
+function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, tsub, bl_prctile, prctile_thr, pfactivet_thr, activetrials_thr, min_SNR, conc_env, max_dev,  )
 
 if nargin<12, conc_env = false; end
 if nargin<11, min_SNR = 2.5; end

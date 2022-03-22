@@ -80,29 +80,16 @@ end
 %% USER: Set parameters 
 % Any parameter that is not set gets a default value
 
-if useadjustedparameters
-    grid_size_nr = [64,64];
-    overlap_pre = [16,16]; 
-    min_patch_size = [16,16];    
-    min_diff = [8,8];
-else
-    grid_size_nr = [128,128];
-    overlap_pre = [64,64]; 
-    min_patch_size = [64,64];    
-    min_diff = [32,32];
-
-end
-
 params = neuroSEE_setparams(...
             'mcorr_method', mcorr_method,...
             'refChannel', refChannel,...        % reference channel for motion correction
             'max_shift_r', maxshift_r,...       % maximum rigid shift
-            'max_shift_nr', maxshift_nr,...     % maximum nonrigid shift
+            'max_shift_nr', maxshift_nr,...
             'max_dev', max_dev,...
             'grid_size_nr', grid_size_nr,...
             'overlap_pre', overlap_pre,... 
-            'min_patch_size', min_patch_size,...      
-            'min_diff', min_diff);       
+            'min_patch_size', [g/4,g/4],...      
+            'min_diff',);       % maximum nonrigid shift
         
 params_mcorr = params.mcorr;
 

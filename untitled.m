@@ -92,5 +92,5 @@ frun_pipeline_imreg( 'list_m77_fam1fam2-fam1.txt', '20190302_15_38_59', true, [0
 frun_pipeline_imreg( 'list_m70_fam1nov-fam1.txt', '20181101_13_09_55', true, [0;0;0;0;0;0], [1;1;1;1;1;1], 5, 90, 99, 0.05, 0.5 )
 
 [ activity, meanspeed ] = getActivityMeanspeed( 'list_m62_BT.txt', 13, true )
-frun_collate_indivproc_results( 'list_m129_fov1_fam1fam2fam1.txt' )
-frun_mcorr_batch( 16, 'list_m128_fov2_fam1fam2fam1.txt', 'normcorre', true, '20211007_13_00_02', 'green', 30, 30, 7, true )
+frun_collate_indivproc_results( 'list_m129_fov1_fam1novfam1-fam1.txt' )
+frun_mcorr_batch( 3, 'list_m129_fov2_fam1fam2fam1.txt', 'normcorre', true, '20211007_16_01_02', 'green', 30, 30, 7, true )

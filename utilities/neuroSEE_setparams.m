@@ -373,7 +373,7 @@ Values = [
         {'FFT'}               % method for applying shifts ('FFT', 'linear', 'cubic')
         % template updating
         {true}                % flag for online template updating (default: true)
-        {100}                 % length of initial batch (default: 100)
+        {200}                 % length of initial batch (default: 100)
         {50}                  % width of each bin (default: 10)
         {50}                  % number of local means to keep in memory (default: 50)
         {{'median';'mean'}}   % method for averaging the template (default: {'median';'mean'}

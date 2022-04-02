@@ -29,7 +29,7 @@
 % slacknotify : (optional) flag to send Ann Slack notification when processing is started
 %               or has ended (default: false)
 
-function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, refChannel, maxshift_r, maxshift_nr, max_dev, useadjustedparameters )
+function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, refChannel, maxshift_r, maxshift_nr, max_dev, useadjustedparameters, iter )
 
 if nargin<3, mcorr_method = 'normcorre'; end
 if nargin<4, force = false; end
@@ -39,6 +39,7 @@ if nargin<7, maxshift_r = 30; end
 if nargin<8, maxshift_nr = 30; end
 if nargin<9, max_dev = 3; end
 if nargin<10, useadjustedparameters = false; end
+if nargin<11, iter = 1; end
 slacknotify = false;
 tic
 
@@ -102,7 +103,8 @@ params = neuroSEE_setparams(...
             'grid_size_nr', grid_size_nr,...
             'overlap_pre', overlap_pre,... 
             'min_patch_size', min_patch_size,...      
-            'min_diff', min_diff);       
+            'min_diff', min_diff,...
+            'iter', iter);       
         
 params_mcorr = params.mcorr;
 

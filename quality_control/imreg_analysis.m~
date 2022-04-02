@@ -1,4 +1,3 @@
-clear 
 [data_locn,comp,err] = load_neuroSEEmodules;
 if ~isempty(err)
     beep
@@ -6,7 +5,7 @@ if ~isempty(err)
     return
 end
 
-list = 'list_m134_fov1_fam1fam1revfam1.txt'; % SPECIFY LIST
+list = 'list_m134_fov1_fam1fam2fam1.txt'; % SPECIFY LIST
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 
@@ -30,7 +29,7 @@ params = neuroSEE_setparams(...
             'min_diff', [g/8,g/8]);         
         
 %%           
-n = 10; % SPECIFY FILE # to register
+n = 3; % SPECIFY FILE # to register
 regchannel = 1; % 1:green, 2:red
 refind = 6; % SPECIFY FILE # for reference 
 %%

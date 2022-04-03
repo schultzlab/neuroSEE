@@ -24,13 +24,13 @@ params = neuroSEE_setparams(...
             'max_shift_nr', 30,...
             'grid_size_nr', [g,g],...
             'iter',1,...
-            'max_dev',7,... % I normally tweak this. I found that 7-9 is usually good enough.   
+            'max_dev',9,... % I normally tweak this. I found that 7-9 is usually good enough.   
             'overlap_pre', [g/4,g/4],... 
             'min_patch_size', [g/4,g/4],...      
             'min_diff', [g/8,g/8]);         
         
 %%           
-n = 10; % SPECIFY FILE # to register
+n = 1; % SPECIFY FILE # to register
 regchannel = 1; % 1:green, 2:red
 refind = 6; % SPECIFY FILE # for reference 
 %%
@@ -53,3 +53,7 @@ figure;
 fy = imfuse( YY, ref_ch1, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
 imshow(fy); title(titlestr1);
 
+params = options_r;
+save('m134_r.mat','params')
+params = options_nr;
+save('m134_nr.mat','params')

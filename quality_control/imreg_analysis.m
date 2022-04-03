@@ -53,7 +53,9 @@ figure;
 fy = imfuse( YY, ref_ch1, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
 imshow(fy); title(titlestr1);
 
-params = shifts_r;
+shifts = shifts_r; options = options_r;
+params.shifts = shifts_r; params.options = options_r;
 save('m134_r.mat','params')
-params = shifts_nr;
+shifts = shifts_nr; options = options_nr;
+params.shifts = shifts_nr; params.options = options_nr;
 save('m134_nr.mat','params')

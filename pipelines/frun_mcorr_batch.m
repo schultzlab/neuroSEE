@@ -137,7 +137,7 @@ if force || ~check
         check_mcorr = checkfor_mcorrIm( data_locn, file, mcorr_method );
         if check_mcorr % motion-corrected image exists
             [imG,imR] = load_imagefile( data_locn, file, false, '_mcorr' );
-            neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, true, 2 );
+            neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, true, 1 );
         else
             [imG,imR] = load_imagefile( data_locn, file, false, [] );
             neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, true, 1 );

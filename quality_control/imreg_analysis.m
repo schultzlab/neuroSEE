@@ -6,7 +6,7 @@ if ~isempty(err)
     return
 end
 
-list = 'list_m133_fam1fam2fam1.txt'; % SPECIFY LIST
+list = 'list_m130_fov1_fam1fam2fam1.txt'; % SPECIFY LIST
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 
@@ -32,7 +32,7 @@ params = neuroSEE_setparams(...
 %%           
 n = 1; % SPECIFY FILE # to register
 regchannel = 1; % 1:green, 2:red
-refind = 3; % SPECIFY FILE # for reference 
+refind = 5; % SPECIFY FILE # for reference 
 %%
 
 if regchannel == 1
@@ -53,9 +53,9 @@ figure;
 fy = imfuse( YY, ref_ch1, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
 imshow(fy); title(titlestr1);
 
-clear params
-params.shifts = shifts_r; params.options = options_r; params.col_shift = col_shift_r;
-save('m133_r.mat','params')
-params.shifts = shifts_nr; params.options = options_nr; params.col_shift = col_shift_nr;
-save('m133_nr.mat','params')
+% clear params
+% params.shifts = shifts_r; params.options = options_r; params.col_shift = col_shift_r;
+% save('m133_r.mat','params')
+% params.shifts = shifts_nr; params.options = options_nr; params.col_shift = col_shift_nr;
+% save('m133_nr.mat','params')
 

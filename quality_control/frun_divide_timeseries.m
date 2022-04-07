@@ -51,6 +51,7 @@ for j = 1:numel(env)
         mkdir( dir_env ); fileattrib(dir_env,'+w','g','s'); 
         mkdir( [dir_env 'FISSA/'] ); fileattrib(dir_env,'+w','g','s'); 
     end
+    cprintf('Text','Copying files to new folder.\n');
     copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_df_f.fig'],...
              [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_df_f.fig'])
     copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_df_f.png'],...
@@ -95,6 +96,7 @@ for j = 1:numel(env)
     so2.elim_tsG = so.elim_tsG(a:b);
     so2.df_f = so.df_f(a:b);
     so2.elim_df_f = so.elim_df_f(a:b);
+    cprintf('Text','Dividing tsG and df and saving.\n');
     save([dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_segment_output.mat'],'-struct','so2');
     
     % fissa output
@@ -102,6 +104,7 @@ for j = 1:numel(env)
     fissa2.dtsG = fissa.dtsG(a:b);
     fissa2.ddf_f = fissa.ddf_f(a:b);
     a = b+1;
+    cprintf('Text','Dividing fissa timeseries and saving.\n');
     save([dir_env 'FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_output.mat'],'-struct','fissa2');
     
 end

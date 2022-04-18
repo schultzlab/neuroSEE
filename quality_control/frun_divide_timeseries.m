@@ -48,7 +48,7 @@ ff = 1; a = 1; b = 0;
 for j = 1:numel(env)
     dir_env = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '-' env{j}...
                 '/group_proc/imreg_normcorre_CaImAn/' mouseid '_' expname '-' env{j} ...
-                '_imreg_ref' reffile '/'];
+                '_imreg_ref' reffile '_concenvrois/'];
     if ~exist(dir_env,'dir') 
         mkdir( dir_env ); fileattrib(dir_env,'+w','g','s'); 
         mkdir( [dir_env 'FISSA/'] ); fileattrib(dir_env,'+w','g','s'); 

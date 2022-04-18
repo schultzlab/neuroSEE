@@ -13,17 +13,20 @@ end
 [mouseid,expname,fov] = find_mouseIDexpname( list );
 env{1} = 'fam1';
 ind1 = strfind(expname,'fam1');
-if numel(ind1) > 2
-    env{3} = 'fam1r2';
-    if numel(strfind(expname,'fam1rev')) > 0
-        env{2} = 'fam1rev';
+if numel(ind1) >= 2
+    if numel(ind1) > 2
+        env{3} = 'fam1r2';
+        if numel(strfind(expname,'fam1rev')) > 0
+            env{2} = 'fam1rev';
+        end
+    else
+        if numel(strfind(expname,'fam1rev')) > 0
+            env{2} = 'fam1rev';
+        else
+            env{3} = 'fam1r2';
+        end
     end
 else
-    if numel(strfind(expname,'fam1rev')) > 0
-        env{2} = 'fam1rev';
-    else
-        env{3} = 'fam1r2';
-    end
 end
 if numel(strfind(expname,'fam2')) > 0
     env{2} = 'fam2';
@@ -48,14 +51,14 @@ ff = 1; a = 1; b = 0;
 for j = 1:numel(env)
     dir_env = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '-' env{j}...
                 '/group_proc/imreg_normcorre_CaImAn/' mouseid '_' expname '-' env{j} ...
-                '_imreg_ref' reffile '/'];
+                '_imreg_ref' reffile '_concenvrois/'];
     if ~exist(dir_env,'dir') 
         mkdir( dir_env ); fileattrib(dir_env,'+w','g','s'); 
         mkdir( [dir_env 'FISSA/'] ); fileattrib(dir_env,'+w','g','s'); 
     end
-    if force || ~all([exist(,'file'),...
-                      exist(,'file'),...
-                      exist(,'file')])
+    if force || ~all([exist([dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_framesperfile.mat'],'file'),...
+                      exist([dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_segment_output.mat'],'file'),...
+                      exist([dir_env 'FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_output.mat'],'file')])
             
         fprintf('Copying files to %s.\n', [mouseid '_' expname '-' env{j} '_ref' reffile]);
         copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_df_f.fig'],...
@@ -113,8 +116,7 @@ for j = 1:numel(env)
         fprintf('Dividing fissa timeseries and saving.\n');
         save([dir_env 'FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_output.mat'],'-struct','fissa2');
     else
-        
-        end
+        fprintf('Timeseries distribution has been processed.\n')
     end
 end
 

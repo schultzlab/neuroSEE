@@ -18,7 +18,7 @@ if numel(ind1) > 2
     if numel(strfind(expname,'fam1rev')) > 0
         env{2} = 'fam1rev';
     end
-else
+elseif numel(ind1) == 2
     if numel(strfind(expname,'fam1rev')) > 0
         env{2} = 'fam1rev';
     else

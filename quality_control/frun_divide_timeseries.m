@@ -1,4 +1,6 @@
-function frun_divide_timeseries( list, reffile, numfiles )
+function frun_divide_timeseries( list, reffile, numfiles, force )
+
+if nargin<4, force = false; end
 
 [data_locn,~,err] = load_neuroSEEmodules;
 if ~isempty(err)
@@ -47,66 +49,72 @@ for j = 1:numel(env)
     dir_env = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '-' env{j}...
                 '/group_proc/imreg_normcorre_CaImAn/' mouseid '_' expname '-' env{j} ...
                 '_imreg_ref' reffile '/'];
-    if ~exist(dir_env,'dir')
+    if ~exist(dir_env,'dir') 
         mkdir( dir_env ); fileattrib(dir_env,'+w','g','s'); 
         mkdir( [dir_env 'FISSA/'] ); fileattrib(dir_env,'+w','g','s'); 
     end
-    cprintf('Text','Copying files to new folder.\n');
-    copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_df_f.fig'],...
-             [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_df_f.fig'])
-    copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_df_f.png'],...
-             [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_df_f.png'])
-    copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_elimROIs.fig'],...
-             [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_elimROIs.fig'])
-    copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_elimROIs.png'],...
-             [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_elimROIs.png'])
-    copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_imreg_template.fig'],...
-             [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_imreg_template.fig'])
-    copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_imreg_template.mat'],...
-             [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_imreg_template.mat'])
-    copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_imreg_template.png'],...
-             [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_imreg_template.png'])
-    copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_raw_timeseries.fig'],...
-             [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_raw_timeseries.fig'])
-    copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_raw_timeseries.png'],...
-             [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_raw_timeseries.png'])
-    copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_ROIs.fig'],...
-             [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_ROIs.fig'])
-    copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_ROIs.png'],...
-             [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_ROIs.png'])
-    copyfile([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],...
-             [dir_env '/FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_df_f.fig'])
-    copyfile([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_df_f.png'],...
-             [dir_env '/FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_df_f.png'])
-    copyfile([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_timeseries.fig'],...
-             [dir_env '/FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_timeseries.fig'])
-    copyfile([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_timeseries.png'],...
-             [dir_env '/FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_timeseries.png'])
-    
-    % framesperfile
-    framesperfile = fpf.framesperfile;
-    framesperfile = framesperfile(ff:ff+numfiles(j)-1);
-    ff = ff + numfiles(j);
-    save([dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_framesperfile.mat'],'framesperfile');
-    
-    % segment output
-    so2 = so;
-    b = b + sum(framesperfile);
-    so2.tsG = so.tsG(a:b);
-    so2.elim_tsG = so.elim_tsG(a:b);
-    so2.df_f = so.df_f(a:b);
-    so2.elim_df_f = so.elim_df_f(a:b);
-    cprintf('Text','Dividing tsG and df and saving.\n');
-    save([dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_segment_output.mat'],'-struct','so2');
-    
-    % fissa output
-    fissa2 = fissa;
-    fissa2.dtsG = fissa.dtsG(a:b);
-    fissa2.ddf_f = fissa.ddf_f(a:b);
-    a = b+1;
-    cprintf('Text','Dividing fissa timeseries and saving.\n');
-    save([dir_env 'FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_output.mat'],'-struct','fissa2');
-    
+    if force || ~all([exist([dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_framesperfile.mat'],'file'),...
+                      exist([dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_segment_output.mat'],'file'),...
+                      exist([dir_env 'FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_output.mat'],'file')])
+            
+        fprintf('Copying files to %s.\n', [mouseid '_' expname '-' env{j} '_ref' reffile]);
+        copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_df_f.fig'],...
+                 [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_df_f.fig'])
+        copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_df_f.png'],...
+                 [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_df_f.png'])
+        copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_elimROIs.fig'],...
+                 [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_elimROIs.fig'])
+        copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_elimROIs.png'],...
+                 [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_elimROIs.png'])
+        copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_imreg_template.fig'],...
+                 [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_imreg_template.fig'])
+        copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_imreg_template.mat'],...
+                 [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_imreg_template.mat'])
+        copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_imreg_template.png'],...
+                 [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_imreg_template.png'])
+        copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_raw_timeseries.fig'],...
+                 [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_raw_timeseries.fig'])
+        copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_raw_timeseries.png'],...
+                 [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_raw_timeseries.png'])
+        copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_ROIs.fig'],...
+                 [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_ROIs.fig'])
+        copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_ROIs.png'],...
+                 [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_ROIs.png'])
+        copyfile([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],...
+                 [dir_env '/FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_df_f.fig'])
+        copyfile([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_df_f.png'],...
+                 [dir_env '/FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_df_f.png'])
+        copyfile([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_timeseries.fig'],...
+                 [dir_env '/FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_timeseries.fig'])
+        copyfile([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_timeseries.png'],...
+                 [dir_env '/FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_timeseries.png'])
+
+        % framesperfile
+        framesperfile = fpf.framesperfile;
+        framesperfile = framesperfile(ff:ff+numfiles(j)-1);
+        ff = ff + numfiles(j);
+        save([dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_framesperfile.mat'],'framesperfile');
+
+        % segment output
+        so2 = so;
+        b = b + sum(framesperfile);
+        so2.tsG = so.tsG(a:b);
+        so2.elim_tsG = so.elim_tsG(a:b);
+        so2.df_f = so.df_f(a:b);
+        so2.elim_df_f = so.elim_df_f(a:b);
+        fprintf('Dividing tsG and df and saving.\n');
+        save([dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_segment_output.mat'],'-struct','so2');
+
+        % fissa output
+        fissa2 = fissa;
+        fissa2.dtsG = fissa.dtsG(a:b);
+        fissa2.ddf_f = fissa.ddf_f(a:b);
+        a = b+1;
+        fprintf('Dividing fissa timeseries and saving.\n');
+        save([dir_env 'FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_output.mat'],'-struct','fissa2');
+    else
+        fprintf('Timeseries distribution has been processed.\n')
+    end
 end
 
 

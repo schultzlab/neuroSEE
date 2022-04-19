@@ -140,7 +140,7 @@ if force || ~check
             neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, true, 2 );
         else
             [imG,imR] = load_imagefile( data_locn, file, false, [] );
-            neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, true, 1 );
+            neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, true, 2 );
         end
     else
         [imG,imR] = load_imagefile( data_locn, file, false, [] );

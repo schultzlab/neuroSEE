@@ -67,7 +67,7 @@ output.corr_image = corr_image;
 output.F0 = F0;
 output.A = A;
 output.params = params;       
-save('m118_fov2_fam1novfam1_ref20210314_11_59_18_segment_output.mat','-struct','output');
+save('m62_fov2_fam1_s1-4_ref20181015_09_37_54_segment_output.mat','-struct','output');
 
 %%%%%%%%
 a = 5*7420+1; b = 10*7420;

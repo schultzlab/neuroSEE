@@ -51,6 +51,8 @@ for j = 1:numel(env)
                 '_imreg_ref' reffile '_concenvrois/'];
     if ~exist(dir_env,'dir') 
         mkdir( dir_env ); fileattrib(dir_env,'+w','g','s'); 
+    end
+    if ~exist([dir_env 'FISSA/'],'dir') 
         mkdir( [dir_env 'FISSA/'] ); fileattrib(dir_env,'+w','g','s'); 
     end
     if force || ~all([exist([dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_framesperfile.mat'],'file'),...
@@ -98,17 +100,17 @@ for j = 1:numel(env)
         % segment output
         so2 = so;
         b = b + sum(framesperfile);
-        so2.tsG = so.tsG(a:b);
-        so2.elim_tsG = so.elim_tsG(a:b);
-        so2.df_f = so.df_f(a:b);
-        so2.elim_df_f = so.elim_df_f(a:b);
+        so2.tsG = so.tsG(:,a:b);
+        so2.elim_tsG = so.elim_tsG(:,a:b);
+        so2.df_f = so.df_f(:,a:b);
+        so2.elim_df_f = so.elim_df_f(:,a:b);
         fprintf('Dividing tsG and df and saving.\n');
         save([dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_segment_output.mat'],'-struct','so2');
 
         % fissa output
         fissa2 = fissa;
-        fissa2.dtsG = fissa.dtsG(a:b);
-        fissa2.ddf_f = fissa.ddf_f(a:b);
+        fissa2.dtsG = fissa.dtsG(:,a:b);
+        fissa2.ddf_f = fissa.ddf_f(:,a:b);
         a = b+1;
         fprintf('Dividing fissa timeseries and saving.\n');
         save([dir_env 'FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_output.mat'],'-struct','fissa2');

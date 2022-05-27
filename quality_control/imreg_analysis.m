@@ -6,7 +6,7 @@ if ~isempty(err)
     return
 end
 
-list = 'list_m130_fov2_fam1fam2fam1.txt'; % SPECIFY LIST
+list = 'list_m79_fam1fam2_s2.txt'; % SPECIFY LIST
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 
@@ -24,7 +24,7 @@ params = neuroSEE_setparams(...
             'max_shift_nr', 30,...
             'grid_size_nr', [g,g],...
             'iter',1,...
-            'max_dev',7,... % I normally tweak this. I found that 7-9 is usually good enough.   
+            'max_dev',9,... % I normally tweak this. I found that 7-9 is usually good enough.   
             'overlap_pre', [g/4,g/4],... 
             'min_patch_size', [g/4,g/4],...      
             'min_diff', [g/8,g/8]);         
@@ -32,7 +32,7 @@ params = neuroSEE_setparams(...
 %%           
 n = 1; % SPECIFY FILE # to register
 regchannel = 1; % 1:green, 2:red
-refind = 8; % SPECIFY FILE # for reference 
+refind = 6; % SPECIFY FILE # for reference 
 %%
 
 if regchannel == 1

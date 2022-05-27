@@ -1,4 +1,4 @@
-function GUI_view_fileData( file )
+function GUI_view_mouseData( file )
 
 % Written by Ann Go
 %

@@ -41,11 +41,13 @@ end
 so = load([dir_concenv mouseid '_' expname '_ref' reffile '_segment_output.mat']);
 if exist([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file')
     fissa = load([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_output.mat']);
-end
+    num_rois_so = size(so.masks,3);
+    num_rois_fissa = size(fissa.dtsG,1);
 
-num_rois_so = size(so.masks,3);
-num_rois_fissa = size(dtsG,1);
-
-if num_rois_so ~= num_rois_fissa || ~exist([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file')
+    if num_rois_so ~= num_rois_fissa 
+        frun_pipeline_imreg( list, reffile, true, [0; 0; 1; 0; 0; 0], [1; 1; 1; 1; 1; 1] )
+    end
+else
     frun_pipeline_imreg( list, reffile, true, [0; 0; 1; 0; 0; 0], [1; 1; 1; 1; 1; 1] )
+end
 end

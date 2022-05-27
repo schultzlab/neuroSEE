@@ -54,7 +54,7 @@ for j = 1:numel(env)
     if ~exist(dir_env,'dir') 
         mkdir( dir_env ); fileattrib(dir_env,'+w','g','s'); 
     end
-    if exist([dir_concenv 'FISSA/'],'dir') ~exist([dir_env 'FISSA/'],'dir') 
+    if exist([dir_concenv 'FISSA/'],'dir') && ~exist([dir_env 'FISSA/'],'dir') 
         mkdir( [dir_env 'FISSA/'] ); fileattrib(dir_env,'+w','g','s'); 
     end
     if force || ~all([exist([dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_framesperfile.mat'],'file'),...

@@ -97,4 +97,4 @@ frun_mcorr_batch( 3, 'list_m129_fov1_fam1novfam1.txt', 'normcorre', true, '20211
 frun_mcorr_batch( 6, 'list_m134_fov2_fam1fam1revfam1.txt', 'normcorre', true, [], 'green', 30, 30, 3, false, 2  )
 
 frun_divide_timeseries( 'list_m132_fov1_fam1fam2fam1.txt', '20211201_12_07_26', [8,10,5] )
-frun_redoFISSA( 'list_m135_fov1_fam1fam2fam1.txt', '20211201_17_17_32')
+frun_redoFISSA( 'list_m135_fov1_fam1fam1revfam1.txt', '20211205_17_15_45')

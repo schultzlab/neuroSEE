@@ -42,8 +42,8 @@ end
 
 fpf = load([dir_concenv mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
 so = load([dir_concenv mouseid '_' expname '_ref' reffile '_segment_output.mat']);
-if exist([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file')
-    fissa = load([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_output.mat']);
+if exist([dir_concenv 'FISSA/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file')
+    fissa = load([dir_concenv 'FISSA/' mouseid '_' expname '_ref' reffile '_fissa_output.mat']);
 end
 
 ff = 1; a = 1; b = 0;
@@ -54,7 +54,7 @@ for j = 1:numel(env)
     if ~exist(dir_env,'dir') 
         mkdir( dir_env ); fileattrib(dir_env,'+w','g','s'); 
     end
-    if exist([dir_concenv '/FISSA/'],'dir') ~exist([dir_env 'FISSA/'],'dir') 
+    if exist([dir_concenv 'FISSA/'],'dir') ~exist([dir_env 'FISSA/'],'dir') 
         mkdir( [dir_env 'FISSA/'] ); fileattrib(dir_env,'+w','g','s'); 
     end
     if force || ~all([exist([dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_framesperfile.mat'],'file'),...
@@ -84,15 +84,15 @@ for j = 1:numel(env)
                  [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_ROIs.fig'])
         copyfile([dir_concenv mouseid '_' expname '_ref' reffile '_ROIs.png'],...
                  [dir_env mouseid '_' expname '-' env{j} '_ref' reffile '_ROIs.png'])
-        if exist([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],file)
-            copyfile([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],...
-                     [dir_env '/FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_df_f.fig'])
-            copyfile([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_df_f.png'],...
-                     [dir_env '/FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_df_f.png'])
-            copyfile([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_timeseries.fig'],...
-                     [dir_env '/FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_timeseries.fig'])
-            copyfile([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_timeseries.png'],...
-                     [dir_env '/FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_timeseries.png'])
+        if exist([dir_concenv 'FISSA/' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],'file')
+            copyfile([dir_concenv 'FISSA/' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],...
+                     [dir_env 'FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_df_f.fig'])
+            copyfile([dir_concenv 'FISSA/' mouseid '_' expname '_ref' reffile '_fissa_df_f.png'],...
+                     [dir_env 'FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_df_f.png'])
+            copyfile([dir_concenv 'FISSA/' mouseid '_' expname '_ref' reffile '_fissa_timeseries.fig'],...
+                     [dir_env 'FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_timeseries.fig'])
+            copyfile([dir_concenv 'FISSA/' mouseid '_' expname '_ref' reffile '_fissa_timeseries.png'],...
+                     [dir_env 'FISSA/' mouseid '_' expname '-' env{j} '_ref' reffile '_fissa_timeseries.png'])
         end
 
         % framesperfile

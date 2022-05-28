@@ -24,12 +24,12 @@ if exist([dir_concenv '/FISSA/' mouseid '_' expname '_ref' reffile '_fissa_outpu
 
     if num_rois_so ~= num_rois_fissa 
         fprintf('%s: ROI numbers not the same for segment_output and fissa_output. Redoing FISSA.\n', [mouseid '_' expname '_ref' reffile]);
-        frun_pipeline_imreg( list, reffile, true, [0; 0; 1; 0; 0; 0], [1; 1; 1; 1; 1; 1] )
+        frun_pipeline_imreg( list, reffile, true, [0; 0; 1; 0; 0; 0], [1; 1; 1; 1; 0; 0] )
     else
         fprintf('%s: ROI numbers are the same for segment_output and fissa_output. No need to redo FISSA.\n', [mouseid '_' expname '_ref' reffile]);
     end
 else
     fprintf('%s: FISSA_output does not exist. Now doing FISSA.\n', [mouseid '_' expname '_ref' reffile]);
-    frun_pipeline_imreg( list, reffile, true, [0; 0; 1; 0; 0; 0], [1; 1; 1; 1; 1; 1] )
+    frun_pipeline_imreg( list, reffile, true, [0; 0; 1; 0; 0; 0], [1; 1; 1; 1; 0; 0] )
 end
 end

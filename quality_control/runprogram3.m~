@@ -42,14 +42,14 @@
 % frun_divide_timeseries( 'list_m117_fov2_fam1fam2.txt', '20210313_10_52_37', [9,9], true )
 
 %% m111
-% frun_redoFISSA('list_m111_fam1fam2.txt', '20201208_14_55_28')
-% frun_divide_timeseries( 'list_m111_fam1fam2.txt', '20201208_14_55_28', [5,7], true )
-% frun_redoFISSA('list_m111_fam1novfam1.txt', '20201209_17_47_23')
-% frun_divide_timeseries( 'list_m111_fam1novfam1.txt', '20201209_17_47_23', [2,3,2], true )
-% frun_redoFISSA('list_m111_fam1fam1rev.txt', '20201210_16_38_50')
-% frun_divide_timeseries( 'list_m111_fam1fam1rev.txt', '20201210_16_38_50', [3,3], true )
-% frun_redoFISSA('list_m111_fam1fam2_s2.txt', '20201211_15_40_54')
-% frun_divide_timeseries( 'list_m111_fam1fam2_s2.txt', '20201211_15_40_54', [2,5], true )
+frun_redoFISSA('list_m111_fam1fam2.txt', '20201208_14_55_28')
+frun_divide_timeseries( 'list_m111_fam1fam2.txt', '20201208_14_55_28', [5,7], true )
+frun_redoFISSA('list_m111_fam1novfam1.txt', '20201209_17_47_23')
+frun_divide_timeseries( 'list_m111_fam1novfam1.txt', '20201209_17_47_23', [2,3,2], true )
+frun_redoFISSA('list_m111_fam1fam1rev.txt', '20201210_16_38_50')
+frun_divide_timeseries( 'list_m111_fam1fam1rev.txt', '20201210_16_38_50', [3,3], true )
+frun_redoFISSA('list_m111_fam1fam2_s2.txt', '20201211_15_40_54')
+frun_divide_timeseries( 'list_m111_fam1fam2_s2.txt', '20201211_15_40_54', [2,5], true )
 
 %% m77
 % frun_redoFISSA('list_m77_fam1fam2.txt', '20190302_15_38_59')

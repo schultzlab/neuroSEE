@@ -50,10 +50,10 @@
 % frun_redoFISSA('list_m130_fov1_fam1fam1revfam1.txt', '20211010_18_16_58')
 % frun_divide_timeseries( 'list_m130_fov1_fam1fam1revfam1.txt', '20211010_18_16_58', [4,7,4], true )
 %fov2
-frun_redoFISSA('list_m130_fov2_fam1fam2fam1.txt', '20211007_18_39_38')
-frun_divide_timeseries( 'list_m130_fov2_fam1fam2fam1.txt', '20211007_18_39_38', [2,6,5], true )
-frun_redoFISSA('list_m130_fov2_fam1novfam1.txt', '20211012_18_40_59')
-frun_divide_timeseries( 'list_m130_fov2_fam1novfam1.txt', '20211012_18_40_59', [2,5,2], true )
-frun_redoFISSA('list_m130_fov2_fam1fam1revfam1.txt', '20211012_18_40_59')
-frun_divide_timeseries( 'list_m130_fov2_fam1fam1revfam1.txt', '20211012_18_40_59', [2,4,2], true )
+% frun_redoFISSA('list_m130_fov2_fam1fam2fam1.txt', '20211007_18_39_38')
+% frun_divide_timeseries( 'list_m130_fov2_fam1fam2fam1.txt', '20211007_18_39_38', [2,6,5], true )
+% frun_redoFISSA('list_m130_fov2_fam1novfam1.txt', '20211012_18_40_59')
+% frun_divide_timeseries( 'list_m130_fov2_fam1novfam1.txt', '20211012_18_40_59', [2,5,2], true )
+% frun_redoFISSA('list_m130_fov2_fam1fam1revfam1.txt', '20211012_18_40_59')
+% frun_divide_timeseries( 'list_m130_fov2_fam1fam1revfam1.txt', '20211012_18_40_59', [2,4,2], true )
 

@@ -259,7 +259,9 @@ if dostep(1)
         for n = 1:Nfiles
             Yii = imG{n};
             framesperfile(n) = size(Yii,3);
-            Y(:,:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n))) = Yii;
+            Y(:,:,(n-1)*size(Yii,3)+1:n*size(Yii,3)) = Yii;
+            % Y(:,:,(n-1)*size(Yii,3)+1:n*size(Yii,3)) = Yii;
+            
         end
         clear Yii imG
         imG = Y;

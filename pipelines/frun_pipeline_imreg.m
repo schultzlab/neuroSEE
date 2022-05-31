@@ -158,7 +158,7 @@ MatlabVer = str2double(release(1:4));
 check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_env);
 
 % Some security measures
-force = logicalForce(force);        % Only allow combinations of force/step values that make sense
+force = logicalForce(force, check_list);        % Only allow combinations of force/step values that make sense
 dostep = logicaldostep(dostep);     % because later steps require earlier ones
 
 if ~any(force) && check_list(6)

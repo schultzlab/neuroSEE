@@ -2,7 +2,8 @@
 % Function for identifying place cells 
 % pcIdx_MI, pcIdx_SIsec, pcIdx_SIspk are sorted in descending order of
 % info content
-% Based on Indersmitten et al 2019, Front Neurosci
+% Based on Indersmitten et al 2019, Front Neurosci and Gonzales et al 2019,
+% Science
 
 function [ pcIdx_SIsec, pcIdx_SIspk, nonpcIdx_SIsec, nonpcIdx_SIspk ] = identifyPCs_1d( ...
     bin_phi, activespk, infoMap, pf_activet, activetrials, prctile_thr, pfactivet_thr, activetrials_thr, Nrand, mode, shuffle_method )
@@ -26,7 +27,7 @@ occMap = histcounts(bin_phi,Nbins);
 % 1) that are not active for more than pfactivet_thr of total dwell time inside place field
 % 2) that are not active for more than activetrials_thr of total number of
 % trials (laps)
-% 2) with info < info of 99th percentile of shuffled distribution
+% 3) with info < info of 99th percentile of shuffled distribution
 
 include_SIsec = []; exclude_SIsec = [];
 include_SIspk = []; exclude_SIspk = [];

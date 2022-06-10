@@ -42,18 +42,15 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, tsub, bl_prctile, prctile_thr, pfactivet_thr, activetrials_thr, min_SNR, conc_env )
+function frun_pipeline_imreg( list, reffile, conc_env, dofissa, force, dostep, tsub, bl_prctile, min_SNR )
 
-if nargin<12, conc_env = false; end
-if nargin<11, min_SNR = 2.5; end
-if nargin<10, activetrials_thr = 0.3; end
-if nargin<9, pfactivet_thr = 0.03; end
-if nargin<8, prctile_thr = 99; end
-if nargin<7, bl_prctile = 85; end
-if nargin<6, tsub = 5; end
-if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
-if nargin<4, force = [0; 0; 0; 0; 0; 0]; end
-if nargin<3, dofissa = true; end
+if nargin<9, min_SNR = 2.5; end
+if nargin<8, bl_prctile = 85; end
+if nargin<7, tsub = 5; end
+if nargin<6, dostep = [1; 1; 1; 1; 1; 1]; end
+if nargin<5, force = [0; 0; 0; 0; 0; 0]; end
+if nargin<4, dofissa = true; end
+if nargin<3, conc_env = false; end
 % if nargin<2, see line 121
 tic
 
@@ -158,7 +155,7 @@ MatlabVer = str2double(release(1:4));
 check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_env);
 
 % Some security measures
-force = logicalForce(force);        % Only allow combinations of force/step values that make sense
+force = logicalForce(force, check_list);        % Only allow combinations of force/step values that make sense
 dostep = logicaldostep(dostep);     % because later steps require earlier ones
 
 if ~any(force) && check_list(6)
@@ -259,9 +256,7 @@ if dostep(1)
         for n = 1:Nfiles
             Yii = imG{n};
             framesperfile(n) = size(Yii,3);
-            Y(:,:,(n-1)*size(Yii,3)+1:n*size(Yii,3)) = Yii;
-            % Y(:,:,(n-1)*size(Yii,3)+1:n*size(Yii,3)) = Yii;
-            
+            Y(:,:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n))) = Yii;
         end
         clear Yii imG
         imG = Y;

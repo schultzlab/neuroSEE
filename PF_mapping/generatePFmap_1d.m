@@ -46,7 +46,8 @@ Vthr = params.PFmap.Vthr;
 histsmoothWin = params.PFmap.histsmoothWin;
 prctile_thr = params.PFmap.prctile_thr;
 pfactivet_thr = params.PFmap.pfactivet_thr;
-activetrials_thr = params.PFmap.activetrials_thr;
+%activetrials_thr = params.PFmap.activetrials_thr;
+fieldrate_thr = params.PFmap.fieldrate_thr;
 
 % Input data
 % x = downTrackdata.x;
@@ -86,10 +87,10 @@ clear x y phi r speed t
 %% Identify PLACE CELLS
 % Cells are sorted in descending order of info content
 [hist.SIsec.pcIdx, hist.SIspk.pcIdx, hist.SIsec.nonpcIdx, hist.SIspk.nonpcIdx] = identifyPCs_1d( ...
-    bin_phi, activespk, hist.infoMap, hist.pf_activet, PFdata.activetrials, prctile_thr, pfactivet_thr, activetrials_thr, Nrand );
+    bin_phi, activespk, hist.infoMap, hist.pf_activet, prctile_thr, pfactivet_thr, fieldrate_thr, Nrand );
 if doasd
     [asd.SIsec.pcIdx, asd.SIspk.pcIdx, asd.SIsec.nonpcIdx, asd.SIspk.nonpcIdx] = identifyPCs_1d( ...
-    bin_phi, activespk, asd.infoMap, asd.pf_activet, PFdata.activetrials, prctile_thr, pfactivet_thr, activetrials_thr, Nrand, 'asd');
+    bin_phi, activespk, asd.infoMap, asd.pf_activet, prctile_thr, pfactivet_thr, fieldrate_thr, Nrand, 'asd');
 end
 
 % sort pf maps
@@ -159,10 +160,10 @@ if Nepochs > 1
     for e = 1:Nepochs
         % Identify PLACE CELLS per epoch
         [hist_epochs.SIsec.pcIdx{e}, hist_epochs.SIspk.pcIdx{e}, hist_epochs.SIsec.nonpcIdx{e}, hist_epochs.SIspk.nonpcIdx{e}] = identifyPCs_1d( ...
-            bin_phi_e{e}, activespk_e{e}, hist_epochs.infoMap{e}, hist_epochs.pf_activet{e}, PFdata_epochs.activetrials{e}, prctile_thr, pfactivet_thr, activetrials_thr, Nrand );
+            bin_phi_e{e}, activespk_e{e}, hist_epochs.infoMap{e}, hist_epochs.pf_activet{e}, prctile_thr, pfactivet_thr, fieldrate_thr, Nrand );
         if doasd
             [asd_epochs.SIsec.pcIdx{e}, asd_epochs.SIspk.pcIdx{e}, asd_epochs.SIsec.nonpcIdx{e}, asd_epochs.SIspk.nonpcIdx{e}] = identifyPCs_1d( ...
-            bin_phi_e{e}, activespk_e{e}, asd_epochs.infoMap{e}, asd_epochs.pf_activet{e}, PFdata_epochs.activetrials{e}, prctile_thr, pfactivet_thr, activetrials_thr, Nrand, 'asd');
+            bin_phi_e{e}, activespk_e{e}, asd_epochs.infoMap{e}, asd_epochs.pf_activet{e}, prctile_thr, pfactivet_thr, fieldrate_thr, Nrand, 'asd');
         end
     end
 

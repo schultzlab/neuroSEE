@@ -6,14 +6,14 @@
 % Science
 
 function [ pcIdx_SIsec, pcIdx_SIspk, nonpcIdx_SIsec, nonpcIdx_SIspk ] = identifyPCs_1d( ...
-    bin_phi, activespk, infoMap, pf_activet, prctile_thr, pfactivet_thr, fieldrate_thr, Nrand, mode, shuffle_method )
+    bin_phi, activespk, infoMap, pf_activet, activetrials, prctile_thr, pfactivet_thr, activetrials_thr, Nrand, mode, shuffle_method )
 
-if nargin<10, shuffle_method = 2; end
-if nargin<9, mode = 'hist'; end
-if nargin<8, Nrand = 1000; end
-if nargin<7, fieldrate_thr = 0.2; end
-if nargin<6, pfactivet_thr = 0; end
-if nargin<5, prctile_thr = 99; end
+if nargin<11, shuffle_method = 2; end
+if nargin<10, mode = 'hist'; end
+if nargin<9, Nrand = 1000; end
+if nargin<8, activetrials_thr = 0.2; end
+if nargin<7, pfactivet_thr = 0; end
+if nargin<6, prctile_thr = 99; end
 
 dt = 1/30.9;
 Nbins = max(bin_phi);
@@ -22,36 +22,21 @@ spikeMap = zeros(1,Nbins);
 SIsec = zeros(1,Nrand); 
 SIspk = zeros(1,Nrand); 
 occMap = histcounts(bin_phi,Nbins);
-t_bin = zeros(1,Nbins);
-spikes_bin = zeros(Ncells,Nbins);
-rate_bin = zeros(Ncells,Nbins);
                     
-for bin = 1:Nbins
-   t_bin(bin) = length(find(bin_phi == bin));
-end
-
 % remove cells 
-% 1) with info < info of 99th percentile of shuffled distribution
-% 2) that are not active for more than pfactivet_thr of total dwell time inside place field
-% 3) with mean in-field event rate < 3x mean out-of-field event rate
+% 1) that are not active for more than pfactivet_thr of total dwell time inside place field
+% 2) that are not active for more than activetrials_thr of total number of
+% trials (laps)
+% 3) with info < info of 99th percentile of shuffled distribution
 
 include_SIsec = []; exclude_SIsec = [];
 include_SIspk = []; exclude_SIspk = [];
 
 for c = 1:Ncells
-    % criteria 2
-    if pf_activet(c) >= pfactivet_thr 
-        z = activespk(c,:);
-        for bin = 1:Nbins
-           spikes_bin(c,bin) = sum(z(bin_phi == bin));
-           rate_bin(c,bin) = spikes_bin(c,bin)/t_bin(bin);
-        end
-        infield = sum(rate_bin(c,hist.pfBins{c}))/length(hist.pfBins{c});
-        out = setdiff(1:Nbins,hist.pfBins{c});
-        outfield = sum(rate_bin(c,out))/length(out);
+    if pf_activet(c) >= pfactivet_thr
+        if activetrials(c) >= activetrials_thr
+            z = activespk(c,:);
 
-        % criteria 3
-        if infield >= fieldrate_thr*outfield
             if shuffle_method == 2
                 % initialisation for shuffling method 2 inside subloop
                 a = 309; % 10s
@@ -97,7 +82,6 @@ for c = 1:Ncells
                 end
             end
 
-            % criteria 1
             if infoMap(c,1) > prctile(SIsec,prctile_thr)
                 include_SIsec = [include_SIsec; c];
             else
@@ -112,7 +96,7 @@ for c = 1:Ncells
         else
             exclude_SIsec = [exclude_SIsec; c];
             exclude_SIspk = [exclude_SIspk; c];
-        end % if infield >= fieldrate_thr*outfield
+        end % if activetrials(c) >= activetrials_thr
     else
         exclude_SIsec = [exclude_SIsec; c];
         exclude_SIspk = [exclude_SIspk; c];

@@ -1,12 +1,11 @@
 % criteria parameters
 Nbins = 50;
 Nrand = 1000;
-prctile_thr = 99;
-pfactivet_thr = 0.03;
-activetrials_thr = 0.3;
-prctile_thr = 99;
 Vthr = 20;
-infielddf_f_thr = 3;
+prctile_thr = 99; %1
+rate_thr = 3; %2
+activetrials_thr = 0.4; %3
+pfactivet_thr = 0.03; %4
 
 % regenerate some variables
 phi = downTrackdata.phi;
@@ -73,69 +72,115 @@ for c = 1:Ncells
 end
 % plotSpikeRasterTrials( PFdata.normspkRaster(exclude_SIspk1), PFdata.ytick_files, 'NonPC', false, [], false );
 
-% remove cells
-% 2) that are not active for more than activetrials_thr of total number of
-% trials (laps)
+% remove cells 
+% 2) for which the mean in-field event rate < 3x mean out-of-field event
+% rate
 exclude_SIsec2 = [];
 exclude_SIspk2 = [];
+for bin = 1:Nbins
+   t_bin(bin) = length(find(bin_phi == bin));
+end
 for c = 1:Ncells
-    if activetrials(c) < activetrials_thr
-        exclude_SIsec2 = unique([exclude_SIsec2; c]);
-        exclude_SIspk2 = unique([exclude_SIspk2; c]);
-    end 
+    z = activespk(c,:);
+    for bin = 1:Nbins
+       spikes_bin(c,bin) = sum(z(bin_phi == bin));
+       rate_bin(c,bin) = spikes_bin(c,bin)/t_bin(bin);
+    end
+    infield = sum(rate_bin(c,hist.pfBins{c}))/length(hist.pfBins{c});
+    out = setdiff(1:Nbins,hist.pfBins{c});
+    outfield = sum(rate_bin(c,out))/length(out);
+    
+    if infield < rate_thr*outfield
+        exclude_SIspk2 = [exclude_SIspk2; c];
+    end
 end
 % plotSpikeRasterTrials( PFdata.normspkRaster(exclude_SIspk2), PFdata.ytick_files, 'NonPC', false, [], false );
 
-% remove cells 
-% 3) that are not active for more than pfactivet_thr of total dwell time inside place field
+% remove cells
+% 3) that are not active for more than activetrials_thr of total number of
+% trials (laps)
 exclude_SIsec3 = [];
 exclude_SIspk3 = [];
 for c = 1:Ncells
-    if pf_activet(c) < pfactivet_thr
+    if activetrials(c) < activetrials_thr
         exclude_SIsec3 = unique([exclude_SIsec3; c]);
         exclude_SIspk3 = unique([exclude_SIspk3; c]);
-    end % if pf_activet(c) >= pfactivet_thr
+    end 
 end
 % plotSpikeRasterTrials( PFdata.normspkRaster(exclude_SIspk3), PFdata.ytick_files, 'NonPC', false, [], false );
 
+exclude_SIspk = unique([exclude_SIspk1; exclude_SIspk2; exclude_SIspk3]);
+include_SIspk = setdiff(1:Ncells,exclude_SIspk);
+[~,sort_exclude_SIspk] = sort(infoMap(exclude_SIspk,1),'descend');
+[~,sort_include_SIspk] = sort(infoMap(include_SIspk,1),'descend');
+plotSpikeRasterTrials( PFdata.normspkRaster(exclude_SIspk), PFdata.ytick_files, 'NonPC', false, [], false );
+plotSpikeRasterTrials( PFdata.normspkRaster(include_SIspk), PFdata.ytick_files, 'PC', false, [], false );
+title('A');
+
 % remove cells 
-% 4) for which the mean in-field df/f value < 3x mean out-of-field df/f
-% value
+% 4) that are not active for more than pfactivet_thr of total dwell time inside place field
 exclude_SIsec4 = [];
 exclude_SIspk4 = [];
 for c = 1:Ncells
-    % z = df_f(c,activeind);
-    z = activespk(c,:);
-    for bin = 1:Nbins
-       bin_idx = find(bin_phi == bin);
-       df_f_bin(c,bin) = sum(z(bin_phi == bin));
-    end
-    infield = sum(df_f_bin(c,hist.pfBins{c}))/length(hist.pfBins{c});
-    out = setdiff(1:Nbins,hist.pfBins{c});
-    outfield = sum(df_f_bin(c,out))/length(out);
-    
-    if infield < infielddf_f_thr*outfield
-        exclude_SIspk4 = [exclude_SIspk4; c];
+    if pf_activet(c) < pfactivet_thr
+        exclude_SIsec4 = unique([exclude_SIsec4; c]);
+        exclude_SIspk4 = unique([exclude_SIspk4; c]);
     end
 end
-% plotSpikeRasterTrials( PFdata.normspkRaster(exclude_SIspk4), PFdata.ytick_files, 'NonPC', false, [], false );
-
-% remove cells 
-% 5) for which the field does not have a single df/f value > 10% of mean
-% df/f value
-exclude_SIsec5 = [];
-exclude_SIspk5 = [];
-for c = 1:Ncells
-    z = df_f(c,activeind);
-    in_idx = find(ismember(bin_phi,hist.pfBins{c}));
-    infield = z(in_idx);
-    
-    if max(infield) < 1*mean(z)
-        exclude_SIspk5 = [exclude_SIspk5; c];
-    end
-end
-% plotSpikeRasterTrials( PFdata.normspkRaster(exclude_SIspk), PFdata.ytick_files, 'NonPC', false, [], false );
+exclude_SIspk = unique([exclude_SIspk1; exclude_SIspk2; exclude_SIspk3; exclude_SIspk4]);
+include_SIspk = setdiff(1:Ncells,exclude_SIspk);
+[~,sort_exclude_SIspk] = sort(infoMap(exclude_SIspk,1),'descend');
+[~,sort_include_SIspk] = sort(infoMap(include_SIspk,1),'descend');
+plotSpikeRasterTrials( PFdata.normspkRaster(include_SIspk), PFdata.ytick_files, 'PC', false, [], false );
+title('B');
 
 exclude_SIspk = unique([exclude_SIspk1; exclude_SIspk2; exclude_SIspk4]);
 include_SIspk = setdiff(1:Ncells,exclude_SIspk);
+[~,sort_exclude_SIspk] = sort(infoMap(exclude_SIspk,1),'descend');
+[~,sort_include_SIspk] = sort(infoMap(include_SIspk,1),'descend');
 plotSpikeRasterTrials( PFdata.normspkRaster(include_SIspk), PFdata.ytick_files, 'PC', false, [], false );
+title('C');
+
+pfactivet_thr = 0.04; %4
+exclude_SIsec4 = [];
+exclude_SIspk4 = [];
+for c = 1:Ncells
+    if pf_activet(c) < pfactivet_thr
+        exclude_SIsec4 = unique([exclude_SIsec4; c]);
+        exclude_SIspk4 = unique([exclude_SIspk4; c]);
+    end 
+end
+exclude_SIspk = unique([exclude_SIspk1; exclude_SIspk2; exclude_SIspk4]);
+include_SIspk = setdiff(1:Ncells,exclude_SIspk);
+[~,sort_exclude_SIspk] = sort(infoMap(exclude_SIspk,1),'descend');
+[~,sort_include_SIspk] = sort(infoMap(include_SIspk,1),'descend');
+plotSpikeRasterTrials( PFdata.normspkRaster(include_SIspk), PFdata.ytick_files, 'PC', false, [], false );
+title('D');
+
+rate_thr = 4;
+exclude_SIsec2 = [];
+exclude_SIspk2 = [];
+for bin = 1:Nbins
+   t_bin(bin) = length(find(bin_phi == bin));
+end
+for c = 1:Ncells
+    z = activespk(c,:);
+    for bin = 1:Nbins
+       spikes_bin(c,bin) = sum(z(bin_phi == bin));
+       rate_bin(c,bin) = spikes_bin(c,bin)/t_bin(bin);
+    end
+    infield = sum(rate_bin(c,hist.pfBins{c}))/length(hist.pfBins{c});
+    out = setdiff(1:Nbins,hist.pfBins{c});
+    outfield = sum(rate_bin(c,out))/length(out);
+    
+    if infield < rate_thr*outfield
+        exclude_SIspk2 = [exclude_SIspk2; c];
+    end
+end
+exclude_SIspk = unique([exclude_SIspk1; exclude_SIspk2; exclude_SIspk3]);
+include_SIspk = setdiff(1:Ncells,exclude_SIspk);
+[~,sort_exclude_SIspk] = sort(infoMap(exclude_SIspk,1),'descend');
+[~,sort_include_SIspk] = sort(infoMap(include_SIspk,1),'descend');
+plotSpikeRasterTrials( PFdata.normspkRaster(include_SIspk), PFdata.ytick_files, 'PC', false, [], false );
+title('E');
+

@@ -470,7 +470,7 @@ function plot_populStats(bintime_trials, bintime, bin_activet, activetrials,...
         map = viridisMap;
         imagesc(sort_pfMap_sm); colormap(map);
         xticks([1 Nbins]); xticklabels([1 100]); xlabel('Position (cm)');
-        if Ncells>1 
+        if Npcs>1 
             yticks([1 Npcs]); yticklabels([1 Npcs ]);
         else 
             yticks(1); yticklabels(1); 
@@ -481,7 +481,7 @@ function plot_populStats(bintime_trials, bintime, bin_activet, activetrials,...
     subplot(349); 
         imagesc(sort_normpfMap_sm); 
         xticks([1 Nbins]); xticklabels([1 100]); xlabel('Position (cm)');
-        if Ncells>1 
+        if Npcs>1 
             yticks([1 Npcs]); yticklabels([1 Npcs]);
         else 
             yticks(1); yticklabels(1); 

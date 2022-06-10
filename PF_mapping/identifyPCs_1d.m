@@ -6,14 +6,14 @@
 % Science
 
 function [ pcIdx_SIsec, pcIdx_SIspk, nonpcIdx_SIsec, nonpcIdx_SIspk ] = identifyPCs_1d( ...
-    bin_phi, activespk, infoMap, pf_activet, prctile_thr, pfactivet_thr, fieldrate_thr, Nrand, mode, shuffle_method )
+    bin_phi, activespk, infoMap, pf_activet, pfBins, prctile_thr, pfactivet_thr, fieldrate_thr, Nrand, mode, shuffle_method )
 
-if nargin<10, shuffle_method = 2; end
-if nargin<9, mode = 'hist'; end
-if nargin<8, Nrand = 1000; end
-if nargin<7, fieldrate_thr = 0.2; end
-if nargin<6, pfactivet_thr = 0; end
-if nargin<5, prctile_thr = 99; end
+if nargin<11, shuffle_method = 2; end
+if nargin<10, mode = 'hist'; end
+if nargin<9, Nrand = 1000; end
+if nargin<8, fieldrate_thr = 0.2; end
+if nargin<7, pfactivet_thr = 0; end
+if nargin<6, prctile_thr = 99; end
 
 dt = 1/30.9;
 Nbins = max(bin_phi);
@@ -46,8 +46,8 @@ for c = 1:Ncells
            spikes_bin(c,bin) = sum(z(bin_phi == bin));
            rate_bin(c,bin) = spikes_bin(c,bin)/t_bin(bin);
         end
-        infield = sum(rate_bin(c,hist.pfBins{c}))/length(hist.pfBins{c});
-        out = setdiff(1:Nbins,hist.pfBins{c});
+        infield = sum(rate_bin(c,pfBins{c}))/length(pfBins{c});
+        out = setdiff(1:Nbins,pfBins{c});
         outfield = sum(rate_bin(c,out))/length(out);
 
         % criteria 3

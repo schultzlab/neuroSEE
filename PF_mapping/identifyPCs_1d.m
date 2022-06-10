@@ -6,15 +6,15 @@
 % Science
 
 function [ pcIdx_SIsec, pcIdx_SIspk, nonpcIdx_SIsec, nonpcIdx_SIspk ] = identifyPCs_1d( ...
-    bin_phi, activespk, infoMap, pf_activet, pfBins, prctile_thr, pfactivet_thr, activetrials_thr, fieldrate_thr, Nrand, mode, shuffle_method )
+    bin_phi, activespk, infoMap, pf_activet, activetrials, pfBins, prctile_thr, pfactivet_thr, activetrials_thr, fieldrate_thr, Nrand, mode, shuffle_method )
 
-if nargin<12, shuffle_method = 2; end
-if nargin<11, mode = 'hist'; end
-if nargin<10, Nrand = 1000; end
-if nargin<9, fieldrate_thr = 3; end
-if nargin<8, activetrials_thr = 0.35; end
-if nargin<7, pfactivet_thr = 0.04; end
-if nargin<6, prctile_thr = 99; end
+if nargin<13, shuffle_method = 2; end
+if nargin<12, mode = 'hist'; end
+if nargin<11, Nrand = 1000; end
+if nargin<10, fieldrate_thr = 3; end
+if nargin<9, activetrials_thr = 0.35; end
+if nargin<8, pfactivet_thr = 0.04; end
+if nargin<7, prctile_thr = 99; end
 
 dt = 1/30.9;
 Nbins = max(bin_phi);

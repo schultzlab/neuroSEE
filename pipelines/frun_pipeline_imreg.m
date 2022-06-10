@@ -152,7 +152,7 @@ MatlabVer = str2double(release(1:4));
 check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_env);
 
 % Some security measures
-force = logicalForce(force, check_list);        % Only allow combinations of force/step values that make sense
+force = logicalForce(force);        % Only allow combinations of force/step values that make sense
 dostep = logicaldostep(dostep);     % because later steps require earlier ones
 
 if ~any(force) && check_list(6)
@@ -331,6 +331,16 @@ end
 if dostep(3)
     dtsG = []; ddf_f = []; 
     if dofissa
+        if ~force(3) && check_list(2)
+            fname_mat = [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
+            s = load(fname_mat);
+            dtsG = s.dtsG;
+            if size(dtsG,1) ~= size(tsG,1)
+                force(3) = true; % force FISSA step if no. of ROIs in fissa and segmentation outputs don't match
+                clear dtsG
+                fprintf('%s: Redoing FISSA step. ROIs in FISSA and segmentation outputs do not match.\n', [mouseid '_' expname]);
+            end
+        end
         if force(3) || ~check_list(2)
             for n = 1:Nfiles
                 file = files(n,:);
@@ -361,7 +371,7 @@ if dostep(3)
             newstr = sprintf('%s: Fissa data loaded\n', [mouseid '_' expname]);
             refreshdisp(newstr, str)
 
-            % divide into cells according to number of files in prep for spike
+            % divide into cell structures according to number of files in prep for spike
             % extraction
             cddf_f = cell(Nfiles,1);
             cddf_f{1} = ddf_f(:,1:framesperfile(1));

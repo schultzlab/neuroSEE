@@ -1,4 +1,4 @@
-function force = logicalForce(force, check)
+function force = logicalForce(force)
 
 % These steps are included in single file processing (image registration pipeline)
 % force(1): force motion correction even if motion corrected images exist

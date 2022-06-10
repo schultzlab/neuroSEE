@@ -103,7 +103,7 @@ dostep = [true;...              % (1) motion correction even if motion corrected
 check = checkforExistingProcData(data_locn, file, params);
 
 % Some security measures
-force = logicalForce(force, check);    % Only allow combinations of force values that make sense
+force = logicalForce(force);    % Only allow combinations of force values that make sense
 
 if ~any(force) && check(7)
     fprintf('%s: File already processed\n', file)

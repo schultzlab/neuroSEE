@@ -42,15 +42,15 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, conc_env, dofissa, force, dostep, tsub, bl_prctile, min_SNR )
+function frun_pipeline_imreg( list, reffile, dofissa, tsub, force, dostep, conc_env, bl_prctile, min_SNR )
 
 if nargin<9, min_SNR = 2.5; end
 if nargin<8, bl_prctile = 85; end
-if nargin<7, tsub = 5; end
+if nargin<7, conc_env = false; end
 if nargin<6, dostep = [1; 1; 1; 1; 1; 1]; end
 if nargin<5, force = [0; 0; 0; 0; 0; 0]; end
-if nargin<4, dofissa = true; end
-if nargin<3, conc_env = false; end
+if nargin<4, tsub = 5; end
+if nargin<3, dofissa = true; end
 % if nargin<2, see line 121
 tic
 
@@ -120,9 +120,6 @@ params = neuroSEE_setparams(...
             'FOV', FOV,...
             'tsub', tsub,...    % temporal downsampling factor for CaImAn
             'bl_prctile', bl_prctile,...
-            'prctile_thr', prctile_thr,...
-            'pfactivet_thr', pfactivet_thr,...
-            'activetrials_thr', activetrials_thr,...
             'min_SNR', min_SNR);         
         
                                % flag to execute step (use if wanting to skip later steps)
@@ -155,7 +152,7 @@ MatlabVer = str2double(release(1:4));
 check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_env);
 
 % Some security measures
-force = logicalForce(force, check_list);        % Only allow combinations of force/step values that make sense
+force = logicalForce(force);        % Only allow combinations of force/step values that make sense
 dostep = logicaldostep(dostep);     % because later steps require earlier ones
 
 if ~any(force) && check_list(6)
@@ -334,6 +331,12 @@ end
 if dostep(3)
     dtsG = []; ddf_f = []; 
     if dofissa
+        if ~force(3) && check_list(2)
+            fname_mat = [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
+            s = load(fname_mat);
+            dtsG = s.dtsG;
+            if size(s.dtsG)
+        end
         if force(3) || ~check_list(2)
             for n = 1:Nfiles
                 file = files(n,:);
@@ -364,7 +367,7 @@ if dostep(3)
             newstr = sprintf('%s: Fissa data loaded\n', [mouseid '_' expname]);
             refreshdisp(newstr, str)
 
-            % divide into cells according to number of files in prep for spike
+            % divide into cell structures according to number of files in prep for spike
             % extraction
             cddf_f = cell(Nfiles,1);
             cddf_f{1} = ddf_f(:,1:framesperfile(1));

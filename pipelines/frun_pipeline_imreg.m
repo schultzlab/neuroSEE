@@ -336,9 +336,9 @@ if dostep(3)
             s = load(fname_mat);
             dtsG = s.dtsG;
             if size(dtsG,1) ~= size(tsG,1)
-                force(3) = true; % force FISSA step if no. of ROIs in fissa and segmentation outputs don't match
+                force([3,4,6]) = true; % force FISSA step if no. of ROIs in fissa and segmentation outputs don't match
                 clear dtsG
-                fprintf('%s: Redoing FISSA step. ROIs in FISSA and segmentation outputs do not match.\n', [mouseid '_' expname]);
+                fprintf('%s: FISSA output found. Redoing FISSA. ROIs in FISSA and segmentation outputs do not match.\n', [mouseid '_' expname]);
             end
         end
         if force(3) || ~check_list(2)
@@ -403,6 +403,16 @@ end
 
 %% 4) Spike estimation
 if dostep(4)
+    if ~force(4) && check_list(3)
+        fname_mat = [grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes.mat'];
+        s = load(fname_mat);
+        spikes = s.spikes;
+        if size(spikes,1) ~= size(tsG,1)
+            force([4,6]) = true; % force spike estimation step if no. of ROIs in spike estimation and segmentation outputs don't match
+            clear dtsG
+            fprintf('%s: Spike data found. Redoing spike estimation. ROIs in spike data and segmentation output do not match.\n', [mouseid '_' expname]);
+        end
+    end
     if force(4) || ~check_list(3) 
         cspikes = cell(Nfiles,1); spikes = [];
         

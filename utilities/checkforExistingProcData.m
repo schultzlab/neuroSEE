@@ -61,7 +61,7 @@ function check = checkforExistingProcData(data_locn, text, params, reffile, conc
             end
             
             % 2) Check for existing consolidated fissa data 
-            if exist([dir_proc '/fissa/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file')
+            if exist([dir_proc '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'],'file')
                 check(2) = 1;
             end
             

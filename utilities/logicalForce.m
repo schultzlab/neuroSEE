@@ -16,17 +16,6 @@ function force = logicalForce(force, check)
 % force(5): force group tracking data extraction
 % force(6): force group place field mapping
 
-% Change force values according to check values
-if ~check(2)
-    force(2) = true;
-elseif ~check(3)
-    force(3) = true;
-elseif ~check(4)
-    force(4) = true;
-elseif ~check(5)
-    force(5) = true;
-end
-
 % Allow only combinations of values that make sense
 if force(1)
     force(2:6) = true; 

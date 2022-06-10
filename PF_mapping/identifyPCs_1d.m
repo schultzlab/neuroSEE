@@ -6,13 +6,14 @@
 % Science
 
 function [ pcIdx_SIsec, pcIdx_SIspk, nonpcIdx_SIsec, nonpcIdx_SIspk ] = identifyPCs_1d( ...
-    bin_phi, activespk, infoMap, pf_activet, pfBins, prctile_thr, pfactivet_thr, fieldrate_thr, Nrand, mode, shuffle_method )
+    bin_phi, activespk, infoMap, pf_activet, pfBins, prctile_thr, pfactivet_thr, activetrials_thr, fieldrate_thr, Nrand, mode, shuffle_method )
 
-if nargin<11, shuffle_method = 2; end
-if nargin<10, mode = 'hist'; end
-if nargin<9, Nrand = 1000; end
-if nargin<8, fieldrate_thr = 0.2; end
-if nargin<7, pfactivet_thr = 0; end
+if nargin<12, shuffle_method = 2; end
+if nargin<11, mode = 'hist'; end
+if nargin<10, Nrand = 1000; end
+if nargin<9, fieldrate_thr = 3; end
+if nargin<8, activetrials_thr = 0.35; end
+if nargin<7, pfactivet_thr = 0.04; end
 if nargin<6, prctile_thr = 99; end
 
 dt = 1/30.9;
@@ -33,86 +34,91 @@ end
 % remove cells 
 % 1) with info < info of 99th percentile of shuffled distribution
 % 2) that are not active for more than pfactivet_thr of total dwell time inside place field
-% 3) with mean in-field event rate < 3x mean out-of-field event rate
+% 3) that are not active for more than activetrials_thr of total number of
+% trials (laps)
+% 4) with mean in-field event rate < 3x mean out-of-field event rate
 
 include_SIsec = []; exclude_SIsec = [];
 include_SIspk = []; exclude_SIspk = [];
 
 for c = 1:Ncells
-    % criteria 2
-    if pf_activet(c) >= pfactivet_thr 
-        z = activespk(c,:);
-        for bin = 1:Nbins
-           spikes_bin(c,bin) = sum(z(bin_phi == bin));
-           rate_bin(c,bin) = spikes_bin(c,bin)/t_bin(bin);
-        end
-        infield = sum(rate_bin(c,pfBins{c}))/length(pfBins{c});
-        out = setdiff(1:Nbins,pfBins{c});
-        outfield = sum(rate_bin(c,out))/length(out);
-
-        % criteria 3
-        if infield >= fieldrate_thr*outfield
-            if shuffle_method == 2
-                % initialisation for shuffling method 2 inside subloop
-                a = 309; % 10s
-                b = numel(bin_phi) - a; % length of recording - 10 s
-                r = round((b-a)*rand(Nrand,1) + a);
-                zs = zeros(size(activespk(1,:)));
+    if pf_activet(c) >= pfactivet_thr % criteria 2
+        if activetrials(c) >= activetrials_thr % criteria 3
+            z = activespk(c,:);
+            for bin = 1:Nbins
+               spikes_bin(c,bin) = sum(z(bin_phi == bin));
+               rate_bin(c,bin) = spikes_bin(c,bin)/t_bin(bin);
             end
+            infield = sum(rate_bin(c,pfBins{c}))/length(pfBins{c});
+            out = setdiff(1:Nbins,pfBins{c});
+            outfield = sum(rate_bin(c,out))/length(out);
 
-            for j = 1:Nrand
-                if shuffle_method == 1
-                    % shuffling method 1 
-                    % shuffle spike event times
-                    randind = randperm(length(z));
-                    z = z(randind);
-                    for k = 1:Nbins
-                        spikeMap(k) = sum(z(bin_phi == k));
-                    end
-                end
-
+            if infield >= fieldrate_thr*outfield % criteria 4
                 if shuffle_method == 2
-                    % shuffling method 2
-                    % offset spike timeseries by a random time between 10s and length
-                    % of recording-10 s
-                    for k = r(j)+1:numel(bin_phi)
-                        zs(k) = z(k-r(j)); 
+                    % initialisation for shuffling method 2 inside subloop
+                    a = 309; % 10s
+                    b = numel(bin_phi) - a; % length of recording - 10 s
+                    r = round((b-a)*rand(Nrand,1) + a);
+                    zs = zeros(size(activespk(1,:)));
+                end
+
+                for j = 1:Nrand
+                    if shuffle_method == 1
+                        % shuffling method 1 
+                        % shuffle spike event times
+                        randind = randperm(length(z));
+                        z = z(randind);
+                        for k = 1:Nbins
+                            spikeMap(k) = sum(z(bin_phi == k));
+                        end
                     end
-                    for k = 1:r(j)
-                        zs(k) = z(numel(bin_phi)-r(j)+k);
+
+                    if shuffle_method == 2
+                        % shuffling method 2
+                        % offset spike timeseries by a random time between 10s and length
+                        % of recording-10 s
+                        for k = r(j)+1:numel(bin_phi)
+                            zs(k) = z(k-r(j)); 
+                        end
+                        for k = 1:r(j)
+                            zs(k) = z(numel(bin_phi)-r(j)+k);
+                        end
+                        for k = 1:Nbins
+                            spikeMap(k) = sum(zs(bin_phi == k));
+                        end
                     end
-                    for k = 1:Nbins
-                        spikeMap(k) = sum(zs(bin_phi == k));
+
+                    if strcmpi(mode, 'hist')
+                        pcMap = spikeMap./(occMap*dt);
+                        pcMap(isnan(pcMap)) = 0; pcMap(isinf(pcMap)) = 0; 
+                        pcMap_sm = circularSmooth(pcMap,5);
+                        [SIsec(j),SIspk(j)] = infoMeasures(pcMap_sm, occMap, 0);
+                    else
+                        pcMap = runASD_1d(bin_phi,z',Nbins);
+                        [SIsec(j),SIspk(j)] = infoMeasures(pcMap', ones(Nbins,1), 0);
                     end
                 end
 
-                if strcmpi(mode, 'hist')
-                    pcMap = spikeMap./(occMap*dt);
-                    pcMap(isnan(pcMap)) = 0; pcMap(isinf(pcMap)) = 0; 
-                    pcMap_sm = circularSmooth(pcMap,5);
-                    [SIsec(j),SIspk(j)] = infoMeasures(pcMap_sm, occMap, 0);
+                % criteria 1
+                if infoMap(c,1) > prctile(SIsec,prctile_thr)
+                    include_SIsec = [include_SIsec; c];
                 else
-                    pcMap = runASD_1d(bin_phi,z',Nbins);
-                    [SIsec(j),SIspk(j)] = infoMeasures(pcMap', ones(Nbins,1), 0);
+                    exclude_SIsec = [exclude_SIsec; c];
                 end
-            end
 
-            % criteria 1
-            if infoMap(c,1) > prctile(SIsec,prctile_thr)
-                include_SIsec = [include_SIsec; c];
+                if infoMap(c,2) > prctile(SIspk,prctile_thr)
+                    include_SIspk = [include_SIspk; c];
+                else
+                    exclude_SIspk = [exclude_SIspk; c];
+                end
             else
                 exclude_SIsec = [exclude_SIsec; c];
-            end
-
-            if infoMap(c,2) > prctile(SIspk,prctile_thr)
-                include_SIspk = [include_SIspk; c];
-            else
                 exclude_SIspk = [exclude_SIspk; c];
-            end
+            end % if infield >= fieldrate_thr*outfield
         else
             exclude_SIsec = [exclude_SIsec; c];
             exclude_SIspk = [exclude_SIspk; c];
-        end % if infield >= fieldrate_thr*outfield
+        end % if activetrials(c) < activetrials_thr
     else
         exclude_SIsec = [exclude_SIsec; c];
         exclude_SIspk = [exclude_SIspk; c];

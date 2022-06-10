@@ -477,7 +477,10 @@ function plot_populStats(bintime_trials, bintime, bin_activet, activetrials,...
         end
         ylabel('PC #'); 
         title('PF map'); 
-        c = colorbar; c.Ticks = [0 round(max(max(sort_pfMap_sm)),1)];
+        c = colorbar; 
+        if Npcs>1
+            c.Ticks = [0 round(max(max(sort_pfMap_sm)),1)];
+        end
     subplot(349); 
         imagesc(sort_normpfMap_sm); 
         xticks([1 Nbins]); xticklabels([1 100]); xlabel('Position (cm)');

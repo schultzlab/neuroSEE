@@ -478,8 +478,9 @@ function plot_populStats(bintime_trials, bintime, bin_activet, activetrials,...
         ylabel('PC #'); 
         title('PF map'); 
         c = colorbar; 
-        if Npcs>1
+        try
             c.Ticks = [0 round(max(max(sort_pfMap_sm)),1)];
+        catch
         end
     subplot(349); 
         imagesc(sort_normpfMap_sm); 

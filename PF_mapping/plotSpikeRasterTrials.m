@@ -33,8 +33,11 @@ function plotSpikeRasterTrials( spkRaster, ytick_files, title_str, fsave, fname,
                     end
                 else
                     if mod(ii*nPlot+jj+1,nCol) == 1
-                        yticks(ytick_files); yticklabels(ytick_files); 
-                        ylabel('Lap #');
+                        try
+                            yticks(ytick_files); yticklabels(ytick_files); 
+                            ylabel('Lap #');
+                        catch
+                        end
                     else
                         yticks([]);
                     end

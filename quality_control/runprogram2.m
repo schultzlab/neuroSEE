@@ -16,7 +16,6 @@
 % frun_pipeline_imreg( 'list_m128_fov1_fam1novfam1-fam1.txt', '20211008_17_33_44', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
 % frun_pipeline_imreg( 'list_m128_fov1_fam1novfam1-fam1.txt', '20211008_17_33_44', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
 
-%ERRORS HERE
 % frun_pipeline_imreg( 'list_m128_fov1_fam1novfam1-nov.txt', '20211008_17_33_44', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
 % frun_pipeline_imreg( 'list_m128_fov1_fam1novfam1-nov.txt', '20211008_17_33_44', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
 % frun_pipeline_imreg( 'list_m128_fov1_fam1novfam1-nov.txt', '20211008_17_33_44', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
@@ -190,34 +189,34 @@
 % frun_pipeline_imreg( 'list_m125_fam1novfam1-nov.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 85 )
 % frun_pipeline_imreg( 'list_m125_fam1novfam1-nov.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 87 )
 
-frun_pipeline_imreg( 'list_m125_fam1novfam1-fam1r2.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
-frun_pipeline_imreg( 'list_m125_fam1novfam1-fam1r2.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
-frun_pipeline_imreg( 'list_m125_fam1novfam1-fam1r2.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
+% frun_pipeline_imreg( 'list_m125_fam1novfam1-fam1r2.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
+% frun_pipeline_imreg( 'list_m125_fam1novfam1-fam1r2.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
+% frun_pipeline_imreg( 'list_m125_fam1novfam1-fam1r2.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
+% 
+% frun_pipeline_imreg( 'list_m125_fam1novfam1-fam1r2.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 83 )
+% frun_pipeline_imreg( 'list_m125_fam1novfam1-fam1r2.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 85 )
+% frun_pipeline_imreg( 'list_m125_fam1novfam1-fam1r2.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 87 )
+% 
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
+% 
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 83 )
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 85 )
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 87 )
+% 
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1rev.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1rev.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1rev.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
+% 
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1rev.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 83 )
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1rev.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 85 )
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1rev.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 87 )
+% 
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1r2.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1r2.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1r2.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
 
-frun_pipeline_imreg( 'list_m125_fam1novfam1-fam1r2.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 83 )
-frun_pipeline_imreg( 'list_m125_fam1novfam1-fam1r2.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 85 )
-frun_pipeline_imreg( 'list_m125_fam1novfam1-fam1r2.txt', '20210908_19_02_24', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 87 )
-
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
-
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 83 )
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 85 )
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 87 )
-
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1rev.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1rev.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1rev.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
-
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1rev.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 83 )
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1rev.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 85 )
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1rev.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 87 )
-
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1r2.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1r2.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1r2.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
-
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1r2.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 83 )
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1r2.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 85 )
-frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1r2.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 87 )
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1r2.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 83 )
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1r2.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 85 )
+% frun_pipeline_imreg( 'list_m125_fam1fam1revfam1-fam1r2.txt', '20210909_16_15_04', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], false, 87 )

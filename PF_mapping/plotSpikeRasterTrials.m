@@ -23,8 +23,11 @@ function plotSpikeRasterTrials( spkRaster, ytick_files, title_str, fsave, fname,
                 % only put ylabels for 1st column plots
                 if ii*nPlot+jj+1 < 8
                     if ii*nPlot+jj+1 == 1
-                        yticks(ytick_files); yticklabels(ytick_files); 
-                        ylabel('Lap #');
+                        try
+                            yticks(ytick_files); yticklabels(ytick_files); 
+                            ylabel('Lap #');
+                        catch
+                        end
                     else
                         yticks([]);
                     end

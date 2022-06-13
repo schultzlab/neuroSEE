@@ -70,7 +70,8 @@ end
 % Mouseid, Experiment name, files
 [ mouseid, expname, fov ] = find_mouseIDexpname(list);
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
-files = extractFilenamesFromTxtfile( listfile );
+files = '20210314_12_50_05';
+%files = extractFilenamesFromTxtfile( listfile );
 if nargin<2, reffile = files(1,:); end
 Nfiles = size(files,1);
 
@@ -337,7 +338,7 @@ if dostep(3)
             dtsG = s.dtsG;
             if size(dtsG,1) ~= size(tsG,1)
                 force([3,4,6]) = true; % force FISSA step if no. of ROIs in fissa and segmentation outputs don't match
-                clear dtsG
+                dtsG = [];
                 fprintf('%s: FISSA output found. Redoing FISSA. ROIs in FISSA and segmentation outputs do not match.\n', [mouseid '_' expname]);
             end
         end

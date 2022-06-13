@@ -174,24 +174,24 @@
 
 %% m111
 % frun_pipeline_imreg( 'list_m111_fam1fam2-fam1.txt', '20201208_14_55_28', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
-% frun_pipeline_imreg( 'list_m111_fam1fam2-fam1.txt', '20201208_14_55_28', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
-% frun_pipeline_imreg( 'list_m111_fam1fam2-fam1.txt', '20201208_14_55_28', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
-% 
+% frun_pipeline_imreg( 'list_m111_fam1fam2-fam1.txt', '20201208_14_55_28', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 80 )
+% frun_pipeline_imreg( 'list_m111_fam1fam2-fam1.txt', '20201208_14_55_28', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 78 )
+
 % frun_pipeline_imreg( 'list_m111_fam1fam2-fam2.txt', '20201208_14_55_28', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
-% frun_pipeline_imreg( 'list_m111_fam1fam2-fam2.txt', '20201208_14_55_28', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
-% frun_pipeline_imreg( 'list_m111_fam1fam2-fam2.txt', '20201208_14_55_28', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
+% frun_pipeline_imreg( 'list_m111_fam1fam2-fam2.txt', '20201208_14_55_28', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 80 )
+% frun_pipeline_imreg( 'list_m111_fam1fam2-fam2.txt', '20201208_14_55_28', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 78 )
 % 
 % frun_pipeline_imreg( 'list_m111_fam1novfam1-fam1.txt', '20201209_17_47_23', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
 % frun_pipeline_imreg( 'list_m111_fam1novfam1-fam1.txt', '20201209_17_47_23', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
-% frun_pipeline_imreg( 'list_m111_fam1novfam1-fam1.txt', '20201209_17_47_23', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
+% frun_pipeline_imreg( 'list_m111_fam1novfam1-fam1.txt', '20201209_17_47_23', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 75 )
 % 
 % frun_pipeline_imreg( 'list_m111_fam1novfam1-nov.txt', '20201209_17_47_23', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
 % frun_pipeline_imreg( 'list_m111_fam1novfam1-nov.txt', '20201209_17_47_23', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
-% frun_pipeline_imreg( 'list_m111_fam1novfam1-nov.txt', '20201209_17_47_23', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
+% frun_pipeline_imreg( 'list_m111_fam1novfam1-nov.txt', '20201209_17_47_23', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 78 )
 % 
 % frun_pipeline_imreg( 'list_m111_fam1novfam1-fam1r2.txt', '20201209_17_47_23', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
-% frun_pipeline_imreg( 'list_m111_fam1novfam1-fam1r2.txt', '20201209_17_47_23', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
-% frun_pipeline_imreg( 'list_m111_fam1novfam1-fam1r2.txt', '20201209_17_47_23', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
+% frun_pipeline_imreg( 'list_m111_fam1novfam1-fam1r2.txt', '20201209_17_47_23', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 80 )
+% frun_pipeline_imreg( 'list_m111_fam1novfam1-fam1r2.txt', '20201209_17_47_23', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 78 )
 % 
 % frun_pipeline_imreg( 'list_m111_fam1fam1rev-fam1.txt', '20201210_16_38_50', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
 % frun_pipeline_imreg( 'list_m111_fam1fam1rev-fam1.txt', '20201210_16_38_50', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
@@ -203,11 +203,11 @@
 % 
 % frun_pipeline_imreg( 'list_m111_fam1fam2_s2-fam1.txt', '20201211_15_40_54', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
 % frun_pipeline_imreg( 'list_m111_fam1fam2_s2-fam1.txt', '20201211_15_40_54', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
-% frun_pipeline_imreg( 'list_m111_fam1fam2_s2-fam1.txt', '20201211_15_40_54', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
+frun_pipeline_imreg( 'list_m111_fam1fam2_s2-fam1.txt', '20201211_15_40_54', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 80 )
 % 
 % frun_pipeline_imreg( 'list_m111_fam1fam2_s2-fam2.txt', '20201211_15_40_54', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 83 )
 % frun_pipeline_imreg( 'list_m111_fam1fam2_s2-fam2.txt', '20201211_15_40_54', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 85 )
-% frun_pipeline_imreg( 'list_m111_fam1fam2_s2-fam2.txt', '20201211_15_40_54', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 87 )
+frun_pipeline_imreg( 'list_m111_fam1fam2_s2-fam2.txt', '20201211_15_40_54', true, 5, [0;0;0;0;0;0], [1;1;1;1;1;1], true, 80 )
 % 
 
 

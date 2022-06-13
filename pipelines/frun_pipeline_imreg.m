@@ -70,8 +70,7 @@ end
 % Mouseid, Experiment name, files
 [ mouseid, expname, fov ] = find_mouseIDexpname(list);
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
-files = '20210314_12_50_05';
-%files = extractFilenamesFromTxtfile( listfile );
+files = extractFilenamesFromTxtfile( listfile );
 if nargin<2, reffile = files(1,:); end
 Nfiles = size(files,1);
 

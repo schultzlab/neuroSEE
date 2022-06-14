@@ -579,7 +579,7 @@ Values = [
                               %                              Neurotar uses 8 mm/s
         {99}                  % percentile threshold for filtering nonPCs (default: 99)
         {0.04}                % fraction of dwell time in place field cell is required to be active (default: 0.04)
-        {0.35}                 % fraction of trials cell is required to be active (default: 0.35)
+        {0.30}                 % fraction of trials cell is required to be active (default: 0.35)
         {3}                   % required ratio of mean-in-field neural event rate to mean out-of-field rate for PCs (default: 3)
         {1000}                % number of shuffles for bootstrap test
         {50}                  % no. of position bins in 103-cm linear track (default: 50)

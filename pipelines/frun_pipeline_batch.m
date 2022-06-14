@@ -30,11 +30,10 @@
 %   CaImAn requires at least Matlab R2017b
 %   FISSA requires at least Matlab R2018
 
-function frun_pipeline_batch( array_id, list, reffile, force, dostep, min_SNR )
-if nargin<6, min_SNR = 2.5; end
-if nargin<5, dostep = [1;1;0;0;0;0]; end
-if nargin<4, force  = [0;0;0;0;0;0]; end
-if nargin<3, reffile = []; end
+function frun_pipeline_batch( array_id, list, force, dostep, min_SNR )
+if nargin<5, min_SNR = 2.5; end
+if nargin<4, dostep = [1;1;0;0;0;0]; end
+if nargin<3, force  = [0;0;0;0;0;0]; end
 
 tic
 
@@ -154,15 +153,9 @@ if dostep(1)
         end
 
         if strcmpi(mcorr_method,'normcorre') 
-            if isempty(reffile)
-                filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-r/' ];
-                fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
-                fname_tif_red_mcorr = [filedir file '_2P_XYT_red_mcorr.tif'];
-            else
-                filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-r/' ];
-                fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
-                fname_tif_red_mcorr = [filedir file '_2P_XYT_red_mcorr.tif'];
-            end
+            filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-r/' ];
+            fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
+            fname_tif_red_mcorr = [filedir file '_2P_XYT_red_mcorr.tif'];
             % If mcorr_method is 'normcorre' and the rigid correction has been done,
             % no need to load original image file
             if exist(fname_tif_gr_mcorr,'file') && exist(fname_tif_red_mcorr,'file')

@@ -72,7 +72,7 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
     
     if isempty(list)
         fig_sdir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/',str_fissa,...
-                    'bl_prctile',num2str(bl_prctile),'/PFdata/'];
+                    '/bl_prctile',num2str(bl_prctile),'/PFdata/'];
         fname_pref = file;
         fname_mat = [fig_sdir fname_pref '_PFmap_output.mat'];
     else

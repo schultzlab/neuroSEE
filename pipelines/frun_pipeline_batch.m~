@@ -228,7 +228,13 @@ if dostep(3)
             [dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3) );
         else
             fprintf('%s: Higher Matlab version required, skipping FISSA.', file);
-            dofissa = false; params.methods.dofissa = false;
+            dofissa = false;
+            params = neuroSEE_setparams(...
+            'dofissa', dofissa,...
+            'doasd', doasd,...
+            'FOV', FOV,...
+            'min_SNR', min_SNR); 
+
             dtsG = [];
             ddf_f = [];
         end
@@ -317,7 +323,7 @@ if dostep(6)
     params.PFmap = rmfield(params.PFmap,fields);
 
     if strcmpi(params.mode_dim,'1D')
-        [ hist, asd, PFdata, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force(6));
+        [ hist, asd, pfData, params ] = neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force(6));
     else
         [ occMap, hist, asd, downData, params, spkMap, spkIdx ] = neuroSEE_mapPF( spikes, trackData, data_locn, file, params, force(6));
     end

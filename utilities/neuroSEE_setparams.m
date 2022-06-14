@@ -250,8 +250,8 @@ Names = [
         'Vthr               ' % speed threshold (mm/s) Note: David Dupret uses 20 mm/s (default: 20)
                               %                              Neurotar uses 8 mm/s
         'prctile_thr        ' % percentile threshold for filtering nonPCs (default: 99)
-        'pfactivet_thr      ' % fraction of dwell time in place field cell is required to be active (default: 0.04)
-        'activetrials_thr   ' % fraction of trials cell is required to be active (default: 0.35)
+        'pfactivet_thr      ' % fraction of dwell time in place field cell is required to be active (default: 0.03)
+        'activetrials_thr   ' % fraction of trials cell is required to be active (default: 0.30)
         'fieldrate_thr      ' % required ratio of mean-in-field neural event rate to mean out-of-field rate for PCs (default: 3)
         'Nrand              ' % number of shuffles for bootstrap test (default: 1000)
         'Nbins_1D           ' % no. of position bins in 103-cm linear track (default: 50)
@@ -578,8 +578,8 @@ Values = [
         {20}                  % speed threshold (mm/s) Note: David Dupret uses 20 mm/s (default: 20)
                               %                              Neurotar uses 8 mm/s
         {99}                  % percentile threshold for filtering nonPCs (default: 99)
-        {0.04}                % fraction of dwell time in place field cell is required to be active (default: 0.04)
-        {0.30}                 % fraction of trials cell is required to be active (default: 0.35)
+        {0.03}                % fraction of dwell time in place field cell is required to be active (default: 0.03)
+        {0.30}                 % fraction of trials cell is required to be active (default: 0.30)
         {3}                   % required ratio of mean-in-field neural event rate to mean out-of-field rate for PCs (default: 3)
         {1000}                % number of shuffles for bootstrap test
         {50}                  % no. of position bins in 103-cm linear track (default: 50)

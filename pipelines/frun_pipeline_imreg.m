@@ -411,7 +411,7 @@ if dostep(4)
         spikes = s.spikes;
         if size(spikes,1) ~= size(tsG,1)
             force([4,6]) = true; % force spike estimation step if no. of ROIs in spike estimation and segmentation outputs don't match
-            clear dtsG
+%             clear dtsG
             fprintf('%s: Spike data found. Redoing spike estimation. ROIs in spike data and segmentation output do not match.\n', [mouseid '_' expname]);
         end
     end

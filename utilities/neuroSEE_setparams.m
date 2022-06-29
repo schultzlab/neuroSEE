@@ -39,7 +39,7 @@ Names = [
         'mot_uf_r           ' % degree of patches upsampling - rigid correction (default: [1,1,1])
         'mot_uf_nr          ' % degree of patches upsampling - nonrigid correction (default: [4,4,1])
         
-        'max_dev            ' % maximum deviation of patch shift from rigid shift (default: [3,3,1])
+        'max_dev            ' % maximum deviation of patch shift from rigid shift (default: [5,5,1])
         'overlap_post       ' % size of overlapping region after upsampling (default: [64,64,1])
         'phase_flag         ' % flag for using phase correlation (default: false)
         'shifts_method      ' % method to apply shifts ('FFT','cubic','linear')
@@ -368,7 +368,7 @@ Values = [
         {50}                  % upsampling factor for subpixel registration (default: 50)
         {[1,1,1]}             % degree of patches upsampling - rigid correction (default: [1,1,1])
         {[4,4,1]}             % degree of patches upsampling - nonrigid correction (default: [4,4,1])
-        {[5,5,1]}             % maximum deviation of patch shift from rigid shift (default: [3,3,1])
+        {[5,5,1]}             % maximum deviation of patch shift from rigid shift (default: [5,5,1])
         {[64,64,1]}           % size of overlapping region after upsampling (default: [32,32,1])
         {false}               % use phase correlation (good for high SNR)
         {'FFT'}               % method for applying shifts ('FFT', 'linear', 'cubic')

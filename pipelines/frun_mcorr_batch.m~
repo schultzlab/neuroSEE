@@ -128,7 +128,7 @@ end
 check = checkfor_mcorrIm( data_locn, file, mcorr_method, reffile );
 
 if force || ~check    
-    if ~isempty(reffile) % image registration
+    if ~isempty(reffile) 
         if strcmpi(file,reffile)
             fprintf('%s: Same as reference file. Skipping image registration\n', file);    
             return
@@ -137,12 +137,12 @@ if force || ~check
         check_mcorr = checkfor_mcorrIm( data_locn, file, mcorr_method );
         if check_mcorr % motion-corrected image exists
             [imG,imR] = load_imagefile( data_locn, file, false, '_mcorr' );
-            neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, true, 1 );
-        else 
+            neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, true, 2 );
+        else
             [imG,imR] = load_imagefile( data_locn, file, false, [] );
             neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, true, 1 );
         end
-    else % motion correction
+    else % image registration
         [imG,imR] = load_imagefile( data_locn, file, false, [] );
         neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, true, 1 );
     end

@@ -29,7 +29,7 @@
 % slacknotify : (optional) flag to send Ann Slack notification when processing is started
 %               or has ended (default: false)
 
-function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, refChannel, maxshift_r, maxshift_nr, max_dev, useadjustedparameters, iter )
+function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, refChannel, maxshift_r, maxshift_nr, max_dev, useadjustedparameters, imregmode )
 
 if nargin<3, mcorr_method = 'normcorre'; end
 if nargin<4, force = false; end
@@ -39,7 +39,7 @@ if nargin<7, maxshift_r = 30; end
 if nargin<8, maxshift_nr = 30; end
 if nargin<9, max_dev = 5; end
 if nargin<10, useadjustedparameters = false; end
-if nargin<11, iter = 1; end
+if nargin<11, imregmode = 2; end
 slacknotify = false;
 tic
 
@@ -104,7 +104,7 @@ params = neuroSEE_setparams(...
             'overlap_pre', overlap_pre,... 
             'min_patch_size', min_patch_size,...      
             'min_diff', min_diff,...
-            'iter', iter);       
+            'imregmode', imregmode);       
         
 params_mcorr = params.mcorr;
 
@@ -137,7 +137,7 @@ if force || ~check
         check_mcorr = checkfor_mcorrIm( data_locn, file, mcorr_method );
         if check_mcorr % motion-corrected image exists
             [imG,imR] = load_imagefile( data_locn, file, false, '_mcorr' );
-            neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, true, 1 );
+            neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, true, imregmode );
         else 
             [imG,imR] = load_imagefile( data_locn, file, false, [] );
             neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, true, 1 );

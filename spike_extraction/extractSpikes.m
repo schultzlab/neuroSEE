@@ -21,10 +21,12 @@ end
 
 spikes = zeros(N,T);
 for i = 1:N
+    ts_up = upsample(ts(i,:),5);
     spkmin = spk_SNR*GetSn(ts(i,:));
     lam = choose_lambda(exp(-1/(fr*decay_time)),GetSn(ts(i,:)),lam_pr);
 
     [~,spk,~] = deconvolveCa(ts(i,:),'ar2','method','thresholded','optimize_pars',true,'maxIter',20,...
                             'window',150,'lambda',lam,'smin',spkmin);
-    spikes(i,:) = spk(:);
+                        
+    spikes(i,:) = downsample(spk(:),5);
 end

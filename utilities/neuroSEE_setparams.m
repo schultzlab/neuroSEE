@@ -352,7 +352,7 @@ Values = [
         {1}
         {330}                 % size of field of view in um
         {30.9}                % imaging frame rate in Hz (defaut: 30)
-        {1.0}                 % length of a typical transient in seconds (default: 1.0)
+        {0.5}                 % length of a typical transient in seconds (default: 1.0)
     % motion correction (general)
         {'green'}             % reference channel for motion correction (default: 'green')
         {2}                   % image registration mode (default: 1) 

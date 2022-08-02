@@ -22,6 +22,9 @@ Names = [
         'decay_time         ' % length of a typical transient in seconds (default: 1.0)
     % motion correction (general)
         'refChannel         ' % reference channel for motion correction (default: 'green')
+        'imregmode          ' % image registration mode (default: 2) 
+                              %     1 - frame-by-frame registration with template, ...
+                              %     2 - registration of templates then application of shifts to other frames
     % motion correction: fftRigid    
         'imscale            ' % image downsampling factor (default: 1)
         'Nimg_ave           ' % no. of images to be averaged for calculating pixel shift (zippering) (default: 10)
@@ -99,7 +102,7 @@ Names = [
         'overlap            ' % amount of overlap in each dimension (optional, default: [16,16])
         % INITIALIZATION  (initialize_components.m)
         'ssub               ' % spatial downsampling factor (default: 1)
-        'tsub               ' % temporal downsampling factor (default: 5)
+        'tsub               ' % temporal downsampling factor (default: 1)
         'init_method        ' % initialization method ('greedy','greedy_corr','sparse_NMF','HALS') (default: 'greedy')
         'rem_prct           ' % percentile to be removed before initialization (default: 20)
         'noise_norm         ' % normalization by noise estimate prior to initialization (default: true)
@@ -352,6 +355,10 @@ Values = [
         {1.0}                 % length of a typical transient in seconds (default: 1.0)
     % motion correction (general)
         {'green'}             % reference channel for motion correction (default: 'green')
+        {2}                   % image registration mode (default: 1) 
+                              %     1 - frame-by-frame registration with template, ...
+                              %     2 - registration of templates then application of shifts to other frames
+
     % motion correction: fftRigid    
         {1}                   % image downsampling factor (default: 1)
         {10}                  % no. of images to be averaged for calculating pixel shift (zippering) (default: 10)
@@ -427,7 +434,7 @@ Values = [
         {[16,16]}             % amount of overlap in each dimension (optional, default: [16,16])
         % INITIALIZATION  (initialize_components.m)
         {1}                   % spatial downsampling factor (default: 1)
-        {5}                   % temporal downsampling factor (default: 5)
+        {1}                   % temporal downsampling factor (default: 1)
         {'greedy'}            % initialization method ('greedy','greedy_corr','sparse_NMF','HALS') (default: 'greedy')
         {20}                  % percentile to be removed before initialization (default: 20)
         {true}                % normalization by noise estimate prior to initialization (default: true)
@@ -654,6 +661,7 @@ for i = 1:length(fn)
 end
 % motion correction
 params.mcorr.refChannel = options.refChannel;
+params.mcorr.imregmode = options.imregmode;
 if strcmpi(options.mcorr_method,'fftRigid')
     f = {'imscale'; 'Nimg_ave'; 'redoT'};
     fn = fieldnames(options);

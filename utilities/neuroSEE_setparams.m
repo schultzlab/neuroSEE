@@ -434,7 +434,7 @@ Values = [
         {[16,16]}             % amount of overlap in each dimension (optional, default: [16,16])
         % INITIALIZATION  (initialize_components.m)
         {1}                   % spatial downsampling factor (default: 1)
-        {1}                   % temporal downsampling factor (default: 1)
+        {5}                   % temporal downsampling factor (default: 1)
         {'greedy'}            % initialization method ('greedy','greedy_corr','sparse_NMF','HALS') (default: 'greedy')
         {20}                  % percentile to be removed before initialization (default: 20)
         {true}                % normalization by noise estimate prior to initialization (default: true)

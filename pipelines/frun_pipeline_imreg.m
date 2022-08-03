@@ -42,11 +42,12 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, conc_env, bl_prctile, activetrials_thr, min_SNR )
+function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, conc_env, decay_time, min_SNR, bl_prctile, activetrials_thr )
 
-if nargin<9, min_SNR = 2.5; end
-if nargin<8, activetrials_thr = 0.30; end
-if nargin<7, bl_prctile = 85; end
+if nargin<10, activetrials_thr = 0.30; end
+if nargin<9, bl_prctile = 85; end
+if nargin<8, min_SNR = 2.5; end
+if nargin<7, decay_time = 0.6; end
 if nargin<6, conc_env = false; end
 if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
 if nargin<4, force = [0; 0; 0; 0; 0; 0]; end
@@ -118,9 +119,10 @@ params = neuroSEE_setparams(...
             'dofissa', dofissa,...
             'doasd', doasd,...
             'FOV', FOV,...
+            'decay_time', decay_time,...
+            'min_SNR', min_SNR,...
             'bl_prctile', bl_prctile,...
-            'activetrials_thr', activetrials_thr,...
-            'min_SNR', min_SNR);         
+            'activetrials_thr', activetrials_thr);         
         
                                % flag to execute step (use if wanting to skip later steps)
 % dostep = [true;...              % (1) image registration 

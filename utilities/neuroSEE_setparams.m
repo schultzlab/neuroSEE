@@ -19,7 +19,7 @@ Names = [
         'd3                 ' % number of planes (for 3d imaging, default: 1)
         'FOV                ' % size of field of view in um
         'fr                 ' % imaging frame rate in Hz (defaut: 30)
-        'decay_time         ' % length of a typical transient in seconds (default: 1.0)
+        'decay_time         ' % length of a typical transient in seconds (default: 0.6 - jGCaMP7s)
     % motion correction (general)
         'refChannel         ' % reference channel for motion correction (default: 'green')
         'imregmode          ' % image registration mode (default: 2) 
@@ -352,7 +352,7 @@ Values = [
         {1}
         {330}                 % size of field of view in um
         {30.9}                % imaging frame rate in Hz (defaut: 30)
-        {0.5}                 % length of a typical transient in seconds (default: 1.0)
+        {0.6}                 % length of a typical transient in seconds (default: 0.6 - jGCaMP7s)
     % motion correction (general)
         {'green'}             % reference channel for motion correction (default: 'green')
         {2}                   % image registration mode (default: 1) 

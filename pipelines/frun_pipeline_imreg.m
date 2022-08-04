@@ -46,7 +46,7 @@ function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, conc_env, t
 
 if nargin<11, activetrials_thr = 0.30; end
 if nargin<10, bl_prctile = 85; end
-if nargin<8, min_SNR = 2.5; end
+if nargin<9, min_SNR = 2.5; end
 if nargin<8, decay_time = 0.6; end
 if nargin<7, tsub = 5; end
 if nargin<6, conc_env = false; end

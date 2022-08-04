@@ -46,12 +46,13 @@ ind   = strfind(mydir,'/');
 newdir = mydir(1:ind(end)-1);
 folder = fullfile(newdir(1:ind(end)-1),'/neuropil_decontamination');
 pyfun = [folder '/runFISSA.py' ' ' tiffile ' ' roizip ' ' outdir];
-if exist('/Users/mgo/anaconda3/envs/neuroSEE/','dir')
-    python_executable = '/Users/mgo/anaconda3/envs/neuroSEE/bin/python';
-elseif exist('/home/mgo/anaconda3/envs/neuroSEE/','dir')
-    python_executable = '/home/mgo/anaconda3/envs/neuroSEE/bin/python';
+user = mydir(ind(2)+1:ind(3)-1);
+if exist(['/Users/' user '/anaconda3/envs/neuroSEE/'],'dir')
+    python_executable = ['/Users/' user '/anaconda3/envs/neuroSEE/bin/python'];
+elseif exist(['/home/' user '/anaconda3/envs/neuroSEE/'],'dir')
+    python_executable = ['/home/' user '/anaconda3/envs/neuroSEE/bin/python'];
 else
-    python_executable = '/rds/general/user/mgo/home/anaconda3/envs/neuroSEE/bin/python';
+    python_executable = ['/rds/general/user/' user '/home/anaconda3/envs/neuroSEE/bin/python'];
 end
 pystr = [python_executable ' ' pyfun];
 % [status, pyout] = 

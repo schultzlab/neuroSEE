@@ -17,9 +17,9 @@ Names = [
         'd1                 ' % number of rows
         'd2                 ' % number of cols
         'd3                 ' % number of planes (for 3d imaging, default: 1)
-        'FOV                ' % size of field of view in um
-        'fr                 ' % imaging frame rate in Hz (defaut: 30)
-        'decay_time         ' % length of a typical transient in seconds (default: 0.6 - jGCaMP7s)
+        'FOV                ' % size of field of view in um (defaut: 490)
+        'fr                 ' % imaging frame rate in Hz (defaut: 30.9)
+        'virus              ' % virus with fluorescent protein (defaut: 'jGCaMP7s')
     % motion correction (general)
         'refChannel         ' % reference channel for motion correction (default: 'green')
         'imregmode          ' % image registration mode (default: 2) 
@@ -229,10 +229,12 @@ Names = [
         'dist_exp           ' % exponent for calculating the distance between different ROIs (default: 1)
         'dist_thr           ' % distance threshold above which dist = Inf (default: 0.5)
         'dist_maxthr        ' % max thresholding for components before turing into binary masks (default: 0.15)
-        'dist_overlap_thr   ' % threshold for detecting if one ROI is a subset of another (deafult: 0.8)
+        'dist_overlap_thr   ' % threshold for detecting if one ROI is a subset of another (default: 0.8)
         'plot_reg           ' % plot registered ROIs (default: true)
         % parameters for computing event exceptionality (compute_event_exceptionality.m)
         'min_SNR            ' % minimum SNR for accepting exceptional events (default: 2.5)
+        'decay_time_GCaMP6s ' % length of a typical GCaMP6s calcium transient in seconds (default: 0.5)
+        'decay_time_jGCaMP7s' % length of a typical jGCaMP7s calcium transient in seconds (default: 0.6)
         'robust_std         ' % use robust std for computing noise in traces (false)
         'N_samples_exc      ' % number of samples over which to compute (default: ceil(decay_time*fr))
         'min_fitness        ' % threshold on time variability  (default: log(normcdf(-min_SNR))*N_samples_exc)    
@@ -350,9 +352,9 @@ Values = [
         {512}                 % number of rows
         {512}                 % number of columns
         {1}
-        {330}                 % size of field of view in um
+        {490}                 % size of field of view in um
         {30.9}                % imaging frame rate in Hz (defaut: 30)
-        {0.6}                 % length of a typical transient in seconds (default: 0.6 - jGCaMP7s)
+        {'jGCaMP7s'}          % virus with fluorescent protein (defaut: 'jGCaMP7s')
     % motion correction (general)
         {'green'}             % reference channel for motion correction (default: 'green')
         {2}                   % image registration mode (default: 1) 
@@ -565,6 +567,8 @@ Values = [
         {true}                % plot registered ROIs (default: true)
         % parameters for computing event exceptionality (compute_event_exceptionality.m)
         {2.5}                 % minimum SNR for accepting exceptional events (default: 3)
+        {0.5}                 % length of a typical GCaMP6s calcium transient in seconds (default: 0.5)
+        {0.6}                 % length of a typical jGCaMP7s calcium transient in seconds (default: 0.6)
         {false}               % use robust std for computing noise in traces (false)
         {[]}                  % number of samples over which to compute (default: ceil(decay_time*fr))
         {[]}                  % threshold on time variability  (default: log(normcdf(-min_SNR))*N_samples_exc)    
@@ -643,6 +647,11 @@ options.mot_uf_r(options.grid_size_r >= [options.d1,options.d2,options.d3]) = 1;
 options.mot_uf_nr(options.grid_size_nr >= [options.d1,options.d2,options.d3]) = 1;
 
 % CNMF quality check
+if strcmp(options.virus,'GCaMP6s')
+    options.decay_time = options.decay_time_GCaMP6s;
+else
+    options.decay_time = options.decay_time_jGCaMP7s;
+end
 if isempty(options.N_samples_exc); options.N_samples_exc = ceil(options.fr*options.decay_time); end
 if isempty(options.min_fitness); options.min_fitness = log(normcdf(-options.min_SNR))*options.N_samples_exc; end
 if isempty(options.patch_min_fitness); options.patch_min_fitness = log(normcdf(-options.patch_min_SNR))*options.N_samples_exc; end

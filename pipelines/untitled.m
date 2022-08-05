@@ -17,7 +17,7 @@ end
 load([data_locn 'Analysis/m62/fov2/m62_fov2_fam1fam2-fam1/group_proc/imreg_normcorre_CaImAn/m62_fov2_fam1fam2-fam1_imreg_ref20181013_10_53_51_concenvrois/m62_fov2_fam1fam2-fam1_ref20181013_10_53_51_segment_output.mat'])
 fissadir = [data_locn 'Analysis/m62/fov2/m62_fov2_fam1fam2-fam1/group_proc/imreg_normcorre_CaImAn/m62_fov2_fam1fam2-fam1_imreg_ref20181013_10_53_51_concenvrois/FISSA/'];
 
-% runFISSA( masks, tifflist, fissadir )
+runFISSA( masks, tifflist, fissadir )
 
 result = load([fissadir 'FISSAout/matlab.mat'],'result');
 deltaf_result = load([fissadir 'FISSAout/matlab.mat'],'deltaf_result');

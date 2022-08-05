@@ -22,20 +22,23 @@ addpath(genpath('../utilities'));
 err = [];
 
 %% Data location
-% Works in Ann's Macs
+mydir  = pwd;
+ind   = strfind(mydir,'/');
+user = mydir(ind(2)+1:ind(3)-1);
+
+% Works in local Macs
 data_locn = '/Volumes/thefarm2/live/CrazyEights/AD_2PCa/';
 comp = 'mac';
 if ~exist(data_locn,'dir')
     data_locn = '/Volumes/RDS/project/thefarm2/live/CrazyEights/AD_2PCa/';
 end
 if ~exist(data_locn,'dir')
-    data_locn = '/Volumes/mgo/projects/thefarm2/live/CrazyEights/AD_2PCa/';
+    data_locn = ['/Volumes/' user '/projects/thefarm2/live/CrazyEights/AD_2PCa/'];
 end
 
 % Works in linuxbox
-% REPLACE mgo WITH APPROPRIATE USERNAME
 if ~exist(data_locn,'dir')
-    data_locn = '/rds/general/user/mgo/projects/thefarm2/live/CrazyEights/AD_2PCa/';
+    data_locn = ['/rds/general/user/' user '/projects/thefarm2/live/CrazyEights/AD_2PCa/'];
     comp = 'linuxbox';
 end
 % Works in HPC

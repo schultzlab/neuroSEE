@@ -29,7 +29,8 @@ outdir = sys.argv[3]
 tiff = list(sys.argv[1].split(","))
 
 # generate an experiment object
-# (Ann: I edited fissa.core to include deltaf_raw and deltaf_result in the matlab outputs as they weren't being saved)
+# Ann: I edited fissa.core to include deltaf_raw and deltaf_result in the matlab outputs as they weren't being saved
+# Edit fissa.core in .../anaconda3/envs/neuroSEE/lib/python3.7/site-packages/fissa/core.py
 experiment = fissa.Experiment(tiff, roizip, outdir)
 # separate neuropil
 experiment.separate(redo_sep=True, redo_prep=True)

@@ -32,10 +32,10 @@ ddf_f = zeros(size(masks,3),size(deltaf_result.deltaf_result.cell0.trial0,2));
         dtsG(i,:) = deltaf_result.deltaf_result.(['cell' num2str(i-1)]).trial0(1,:);
     end
 
-output.dtsG = dtsG;
-output.ddf_f = ddf_f;
+fissaout.dtsG = dtsG;
+fissaout.ddf_f = ddf_f;
 
-save([fissadir 'm62_fov2_fam1fam2-fam1_ref20181013_10_53_51_fissa_output.mat'],'-struct','output');
+save(fname_mat,'-struct','output');
 
 % dtsG = tsG; ddf_f = df_f; spikes = tsG;
 % GUI_viewtimeseries(tsG, df_f, dtsG, ddf_f, spikes)

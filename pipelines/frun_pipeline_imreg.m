@@ -32,27 +32,22 @@
 %               this case it is understood that the rois are from the
 %               concatenated environments.
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% The section labeled "USER-DEFINED INPUT" requires user input
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
 % Matlab version requirement for running on hpc: 
 %   normcorre only works with Matlab R2017a.
 %   CaImAn needs at least R2017b
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, dofissa, force, dostep, conc_env, tsub, decay_time, min_SNR, bl_prctile, activetrials_thr )
+function frun_pipeline_imreg( list, reffile, conc_env, dostep, force, tsub, min_SNR, dofissa, bl_prctile, activetrials_thr )
 
-if nargin<11, activetrials_thr = 0.30; end
-if nargin<10, bl_prctile = 85; end
-if nargin<9, min_SNR = 2.5; end
-if nargin<8, decay_time = 0.6; end
-if nargin<7, tsub = 5; end
-if nargin<6, conc_env = false; end
-if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
-if nargin<4, force = [0; 0; 0; 0; 0; 0]; end
-if nargin<3, dofissa = true; end
+if nargin<10, activetrials_thr = 0.30; end
+if nargin<9, bl_prctile = 85; end
+if nargin<8, dofissa = true; end
+if nargin<7, min_SNR = 2.5; end
+if nargin<6, tsub = 5; end
+if nargin<5, force = [0; 0; 0; 0; 0; 0]; end
+if nargin<4, dostep = [1; 1; 1; 1; 1; 1]; end
+if nargin<3, conc_env = false; end
 % if nargin<2, see line 121
 tic
 
@@ -77,27 +72,25 @@ if nargin<2, reffile = files(1,:); end
 Nfiles = size(files,1);
 
 % Auto-defined 
+% FOV area = FOV x FOV, FOV in um
 if str2double(files(1,1:4)) > 2018
-    FOV = 490;                     % FOV area = FOV x FOV, FOV in um
+    FOV = 490;                     
 else
     FOV = 330; 
+end
+% virus (which determines decay time constant for calcium transient)
+mousenum = str2double(mouseid(2:end));
+if mousenum > 104
+    virus = 'jGCaMP7s';
+else
+    virus = 'GCaMP6s';
 end
 groupreg_method = 'imreg';      % method for concatenating file data (either register images or rois)
                                 % Here, we register the images
                                 
 %% SETTINGS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% USER-DEFINED INPUT
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Basic settings
-                             % flag to force execution of step even if data exist
-% force = [false;...              % (1) image registration even if registered images exist
-%          false;...              % (2) roi segmentation
-%          true;...              % (3) neuropil decontamination
-%          true;...              % (4) spike extraction
-%          false;...              % (5) tracking data consolidation
-%          false];                % (6) place field mapping
-mcorr_method = 'normcorre';  % image registration method
+mcorr_method = 'normcorre';     % image registration method
                                 % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
@@ -105,9 +98,9 @@ mcorr_method = 'normcorre';  % image registration method
                                     %   normcorre-nr (nonrigid), 
                                     % fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-runpatches = false;            % for CaImAn processing, flag to run patches (default: false)
-% dofissa = true;                % flag to implement FISSA (when false, overrides force(3) setting)
+runpatches = false;             % for CaImAn processing, flag to run patches (default: false)
 doasd = false;                  % flag to do asd pf calculation
+slacknotify = false;
 
 % Processing parameters (any parameter that is not set gets a default value)
 % Add any parameters you want to set after FOV. See neuroSEE_setparams for
@@ -121,21 +114,11 @@ params = neuroSEE_setparams(...
             'doasd', doasd,...
             'FOV', FOV,...
             'tsub', tsub,...
-            'decay_time', decay_time,...
+            'virus', virus,...
             'min_SNR', min_SNR,...
             'bl_prctile', bl_prctile,...
             'activetrials_thr', activetrials_thr);         
         
-                               % flag to execute step (use if wanting to skip later steps)
-% dostep = [true;...              % (1) image registration 
-%          true;...               % (2) roi segmentation
-%          true;...              % (3) neuropil decontamination
-%          true;...              % (4) spike extraction
-%          true;...              % (5) tracking data consolidation
-%          true];                % (6) place field mapping
-
-slacknotify = false;
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end

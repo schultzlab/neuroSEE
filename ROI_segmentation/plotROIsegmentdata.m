@@ -24,7 +24,8 @@ function plotROIsegmentdata(corr_image, masks, elim_masks, tsG, df_f, figname_pr
 
     % raw timeseries
     fig = figure;
-    iosr.figures.multiwaveplot(1:size(tsG,2),1:size(tsG,1),tsG,'gain',5); yticks([]); xticks([]); 
+    y = max(size(tsG,1),100);
+    iosr.figures.multiwaveplot(1:size(tsG,2),1:y,tsG(1:y,:),'gain',5); yticks([]); xticks([]); 
     title('Raw timeseries','Fontweight','normal','Fontsize',12); 
     if ~isempty(figname_pref)
         savefig(fig, [figname_pref '_raw_timeseries']);
@@ -34,7 +35,7 @@ function plotROIsegmentdata(corr_image, masks, elim_masks, tsG, df_f, figname_pr
 
     % dF/F
     fig = figure;
-    iosr.figures.multiwaveplot(1:size(df_f,2),1:size(df_f,1),df_f,'gain',5); yticks([]); xticks([]); 
+    iosr.figures.multiwaveplot(1:size(df_f,2),1:y,df_f(1:y,:),'gain',5); yticks([]); xticks([]); 
     title('dF/F','Fontweight','normal','Fontsize',12); 
     if ~isempty(figname_pref)
         savefig(fig, [figname_pref '_df_f']);

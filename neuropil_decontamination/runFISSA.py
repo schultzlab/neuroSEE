@@ -33,7 +33,7 @@ tiff = list(sys.argv[1].split(","))
 # Edit fissa.core in .../anaconda3/envs/neuroSEE/lib/python3.7/site-packages/fissa/core.py
 experiment = fissa.Experiment(tiff, roizip, outdir)
 # separate neuropil
-experiment.separate(redo_sep=False, redo_prep=False)
+experiment.separate(redo_sep=True, redo_prep=True)
 # calculate df/f0
 experiment.calc_deltaf(freq=30.9)
 # save to matlab

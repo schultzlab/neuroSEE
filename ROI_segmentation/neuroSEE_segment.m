@@ -1,4 +1,4 @@
- % Written by Ann Go
+% Written by Ann Go
 %
 % When force = 1 or if figure with ROIs don't yet exist in filedir, this function
 % implements either
@@ -8,33 +8,40 @@
 %
 % INPUTS
 %   imG         : matrix of green image stack
-%   imR         : matrix of red image stack
 %   data_locn   : GCaMP data repository
-%   file        : part of file name of image stacks in the format
-%               yyyymmdd_hh_mm_ss
 %   params      : parameters for specific roi segmentation method
-%   force       : if =1, roi segmentation will be done even though roi
-%               segmentation output already exists
-%   conc_env  : flag if rois were segmented from concatenated files from
+%   fileorlist  : file - part of file name of image stacks in the format
+%               yyyymmdd_hh_mm_ss
+%               * Can also be a list - name of text file containing filenames of files 
+%               to be concatenated for ROI segmentation. Typically in the format 
+%               'list_m##_expname.txt'. When a list is given, a reffile
+%               should be provided.
+%   reffile     : (optional) file to be used as registration template. Required if 
+%               fileorlist above is a list.This file is usually part of 'list'
+%               but does not have to be. 
+%   conc_env    : (optional) flag if rois were segmented from concatenated files from
 %               different environments e.g. fam1fam2fam1-fam1 but rois are
 %               for fam1fam2fam1. DO NOT flag for fam1fam2fam1 files since in
 %               this case it is understood that the rois are from the
 %               concatenated environments.
+%   force       : (optional) if =1, roi segmentation will be done even though roi
+%               segmentation output already exists
+%   mean_imR    : (optional) average of red image stack (only required for ABLE)
+%
 % OUTPUTS
 %   tsG         : raw time series from green channel
-%   df_f
+%   df_f        : deltaf/f time series from green channel
 %   masks       : ROI masks
 %   corr_image  : correlation image from green channel
 %   params      : parameters for specific roi segmentation method
 
-function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force, mean_imR, list, reffile, conc_env )
+function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, fileorlist, reffile, conc_env, force, mean_imR )
     
-    if nargin<9, conc_env = false; end
-    if nargin<8, reffile = []; end
-    if nargin<7, list = []; end
-    if nargin<6, mean_imR = []; end
-    if nargin<5, force = false; end
-
+    if nargin<8, mean_imR = []; end
+    if nargin<7, force = false; end
+    if nargin<6, conc_env = false; end
+    if nargin<5, reffile = []; end
+    
     mcorr_method = params.methods.mcorr_method;
     segment_method = params.methods.segment_method;
     runpatches = params.methods.runpatches;
@@ -46,6 +53,11 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
     overlap_thr = params.ROIsegment.overlap_thr;
         
 
+    if ~strncmp(fileorlist,'list',4)
+        file = fileorlist; list = [];
+    else
+        list = fileorlist; file = [];
+    end
     if isempty(list)
         filedir = [ data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_', mcorr_method , '/', segment_method, '/' ];
         fname_mat = [filedir file '_segment_output.mat'];
@@ -127,7 +139,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
                 c = regionprops(im,'area','perimeter');
                 try
                     if ~isempty(c)
-                        area(j) = c.Area;                    % area of each ROI
+                        area(j) = c.Area;  % area of each ROI
                         invcirc(j) = (c.Perimeter.^2)/(4*pi*c.Area);
                         if all([area(j)>roiarea_min,...
                                 area(j)<roiarea_max,...

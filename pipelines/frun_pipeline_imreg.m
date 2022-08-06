@@ -24,25 +24,34 @@
 %               usually part of 'list' but does not have to be. This file
 %               must have already been motion corrected. If no reffile is
 %               specified, first file on the list is used.
-% slacknotify : (optional) flag to send Ann Slack notification when processing is started
-%               or has ended (default: false)
-% conc_env  : flag if rois were segmented from concatenated files from
+% conc_env  : (optional) flag if rois were segmented from concatenated files from
 %               different environments e.g. fam1fam2fam1-fam1 but rois are
 %               for fam1fam2fam1. DO NOT flag for fam1fam2fam1 since in
 %               this case it is understood that the rois are from the
 %               concatenated environments.
-%
+% dostep    : (optional) array of 6. Set to 0 or 1 to skip (0) or implement
+%               (1) a processing step (see list at the top)
+% force     : (optional) array of 6. Set to 1 to force the implementation of
+%               a processing step (even if output already exists)
+% tsub      : (optional) temporal downsampling factor for CaImAn. Typically chosen so that
+%                no. of files in list x 7420
+%               -----------------------------  = 24,000
+%                           tsub                    
+%               This reduces out-of-memory errors. Keep tsub value below 10.
+% min_SNR   : (optional) CaImAn parameter. Minimum SNR for accepting exceptional events. 
+%               Typically 3 for 330x330um FOV data, 2.5 for 490x490um FOV data.
+% bl_prctile : (optional) Parameter for spike extraction.  Percentile to be
+%               used for estimating baseline.
+% 
 % Matlab version requirement for running on hpc: 
 %   normcorre only works with Matlab R2017a.
 %   CaImAn needs at least R2017b
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, conc_env, dostep, force, tsub, min_SNR, dofissa, bl_prctile, activetrials_thr )
+function frun_pipeline_imreg( list, reffile, conc_env, dostep, force, tsub, min_SNR, bl_prctile )
 
-if nargin<10, activetrials_thr = 0.30; end
 if nargin<9, bl_prctile = 85; end
-if nargin<8, dofissa = true; end
 if nargin<7, min_SNR = 2.5; end
 if nargin<6, tsub = 5; end
 if nargin<5, force = [0; 0; 0; 0; 0; 0]; end
@@ -58,11 +67,6 @@ if ~isempty(err)
     cprintf('Errors',err);    
     return
 end
-
-% Some security measures
-% if strcmpi(comp,'hpc')
-%     maxNumCompThreads(32);        % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
-% end
 
 % Mouseid, Experiment name, files
 [ mouseid, expname, fov ] = find_mouseIDexpname(list);
@@ -118,7 +122,11 @@ params = neuroSEE_setparams(...
             'min_SNR', min_SNR,...
             'bl_prctile', bl_prctile,...
             'activetrials_thr', activetrials_thr);         
-        
+
+% For slack notifications
+url = '';
+username = '@xxx';
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
@@ -175,10 +183,10 @@ if dostep(1)
             return
         end
 
-        % Send Ann slack message if processing has started
+        % Send user slack message if processing has started
         if slacknotify
             slacktext = [mouseid '_' expname ': Processing started'];
-            neuroSEE_slackNotify( slacktext );
+            neuroSEE_slackNotify( url, slacktext, username );
         end
         
         imG = cell(Nfiles,1);
@@ -269,8 +277,8 @@ end
 %% 2) ROI segmentation
 if dostep(2)
     % If doing CaImAn and running patches, continue only if Matlab version is R2018 or higher
-    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, [], params, force(2), mean(imR,3), list, reffile, conc_env );
-    
+    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, list, reffile, conc_env, force(2), mean(imR,3) );
+                                             
     cdf_f = cell(Nfiles,1);
     if force(2) || ~check_list(2)
         % divide into cells according to number of files in prep for spike

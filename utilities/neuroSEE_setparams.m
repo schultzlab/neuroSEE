@@ -1,8 +1,8 @@
 % Written by Ann Go
-% Motion correction (NoRmCorre) segment adapted from NoRMCorreSetParms.m
-% ROI segmentation (CaImAn) segment adapted from CNMFSetParms.m
 % Struct for setting the neuroSEE pipeline parameters. Any parameter that is
 % not set gets a default value
+% Motion correction (NoRmCorre) segment adapted from NoRMCorreSetParms.m
+% ROI segmentation (CaImAn) segment adapted from CNMFSetParms.m
 
 function params = neuroSEE_setparams(varargin)
 Names = [

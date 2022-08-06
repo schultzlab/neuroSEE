@@ -26,9 +26,11 @@
 %               specified, first file on the list is used.
 % conc_env  : (optional) flag if rois were segmented from concatenated files from
 %               different environments e.g. fam1fam2fam1-fam1 but rois are
-%               for fam1fam2fam1. DO NOT flag for fam1fam2fam1 since in
+%               for fam1fam2fam1. Do not flag for fam1fam2fam1 since in
 %               this case it is understood that the rois are from the
-%               concatenated environments.
+%               concatenated environments. However, if you accidentally do
+%               this, the script will override the setting and use the
+%               correct value.
 % dostep    : (optional) array of 6. Set to 0 or 1 to skip (0) or implement
 %               (1) a processing step (see list at the top)
 % force     : (optional) array of 6. Set to 1 to force the implementation of
@@ -147,6 +149,8 @@ MatlabVer = str2double(release(1:4));
 check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_env);
 
 % Some security measures
+if ~contains(list,'-'), conc_env = false; end  % conc_env = true only necessary for sub experiments
+                                               % e.g. fam1fam2-fam1, fam1novfam1-nov 
 force = logicalForce(force);        % Only allow combinations of force/step values that make sense
 dostep = logicaldostep(dostep);     % because later steps require earlier ones
 

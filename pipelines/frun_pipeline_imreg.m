@@ -106,7 +106,6 @@ mcorr_method = 'normcorre';     % image registration method
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
 runpatches = false;             % for CaImAn processing, flag to run patches (default: false)
 doasd = false;                  % flag to do asd pf calculation
-slacknotify = false;
 
 % Processing parameters (any parameter that is not set gets a default value)
 % Add any parameters you want to set after FOV. See neuroSEE_setparams for
@@ -126,8 +125,10 @@ params = neuroSEE_setparams(...
             'activetrials_thr', activetrials_thr);         
 
 % For slack notifications
-url = '';
-username = '@xxx';
+slacknotify = false;
+% if true, set below
+slackURL = '';
+slackTarget = '@xxx';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -190,7 +191,7 @@ if dostep(1)
         % Send user slack message if processing has started
         if slacknotify
             slacktext = [mouseid '_' expname ': Processing started'];
-            neuroSEE_slackNotify( url, slacktext, username );
+            SendSlackNotification( slackURL, slacktext, slackTarget );
         end
         
         imG = cell(Nfiles,1);
@@ -572,7 +573,7 @@ cprintf(str)
 % Send Ann slack message if processing has finished
 if slacknotify
     slacktext = [mouseid '_' expname ': FINISHED in' num2str(round(t/3600,2)) ' hrs. No errors!'];
-    neuroSEE_slackNotify( slacktext );
+    SendSlackNotification( slacktext );
 end
 
 end

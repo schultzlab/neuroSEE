@@ -347,19 +347,19 @@ Values = [
         {false}               % flag to run patches for CaImAn processing (default: false)
         {true}                % flag to do fissa correction (default: true)
         {false}               % flag to calculate place fields by asd estimation  (default: false)
-        {[]}                  % method for concatenating file data (either imreg or roireg) (default: 'imreg')
+        {'imreg'}             % method for concatenating file data (either imreg or roireg) (default: 'imreg')
     % dataset info
         {512}                 % number of rows
         {512}                 % number of columns
         {1}
         {490}                 % size of field of view in um
-        {30.9}                % imaging frame rate in Hz (defaut: 30)
+        {30.9}                % imaging frame rate in Hz (defaut: 30.9)
         {'jGCaMP7s'}          % virus with fluorescent protein (defaut: 'jGCaMP7s')
     % motion correction (general)
         {'green'}             % reference channel for motion correction (default: 'green')
         {2}                   % image registration mode (default: 1) 
                               %     1 - frame-by-frame registration with template, ...
-                              %     2 - registration of templates then application of shifts to other frames
+                              %     2 - registration of templates then application of shifts to each frame in the stack
 
     % motion correction: fftRigid    
         {1}                   % image downsampling factor (default: 1)
@@ -368,12 +368,12 @@ Values = [
     % NoRmCorre
         % patches
         {[512,512,1]}         % size of non-overlapping regions - rigid correction (default: [d1,d2,d3])
-        {[64,64,1]}         % size of non-overlapping regions - nonrigid correction (default: [d1/4,d2/4,d3])
+        {[64,64,1]}           % size of non-overlapping regions - nonrigid correction (default: [d1/4,d2/4,d3])
         {[30,30,1]}           % maximum rigid shift in each direction - rigid correction (default: [30,30,1])
         {[30,30,1]}           % maximum rigid shift in each direction - nonrigid correction (default: [20,20,1])
         {[16,16,1]}           % size of overlapping region (default: [32,32,1])
         {[16,16,1]}           % minimum size of patch (default: [32,32,1])    
-        {[8,8,1]}           % minimum difference between patches (default: [16,16,1])
+        {[8,8,1]}             % minimum difference between patches (default: [16,16,1])
         {50}                  % upsampling factor for subpixel registration (default: 50)
         {[1,1,1]}             % degree of patches upsampling - rigid correction (default: [1,1,1])
         {[4,4,1]}             % degree of patches upsampling - nonrigid correction (default: [4,4,1])
@@ -781,7 +781,7 @@ if strcmpi(options.segment_method,'CaImAn')
         'patch_cnn_thr'; 'max_pr_thr'; 't_int'; 'sn_fac'; 'max_size_thr'; 'min_size_thr';...
         'size_thr'; 'dist_exp'; 'dist_thr'; 'dist_maxthr'; 'dist_overlap_thr'; 'plot_reg';...
         'min_SNR'; 'robust_std'; 'N_samples_exc'; 'min_fitness'; 'min_fitness_delta';...
-        'cnn_thr'; 'spk_SNR'; 'lam_pr'};
+        'cnn_thr'};
     fn = fieldnames(options);
     for i = 1:length(fn)
         for j = 1:length(f)

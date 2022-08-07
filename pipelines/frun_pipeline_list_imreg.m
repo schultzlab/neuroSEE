@@ -24,7 +24,7 @@
 %               usually part of 'list' but does not have to be. This file
 %               must have already been motion corrected. If no reffile is
 %               specified, first file on the list is used.
-% conc_env  : (optional) flag if rois were segmented from concatenated files from
+% conc_runs  : (optional) flag if rois were segmented from concatenated files from
 %               different environments e.g. fam1fam2fam1-fam1 but rois are
 %               for fam1fam2fam1. Do not flag for fam1fam2fam1 since in
 %               this case it is understood that the rois are from the
@@ -51,7 +51,7 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_list_imreg( list, reffile, conc_env, numfiles, dostep, force, tsub, min_SNR, bl_prctile )
+function frun_pipeline_list_imreg( list, reffile, conc_runs, numfiles, dostep, force, tsub, min_SNR, bl_prctile )
 
 if nargin<9, bl_prctile = 85; end
 if nargin<8, min_SNR = 2.5; end
@@ -63,7 +63,7 @@ if nargin<4 || isempty(numfiles)
         dostep(2) = false; 
     end
 end
-if nargin<3, conc_env = false; end
+if nargin<3, conc_runs = false; end
 % if nargin<2, see line 121
 tic
 
@@ -153,10 +153,10 @@ MatlabVer = str2double(release(1:4));
 % check(5)                                       step (6) place field mapping
 % check(6) checks for existing mat file pooling all processed data for list
 
-check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_env);
+check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_runs);
 
 % Some security measures
-if ~contains(list,'-'), conc_env = false; end  % conc_env = true only an option for sub experiments
+if ~contains(list,'-'), conc_runs = false; end  % conc_runs = true only an option for sub experiments
                                                % e.g. fam1fam2-fam1, fam1novfam1-nov 
 force = logicalForce(force);        % Only allow combinations of force/step values that make sense
 dostep = logicaldostep(dostep);     % because later steps require earlier ones
@@ -176,8 +176,8 @@ else
             groupreg_method '_' mcorr_method '_' segment_method '/'...
             mouseid '_' expname '_imreg_ref' reffile '/'];
 end
-if conc_env
-    grp_sdir = [grp_sdir(1:end-1) '_concenvrois/'];
+if conc_runs
+    grp_sdir = [grp_sdir(1:end-1) '_concrunsrois/'];
 end
 if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); fileattrib(grp_sdir,'+w','g','s'); end
 
@@ -289,7 +289,7 @@ end
 %% 2) ROI segmentation
 if dostep(2)
     % If doing CaImAn and running patches, continue only if Matlab version is R2018 or higher
-    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, list, reffile, conc_env, force(2), mean(imR,3) );
+    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, list, reffile, conc_runs, force(2), mean(imR,3) );
                                              
     % Copy files from grp_sdir to folders for individual runs
     if ~contains(list,'-'), divide_expdata_into_runs( data_locn, list, reffile, numfiles, [1,0,0], [force(2),0,0] ); end
@@ -318,7 +318,7 @@ if dostep(3)
         if force(3) || ~check_list(2)
             for n = 1:Nfiles
                 file = files(n,:);
-                [ cdtsG{n}, cddf_f{n}, params ] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3), list, reffile, conc_env );
+                [ cdtsG{n}, cddf_f{n}, params ] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3), list, reffile, conc_runs );
                 dtsG = [dtsG cdtsG{n}];
                 ddf_f = [ddf_f cddf_f{n}];
             end
@@ -392,7 +392,7 @@ if dostep(4)
         
         for n = 1:Nfiles
             file = files(n,:);
-            [ cspikes{n}, params ] = neuroSEE_extractSpikes( cdf_f{n}, cddf_f{n}, data_locn, file, params, force(4), list, reffile, true, conc_env );
+            [ cspikes{n}, params ] = neuroSEE_extractSpikes( cdf_f{n}, cddf_f{n}, data_locn, file, params, force(4), list, reffile, true, conc_runs );
             spikes = [spikes cspikes{n}];
         end
         clear ts
@@ -525,7 +525,7 @@ if dostep(6)
     params.PFmap = rmfield(params.PFmap,fields);
 
     [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] = ...
-        neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile, conc_env);
+        neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile, conc_runs);
 
     %% Saving all data
     sname_allData = [ grp_sdir mouseid '_' expname '_ref' reffile '_' mcorr_method '_' segment_method '_' str_fissa...

@@ -49,8 +49,8 @@
 %   sortIdx : sorted row indices corresponding to sorted_pfMap
 
 function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] = ...
-            neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force, list, reffile, conc_env)
-    if nargin<9, conc_env = false; end
+            neuroSEE_mapPF( spikes, downTrackdata, data_locn, file, params, force, list, reffile, conc_runs)
+    if nargin<9, conc_runs = false; end
     if nargin<8, reffile = []; end
     if nargin<7, list = []; end
     if nargin<6, force = 0; end
@@ -78,13 +78,13 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
     else
         [ mouseid, expname, fov ] = find_mouseIDexpname(list);
         groupreg_method = params.methods.groupreg_method;
-        if conc_env
+        if conc_runs
             if ~isempty(fov)
                 filedir = [ data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
-                        mouseid '_' expname '_imreg_ref' reffile '_concenvrois/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
+                        mouseid '_' expname '_imreg_ref' reffile '_concrunsrois/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
             else
                 filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
-                        mouseid '_' expname '_imreg_ref' reffile '_concenvrois/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
+                        mouseid '_' expname '_imreg_ref' reffile '_concrunsrois/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
             end
         else
             if ~isempty(fov)

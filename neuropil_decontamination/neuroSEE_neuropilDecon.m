@@ -1,21 +1,21 @@
 % Written by Ann Go
 %
 % INPUTS
-%   conc_env  : flag if rois were segmented from concatenated files from
-%               different environments e.g. fam1fam2fam1-fam1 but rois are
+%   conc_runs  : flag if rois were segmented from concatenated files from
+%               different runs e.g. fam1fam2fam1-fam1 but rois are
 %               for fam1fam2fam1. DO NOT flag for fam1fam2fam1 files since in
 %               this case it is understood that the rois are from the
-%               concatenated environments.
+%               concatenated runs.
 % OUTPUTS
 %   tsG     : raw timeseries
 %   dtsG    : decontaminated raw timeseries
 %   ddf_f   : (decontaminated) df_f
 
 
-function [dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, params, fileorlist, reffile, conc_env, force )
+function [dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, params, fileorlist, reffile, conc_runs, force )
 
 if nargin<7, force = 0; end
-if nargin<6, conc_env = false; end
+if nargin<6, conc_runs = false; end
 if nargin<5, reffile = []; end
 
 mcorr_method = params.methods.mcorr_method;
@@ -38,9 +38,9 @@ if isempty(list)
     fname_fig2 = [fissadir file '_fissa_df_f.fig'];
 else
     [ mouseid, expname ] = find_mouseIDexpname(list);
-    if conc_env
-        concenvname = find_concenvname( list );
-        expname = concenvname;
+    if conc_runs
+        concrunsname = find_concrunsname( list );
+        expname = concrunsname;
     end
     if strcmpi(file, reffile)
         tiffile = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' file '_2P_XYT_green_mcorr.tif'];

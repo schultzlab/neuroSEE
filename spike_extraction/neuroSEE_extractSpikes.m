@@ -18,8 +18,8 @@
 %   spikes      : spikes extracted from R
 %   params
 
-function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force, list, reffile, fsave, conc_env )
-    if nargin<10, conc_env = false; end
+function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force, list, reffile, fsave, conc_runs )
+    if nargin<10, conc_runs = false; end
     if nargin<9, fsave = true; end
     if nargin<8, reffile = []; end
     if nargin<7, list = []; end
@@ -46,9 +46,9 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
     else
         [ mouseid, expname ] = find_mouseIDexpname(list);
         if fsave
-            if conc_env
-                concenvname = find_concenvname( list );
-                expname = concenvname;
+            if conc_runs
+                concrunsname = find_concrunsname( list );
+                expname = concrunsname;
             end
             if strcmpi(file, reffile)
                 filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ...

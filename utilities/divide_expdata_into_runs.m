@@ -3,9 +3,9 @@
 % Segmentation and fissa outputs and extracted spike data for 
 %  e.g. mXX_fam1fam2fam1/group_proc/imreg_normcorre_CaImAn/mXX_fam1fam2fam1
 % are copied over to
-%       mXX_fam1fam2fam1-fam1/group_proc/imreg_normcorre_CaImAn/mXX_fam1fam2fam1_concenv
-%       mXX_fam1fam2fam1-fam2/group_proc/imreg_normcorre_CaImAn/mXX_fam1fam2fam1_concenv
-%       mXX_fam1fam2fam1-fam1r2/group_proc/imreg_normcorre_CaImAn/mXX_fam1fam2fam1_concenv
+%       mXX_fam1fam2fam1-fam1/group_proc/imreg_normcorre_CaImAn/mXX_fam1fam2fam1_concrunsrois
+%       mXX_fam1fam2fam1-fam2/group_proc/imreg_normcorre_CaImAn/mXX_fam1fam2fam1_concrunsrois
+%       mXX_fam1fam2fam1-fam1r2/group_proc/imreg_normcorre_CaImAn/mXX_fam1fam2fam1_concrunsrois
 
 function divide_expdata_into_runs( data_locn, list, reffile, numfiles, bl_prctile, dostep, force )
 
@@ -63,7 +63,7 @@ ff = 1; a1 = 1; a2 = 1; a3 = 1;
 for r = 1:numel(run)
     dir_run = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '-' run{r}...
                 '/group_proc/imreg_normcorre_CaImAn/' mouseid '_' expname '-' run{r} ...
-                '_imreg_ref' reffile '_concenvrois/'];
+                '_imreg_ref' reffile '_concrunsrois/'];
     if ~exist(dir_run,'dir') 
         mkdir( dir_run ); fileattrib(dir_run,'+w','g','s'); 
     end

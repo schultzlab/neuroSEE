@@ -19,7 +19,7 @@
 %   reffile     : (optional) file to be used as registration template. Required if 
 %               fileorlist above is a list.This file is usually part of 'list'
 %               but does not have to be. 
-%   conc_env    : (optional) flag if rois were segmented from concatenated files from
+%   conc_runs    : (optional) flag if rois were segmented from concatenated files from
 %               different environments e.g. fam1fam2fam1-fam1 but rois are
 %               for fam1fam2fam1. DO NOT flag for fam1fam2fam1 files since in
 %               this case it is understood that the rois are from the
@@ -35,11 +35,11 @@
 %   corr_image  : correlation image from green channel
 %   params      : parameters for specific roi segmentation method
 
-function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, fileorlist, reffile, conc_env, force, mean_imR )
+function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, fileorlist, reffile, conc_runs, force, mean_imR )
     
     if nargin<8, mean_imR = []; end
     if nargin<7, force = false; end
-    if nargin<6, conc_env = false; end
+    if nargin<6, conc_runs = false; end
     if nargin<5, reffile = []; end
     
     mcorr_method = params.methods.mcorr_method;
@@ -76,8 +76,8 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
                     mouseid '_' expname '_imreg_ref' reffile '/'];
         end
-        if conc_env
-            filedir = [filedir(1:end-1) '_concenvrois/'];
+        if conc_runs
+            filedir = [filedir(1:end-1) '_concrunsrois/'];
         end
         fname_mat = [filedir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
         fname_fig1 = [filedir mouseid '_' expname '_ref' reffile '_ROIs.fig'];

@@ -5,9 +5,9 @@
 % This can be used to check for processed data for individual files OR for
 % processed data for different experiments of a mouse.
 
-function check = checkforExistingProcData(data_locn, text, params, reffile, conc_env)
+function check = checkforExistingProcData(data_locn, text, params, reffile, conc_runs)
     
-    if nargin<5, conc_env = false; end
+    if nargin<5, conc_runs = false; end
     %if nargin<4, see line 39
     if nargin<3 
         params = neuroSEE_setparams;
@@ -49,8 +49,8 @@ function check = checkforExistingProcData(data_locn, text, params, reffile, conc
                     groupreg_method '_' mcorr_method '_' segment_method '/'...
                     mouseid '_' expname '_imreg_ref' reffile '/'];
         end
-        if conc_env
-            dir_proc = [dir_proc(1:end-1) '_concenvrois/'];
+        if conc_runs
+            dir_proc = [dir_proc(1:end-1) '_concrunsrois/'];
         end
         
         check = zeros(1,6);

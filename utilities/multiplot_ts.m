@@ -1,14 +1,12 @@
 % fname_fig does not include file type (e.g. .fig, .jpg)
 
-function multiplot_ts(ts, fname_fig, title_str, fclose, max100)
-    if nargin<5, max100 = true; end % plot only 100 timeseries for visibility
+function multiplot_ts(ts, fname_fig, title_str, fclose, maxROIs)
+    if nargin<5, maxROIs = 50; end 
     if nargin<4, fclose = true; end
     if nargin<3, title_str = []; end
     if nargin<2, fname_fig = []; end
     
-    if max100 && size(ts,1) > 100
-        ts = ts(1:100,:);
-    end
+    ts = ts(1:maxROIs,:); % plot only maxROIs timeseries for visibility
     fig = figure;
     iosr.figures.multiwaveplot(1:size(ts,2),1:size(ts,1),ts,'gain',5); yticks([]); xticks([]);
     if ~isempty(title_str)

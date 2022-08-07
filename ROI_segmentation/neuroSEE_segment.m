@@ -52,7 +52,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
     invcirc_max = params.ROIsegment.invcirc_max;
     overlap_thr = params.ROIsegment.overlap_thr;
         
-
+    % determine whether fileorlist is a file or list
     if ~strncmp(fileorlist,'list',4)
         file = fileorlist; list = [];
     else

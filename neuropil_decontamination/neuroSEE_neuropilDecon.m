@@ -12,15 +12,21 @@
 %   ddf_f   : (decontaminated) df_f
 
 
-function [dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force, list, reffile, conc_env )
+function [dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, params, fileorlist, reffile, conc_env, force )
 
-if nargin<8, conc_env = false; end
-if nargin<7, reffile = []; end
-if nargin<6, list = []; end
-if nargin<5, force = 0; end
+if nargin<7, force = 0; end
+if nargin<6, conc_env = false; end
+if nargin<5, reffile = []; end
 
 mcorr_method = params.methods.mcorr_method;
 segment_method = params.methods.segment_method;
+
+% determine whether fileorlist is a file or list
+if ~strncmp(fileorlist,'list',4)
+    file = fileorlist; list = [];
+else
+    list = fileorlist; file = [];
+end
 
 if isempty(list)
     tiffile = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',file,'_2P_XYT_green_mcorr.tif'];

@@ -39,10 +39,10 @@ end
 
 % load data from experiment folder
 if ~isempty(fov)
-    dir_exp = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/'...
+    dir_exp = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname ...
             '/group_proc/imreg_normcorre_CaImAn/' mouseid '_' expname '_imreg_ref' reffile '/'];
 else
-    dir_exp = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+    dir_exp = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname ...
             '/group_proc/imreg_normcorre_CaImAn/' mouseid '_' expname '_imreg_ref' reffile '/'];
 end
 
@@ -107,9 +107,9 @@ for r = 1:numel(run)
             % save new plots for raw timeseries and dF/F
             multiplot_ts(so2.tsG, [dir_run mouseid '_' expname '-' run{r} '_ref' reffile '_raw_timeseries'], 'Raw timeseries')
             multiplot_ts(so2.df_f, [dir_run mouseid '_' expname '-' run{r} '_ref' reffile '_df_f'], 'dF/F')
+        else
+            fprintf('ROI files in %s already exist, skipping file copying.\n', [mouseid '_' expname '-' run{r} '_ref' reffile]');
         end
-    else
-        fprintf('ROI files in %s already exist, skipping file copying.\n', [mouseid '_' expname '-' run{r} '_ref' reffile]');
     end
     
     % copy fissa output

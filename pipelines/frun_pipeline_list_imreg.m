@@ -157,8 +157,6 @@ MatlabVer = str2double(release(1:4));
 % check(5)                                       step (6) place field mapping
 % check(6) checks for existing mat file pooling all processed data for list
 
-check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_runs);
-
 % Some security measures
 if ~contains(list,'-')                          % conc_runs = true is only an option for sub experiments
     conc_runs = false;                              % e.g. fam1fam2-fam1, fam1novfam1-nov 
@@ -170,10 +168,13 @@ end
 force = logicalForce(force);        % Only allow combinations of force/step values that make sense
 dostep = logicaldostep(dostep);     % because later steps require earlier ones
 
+check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_runs);
+
 if ~any(force) && check_list(6)
     fprintf('%s: List already processed\n', list)
     return
 end
+
 
 %% Location of processed group data for list
 if ~isempty(fov)

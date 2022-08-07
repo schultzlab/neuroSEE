@@ -68,11 +68,12 @@ for r = 1:numel(run)
         mkdir( dir_run ); fileattrib(dir_run,'+w','g','s'); 
     end
     
+    framesperfile = fpf.framesperfile;
+    framesperfile = framesperfile(ff:ff+numfiles(r)-1);
+    ff = ff + numfiles(r);
+    
     % copy framesperfile
     if any(force) || ~exist([dir_run mouseid '_' expname '-' run{r} '_ref' reffile '_framesperfile.mat'],'file')
-        framesperfile = fpf.framesperfile;
-        framesperfile = framesperfile(ff:ff+numfiles(r)-1);
-        ff = ff + numfiles(r);
         save([dir_run mouseid '_' expname '-' run{r} '_ref' reffile '_framesperfile.mat'],'framesperfile');
     end
     

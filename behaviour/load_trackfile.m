@@ -36,15 +36,28 @@ if nargin<5, BT = false; end
     switch ext
         case('.mat')
             data = load(fname_track);
+            try
+            trackdata.time = data.time;
+            catch ERR
+            end
+            if exist('ERR','var')
+                data = data.downTrackdata;
+            end
             trackdata.time = data.time;
             trackdata.r = data.r;
             trackdata.phi = data.phi;
-            trackdata.alpha = data.alpha;
             trackdata.x = data.x;
             trackdata.y = data.y;
-            trackdata.w = data.w;
-            trackdata.TTLout = data.TTLout;
             trackdata.speed = data.speed;
+            if isfield(trackdata,'alpha')
+                trackdata.alpha = data.alpha;
+            end
+            if isfield(trackdata,'w')
+                trackdata.w = data.w;
+            end
+            if isfield(trackdata,'TTLout')
+                trackdata.TTLout = data.TTLout;
+            end
             if isfield(trackdata,'zone')
                 trackdata.zone = data.zone;
             end

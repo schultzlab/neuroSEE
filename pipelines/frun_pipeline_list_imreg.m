@@ -20,29 +20,29 @@
 %           'list_m62_fam1nov.txt'              - all files in fam1nov experiments
 %           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
 %           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
-% reffile   : (optional) file to be used as registration template. This file is
+% reffile   : (optional, default: first file) file to be used as registration template. This file is
 %               usually part of 'list' but does not have to be. This file
 %               must have already been motion corrected. If no reffile is
 %               specified, first file on the list is used.
-% conc_runs  : (optional) flag if rois were segmented from concatenated files from
+% conc_runs  : (optional, default: false) flag if rois were segmented from concatenated files from
 %               different environments e.g. fam1fam2fam1-fam1 but rois are
 %               for fam1fam2fam1. Do not flag for fam1fam2fam1 since in
 %               this case it is understood that the rois are from the
 %               concatenated environments. However, if you accidentally do
 %               this, the script will override the setting and use the
 %               correct value.
-% dostep    : (optional) array of 6. Set to 0 or 1 to skip (0) or implement
+% dostep    : (optional, default: [1; 1; 1; 1; 1; 1]) array of 6. Set to 0 or 1 to skip (0) or implement
 %               (1) a processing step (see list at the top)
-% force     : (optional) array of 6. Set to 1 to force the implementation of
+% force     : (optional, default: [0; 0; 0; 0; 0; 0]) array of 6. Set to 1 to force the implementation of
 %               a processing step (even if output already exists)
-% tsub      : (optional) temporal downsampling factor for CaImAn. Typically chosen so that
+% tsub      : (optional, default: 5) temporal downsampling factor for CaImAn. Typically chosen so that
 %                no. of files in list x 7420
 %               -----------------------------  = 24,000
 %                           tsub                    
 %               This reduces out-of-memory errors. Keep tsub value below 10.
-% min_SNR   : (optional) CaImAn parameter. Minimum SNR for accepting exceptional events. 
-%               Typically 3 for 330x330um FOV data, 2.5 for 490x490um FOV data.
-% bl_prctile : (optional) Parameter for spike extraction.  Percentile to be
+% min_SNR   : (optional, default: 3 for 330x330um FOV data, 2.5 for 490x490um FOV data) CaImAn parameter. 
+%               Minimum SNR for accepting exceptional events. 
+% bl_prctile : (optional, default: 85) Parameter for spike extraction.  Percentile to be
 %               used for estimating baseline.
 % 
 % Matlab version requirement for running on hpc: 
@@ -54,7 +54,7 @@
 function frun_pipeline_list_imreg( list, reffile, conc_runs, numfiles, dostep, force, tsub, min_SNR, bl_prctile )
 
 if nargin<9, bl_prctile = 85; end
-if nargin<8, min_SNR = 2.5; end
+% if nargin<8, see line 97
 if nargin<7, tsub = 5; end
 if nargin<6, force = [0; 0; 0; 0; 0; 0]; end
 if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
@@ -85,13 +85,22 @@ if str2double(files(1,1:4)) > 2018
 else
     FOV = 330; 
 end
-% virus (which determines decay time constant for calcium transient)
 mousenum = str2double(mouseid(2:end));
+% min_SNR
+if nargin<8 || isempty(min_SNR)
+    if mousenum > 76
+        min_SNR = 2.5;
+    else
+        min_SNR = 3;
+    end
+end
+% virus (which determines decay time constant for calcium transient)
 if mousenum > 104
     virus = 'jGCaMP7s';
 else
     virus = 'GCaMP6s';
 end
+
 groupreg_method = 'imreg';      % method for concatenating file data (either register images or rois)
                                 % Here, we register the images
                                 

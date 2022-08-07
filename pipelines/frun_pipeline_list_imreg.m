@@ -58,11 +58,7 @@ if nargin<8, min_SNR = 2.5; end
 if nargin<7, tsub = 5; end
 if nargin<6, force = [0; 0; 0; 0; 0; 0]; end
 if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
-if nargin<4 || isempty(numfiles)
-    if ~contains(list,'-')
-        dostep(2) = false; 
-    end
-end
+% if nargin<4, see line 156
 if nargin<3, conc_runs = false; end
 % if nargin<2, see line 121
 tic
@@ -155,8 +151,16 @@ MatlabVer = str2double(release(1:4));
 check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_runs);
 
 % Some security measures
-if ~contains(list,'-'), conc_runs = false; end  % conc_runs = true only an option for sub experiments
-                                               % e.g. fam1fam2-fam1, fam1novfam1-nov 
+if ~contains(list,'-')                          % conc_runs = true only an option for sub experiments
+    conc_runs = false;                              % e.g. fam1fam2-fam1, fam1novfam1-nov 
+else
+    if nargin<4 || isempty(numfiles)
+        if ~contains(list,'-')
+            dostep(2) = false; 
+            fprintf('%s: Number of files per run not provided. Skipping roi segmentation.\n', [mouseid '_' expname]);
+        end
+    end
+end
 force = logicalForce(force);        % Only allow combinations of force/step values that make sense
 dostep = logicaldostep(dostep);     % because later steps require earlier ones
 

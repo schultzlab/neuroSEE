@@ -302,7 +302,9 @@ if dostep(2)
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, list, reffile, conc_runs, force(2), mean(imR,3) );
                                              
     % Copy files from grp_sdir to folders for individual runs
-    if ~contains(list,'-'), divide_expdata_into_runs( data_locn, list, reffile, numfiles, [1,0,0], [force(2),0,0] ); end
+    if ~contains(list,'-')
+        divide_expdata_into_runs( data_locn, list, reffile, numfiles, [], [1,0,0], [force(2),0,0] ); 
+    end
 else
     fprintf('%s: ROI segmentation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
     t = toc;

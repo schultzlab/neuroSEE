@@ -112,9 +112,9 @@ if force || ~exist(fname_mat,'file')
     end
     refreshdisp(str, prevstr);
     
-    % plot
-    multiplot_ts(dtsG, fname_fig1(1:end-4), 'Fissa-corrected raw timeseries');
-    multiplot_ts(ddf_f, fname_fig2(1:end-4), 'Fissa-corrected dF/F');
+    % plot timeseries of 50 cells (for visibility)
+    multiplot_ts(dtsG, fname_fig1(1:end-4), 'Fissa-corrected raw timeseries', true, 50);
+    multiplot_ts(ddf_f, fname_fig2(1:end-4), 'Fissa-corrected dF/F', true, 50);
 else
     % If it exists, load it 
     fissa_output = load(fname_mat);

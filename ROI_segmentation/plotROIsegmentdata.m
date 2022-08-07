@@ -22,24 +22,9 @@ function plotROIsegmentdata(corr_image, masks, elim_masks, tsG, df_f, figname_pr
         if fclose, close(fig); end
     end
 
-    % raw timeseries (of up to 100 cells)
-    fig = figure;
-    y = max(size(tsG,1),100);
-    iosr.figures.multiwaveplot(1:size(tsG,2),1:y,tsG(1:y,:),'gain',5); yticks([]); xticks([]); 
-    title('Raw timeseries','Fontweight','normal','Fontsize',12); 
-    if ~isempty(figname_pref)
-        savefig(fig, [figname_pref '_raw_timeseries']);
-        saveas(fig, [figname_pref '_raw_timeseries'], 'png');
-    end
-    if fclose, close(fig); end
+    % raw timeseries (of up to 50 cells)
+    multiplot_ts(tsG, [figname_pref '_raw_timeseries'], 'Raw timeseries', fclose, 50)
 
-    % dF/F (of up to 100 cells)
-    fig = figure;
-    iosr.figures.multiwaveplot(1:size(df_f,2),1:y,df_f(1:y,:),'gain',5); yticks([]); xticks([]); 
-    title('dF/F','Fontweight','normal','Fontsize',12); 
-    if ~isempty(figname_pref)
-        savefig(fig, [figname_pref '_df_f']);
-        saveas(fig, [figname_pref '_df_f'], 'png');
-    end
-    if fclose, close(fig); end
+    % dF/F (of up to 50 cells)
+    multiplot_ts(df_f, [figname_pref '_df_f'], 'dF/F', fclose, 50)
 end

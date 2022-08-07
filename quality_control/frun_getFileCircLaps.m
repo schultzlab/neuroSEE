@@ -5,9 +5,8 @@
 % considered.
 % Flag force to load tracking data from raw file instead of mat file.
 
-function [ laps_per_file, phi_trials ] = frun_getFileCircLaps( list, force )
-if nargin<2, force = false; end
-Nt = 7420;
+function [ laps_per_file, phi_trials ] = frun_getFileCircLaps( list, reffile, force )
+if nargin<3, force = false; end
 params = neuroSEE_setparams;
 fr = params.PFmap.fr;
 
@@ -22,9 +21,21 @@ end
 % list
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
+[ mouseid, expname, fov ] = find_mouseIDexpname(list);
 
 laps_per_file = zeros(size(files,1),1);
 phi_trials = cell(size(files,1),1);
+if ~isempty(fov)
+    Nt_file = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/'...
+            'imreg_normcorre_CaImAn/' mouseid '_' expname '_imreg_ref' reffile '/' ...
+            mouseid '_' expname '_ref' reffile '_framesperfile.mat'];
+else
+    Nt_file = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+            'imreg_normcorre_CaImAn/' mouseid '_' expname '_imreg_ref' reffile '/' ...
+            mouseid '_' expname '_ref' reffile '_framesperfile.mat'];
+end
+Nt = load(Nt_file); Nt = Nt.framesperfile;
+
 for n = 1:size(files,1)
     % image file
     file = files(n,:);
@@ -34,7 +45,7 @@ for n = 1:size(files,1)
     dir_proc = [data_locn 'Data/' file(1:8) '/Processed/' file '/'];
     if ~exist([dir_proc 'behaviour/' file '_downTrackdata.mat'],'file')
         Trackdata = load_trackfile(data_locn, file, trackfile, force);
-        downTrackdata = downsample_trackData( Trackdata, Nt, fr, [] );
+        downTrackdata = downsample_trackData( Trackdata, Nt(n), fr, [] );
     else
         M = load([data_locn 'Data/' file(1:8) '/Processed/' file '/behaviour/' file '_downTrackdata.mat']);
         downTrackdata = M.downTrackdata;

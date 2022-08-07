@@ -51,13 +51,18 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, conc_env, dostep, force, tsub, min_SNR, bl_prctile )
+function frun_pipeline_list_imreg( list, reffile, conc_env, numfiles, dostep, force, tsub, min_SNR, bl_prctile )
 
 if nargin<9, bl_prctile = 85; end
-if nargin<7, min_SNR = 2.5; end
-if nargin<6, tsub = 5; end
-if nargin<5, force = [0; 0; 0; 0; 0; 0]; end
-if nargin<4, dostep = [1; 1; 1; 1; 1; 1]; end
+if nargin<8, min_SNR = 2.5; end
+if nargin<7, tsub = 5; end
+if nargin<6, force = [0; 0; 0; 0; 0; 0]; end
+if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
+if nargin<4 || isempty(numfiles)
+    if ~contains(list,'-')
+        dostep(2) = false; 
+    end
+end
 if nargin<3, conc_env = false; end
 % if nargin<2, see line 121
 tic
@@ -105,8 +110,8 @@ mcorr_method = 'normcorre';     % image registration method
                                     % fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
 runpatches = false;             % for CaImAn processing, flag to run patches (default: false)
+dofissa = true;
 doasd = false;                  % flag to do asd pf calculation
-slacknotify = false;
 
 % Processing parameters (any parameter that is not set gets a default value)
 % Add any parameters you want to set after FOV. See neuroSEE_setparams for
@@ -126,8 +131,10 @@ params = neuroSEE_setparams(...
             'activetrials_thr', activetrials_thr);         
 
 % For slack notifications
-url = '';
-username = '@xxx';
+slacknotify = false;
+% if true, set below
+slackURL = '';
+slackTarget = '@xxx';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -149,6 +156,8 @@ MatlabVer = str2double(release(1:4));
 check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_env);
 
 % Some security measures
+if ~contains(list,'-'), conc_env = false; end  % conc_env = true only an option for sub experiments
+                                               % e.g. fam1fam2-fam1, fam1novfam1-nov 
 force = logicalForce(force);        % Only allow combinations of force/step values that make sense
 dostep = logicaldostep(dostep);     % because later steps require earlier ones
 
@@ -172,6 +181,7 @@ if conc_env
 end
 if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); fileattrib(grp_sdir,'+w','g','s'); end
 
+
 %% 1) Image registration
 % Load images and do registration if forced to do so or if ROI segmentation data doesn't exist 
 
@@ -185,10 +195,10 @@ if dostep(1)
             return
         end
 
-        % Send user slack message if processing has started
+        % Send slack notification if processing has started
         if slacknotify
             slacktext = [mouseid '_' expname ': Processing started'];
-            neuroSEE_slackNotify( url, slacktext, username );
+            SendSlackNotification( slackURL, slacktext, slackTarget );
         end
         
         imG = cell(Nfiles,1);
@@ -281,41 +291,8 @@ if dostep(2)
     % If doing CaImAn and running patches, continue only if Matlab version is R2018 or higher
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, list, reffile, conc_env, force(2), mean(imR,3) );
                                              
-    cdf_f = cell(Nfiles,1);
-    if force(2) || ~check_list(2)
-        % divide into cells according to number of files in prep for spike
-        % extraction
-        cdf_f{1} = df_f(:,1:framesperfile(1));
-        segment_output.df_f = cdf_f{1};
-        segment_output.tsG = tsG(:,1:framesperfile(1));
-        segment_output.params = params.ROIsegment;
-        if strcmpi(files(1,:), reffile)
-            fdir = [data_locn 'Data/' files(1,1:8) '/Processed/' files(1,:) '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
-        else
-            fdir = [data_locn 'Data/' files(1,1:8) '/Processed/' files(1,:) '/imreg_' mcorr_method '_ref' reffile '/' segment_method '_' mouseid '_' expname '/'];
-        end
-        if ~exist(fdir,'dir'), mkdir(fdir); fileattrib(fdir,'+w','g','s'); end
-        save([fdir files(1,:) '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
-
-        for n = 2:Nfiles
-            file = files(n,:);
-            cdf_f{n} = df_f(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
-            segment_output.df_f = cdf_f{n};
-            segment_output.tsG = tsG(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
-            segment_output.params = params.ROIsegment;
-            if strcmpi(file, reffile)
-                fdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' segment_method '_' mouseid '_' expname '/'];
-            else
-                fdir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' reffile '/' segment_method '_' mouseid '_' expname '/'];
-            end
-            if ~exist(fdir,'dir'), mkdir(fdir); fileattrib(fdir,'+w','g','s'); end
-            save([fdir file '_' mouseid '_' expname '_ref' reffile '_segment_output.mat'], '-struct', 'segment_output');
-        end
-    else
-        for n = 1:Nfiles
-            cdf_f{n} = [];
-        end
-    end
+    % Copy files from grp_sdir to folders for individual runs
+    if ~contains(list,'-'), divide_expdata_into_runs( data_locn, list, reffile, numfiles, [1,0,0], [force(2),0,0] ); end
 else
     fprintf('%s: ROI segmentation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
     t = toc;
@@ -567,10 +544,10 @@ t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', [mouseid '_' expname], round(t/3600,2));
 cprintf(str)
 
-% Send Ann slack message if processing has finished
+% Send slack notifcation if processing has finished
 if slacknotify
     slacktext = [mouseid '_' expname ': FINISHED in' num2str(round(t/3600,2)) ' hrs. No errors!'];
-    neuroSEE_slackNotify( slacktext );
+    SendSlackNotification( slacktext );
 end
 
 end

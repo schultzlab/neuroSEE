@@ -1,5 +1,5 @@
 % Written by Ann Go
-% Script which takes as input a list of experiment files and outputs the
+% Script which takes as input a list of image files and outputs the
 % number of ROIs detected in each file
 % mcorr_method - the motion correction method used
 
@@ -7,8 +7,6 @@ function Nrois = frun_getFileNrois( list, mcorr_method )
 
 if nargin<2, mcorr_method = 'normcorre'; end     % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-params = neuroSEE_setparams;
-% roiarea_thr = params.ROIsegment.roiarea_thr;
 
 % Load module folders and define data directory
 [data_locn, ~, err] = load_neuroSEEmodules;
@@ -32,18 +30,7 @@ for n = 1:size(files,1)
         M = load([dir_segment file '_segment_output.mat']);
         masks_all = M.masks;
         Nrois(n) = size(masks_all,3);
-%         % Eliminate very small rois and rois touching image border
-%         area = zeros(size(masks_all,3),1);
-%         borderpix = 3;
-%         for j = 1:size(masks_all,3)
-%             mask = masks_all(borderpix:size(masks_all,1)-borderpix,borderpix:size(masks_all,2)-borderpix,j);
-%             im = imclearborder(mask);
-%             c = regionprops(im,'area');
-%             if ~isempty(c)
-%                 area(j) = c.Area;                    % area of each ROI
-%             end
-%         end
-%         Nrois(n) = length(area>roiarea_thr);
+    else
+        cprintf('Errors','No ROI segmentation output for %s.\n',file);
     end
-
 end

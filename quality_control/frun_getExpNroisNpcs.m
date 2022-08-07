@@ -14,9 +14,6 @@ if ~isempty(err)
     return
 end
 
-params = neuroSEE_setparams;
-roiarea_thr = params.ROIsegment.roiarea_thr;
-
 % Mouseid, Experiment name, files
 [ mouseid, expname, fov ] = find_mouseIDexpname(list);
 
@@ -34,24 +31,15 @@ end
 if exist([grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat'],'file')
     M = load([grp_sdir mouseid '_' expname '_ref' reffile '_segment_output.mat']);
     masks_all = M.masks;
-    % Eliminate very small rois and rois touching image border
-    area = zeros(size(masks_all,3),1);
-    borderpix = 3;
-    for j = 1:size(masks_all,3)
-        mask = masks_all(borderpix:size(masks_all,1)-borderpix,borderpix:size(masks_all,2)-borderpix,j);
-        im = imclearborder(mask);
-        c = regionprops(im,'area');
-        if ~isempty(c)
-            area(j) = c.Area;                    % area of each ROI
-        end
-    end
-    Nrois = length(area>roiarea_thr);
+    Nrois = size(masks_all,3);
 else
     Nrois = [];
+    cprintf('Errors','No ROI segmentation output for %s.\n',list);
 end
 if exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_PFmap_output.mat'],'file')
     N = load([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_PFmap_output.mat']);
     Npcs = numel(N.hist.SIspk.pcIdx);
 else
     Npcs = [];
+    cprintf('Errors','No PF mapping output for %s.\n',list);
 end

@@ -8,32 +8,33 @@
 % (4) spike extraction
 % (5) tracking data extraction
 % (6) place field mapping
+% Steps 3-6 are not necessary at the file level.
 %
 % This script is designed to be run on the hpc server where array_id loops
 % through values specified in the hpc script.
 %
 % INPUTS
 % array_id  : number which serves as array index for files in 'list'
-% list   : name of text file containing filenames of files to be compared.
-%           Typically in the format 'list_m##_expname.txt'.
-%   e.g.    'list_m62_fam1nov-fam1.txt'         - all fam1 files in fam1nov experiment
-%           'list_m62_fam1nov.txt'              - all files in fam1nov experiments
-%           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
-%           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% The section labeled "USER-DEFINED INPUT" requires user input
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% list      : name of text file containing filenames of files to be processed.
+%           May be in the format 'list_m##_expname.txt'. However, when
+%           processing tens of lists (hundreds of files), it is easier to
+%           create one superset list (e.g. 'list_newfiles.txt') to process.
+% dostep    : (optional, default: [1;1;0;0;0;0]) Set to 0 or 1 to skip (0) 
+%               or implement (1) a processing step (see list at the top)
+% force     : (optional, default: [0;0;0;0;0;0]) Set to 1 to force the implementation 
+%               of a processing step (even if output already exists)
+% min_SNR   : (optional, default: 2.5) CaImAn parameter. Minimum SNR for accepting exceptional events. 
+%               Typically 3 for 330x330um FOV data, 2.5 for 490x490um FOV data.
 %
 % Matlab version requirement: 
 %   On the hpc, normcorre only works with Matlab R2017a. 
 %   CaImAn requires at least Matlab R2017b
 %   FISSA requires at least Matlab R2018
 
-function frun_pipeline_batch( array_id, list, force, dostep, min_SNR )
+function frun_pipeline_file_batch( array_id, list, dostep, force, min_SNR )
 if nargin<5, min_SNR = 2.5; end
-if nargin<4, dostep = [1;1;0;0;0;0]; end
-if nargin<3, force  = [0;0;0;0;0;0]; end
+if nargin<4, force  = [0;0;0;0;0;0]; end
+if nargin<3, dostep = [1;1;0;0;0;0]; end
 
 tic
 
@@ -43,11 +44,6 @@ if ~isempty(err)
     beep
     cprintf('Errors',err);    
     return
-end
-
-% Some security measures
-if strcmpi(comp,'hpc')
-    maxNumCompThreads(32);        % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
 end
 
 % Image file
@@ -61,21 +57,17 @@ if str2double(file(1,1:4)) > 2018
 else
     FOV = 330; 
 end
+% virus (which determines decay time constant for calcium transient)
+imdate = datevec(str2double(file(1:8)));
+if datetime(imdate) >= datetime(datevec(str2double('20201208')))
+    virus = 'jGCaMP7s';
+else
+    virus = 'GCaMP6s';
+end
+
 
 %% SETTINGS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% USER-DEFINED INPUT
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % Basic settings
-                               % flag to force step execution even with existing data
-% force = [false;...              % (1) motion correction even if motion corrected images exist
-%          false;...              % (2) roi segmentation
-%          false;...              % (3) neuropil decontamination
-%          false;...              % (4) spike extraction
-%          false;...              % (5) tracking data extraction
-%          false];                % (6) place field mapping
-
 mcorr_method = 'normcorre';     % values: [normcorre, normcorre-r, normcorre-nr, fftRigid] 
                                     % CaImAn NoRMCorre method: 
                                     %   normcorre (rigid + nonrigid) 
@@ -83,11 +75,10 @@ mcorr_method = 'normcorre';     % values: [normcorre, normcorre-r, normcorre-nr,
                                     %   normcorre-nr (nonrigid), 
                                     % fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
-runpatches = false;            % for CaImAn processing, flag to run patches (default: false)
-dofissa = true;                 % flag to implement FISSA (when false, overrides force(3) setting)
-manually_refine_spikes = false; % flag to manually refine spike estimates
-doasd = false;                  % flag to do asd pf calculation 
-slacknotify = false;            % flag to send Ann slack notifications about processing
+runpatches = false;             % for CaImAn processing, flag to run patches (default: false)
+dofissa = true;
+manually_refine_spikes = false; % flag to manually refine spikes
+doasd = false;                  % flag to do asd pf calculation
 
 % Processing parameters (any parameter that is not set gets a default value)
 % Add any parameters you want to set after FOV. See neuroSEE_setparams for
@@ -97,17 +88,11 @@ params = neuroSEE_setparams(...
             'segment_method', segment_method,...
             'runpatches', runpatches,...
             'dofissa', dofissa,...
+            'manually_refine_spikes', manually_refine_spikes,...
             'doasd', doasd,...
             'FOV', FOV,...
+            'virus', virus,...
             'min_SNR', min_SNR); 
-
-                               % flag to execute step (use if wanting to skip later steps)
-% dostep = [true;...              % (1) motion correction even if motion corrected images exist
-%          true;...               % (2) roi segmentation
-%          false;...              % (3) neuropil decontamination
-%          false;...              % (4) spike extraction
-%          false;...              % (5) tracking data extraction
-%          false];                % (6) place field mapping
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -146,12 +131,6 @@ if dostep(1)
             return
         end
 
-        % Send Ann slack message if processing has started
-        if slacknotify
-            slacktext = [file ': Processing started'];
-            neuroSEE_slackNotify( slacktext );
-        end
-
         if strcmpi(mcorr_method,'normcorre') 
             filedir = [ data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_normcorre-r/' ];
             fname_tif_gr_mcorr = [filedir file '_2P_XYT_green_mcorr.tif'];
@@ -183,9 +162,9 @@ if dostep(1)
 
 
     if any([ force(2), ~check(2), ~check(1) ]) 
-        if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
+        if strcmpi(segment_method,'CaImAn') 
             [ imG, ~, params.mcorr ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, reffile, force(1) );
-            imR = [];
+            imR = []; % CaImAn does not use imR
         else
             [ imG, ~, params.mcorr, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params.mcorr, reffile, force(1) );
         end
@@ -205,7 +184,7 @@ end
 %                       mat with fields {tsG, df_f, masks, corr_image, params}
 
 if dostep(2)
-    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, file, params, force(2), mean(imR,3) );
+    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, file, [], false, force(2), mean(imR,3) );
     clear imG imR
 else
     fprintf('%s: ROI segmentation step not ticked. Skipping this and later steps.\n', file);
@@ -342,12 +321,6 @@ end
 t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
 cprintf(str)
-
-% Send Ann slack message if processing has finished
-if slacknotify
-    slacktext = [file ': FINISHED in' num2str(round(t/3600,2)) ' hrs. No errors!'];
-    neuroSEE_slackNotify( slacktext );
-end
 
 end
 

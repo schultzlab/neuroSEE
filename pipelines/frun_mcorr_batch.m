@@ -15,32 +15,32 @@
 %           'list_m62_fam1nov.txt'              - all files in fam1nov experiments
 %           'list_m79_fam1_s1-5.txt'            - all fam1 files across 5 sessions           
 %           'list_m86_open_s1-2.txt'            - all open field files across 2 sessions
-% mcorr_method : [fftRigid, normcorre, normcorre-nr, normcorre-r]
-% force     : (optional) flag to force motion correction or image 
-%               registration even though processed data exist (default:
-%               false)
+% force     : (optional, default: false) flag to force motion correction or image 
+%               registration even though processed data exist 
 % reffile   : (optional) file to be used as registration template. When empty, motion 
 %               correction of file is done, with a template computed from first 200 frames.
 %               This file is usually part of 'list' (i.e. for best results, choose a 
 %               reference file from the same experiment) but does not have to be. This 
 %               file must have already been motion corrected.
-% refChannel : (optional) channel (red or green) to be used as registation
-%               template (default: 'green')
-% slacknotify : (optional) flag to send Ann Slack notification when processing is started
-%               or has ended (default: false)
+% refChannel : (optional, default: 'green') channel (red or green) to be used as registation
+%               template
+% max_dev    : (optional, default: 5) Normcorre parameter. Maximum deviation of patch shift 
+%               from rigid shift. Typical <14. Check for image distortion
+%               when using high values.
+% smallerpatch : (optional, default: false) Uses smaller patch sizes
+%                       for hard-to-motion correct images.
+% imregmode  : (optional, default: 2)
+%                   1 - frame-by-frame registration with template, ...
+%                   2 - registration of templates then application of shifts to other frames
 
-function frun_mcorr_batch( array_id, list, mcorr_method, force, reffile, refChannel, maxshift_r, maxshift_nr, max_dev, useadjustedparameters, imregmode )
+function frun_mcorr_batch( array_id, list, force, reffile, refChannel, max_dev, smallerpatch, imregmode )
 
-if nargin<3, mcorr_method = 'normcorre'; end
-if nargin<4, force = false; end
-if nargin<5, reffile = []; end
-if nargin<6, refChannel = 'green'; end
-if nargin<7, maxshift_r = 30; end
-if nargin<8, maxshift_nr = 30; end
-if nargin<9, max_dev = 5; end
-if nargin<10, useadjustedparameters = false; end
-if nargin<11, imregmode = 2; end
-slacknotify = false;
+if nargin<8, imregmode = 2; end
+if nargin<7, smallerpatch = false; end
+if nargin<6, max_dev = 5; end
+if nargin<5, refChannel = 'green'; end
+if nargin<4, reffile = []; end
+if nargin<3, force = false; end
 tic
 
 %% Load module folders and define data directory
@@ -81,7 +81,7 @@ end
 %% USER: Set parameters 
 % Any parameter that is not set gets a default value
 
-if useadjustedparameters
+if smallerpatch
     grid_size_nr = [64,64];
     overlap_pre = [16,16]; 
     min_patch_size = [16,16];    
@@ -95,10 +95,10 @@ else
 end
 
 params = neuroSEE_setparams(...
-            'mcorr_method', mcorr_method,...
+            'mcorr_method', 'normcorre',...
             'refChannel', refChannel,...        % reference channel for motion correction
-            'max_shift_r', maxshift_r,...       % maximum rigid shift
-            'max_shift_nr', maxshift_nr,...     % maximum nonrigid shift
+            'max_shift_r', 30,...       % maximum rigid shift
+            'max_shift_nr', 30,...     % maximum nonrigid shift
             'max_dev', max_dev,...
             'grid_size_nr', grid_size_nr,...
             'overlap_pre', overlap_pre,... 
@@ -108,6 +108,12 @@ params = neuroSEE_setparams(...
         
 params_mcorr = params.mcorr;
 
+% For slack notifications
+slacknotify = false;
+% if true, set below
+slackURL = '';
+slackTarget = '@xxx';
+
 
 %% Motion correction/Image registration 
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
@@ -116,11 +122,11 @@ files = extractFilenamesFromTxtfile( listfile );
 % Image to be registered
 file = files(array_id,:);
 
-% Send Ann slack message
+% Send user slack message
 if slacknotify
     if array_id == 1
         slacktext = [list(6:end-4) ': registering 1 of ' num2str(size(files,1)) 'files'];
-        neuroSEE_slackNotify( slacktext );
+        SendSlackNotification( slackURL, slacktext, slackTarget );
     end
 end
 

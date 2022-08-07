@@ -31,11 +31,6 @@ if ~isempty(err)
     return
 end
 
-% Some security measures
-if strcmpi(comp,'hpc')
-    maxNumCompThreads(32);        % max # of computational threads, must be the same as # of ncpus specified in jobscript (.pbs file)
-end
-
 % Matlab version
 release = version('-release');    % Find out what Matlab release version is running
 MatlabVer = str2double(release(1:4));
@@ -46,13 +41,6 @@ MatlabVer = str2double(release(1:4));
 % USER-DEFINED INPUT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 file = '20190222_12_05_46';     % file to be processed
-
-% Auto-defined FOV
-if str2double(file(1,1:4)) > 2018
-    FOV = 490;                  % FOV area = FOV x FOV, FOV in um
-else
-    FOV = 330;          
-end
 
 % Basic settings
 force = [false;...              % (1) motion correction even if motion corrected images exist
@@ -95,6 +83,21 @@ dostep = [true;...              % (1) motion correction even if motion corrected
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Auto-defined settings
+% FOV area = FOV x FOV, FOV in um
+if str2double(files(1,1:4)) > 2018
+    FOV = 490;                     
+else
+    FOV = 330; 
+end
+% virus (which determines decay time constant for calcium transient)
+imdate = datevec(str2double(file(1:8)));
+if mousenum > 104
+    virus = 'jGCaMP7s';
+else
+    virus = 'GCaMP6s';
+end
+
 %% Check if file has been processed. If not, continue processing unless forced to overwrite 
 % existing processed data
 % check(1:6) check for existing data in processing steps 1-6
@@ -103,7 +106,8 @@ dostep = [true;...              % (1) motion correction even if motion corrected
 check = checkforExistingProcData(data_locn, file, params);
 
 % Some security measures
-force = logicalForce(force);    % Only allow combinations of force values that make sense
+force = logicalForce(force);        % Only allow combinations of force/step values that make sense
+dostep = logicaldostep(dostep);     % because later steps require earlier ones
 
 if ~any(force) && check(7)
     fprintf('%s: File already processed\n', file)
@@ -124,10 +128,10 @@ if dostep(1)
             return
         end
 
-        % Send Ann slack message if processing has started
+        % Send slack notification if processing has started
         if slacknotify
             slacktext = [file ': Processing started'];
-            neuroSEE_slackNotify( slacktext );
+            SendSlackNotification( slackURL, slacktext, slackTarget );
         end
 
         if strcmpi(mcorr_method,'normcorre') 
@@ -323,9 +327,9 @@ t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', file, round(t/3600,2));
 cprintf(str)
 
-% Send Ann slack message if processing has finished
+% Send slack notification if processing has finished
 if slacknotify
     slacktext = [file ': FINISHED in' num2str(round(t/3600,2)) ' hrs. No errors!'];
-    neuroSEE_slackNotify( slacktext );
+    SendSlackNotification( slackURL, slacktext, slackTarget );
 end
 

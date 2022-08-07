@@ -51,13 +51,18 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_imreg( list, reffile, conc_env, dostep, force, tsub, min_SNR, bl_prctile )
+function frun_pipeline_list_imreg( list, reffile, conc_env, numfiles, dostep, force, tsub, min_SNR, bl_prctile )
 
 if nargin<9, bl_prctile = 85; end
-if nargin<7, min_SNR = 2.5; end
-if nargin<6, tsub = 5; end
-if nargin<5, force = [0; 0; 0; 0; 0; 0]; end
-if nargin<4, dostep = [1; 1; 1; 1; 1; 1]; end
+if nargin<8, min_SNR = 2.5; end
+if nargin<7, tsub = 5; end
+if nargin<6, force = [0; 0; 0; 0; 0; 0]; end
+if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
+if nargin<4 || isempty(numfiles)
+    if ~contains(list,'-')
+        dostep(2) = false; 
+    end
+end
 if nargin<3, conc_env = false; end
 % if nargin<2, see line 121
 tic
@@ -76,6 +81,30 @@ listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 if nargin<2, reffile = files(1,:); end
 Nfiles = size(files,1);
+
+% Experiment runs
+if ~contains(list,'-')
+    run{1} = 'fam1';
+    ind1 = strfind(expname,'fam1');
+    if numel(ind1) > 2
+        run{3} = 'fam1r2';
+        if numel(strfind(expname,'fam1rev')) > 0
+            env{2} = 'fam1rev';
+        end
+    elseif numel(ind1) == 2
+        if numel(strfind(expname,'fam1rev')) > 0
+            env{2} = 'fam1rev';
+        else
+            env{3} = 'fam1r2';
+        end
+    end
+    if numel(strfind(expname,'fam2')) > 0
+        env{2} = 'fam2';
+    end
+    if numel(strfind(expname,'nov')) > 0
+        env{2} = 'nov';
+    end
+end
 
 % Auto-defined 
 % FOV area = FOV x FOV, FOV in um
@@ -105,6 +134,7 @@ mcorr_method = 'normcorre';     % image registration method
                                     % fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
 runpatches = false;             % for CaImAn processing, flag to run patches (default: false)
+dofissa = true;
 doasd = false;                  % flag to do asd pf calculation
 
 % Processing parameters (any parameter that is not set gets a default value)
@@ -150,7 +180,7 @@ MatlabVer = str2double(release(1:4));
 check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_env);
 
 % Some security measures
-if ~contains(list,'-'), conc_env = false; end  % conc_env = true only necessary for sub experiments
+if ~contains(list,'-'), conc_env = false; end  % conc_env = true only an option for sub experiments
                                                % e.g. fam1fam2-fam1, fam1novfam1-nov 
 force = logicalForce(force);        % Only allow combinations of force/step values that make sense
 dostep = logicaldostep(dostep);     % because later steps require earlier ones
@@ -188,7 +218,7 @@ if dostep(1)
             return
         end
 
-        % Send user slack message if processing has started
+        % Send slack notification if processing has started
         if slacknotify
             slacktext = [mouseid '_' expname ': Processing started'];
             SendSlackNotification( slackURL, slacktext, slackTarget );
@@ -570,7 +600,7 @@ t = toc;
 str = sprintf('%s: Processing done in %g hrs\n', [mouseid '_' expname], round(t/3600,2));
 cprintf(str)
 
-% Send Ann slack message if processing has finished
+% Send slack notifcation if processing has finished
 if slacknotify
     slacktext = [mouseid '_' expname ': FINISHED in' num2str(round(t/3600,2)) ' hrs. No errors!'];
     SendSlackNotification( slacktext );

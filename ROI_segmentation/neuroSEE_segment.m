@@ -155,7 +155,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
                     exc = [exc; j];
                 end
             end
-            % eliminate highly overlapping rois
+            % eliminate overlapping rois
             exc2 = [];
             for j = 1:length(inc)
                 for k = 1:length(inc)

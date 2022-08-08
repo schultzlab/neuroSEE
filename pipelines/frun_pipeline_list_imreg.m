@@ -46,7 +46,7 @@
 %               used for estimating baseline.
 % 
 % Matlab version requirement for running on hpc: 
-%   normcorre only works with Matlab R2017a.
+%   normcorre only works up to Matlab R2017b.
 %   CaImAn needs at least R2017b
 %   FISSA requires at least Matlab R2018
 
@@ -64,7 +64,7 @@ if nargin<3, conc_runs = false; end
 tic
 
 % Load module folders and define data directory
-[data_locn,comp,err] = load_neuroSEEmodules;
+[data_locn,~,err] = load_neuroSEEmodules;
 if ~isempty(err)
     beep
     cprintf('Errors',err);    
@@ -161,8 +161,7 @@ MatlabVer = str2double(release(1:4));
 if ~contains(list,'-')                          % conc_runs = true is only an option for sub experiments
     conc_runs = false;                              % e.g. fam1fam2-fam1, fam1novfam1-nov 
     if nargin<4 || isempty(numfiles)
-        dostep(2) = false; 
-        fprintf('%s: Number of files per run not provided. Skipping roi segmentation.\n', [mouseid '_' expname]);
+        fprintf('%s: Number of files per run not provided. ROI segmentation data will not be distributed to run folders.\n', [mouseid '_' expname]);
     end
 end
 force = logicalForce(force);        % Only allow combinations of force/step values that make sense
@@ -198,12 +197,12 @@ if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); fileattrib(grp_sdir,'+w','g','s'); e
 if dostep(1)
     if force(2) || ~check_list(1)
         % Continue only if Matlab version is R2017
-        if strcmpi(comp,'hpc') && MatlabVer > 2017
-            beep
-            err = sprintf('%s: Lower Matlab version required for motion correction. Cannot proceed.\n', [mouseid '_' expname]);
-            cprintf('Errors',err);
-            return
-        end
+%         if strcmpi(comp,'hpc') && MatlabVer > 2017
+%             beep
+%             err = sprintf('%s: Lower Matlab version required for motion correction. Cannot proceed.\n', [mouseid '_' expname]);
+%             cprintf('Errors',err);
+%             return
+%         end
 
         % Send slack notification if processing has started
         if slacknotify
@@ -227,11 +226,11 @@ if dostep(1)
                 end
 
                 if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
-                    [ imG{n}, ~, params.mcorr ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
+                    [ imG{n}, mcorr_output, params.mcorr ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
                                                             mcorr_method, params.mcorr, reffile, force(1), list, false );
                     imR = [];
                 else
-                    [ imG{n}, ~, params.mcorr, imR{n} ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
+                    [ imG{n}, mcorr_output, params.mcorr, imR{n} ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
                                                             mcorr_method, params.mcorr, reffile, force(1), list, false );
                 end
             else
@@ -302,8 +301,13 @@ if dostep(2)
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, list, reffile, conc_runs, force(2), mean(imR,3) );
                                              
     % Copy files from grp_sdir to folders for individual runs
+    
     if ~contains(list,'-')
-        divide_expdata_into_runs( data_locn, list, reffile, numfiles, [], [1,0,0], [force(2),0,0] ); 
+        if nargin<4 || isempty(numfiles)
+            fprintf('%s: Number of files per run not provided. ROI segmentation data was not distributed to run folders.\n', [mouseid '_' expname]);
+        else
+            divide_expdata_into_runs( data_locn, list, reffile, numfiles, [], [1,0,0], [force(2),0,0] );
+        end
     end
 else
     fprintf('%s: ROI segmentation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
@@ -544,8 +548,8 @@ if dostep(6)
                       '_allData_blprctile' num2str(bl_prctile) '.mat' ];
 
     fprintf('%s: Saving all data\n', [mouseid '_' expname]);
-    save(sname_allData,'list','corr_image','masks','tsG','df_f','spikes',...
-                        'downTrackdata','PFdata','hist','asd','params');
+    save(sname_allData,'list','mcorr_output','corr_image','masks','tsG','df_f',...
+                        'spikes','downTrackdata','PFdata','hist','asd','params');
     if ~isempty(dtsG), save(sname_allData,'-append','dtsG'); end
     if ~isempty(ddf_f), save(sname_allData,'-append','ddf_f'); end
 else

@@ -2,7 +2,7 @@
 % 
 % Generates neuroSEE ROI files & call FISSA python code
 
-function runFISSA( masks, tiffile, fissadir )
+function runFISSA( masks, tiff, fissadir )
 
 roidir = [fissadir 'roi/'];
 % if roi directory doesn't exist, create it
@@ -45,7 +45,7 @@ mydir  = pwd;
 ind   = strfind(mydir,'/');
 newdir = mydir(1:ind(end)-1);
 folder = fullfile(newdir(1:ind(end)-1),'/neuropil_decontamination');
-pyfun = [folder '/runFISSA.py' ' ' tiffile ' ' roizip ' ' outdir];
+pyfun = [folder '/runFISSA.py' ' ' tiff ' ' roizip ' ' outdir];
 user = mydir(ind(2)+1:ind(3)-1);
 if exist(['/Users/' user '/anaconda3/envs/neuroSEE/'],'dir')
     python_executable = ['/Users/' user '/anaconda3/envs/neuroSEE/bin/python'];

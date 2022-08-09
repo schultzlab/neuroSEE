@@ -47,18 +47,18 @@ for i = 1:numel(fieldnames(result.result))
     end
 end
 
-df_result.deltaf_result = deltaf_result;
-ddf_f = zeros(184,size(df_result.deltaf_result.cell0.trial0,2));
+ddf_f = zeros(size(masks,3),size(df_result.deltaf_result.cell0.trial0,2));
 for i = 1:numel(fieldnames(df_result.deltaf_result))
     for j = 1:numel(fieldnames(df_result.deltaf_result.cell0))
         ddf_f(i,(j-1)*t+1:j*t) = lowpass( medfilt1(df_result.deltaf_result.(['cell' num2str(i-1)]).(['trial' num2str(j-1)])(1,:), 17), 1, 30.9 );
     end
 end
 
+x = lowpass( medfilt1(dtsG(i,:), 17), 1, 30.9 );
 output.dtsG = dtsG;
 output.ddf_f = ddf_f;
 
-save([fissadir 'm62_fov1_fam1fam2-fam1_ref20181011_15_10_39_fissa_output.mat'],'-struct','output');
+save([fissadir 'm62_fov2_fam1fam2-fam1_ref20181013_10_53_51_fissa_output.mat'],'-struct','output');
 
 dtsG = tsG; ddf_f = df_f; spikes = tsG;
 tsG = dtsG; df_f = ddf_f; 

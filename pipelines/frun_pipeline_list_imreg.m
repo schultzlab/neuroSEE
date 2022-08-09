@@ -297,11 +297,9 @@ end
 
 %% 2) ROI segmentation
 if dostep(2)
-    % If doing CaImAn and running patches, continue only if Matlab version is R2018 or higher
     [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, list, reffile, conc_runs, force(2), mean(imR,3) );
                                              
     % Copy files from grp_sdir to folders for individual runs
-    
     if ~contains(list,'-')
         if nargin<4 || isempty(numfiles)
             fprintf('%s: Number of files per run not provided. ROI segmentation data was not distributed to run folders.\n', [mouseid '_' expname]);
@@ -328,17 +326,12 @@ if dostep(3)
             if size(dtsG,1) ~= size(tsG,1)
                 force([3,4,6]) = true; % force FISSA step if no. of ROIs in fissa and segmentation outputs don't match
                 dtsG = [];
-                fprintf('%s: FISSA output found. Redoing FISSA. ROIs in FISSA and segmentation outputs do not match.\n', [mouseid '_' expname]);
+                fprintf('%s: FISSA output found. Redoing FISSA. No. of ROIs in FISSA and segmentation outputs do not match.\n', [mouseid '_' expname]);
             end
         end
         if force(3) || ~check_list(2)
-            for n = 1:Nfiles
-                file = files(n,:);
-                [ cdtsG{n}, cddf_f{n}, params ] = neuroSEE_neuropilDecon( masks, data_locn, file, params, force(3), list, reffile, conc_runs );
-                dtsG = [dtsG cdtsG{n}];
-                ddf_f = [ddf_f cddf_f{n}];
-            end
-
+            [ dtsG, ddf_f, params ] = neuroSEE_neuropilDecon( masks, data_locn, params, list, reffile, conc_runs, force(3) );
+                                                            masks, data_locn, params, fileorlist, reffile, conc_runs, force )
             fprintf('%s: Saving fissa output\n', [mouseid '_' expname]);
             if ~exist([grp_sdir '/' str_fissa '/'],'dir')
                 mkdir([grp_sdir '/' str_fissa '/']); 

@@ -35,7 +35,7 @@ experiment = fissa.Experiment(tiff, roizip, outdir)
 # separate neuropil
 experiment.separate(redo_sep=True, redo_prep=True)
 # calculate df/f0
-experiment.calc_deltaf(freq=30.9)
+experiment.calc_deltaf(freq=30.9, use_raw_f0=True, across_trials=True)
 # save to matlab
 experiment.save_to_matlab()
 

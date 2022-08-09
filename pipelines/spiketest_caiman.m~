@@ -23,7 +23,7 @@ try
     end
     spikes_caiman_up = extractSpikes( df_f_up, params.spkExtract );
     
-    save([grp_sdir mouseid '_' expname '_ref' reffile '_spikes_caiman.mat'],'spikes_caiman')
+    save([grp_sdir 'FISSA/' mouseid '_' expname '_ref' reffile '_spikes_caiman.mat'],'spikes_fissa')
     disp(toc)
 catch
     toc
@@ -36,5 +36,5 @@ for i = 1:10
     subplot(512); plot(spikes_caiman(i,:)); ylabel('spikes');
 %     subplot(513); plot(df_f_up(i,:)); ylabel('df/f (up)');
 %     subplot(514); plot(spikes_caiman_up(i,:)); ylabel('spikes (up)');
-%     subplot(515); plot(downsample(spikes_caiman_up(i,:),5)); ylabel('spikes (up-down)');
+%     subplot(515); plot(downsample(spikes_fissa_up(i,:),5)); ylabel('spikes (up-down)');
 end

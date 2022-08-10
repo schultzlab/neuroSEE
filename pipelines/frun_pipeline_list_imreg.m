@@ -37,7 +37,7 @@
 %               a processing step (even if output already exists)
 % tsub      : (optional, default: 5) temporal downsampling factor for CaImAn. Typically chosen so that
 %                no. of files in list x 7420
-%               -----------------------------  = 24,000
+%               -----------------------------  = 23,000
 %                           tsub                    
 %               This reduces out-of-memory errors. Keep tsub value below 10.
 % min_SNR   : (optional, default: 3 for 330x330um FOV data, 2.5 for 490x490um FOV data) CaImAn parameter. 
@@ -115,7 +115,7 @@ mcorr_method = 'normcorre';     % image registration method
                                     % fft-rigid method (Katie's)
 segment_method = 'CaImAn';      % [ABLE,CaImAn]    
 runpatches = false;             % for CaImAn processing, flag to run patches (default: false)
-dofissa = true;
+dofissa = false;
 doasd = false;                  % flag to do asd pf calculation
 
 % Processing parameters (any parameter that is not set gets a default value)
@@ -226,11 +226,11 @@ if dostep(1)
                 end
 
                 if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
-                    [ imG{n}, mcorr_output, params.mcorr ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
+                    [ imG{n}, ~, params.mcorr ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
                                                             mcorr_method, params.mcorr, reffile, force(1), list, false );
                     imR = [];
                 else
-                    [ imG{n}, mcorr_output, params.mcorr, imR{n} ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
+                    [ imG{n}, ~, params.mcorr, imR{n} ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
                                                             mcorr_method, params.mcorr, reffile, force(1), list, false );
                 end
             else
@@ -331,47 +331,15 @@ if dostep(3)
         end
         if force(3) || ~check_list(2)
             [ dtsG, ddf_f, params ] = neuroSEE_neuropilDecon( masks, data_locn, params, list, reffile, conc_runs, force(3) );
-                                                            masks, data_locn, params, fileorlist, reffile, conc_runs, force )
-            fprintf('%s: Saving fissa output\n', [mouseid '_' expname]);
-            if ~exist([grp_sdir '/' str_fissa '/'],'dir')
-                mkdir([grp_sdir '/' str_fissa '/']); 
-                fileattrib([grp_sdir '/' str_fissa '/'],'+w','g','s');
-            end
-            grp_sname = [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
-            if force(3) || ~check_list(2)
-                fissa_output.dtsG = dtsG;
-                fissa_output.ddf_f = ddf_f;
-                fissa_output.params = params.fissa;
-                save(grp_sname,'-struct','fissa_output');
-            end
-        else
-            str = sprintf('%s: Loading fissa data\n', [mouseid '_' expname]);
-            cprintf(str);
-            fname_mat = [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
-            s = load(fname_mat);
-            dtsG = s.dtsG;
-            ddf_f = s.ddf_f;
-            newstr = sprintf('%s: Fissa data loaded\n', [mouseid '_' expname]);
-            refreshdisp(newstr, str)
-
-            % divide into cell structures according to number of files in prep for spike
-            % extraction
-            cddf_f = cell(Nfiles,1);
-            cddf_f{1} = ddf_f(:,1:framesperfile(1));
-            for n = 2:Nfiles
-                cddf_f{n} = ddf_f(:,sum(framesperfile(1:n-1))+1:sum(framesperfile(1:n)));
-            end
         end
         
-        if force(3) || ~exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_timeseries.fig'],'file')
-            multiplot_ts(dtsG, [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_timeseries'], 'Fissa-corrected raw timeseries');
-        end
-        if force(3) || ~exist([grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_df_f.fig'],'file') 
-            multiplot_ts(ddf_f, [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_df_f'], 'Fissa-corrected dF/F');
-        end
-    else
-        for n = 1:Nfiles
-            cddf_f{n} = [];
+        % Copy files from grp_sdir to folders for individual runs
+        if ~contains(list,'-')
+            if nargin<4 || isempty(numfiles)
+                fprintf('%s: Number of files per run not provided. FISSA output was not distributed to run folders.\n', [mouseid '_' expname]);
+            else
+                divide_expdata_into_runs( data_locn, list, reffile, numfiles, [], [1,1,0], [0,force(3),0] );
+            end
         end
     end
 else
@@ -397,14 +365,7 @@ if dostep(4)
         end
     end
     if force(4) || ~check_list(3) 
-        cspikes = cell(Nfiles,1); spikes = [];
-        
-        for n = 1:Nfiles
-            file = files(n,:);
-            [ cspikes{n}, params ] = neuroSEE_extractSpikes( cdf_f{n}, cddf_f{n}, data_locn, file, params, force(4), list, reffile, true, conc_runs );
-            spikes = [spikes cspikes{n}];
-        end
-        clear ts
+        [ spikes, params ] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4), list, reffile, true, conc_runs );
             
         fprintf('%s: Saving spike data\n', [mouseid '_' expname]);
         grp_sname = [grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes.mat'];
@@ -511,6 +472,10 @@ end
     
 %% 6) PFmapping
 
+if dostep(6) && ~contains(list,'-')                          
+    fprintf('%s: Run PFmapping on individual runs, not on whole experiment. Skipping step.\n', [mouseid '_' expname]);    
+end
+
 if dostep(6)
     if any(downTrackdata.r < 100)
         params.mode_dim = '2D';                     % open field
@@ -541,7 +506,7 @@ if dostep(6)
                       '_allData_blprctile' num2str(bl_prctile) '.mat' ];
 
     fprintf('%s: Saving all data\n', [mouseid '_' expname]);
-    save(sname_allData,'list','mcorr_output','corr_image','masks','tsG','df_f',...
+    save(sname_allData,'list','corr_image','masks','tsG','df_f',...
                         'spikes','downTrackdata','PFdata','hist','asd','params');
     if ~isempty(dtsG), save(sname_allData,'-append','dtsG'); end
     if ~isempty(ddf_f), save(sname_allData,'-append','ddf_f'); end
@@ -550,7 +515,7 @@ else
 end
 
 t = toc;
-str = sprintf('%s: Processing done in %g hrs\n', [mouseid '_' expname], round(t/3600,2));
+str = sprintf('%s: Processing done in %g hrs. No errors!\n', [mouseid '_' expname], round(t/3600,2));
 cprintf(str)
 
 % Send slack notifcation if processing has finished

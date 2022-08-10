@@ -16,7 +16,7 @@ try
                 'bl_prctile',87);
     
     df_f = segmentout.df_f;
-    spikes_caiman = extractSpikes( df_f(1:10,:), params.spkExtract );        
+    spikes_caiman = extractSpikes( df_f, params.spkExtract );        
 
     for i = 1:184
         df_f_up(i,:) = upsample( df_f(i,:),5 );
@@ -24,6 +24,7 @@ try
     spikes_caiman_up = extractSpikes( df_f_up, params.spkExtract );
     
     save([grp_sdir mouseid '_' expname '_ref' reffile '_spikes_caiman.mat'],'spikes_caiman')
+    save([grp_sdir mouseid '_' expname '_ref' reffile '_spikes_caiman_up.mat'],'spikes_caiman_up')
     disp(toc)
 catch
     toc

@@ -13,7 +13,7 @@ try
     params = neuroSEE_setparams(...
                 'FOV',490,...
                 'virus','GCaMP6s',...
-                'bl_prctile',87);
+                'bl_prctile',75);
     
     ddf_f = fissa.ddf_f;
     spikes_fissa = extractSpikes( ddf_f, params.spkExtract );        
@@ -21,8 +21,13 @@ try
     for i = 1:184
         ddf_f_up(i,:) = upsample( ddf_f(i,:),5 );
     end
-    spikes_fissa_up = extractSpikes( ddf_f_up, params.spkExtract );
-    
+%     spikes_fissa_up = extractSpikes( ddf_f_up, params.spkExtract );
+    params = neuroSEE_setparams(...
+            'fr',10,...
+            'virus','GCaMP6s',...
+            'bl_prctile',75);
+    x_up = extractSpikes( ddf_f_up(1,:), params.spkExtract );
+    figure; plot(x_up)
     save([grp_sdir 'FISSA/' mouseid '_' expname '_ref' reffile '_spikes_fissa.mat'],'spikes_fissa')
     disp(toc)
 catch

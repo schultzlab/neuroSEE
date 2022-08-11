@@ -17,6 +17,7 @@ try
                 'bl_prctile',bl_prctile);
     
     df_f = segmentout.df_f;
+    fprint('Extracting spikes');
     spikes = extractSpikes( df_f, params.spkExtract );        
     output.spikes = spikes;
     output.params = params.spkExtract;
@@ -28,7 +29,8 @@ try
     save([grp_sdir 'noFISSA/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes_caiman.mat'],'-struct','output')
     disp(toc)
 catch
-    toc
+    fprintf('Error somewhere!')
+    disp(toc)
 end
 
 % later check

@@ -125,16 +125,16 @@ end
 Pm.p = p;    % restore AR value
 [A2,b2,C2] = update_spatial_components(Yr,Cm,f,[Am,b],Pm,options);
 % [C2,f2,P2,S2,YrA2] = update_temporal_components(Yr,A2,b2,C2,f,Pm,options);
-[C2,f2,P2,S2,~] = update_temporal_components(Yr,A2,b2,C2,f,Pm,options);
+[C2,f2,P2,S2,YrA2] = update_temporal_components(Yr,A2,b2,C2,f,Pm,options);
 
 
 %% do some plotting
 
 % [A_or,C_or,S_or,P_or] = order_ROIs(A2,C2,S2,P2); % order components
-[A_or,C_or,~,P_or] = order_ROIs(A2,C2,S2,P2); % order components
 % K_m = size(C_or,1);
-[df_f,F0] = extract_DF_F(Yr,A_or,C_or,P_or,options); % extract DF/F values (optional)
-tsG = C_or;
+% [df_f,F0] = extract_DF_F(Yr,A_or,C_or,P_or,options); % extract DF/F values (optional)
+[df_f,F0] = detrend_df_f(A2,b2,C2,f2,YrA2,options);
+tsG = C2;
 
 % fh4 = 
 fig = figure;

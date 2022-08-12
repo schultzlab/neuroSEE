@@ -137,13 +137,13 @@ Pm.p = p;    % restore AR value
 tsG = C2;
 
 % fh4 = 
-fig = figure;
-[Coor,json_file] = plot_contours(A_or,corr_image,options,0); % contour plot of spatial footprints
+% fig = figure;
+% [Coor,json_file] = plot_contours(A_or,corr_image,options,0); % contour plot of spatial footprints
 % savejson('jmesh',json_file,'filename');        % optional save json file with component coordinates (requires matlab json library)
 
-if ~display
-    close(fig);
-end
+% if ~display
+%     close(fig);
+% end
 
 %% display components
 

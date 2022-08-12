@@ -55,7 +55,7 @@ function frun_pipeline_list_imreg( list, reffile, conc_runs, numfiles, dostep, f
 
 if nargin<9, bl_prctile = 85; end
 % if nargin<8, see line 97
-if nargin<7, tsub = 10; end
+if nargin<7, tsub = 5; end
 if nargin<6, force = [0; 0; 0; 0; 0; 0]; end
 if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
 % if nargin<4, see line 156

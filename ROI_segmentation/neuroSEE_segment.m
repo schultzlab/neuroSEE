@@ -59,39 +59,42 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         list = fileorlist; file = [];
     end
     if isempty(list)
-        filedir = [ data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_', mcorr_method , '/', segment_method, '/' ];
-        fname_mat = [filedir file '_segment_output.mat'];
-        fname_fig1 = [filedir file '_ROIs.fig'];
-        fname_fig2 = [filedir file '_raw_timeseries.fig'];
-        fname_fig3 = [filedir file '_df_f.fig'];
-        fname_pref = [filedir file];
+        savedir = [ data_locn, 'Data/', file(1:8), '/Processed/', file, '/mcorr_', mcorr_method , '/', segment_method, '/' ];
+        fname_mat = [savedir file '_segment_output.mat'];
+        fname_fig1 = [savedir file '_ROIs.fig'];
+        fname_fig2 = [savedir file '_raw_timeseries.fig'];
+        fname_fig3 = [savedir file '_df_f.fig'];
+        fname_pref = [savedir file];
     else
         [ mouseid, expname, fov ] = find_mouseIDexpname(list);
         groupreg_method = params.methods.groupreg_method;
         mcorr_method = params.methods.mcorr_method;
         if ~isempty(fov)
-            filedir = [ data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
+            savedir = [ data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
                     mouseid '_' expname '_imreg_ref' reffile '/'];
         else
-            filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
+            savedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
                     mouseid '_' expname '_imreg_ref' reffile '/'];
         end
         if conc_runs
-            filedir = [filedir(1:end-1) '_concrunsrois/'];
+            savedir = [savedir(1:end-1) '_concrunsrois/'];
         end
-        fname_mat = [filedir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
-        fname_fig1 = [filedir mouseid '_' expname '_ref' reffile '_ROIs.fig'];
-        fname_fig2 = [filedir mouseid '_' expname '_ref' reffile '_raw_timeseries.fig'];
-        fname_fig3 = [filedir mouseid '_' expname '_ref' reffile '_df_f.fig'];
-        fname_pref = [filedir mouseid '_' expname '_ref' reffile ];
+        fname_mat = [savedir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
+        fname_fig1 = [savedir mouseid '_' expname '_ref' reffile '_ROIs.fig'];
+        fname_fig2 = [savedir mouseid '_' expname '_ref' reffile '_raw_timeseries.fig'];
+        fname_fig3 = [savedir mouseid '_' expname '_ref' reffile '_df_f.fig'];
+        fname_pref = [savedir mouseid '_' expname '_ref' reffile ];
     end
-
+    
+    prevstr = [];
     if force || ~exist(fname_mat,'file')
-        if isempty(reffile)
-            fprintf( '%s: Starting ROI segmentation\n', file );
+        if isempty(list)
+            str = sprintf( '%s: Starting ROI segmentation\n', file );
         else
-            fprintf( '%s: Starting ROI segmentation\n', [mouseid '_' expname] );
+            str = sprintf( '%s: Starting ROI segmentation\n', [mouseid '_' expname] );
         end
+        refreshdisp(str, prevstr);
+        
         if strcmpi(segment_method,'ABLE')
             maxcells = params.ROIsegment.ABLE.maxcells;
             cellrad = params.ROIsegment.ABLE.cellrad; 
@@ -132,7 +135,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         area = zeros(size(masks_all,3),1);
         invcirc = zeros(size(masks_all,3),1);
         inc = []; exc = []; 
-        try
+        try % ROI elimination
             for j = 1:size(masks_all,3)
                 mask = masks_all(borderpix:size(masks_all,1)-borderpix,borderpix:size(masks_all,2)-borderpix,j);
                 im = imclearborder(mask);
@@ -177,6 +180,14 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             df_f = df_f_all(inc,:);         elim_df_f = df_f_all(exc,:);
 
             % Save output
+            if isempty(list)
+                str = sprintf( '%s: Saving ROI segmentation output\n', file );
+            else
+                str = sprintf( '%s: Saving ROI segmentation output\n', [mouseid '_' expname] );
+            end
+            refreshdisp(str, prevstr);
+            prevstr = str;
+            
             output.incmasks = inc;  output.excmasks = exc;
             output.tsG = tsG;       output.elim_tsG = elim_tsG;
             output.df_f = df_f;     output.elim_df_f = elim_df_f;
@@ -185,12 +196,20 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             output.F0 = F0;
             output.A = A;
             output.params = params.ROIsegment;
-        catch
+        catch % Save ROI segmentation output before elimination criteria
             masks = masks_all;     
             tsG = tsG_all;           
             df_f = df_f_all;         
 
             % Save output
+            if isempty(list)
+                str = sprintf( '%s: Error in ROI elimination step, skipping step and saving all data\n', file );
+            else
+                str = sprintf( '%s: Error in ROI elimination step, skipping step and saving all data\n', [mouseid '_' expname] );
+            end
+            refreshdisp(str, prevstr);
+            prevstr = str;
+            
             output.tsG = tsG;       
             output.df_f = df_f;     
             output.masks = masks;   
@@ -198,26 +217,30 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             output.F0 = F0;
             output.A = A;
             output.params = params.ROIsegment;
-            fprintf('%s: Error in ROI elimination step, skipping step and saving all data.\n',file);
         end
         
-        if ~exist( filedir, 'dir' ), mkdir( filedir ); fileattrib(filedir,'+w','g','s'); end
+        if ~exist( savedir, 'dir' ), mkdir( savedir ); fileattrib(savedir,'+w','g','s'); end
         save(fname_mat,'-struct','output');
 
         % Plot masks on correlation image and save plot
         plotROIsegmentdata(corr_image, masks, elim_masks, tsG, df_f, fname_pref);
 
-        fprintf('%s: ROI segmentation done\n',file);
-
-    else
-        if isempty(reffile)
-            prevstr = sprintf( '%s: Segmentation output found. Loading...\n', file );
+        if isempty(list)
+            str = sprintf( '%s: ROI segmentation done\n', file );
         else
-            prevstr = sprintf( '%s: Segmentation output found. Loading...\n', [mouseid '_' expname] );
+            str = sprintf( '%s: ROI segmentation done\n', [mouseid '_' expname] );
         end
-        cprintf(prevstr)
-        
+        refreshdisp(str, prevstr);
+    else
         % If it exists, load it
+        if isempty(list)
+            str = sprintf( '%s: Segmentation output found. Loading...\n', file );
+        else
+            str = sprintf( '%s: Segmentation output found. Loading...\n', [mouseid '_' expname] );
+        end
+        refreshdisp(str, prevstr);
+        prevstr = str;
+        
         segmentOutput = load(fname_mat);
         masks = segmentOutput.masks;
         if isfield(segmentOutput,'cell_tsG')
@@ -246,11 +269,11 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         if any([~exist(fname_fig1,'file'),~exist(fname_fig2,'file'),~exist(fname_fig3,'file')])
            plotROIsegmentdata(corr_image, masks, elim_masks, tsG, df_f, fname_pref);
         end
-        if isempty(reffile)
-            newstr = sprintf( '%s: Segmentation output found and loaded\n', file );
+        if isempty(list)
+            str = sprintf( '%s: Segmentation output found and loaded\n', file );
         else
-            newstr = sprintf( '%s: Segmentation output found and loaded\n', [mouseid '_' expname] );
+            str = sprintf( '%s: Segmentation output found and loaded\n', [mouseid '_' expname] );
         end
-        refreshdisp(newstr, prevstr)
+        refreshdisp(str, prevstr)
     end
 end

@@ -8,9 +8,9 @@
 % The images are then concatenated.
 % For the consolidated GROUP image data, processing steps include
 % (2) roi segmentation 
-% (3) neuropil decontamination and timeseries extraction
-% (4) spike extraction
-% (5) tracking data extraction
+% (3) neuropil decontamination and timeseries estimation
+% (4) spike estimation
+% (5) tracking data estimation
 % (6) place field mapping
 %
 % INPUTS
@@ -42,7 +42,7 @@
 %               This reduces out-of-memory errors. Keep tsub value below 10.
 % min_SNR   : (optional, default: 3 for 330x330um FOV data, 2.5 for 490x490um FOV data) CaImAn parameter. 
 %               Minimum SNR for accepting exceptional events. 
-% bl_prctile : (optional, default: 85) Parameter for spike extraction.  Percentile to be
+% bl_prctile : (optional, default: 85) Parameter for spike estimation.  Percentile to be
 %               used for estimating baseline.
 % 
 % Matlab version requirement for running on hpc: 
@@ -152,7 +152,7 @@ MatlabVer = str2double(release(1:4));
 % existing processed data
 % check(1) check for existing data in processing step (2) roi segmentation 
 % check(2)                                       step (3) neuropil decontamination
-% check(3)                                       step (4) spike extraction
+% check(3)                                       step (4) spike estimation
 % check(4)                                       step (5) tracking data consolidation
 % check(5)                                       step (6) place field mapping
 % check(6) checks for existing mat file pooling all processed data for list
@@ -325,9 +325,9 @@ if dostep(3)
             s = load(fname_mat);
             dtsG = s.dtsG;
             if size(dtsG,1) ~= size(tsG,1)
-                force([3,4,6]) = true; % force FISSA step if no. of ROIs in fissa and segmentation outputs don't match
+                force([3,4,6]) = true; % force FISSA step if no. of ROIs in segmentation and fissa outputs don't match
                 dtsG = [];
-                fprintf('%s: FISSA output found. Redoing FISSA. No. of ROIs in FISSA and segmentation outputs do not match.\n', [mouseid '_' expname]);
+                fprintf('%s: FISSA output found. Redoing FISSA. No. of ROIs in segmentation and FISSA outputs do not match.\n', [mouseid '_' expname]);
             end
         end
         if force(3) || ~check_list(2)
@@ -361,37 +361,22 @@ if dostep(4)
         s = load(fname_mat);
         spikes = s.spikes;
         if size(spikes,1) ~= size(tsG,1)
-            force([4,6]) = true; % force spike estimation step if no. of ROIs in spike estimation and segmentation outputs don't match
+            force([4,6]) = true; % force spike estimation step if no. of ROIs in segmentation and spike estimation outputs don't match
 %             clear dtsG
-            fprintf('%s: Spike data found. Redoing spike estimation. ROIs in spike data and segmentation output do not match.\n', [mouseid '_' expname]);
+            fprintf('%s: Spike data found. Redoing spike estimation. ROIs in segmentation output and spike data do not match.\n', [mouseid '_' expname]);
         end
-    end
-    if force(4) || ~check_list(3) 
-        [ spikes, params ] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4), list, reffile, true, conc_runs );
-            
-        fprintf('%s: Saving spike data\n', [mouseid '_' expname]);
-        grp_sname = [grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes.mat'];
-        if force(4) || ~check_list(3)
-            spike_output.spikes = spikes;
-            spike_output.params = params.spkExtract;
-            if ~exist([grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'],'dir')
-                mkdir([grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/']);
-                fileattrib([grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'],'+w','g','s');
-            end
-            save(grp_sname,'-struct','spike_output');
-        end
-    else
-        str = sprintf('%s: Loading spike data\n', [mouseid '_' expname]);
-        cprintf(str);
-        fname_mat = [grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes.mat'];
-        s = load(fname_mat);
-        spikes = s.spikes;
-        newstr = sprintf('%s: Spike data loaded\n', [mouseid '_' expname]);
-        refreshdisp(newstr, str)
     end
     
-    if force(4) || ~exist([grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes.fig'],'file')
-        plotSpikes(spikes, [grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes']);
+    [ spikes, params ] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4), list, reffile, true, conc_runs );
+
+    % Copy files from grp_sdir to folders for individual runs
+    if ~contains(list,'-')
+        if nargin<4 || isempty(numfiles)
+            fprintf('%s: Number of files per run not provided. Spike estimation output was not distributed to run folders.\n', [mouseid '_' expname]);
+        else
+            divide = force(4) || check_list(3);
+            divide_expdata_into_runs( data_locn, list, reffile, numfiles, [], [1,1,1], [0,0,divide] );
+        end
     end
 else
     fprintf('%s: Spike estimation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
@@ -475,7 +460,11 @@ end
 %% 6) PFmapping
 
 if dostep(6) && ~contains(list,'-')                          
-    fprintf('%s: Run PFmapping on individual runs, not on whole experiment. Skipping step.\n', [mouseid '_' expname]);    
+    fprintf('%s: Run PFmapping on individual runs, not on whole experiment. Skipping step.\n', [mouseid '_' expname]); 
+    t = toc;
+    str = sprintf('%s: Processing done in %g hrs\n', [mouseid '_' expname], round(t/3600,2));
+    cprintf(str)
+    return
 end
 
 if dostep(6)

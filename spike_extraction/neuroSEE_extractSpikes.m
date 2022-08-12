@@ -3,27 +3,41 @@
 % This function extracts spikes from df_f or ddf_f if it exists
 
 % INPUTS
-%   df_f
+%   df_f        : deltaf/f time series from green channel (ROI segmentation output)
 %   ddf_f       : decontaminated (fissa-corrected) df_f
-%   data_locn   : GCaMP data repository
-%   file        : part of filename of 2P image in the format
-%                   yyyymmdd_HH_MM_SS
 %   params.
 %       RsmoothFac   : width of smoothing window
 %       g            : OASIS fluorescence impulse factor
 %       lambda       : OASIS sparsity penalty
-%   force       : if =1, existing R and spike data is overwritten
+%   fileorlist  : file - part of file name of image stacks in the format
+%               yyyymmdd_hh_mm_ss
+%               * Can also be a list - name of text file containing filenames of files 
+%               to be concatenated for ROI segmentation. Typically in the format 
+%               'list_m##_expname.txt'. When a list is given, a reffile
+%               should be provided.%   conc_runs  : flag if rois were segmented from concatenated files from
+%               different runs e.g. fam1fam2fam1-fam1 but rois are
+%               for fam1fam2fam1. DO NOT flag for fam1fam2fam1 files since in
+%               this case it is understood that the rois are from the
+%               concatenated runs.
+%   reffile     : (optional) file to be used as registration template. Required if 
+%               fileorlist above is a list.This file is usually part of 'list'
+%               but does not have to be. 
+%   conc_runs    : (optional, default: false) flag if rois were segmented from concatenated files from
+%               different environments e.g. fam1fam2fam1-fam1 but rois are
+%               for fam1fam2fam1. DO NOT flag for fam1fam2fam1 files since in
+%               this case it is understood that the rois are from the
+%               concatenated environments.
+%   force       : (optional, default: false) if true, existing R and spike data is overwritten
 %
 % OUTPUS
 %   spikes      : spikes extracted from R
 %   params
 
-function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force, list, reffile, fsave, conc_runs )
-    if nargin<10, conc_runs = false; end
-    if nargin<9, fsave = true; end
-    if nargin<8, reffile = []; end
-    if nargin<7, list = []; end
-    if nargin<6, force = 0; end
+function [spikes, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, fileorlist, reffile, conc_runs, grp_sdir, force )
+    if nargin<9, force = 0; end
+    if nargin<8, list = []; end
+    if nargin<7, conc_runs = false; end
+    if nargin<6, reffile = []; end
 
     mcorr_method = params.methods.mcorr_method;
     segment_method = params.methods.segment_method;
@@ -34,34 +48,31 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
         str_fissa = 'noFISSA';
     end
     
-    if isempty(list)
-        filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/'...
+    % determine whether fileorlist is a file or list
+    if ~strncmp(fileorlist,'list',4)
+        file = fileorlist; list = [];
+    else
+        list = fileorlist; file = [];
+    end
+
+    if isempty(list) % file
+        savedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/'...
                    segment_method '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
-        if ~exist([filedir file '_spikes_output.mat'],'file')
-            fname_mat = [filedir file '_spikes.mat'];
+        if ~exist([savedir file '_spikes_output.mat'],'file')
+            fname_mat = [savedir file '_spikes.mat'];
         else
-            fname_mat = [filedir file '_spikes_output.mat'];
+            fname_mat = [savedir file '_spikes_output.mat'];
         end
-        fname_fig = [filedir file '_spikes.fig'];
+        fname_fig = [savedir file '_spikes.fig'];
     else
         [ mouseid, expname ] = find_mouseIDexpname(list);
-        if fsave
-            if conc_runs
-                concrunsname = find_concrunsname( list );
-                expname = concrunsname;
-            end
-            if strcmpi(file, reffile)
-                filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/mcorr_' mcorr_method '/' ...
-                    segment_method '_' mouseid '_' expname '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' ];
-            else
-                filedir = [data_locn 'Data/' file(1:8) '/Processed/' file '/imreg_' mcorr_method '_ref' reffile '/' ...
-                            segment_method '_' mouseid '_' expname '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' ];
-            end
-            fname_mat = [filedir file '_' mouseid '_' expname '_ref' reffile '_spikes.mat'];
-            fname_fig = [filedir file '_' mouseid '_' expname '_ref' reffile '_spikes.fig'];
-        else
-            fname_mat = [];
+        if conc_runs
+            concrunsname = find_concrunsname( list );
+            expname = concrunsname;
         end
+        savedir = [grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
+        fname_mat = [savedir mouseid '_' expname '_ref' reffile '_spikes.mat'];
+        fname_fig = [savedir mouseid '_' expname '_ref' reffile '_spikes.fig'];
     end    
 
     if ~isempty(ddf_f)
@@ -70,59 +81,72 @@ function [spikes, params, fname_mat] = neuroSEE_extractSpikes( df_f, ddf_f, data
         C = df_f;
     end
 
+    prevstr = [];
     if force || ~exist(fname_mat,'file')
         if isempty(list)
-            str = sprintf( '%s: Doing spike extraction\n', file );
+            str = sprintf( '%s: Doing spike estimation\n', file );
         else
-            if fsave
-                str = sprintf( '%s: Doing spike extraction\n', [mouseid '_' expname '_' file] );
-            else
-                str = sprintf( '%s: Doing spike extraction\n', [mouseid '_' expname] );
-            end
+            str = sprintf( '%s: Doing spike estimation\n', [mouseid '_' expname] );
         end
-        cprintf(str)
+        refreshdisp(str, prevstr);
+        prevstr = str;
 
         spikes = extractSpikes( C, params.spkExtract );
         
-        if fsave
-            % Save output
-            spike_output.spikes = spikes;
-            if ~exist(filedir,'dir'), mkdir(filedir); fileattrib(filedir,'+w','g','s'); end
-            spike_output.params = params.spkExtract;
-            save(fname_mat,'-struct','spike_output');
-
-            % Make and save plot
-            plotSpikes(spikes, fname_fig(1:end-4));
-        end
+        % Save output
+        spike_output.spikes = spikes;
+        spike_output.params = params.spkExtract;
         
         if isempty(list)
-            currstr = sprintf( '%s: Spike extraction done\n', file );
+            str = sprintf( '%s: Saving spike data\n', file );
         else
-            if fsave
-                currstr = sprintf( '%s: Spike extraction done\n', [mouseid '_' expname '_' file] );
-            else
-                currstr = sprintf( '%s: Spike extraction done\n', [mouseid '_' expname] );
-            end
+            str = sprintf( '%s: Saving spike data\n', [mouseid '_' expname] );
         end
-        refreshdisp(currstr,str)
+        refreshdisp(str, prevstr);
+        prevstr = str;
+        
+        if ~exist(savedir,'dir'), mkdir(savedir); fileattrib(savedir,'+w','g','s'); end
+        save(fname_mat,'-struct','spike_output');
+
+        % Make and save plot
+        plotSpikes(spikes, fname_fig(1:end-4));
+        
+        if isempty(list)
+            str = sprintf( '%s: Spike estimation done\n', file );
+        else
+            str = sprintf( '%s: Spike estimation done\n', [mouseid '_' expname] );
+        end
+        refreshdisp(str, prevstr);
     else
+        if isempty(list)
+            str = sprintf('%s: Loading spike data\n', file);
+        else
+            str = sprintf('%s: Loading spike data\n', [mouseid '_' expname]);
+        end
+        refreshdisp(str, prevstr);
+        prevstr = str;
         spike_output = load(fname_mat);
         spikes = spike_output.spikes;
         params.spkExtract = spike_output.params;
         
-        if fsave && ~exist(fname_fig,'file')
+        if isempty(list)
+            str = sprintf('%s: Spike data loaded\n', file);
+        else
+            str = sprintf('%s: Spike data loaded\n', [mouseid '_' expname]);
+        end
+        refreshdisp(str, prevstr);
+        prevstr = str;
+        
+        if ~exist(fname_fig,'file')
             plotSpikes(spikes, fname_fig(1:end-4));
         end
 
         if isempty(list)
-            fprintf( '%s: Spike extraction data found and loaded\n', file );
+            str = sprintf( '%s: Spike estimation data found and loaded\n', file );
         else
-            if ~isempty(file)
-                fprintf( '%s: Spike extraction data found and loaded\n', [mouseid '_' expname '_' file] );
-            else
-                fprintf( '%s: Spike extraction data found and loaded\n', [mouseid '_' expname] );
-            end
+            str = sfprintf( '%s: Spike estimation data found and loaded\n', [mouseid '_' expname] );
         end
+        refreshdisp(str, prevstr);
     end
 
 end % function

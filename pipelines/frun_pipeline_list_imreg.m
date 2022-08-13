@@ -78,7 +78,7 @@ files = extractFilenamesFromTxtfile( listfile );
 if nargin<2, reffile = files(1,:); end
 Nfiles = size(files,1);
 
-% Auto-defined 
+% Auto-defined parameters
 % FOV area = FOV x FOV, FOV in um
 if str2double(files(1,1:4)) > 2018
     FOV = 490;                     
@@ -161,10 +161,10 @@ MatlabVer = str2double(release(1:4));
 if ~contains(list,'-')                          % conc_runs = true is only an option for sub experiments
     conc_runs = false;                              % e.g. fam1fam2-fam1, fam1novfam1-nov 
     if nargin<4 || isempty(numfiles)
-        fprintf('%s: Number of files per run not provided. ROI segmentation data will not be distributed to run folders.\n', [mouseid '_' expname]);
+        fprintf('%s: Number of files per run not provided. Timeseries data will not be distributed to run folders.\n', [mouseid '_' expname]);
     end
 end
-force = logicalForce(force);        % Only allow combinations of force/step values that make sense
+force = logicalForce(force);        % Only allow combinations of force/dostep values that make sense
 dostep = logicaldostep(dostep);     % because later steps require earlier ones
 
 check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_runs);
@@ -361,13 +361,13 @@ if dostep(4)
         s = load(fname_mat);
         spikes = s.spikes;
         if size(spikes,1) ~= size(tsG,1)
-            force([4,6]) = true; % force spike estimation step if no. of ROIs in segmentation and spike estimation outputs don't match
+            force([4,6]) = true; % force spike estimation step if no. of ROIs in segmentation and spike data don't match
 %             clear dtsG
             fprintf('%s: Spike data found. Redoing spike estimation. ROIs in segmentation output and spike data do not match.\n', [mouseid '_' expname]);
         end
     end
     
-    [ spikes, params ] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, file, params, force(4), list, reffile, true, conc_runs );
+    [ spikes, params ] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, list, reffile, conc_runs, grp_sdir, force(4) );
 
     % Copy files from grp_sdir to folders for individual runs
     if ~contains(list,'-')

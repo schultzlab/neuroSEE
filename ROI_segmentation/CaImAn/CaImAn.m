@@ -3,7 +3,7 @@
 % This function extracts ROIs and their decontaminated signals from a green
 % channel image stack using CaImAn
 
-function [tsG, df_f, masks, corr_image, F0, A_or] = CaImAn( imG, options, display )
+function [tsG, df_f, spikes, masks, corr_image, F0, A_or] = CaImAn( imG, options, display )
 
 if nargin<3, display = false; end
 if nargin<2 
@@ -124,7 +124,6 @@ end
 
 Pm.p = p;    % restore AR value
 [A2,b2,C2] = update_spatial_components(Yr,Cm,f,[Am,b],Pm,options);
-% [C2,f2,P2,S2,YrA2] = update_temporal_components(Yr,A2,b2,C2,f,Pm,options);
 [C2,f2,P2,S2,YrA2] = update_temporal_components(Yr,A2,b2,C2,f,Pm,options);
 
 
@@ -132,13 +131,15 @@ Pm.p = p;    % restore AR value
 
 [A_or,C_or,S_or,P_or] = order_ROIs(A2,C2,S2,P2); % order components
 % K_m = size(C_or,1);
-% [df_f,F0] = extract_DF_F(Yr,A_or,C_or,P_or,options); % extract DF/F values (optional)
-[df_f,F0] = detrend_df_f(A2,b2,C2,f2,YrA2,options);
-tsG = C2;
+[df_f,F0] = extract_DF_F(Yr,A_or,C_or,P_or,options); % extract DF/F values (optional)
+tsG = C_or; spikes = S_or;
+% [df_f,F0] = detrend_df_f(A2,b2,C2,f2,YrA2,options);
+% tsG = C2;
 
 % fh4 = 
 fig = figure;
-[Coor,json_file] = plot_contours(A_or,corr_image,options,0); % contour plot of spatial footprints
+% [Coor,json_file] = plot_contours(A_or,corr_image,options,0); % contour plot of spatial footprints
+[Coor,~] = plot_contours(A_or,corr_image,options,0); % contour plot of spatial footprints
 % savejson('jmesh',json_file,'filename');        % optional save json file with component coordinates (requires matlab json library)
 
 if ~display

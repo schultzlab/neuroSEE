@@ -1,4 +1,4 @@
-function GUI_viewtimeseries(tsG, df_f, dtsG, ddf_f, spikes)
+function GUI_viewtimeseries(tsG, df_f, spikes, dtsG, ddf_f)
 
 hdl_gui = figure('Name','FISSA result','NumberTitle','off','Resize','off',...
     'Position',[1087 1022 1600 550]);
@@ -79,21 +79,21 @@ plotResults(1);
     function plotResults(id)
         x = (1:length(tsG(id,:)))/30.91;
         axes(ax1); 
-            plot(tsG(id,:),'b');
+            plot(x,tsG(id,:),'b');
             ylabel('Fluor');
         axes(ax2); 
-            plot(df_f(id,:),'b');
+            plot(x,df_f(id,:),'b');
             ylabel('df/f');
         axes(ax3); 
-            plot(spikes(id,:),'b');
-            ylabel('Spikes');
-        axes(ax4); 
-            plot(df_f(id,:),'r');
-            ylabel('df/f detrended');
-        axes(ax5); 
-            plot(spikes(id,:),'r');
+            plot(x,spikes(id,:),'b');
             ylabel('Spikes');
             xlabel('Time (s)');
+%         axes(ax4); 
+%             plot(x,dtsG(id,:),'r');
+%             ylabel('df/f detrended');
+%         axes(ax5); 
+%             plot(x,ddf_f(id,:),'r');
+%             ylabel('Spikes');
 %         set(text_mouseID,'string',mouseID{id});
 %         set(text_fov,'string',['fov ' fov{id}]);
 %         set(text_genotype,'string',genotype{id});

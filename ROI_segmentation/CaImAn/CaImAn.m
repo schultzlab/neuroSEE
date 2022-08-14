@@ -122,7 +122,7 @@ end
 
 %% refine estimates excluding rejected components
 
-Pm.p = p;    % restore AR value
+Pm.p = 0;    % restore AR value
 [A2,b2,C2] = update_spatial_components(Yr,Cm,f,[Am,b],Pm,options);
 [C2,f2,P2,S2,YrA2] = update_temporal_components(Yr,A2,b2,C2,f,Pm,options);
 

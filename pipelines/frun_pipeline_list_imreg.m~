@@ -192,7 +192,7 @@ else
             mouseid '_' expname '_imreg_ref' reffile '/'];
 end
 if conc_runs
-    grp_sdir = [grp_sdir(1:end-1) '_concrunsrois/'];
+    grp_sdir = [grp_sdir(1:end-1) '_conrunsrois/'];
 end
 if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); fileattrib(grp_sdir,'+w','g','s'); end
 
@@ -232,11 +232,11 @@ if dostep(1)
                 end
 
                 if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
-                    [ imG{n}, params.mcorr, ~, template_g, template_r ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
+                    [ imG{n}, params.mcorr, template_g, template_r ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
                                                             mcorr_method, params.mcorr, reffile, force(1), list, false );
                     imR = [];
-                else
-                    [ imG{n}, params.mcorr, imR{n}, template_g, template_r ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
+                else % ABLE
+                    [ imG{n}, params.mcorr, template_g, template_r, imR{n},  ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
                                                             mcorr_method, params.mcorr, reffile, force(1), list, false );
                 end
             else
@@ -259,8 +259,13 @@ if dostep(1)
                     template_g = c.green.meanregframe;
                     template_r = c.red.meanregframe;
                     fig = figure; 
-                    subplot(121); imagesc(template_g); title('GCaMP6');
-                    subplot(122); imagesc(template_r); title('mRuby');
+                    subplot(121); imagesc(template_g); title(virus);
+                        if strcmp(virus,'jGCaMP7s')
+                            redfluor = 'tdTomato';
+                        else
+                            redfluor = 'mRuby';
+                        end
+                    subplot(122); imagesc(template_r); title(redfluor);
                     save(fname_mat,'template_g','template_r')
                     savefig(fig, fname_fig(1:end-4));
                     saveas(fig, fname_fig(1:end-4),'png');
@@ -293,10 +298,24 @@ if dostep(1)
     else
         fprintf('%s: Registered images found. Loading templates. Skipping image registration.\n', [mouseid '_' expname]);
         imG = []; imR = [];
-        fname_mat = [grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template.mat'];
+        c = load([grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template.mat']);
+        template_g = c.template_g;
+        template_r = c.template_r;
+        if ~exist([grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template.fig'], 'file') || ...
+           ~exist([grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template.png'], 'file')
+            fig = figure; 
+            subplot(121); imagesc(template_g); title('green channel');
+            subplot(122); imagesc(template_r); title('red channel');
+            save(fname_mat,'template_g','template_r')
+            savefig(fig, fname_fig(1:end-4));
+            saveas(fig, fname_fig(1:end-4),'png');
+            close(fig);
+        end
         m = load([grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
         framesperfile = m.framesperfile;
     end
+    
+    
 else
     fprintf('%s: No processing steps ticked. Cannot proceed.\n', [mouseid '_' expname]);
     return
@@ -382,7 +401,7 @@ if dostep(4)
             fprintf('%s: Number of files per run not provided. Spike estimation output was not distributed to run folders.\n', [mouseid '_' expname]);
         else
             divide = force(4) || ~check_list(3);
-            divide_expdata_into_runs( data_locn, list, reffile, numfiles, [], [1,1,1], [0,0,divide] );
+            divide_expdata_into_runs( data_locn, list, reffile, numfiles, [], [1,dofissa,1], [0,0,divide] );
         end
     end
 else

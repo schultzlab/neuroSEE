@@ -259,8 +259,13 @@ if dostep(1)
                     template_g = c.green.meanregframe;
                     template_r = c.red.meanregframe;
                     fig = figure; 
-                    subplot(121); imagesc(template_g); title('GCaMP6');
-                    subplot(122); imagesc(template_r); title('mRuby');
+                    subplot(121); imagesc(template_g); title(virus);
+                        if strcmp(virus,'jGCaMP7s')
+                            redfluor = 'tdTomato';
+                        else
+                            redfluor = 'mRuby';
+                        end
+                    subplot(122); imagesc(template_r); title(redfluor);
                     save(fname_mat,'template_g','template_r')
                     savefig(fig, fname_fig(1:end-4));
                     saveas(fig, fname_fig(1:end-4),'png');
@@ -296,6 +301,20 @@ if dostep(1)
         c = load([grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template.mat']);
         template_g = c.template_g;
         template_r = c.template_r;
+        if ~exist([grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template.fig'], 'file') || ...
+           ~exist([grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template.png'], 'file')
+            fig = figure; 
+            subplot(121); imagesc(template_g); title(virus);
+                if strcmp(virus,'jGCaMP7s')
+                    redfluor = 'tdTomato';
+                else
+                    redfluor = 'mRuby';
+                end
+            subplot(122); imagesc(template_r); title(redfluor);
+            savefig(fig, [grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template']);
+            saveas(fig, [grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template'],'png');
+            close(fig);
+        end
         m = load([grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
         framesperfile = m.framesperfile;
     end

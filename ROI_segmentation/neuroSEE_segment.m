@@ -35,7 +35,7 @@
 %   corr_image  : correlation image from green channel
 %   params      : parameters for specific roi segmentation method
 
-function [tsG, df_f, spikes, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, fileorlist, reffile, conc_runs, force, mean_imR )
+function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, fileorlist, reffile, conc_runs, force, mean_imR )
     
     if nargin<8, mean_imR = []; end
     if nargin<7, force = false; end
@@ -120,7 +120,7 @@ function [tsG, df_f, spikes, masks, corr_image, params] = neuroSEE_segment( imG,
             if runpatches
                 [tsG_all, df_f_all, masks_all, corr_image, F0, A] = CaImAn_patches( imG, params.ROIsegment.CaImAn );
             else
-                [tsG_all, df_f_all, spikes_all, masks_all, corr_image, F0, A] = CaImAn( imG, params.ROIsegment.CaImAn );
+                [tsG_all, df_f_all, masks_all, corr_image, F0, A] = CaImAn( imG, params.ROIsegment.CaImAn );
             end
             df_f_all = full(df_f_all);
         end
@@ -178,11 +178,6 @@ function [tsG, df_f, spikes, masks, corr_image, params] = neuroSEE_segment( imG,
             masks = masks_all(:,:,inc);     elim_masks = masks_all(:,:,exc);
             tsG = tsG_all(inc,:);           elim_tsG = tsG_all(exc,:);
             df_f = df_f_all(inc,:);         elim_df_f = df_f_all(exc,:);
-            try
-                spikes = spikes_all(inc,:);         
-                elim_spikes = spikes_all(exc,:);
-            catch
-            end
 
             % Save output
             if isempty(list)
@@ -196,11 +191,6 @@ function [tsG, df_f, spikes, masks, corr_image, params] = neuroSEE_segment( imG,
             output.incmasks = inc;  output.excmasks = exc;
             output.tsG = tsG;       output.elim_tsG = elim_tsG;
             output.df_f = df_f;     output.elim_df_f = elim_df_f;
-            try
-                output.spikes = spikes; 
-                output.elim_spikes = elim_spikes;
-            catch
-            end
             output.masks = masks;   output.elim_masks = elim_masks;
             output.corr_image = corr_image;
             output.F0 = F0;
@@ -222,10 +212,6 @@ function [tsG, df_f, spikes, masks, corr_image, params] = neuroSEE_segment( imG,
             
             output.tsG = tsG_all;       
             output.df_f = df_f_all;  
-            try
-                output.spikes = spikes_all;
-            catch
-            end
             output.masks = masks_all;
             output.corr_image = corr_image;
             output.F0 = F0;
@@ -276,16 +262,6 @@ function [tsG, df_f, spikes, masks, corr_image, params] = neuroSEE_segment( imG,
             elim_masks = segmentOutput.elim_masks;
         else
             elim_masks = [];
-        end
-        if isfield(segmentOutput,'spikes')
-            spikes = segmentOutput.spikes;
-        else
-            spikes = [];
-        end
-        if isfield(segmentOutput,'elim_spikes')
-            elim_spikes = segmentOutput.elim_spikes;
-        else
-            elim_spikes = [];
         end
         params.ROIsegment = segmentOutput.params;
 

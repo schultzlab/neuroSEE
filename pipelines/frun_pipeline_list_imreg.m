@@ -297,7 +297,7 @@ end
 
 %% 2) ROI segmentation
 if dostep(2)
-    [tsG, df_f, spikes_CaImAn, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, list, reffile, conc_runs, force(2), mean(imR,3) );
+    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, list, reffile, conc_runs, force(2), mean(imR,3) );
                                              
     % Copy files from grp_sdir to folders for individual runs
     if ~contains(list,'-')
@@ -498,7 +498,7 @@ if dostep(6)
 
     fprintf('%s: Saving all data\n', [mouseid '_' expname]);
     save(sname_allData,'list','corr_image','masks','tsG','df_f',...
-                        'spikes','spikes_CaImAn','downTrackdata','PFdata','hist','asd','params');
+                        'spikes','downTrackdata','PFdata','hist','asd','params');
     if ~isempty(dtsG), save(sname_allData,'-append','dtsG'); end
     if ~isempty(ddf_f), save(sname_allData,'-append','ddf_f'); end
 else

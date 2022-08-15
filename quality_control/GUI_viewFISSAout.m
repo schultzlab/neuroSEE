@@ -1,4 +1,4 @@
-function GUI_viewFISSAoutmatlab(raw, result)
+function GUI_viewFISSAout(raw, result)
 
 hdl_gui = figure('Name','FISSA result','NumberTitle','off','Resize','off',...
     'Position',[1087 1022 907 666]);

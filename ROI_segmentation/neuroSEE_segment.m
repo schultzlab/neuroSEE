@@ -77,7 +77,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
                     mouseid '_' expname '_imreg_ref' reffile '/'];
         end
         if conc_runs
-            savedir = [savedir(1:end-1) '_concrunsrois/'];
+            savedir = [savedir(1:end-1) '_conrunrois/'];
         end
         fname_mat = [savedir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
         fname_fig1 = [savedir mouseid '_' expname '_ref' reffile '_ROIs.fig'];

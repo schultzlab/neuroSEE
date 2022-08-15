@@ -74,7 +74,13 @@ end
 % Mouseid, Experiment name, files
 [ mouseid, expname, fov ] = find_mouseIDexpname(list);
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
-files = extractFilenamesFromTxtfile( listfile );
+try
+    files = extractFilenamesFromTxtfile( listfile );
+catch
+    beep
+    cprintf('Errors','List does not exist. Check list name.\n');    
+    return
+end
 if nargin<2, reffile = files(1,:); end
 Nfiles = size(files,1);
 
@@ -186,7 +192,7 @@ else
             mouseid '_' expname '_imreg_ref' reffile '/'];
 end
 if conc_runs
-    grp_sdir = [grp_sdir(1:end-1) '_concrunsrois/'];
+    grp_sdir = [grp_sdir(1:end-1) '_conrunsrois/'];
 end
 if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); fileattrib(grp_sdir,'+w','g','s'); end
 
@@ -226,11 +232,11 @@ if dostep(1)
                 end
 
                 if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
-                    [ imG{n}, ~, params.mcorr ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
+                    [ imG{n}, params.mcorr, ~, template_g, template_r ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
                                                             mcorr_method, params.mcorr, reffile, force(1), list, false );
                     imR = [];
                 else
-                    [ imG{n}, ~, params.mcorr, imR{n} ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
+                    [ imG{n}, params.mcorr, imR{n}, template_g, template_r ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
                                                             mcorr_method, params.mcorr, reffile, force(1), list, false );
                 end
             else
@@ -285,8 +291,11 @@ if dostep(1)
             imR = X;
         end
     else
-        fprintf('%s: Registered images found. Skipping image registration.\n', [mouseid '_' expname]);
+        fprintf('%s: Registered images found. Loading templates. Skipping image registration.\n', [mouseid '_' expname]);
         imG = []; imR = [];
+        c = load([grp_sdir mouseid '_' expname '_ref' reffile '_imreg_template.mat']);
+        template_g = c.template_g;
+        template_r = c.template_r;
         m = load([grp_sdir mouseid '_' expname '_ref' reffile '_framesperfile.mat']);
         framesperfile = m.framesperfile;
     end
@@ -367,7 +376,7 @@ if dostep(4)
         end
     end
     
-    [ spikes, params ] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, list, reffile, conc_runs, grp_sdir, force(4) );
+    [ spikes, bl, neuron_sn, g, params ] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, list, reffile, conc_runs, grp_sdir, force(4) );
 
     % Copy files from grp_sdir to folders for individual runs
     if ~contains(list,'-')
@@ -497,8 +506,10 @@ if dostep(6)
                       '_allData_blprctile' num2str(bl_prctile) '.mat' ];
 
     fprintf('%s: Saving all data\n', [mouseid '_' expname]);
-    save(sname_allData,'list','corr_image','masks','tsG','df_f',...
-                        'spikes','downTrackdata','PFdata','hist','asd','params');
+    save(sname_allData, 'list','reffile','template_g','template_r',...
+                        'corr_image','masks','tsG','df_f',...
+                        'spikes','bl','neuron_sn','g',...
+                        'downTrackdata','PFdata','hist','asd','params');
     if ~isempty(dtsG), save(sname_allData,'-append','dtsG'); end
     if ~isempty(ddf_f), save(sname_allData,'-append','ddf_f'); end
 else

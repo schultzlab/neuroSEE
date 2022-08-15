@@ -71,8 +71,14 @@ function check = checkforExistingProcData(data_locn, text, params, reffile, conc
             end
             
             % 4) Check for existing consolidated tracking data 
-            if exist([data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
-                      mouseid '_' expname '_downTrackdata.mat'],'file')
+            if ~isempty(fov)
+                trackmat = [data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/'...
+                      mouseid '_' expname '_downTrackdata.mat'];
+            else
+                trackmat = [data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/'...
+                      mouseid '_' expname '_downTrackdata.mat'];
+            end
+            if exist(trackmat,'file')
                 check(4) = 1;
             end
             

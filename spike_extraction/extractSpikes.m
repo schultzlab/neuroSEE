@@ -1,7 +1,7 @@
 % Written by Ann Go
 % Script for spike estimation
 
-function spikes = extractSpikes( ts, options )
+function [spikes, bl, neuron_sn, g] = extractSpikes( ts, options )
 if nargin<2
     params = neuroSEE_setparams();
     options = params.spkExtract;
@@ -20,12 +20,18 @@ for i = 1:N
 end
 
 spikes = zeros(N,T);
+bl = zeros(N,1);            % baseline for each trace (should be close to zero since traces are DF/F)
+neuron_sn = zeros(N,1);     % noise level at each trace
+g = cell(N,1);              % discrete time constants for each trace
 for i = 1:N
     spkmin = spk_SNR*GetSn(ts(i,:));
     lam = choose_lambda(exp(-1/(fr*decay_time)),GetSn(ts(i,:)),lam_pr);
 
-    [~,spk,~] = deconvolveCa(ts(i,:),'ar2','method','thresholded','optimize_pars',true,'maxIter',20,...
+    [~,spk,opts_oasis] = deconvolveCa(ts(i,:),'ar2','method','thresholded','optimize_pars',true,'maxIter',20,...
                             'window',150,'lambda',lam,'smin',spkmin);
                         
     spikes(i,:) = spk;
+    bl(i) = opts_oasis.b;
+    neuron_sn(i) = opts_oasis.sn;
+    g{i} = opts_oasis.pars(:)';
 end

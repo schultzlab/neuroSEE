@@ -33,7 +33,7 @@
 %   spikes      : spikes extracted from R
 %   params
 
-function [spikes, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, fileorlist, reffile, conc_runs, grp_sdir, force )
+function [spikes, bl, neuron_sn, g, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, fileorlist, reffile, conc_runs, grp_sdir, force )
     if nargin<9, force = 0; end
     if nargin<8, list = []; end
     if nargin<7, conc_runs = false; end
@@ -91,10 +91,13 @@ function [spikes, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, para
         refreshdisp(str, prevstr);
         prevstr = str;
 
-        spikes = extractSpikes( C, params.spkExtract );
+        [spikes, bl, neuron_sn, g] = extractSpikes( C, params.spkExtract );
         
         % Save output
         spike_output.spikes = spikes;
+        spike_output.bl = bl;
+        spike_output.neuron_sn = neuron_sn;
+        spike_output.g = g;
         spike_output.params = params.spkExtract;
         
         if isempty(list)
@@ -127,6 +130,9 @@ function [spikes, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, para
         prevstr = str;
         spike_output = load(fname_mat);
         spikes = spike_output.spikes;
+        bl = spike_output.bl;
+        neuron_sn = spike_output.neuron_sn;
+        g = spike_output.g;
         params.spkExtract = spike_output.params;
         
         if isempty(list)
@@ -144,7 +150,7 @@ function [spikes, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, para
         if isempty(list)
             str = sprintf( '%s: Spike estimation data found and loaded\n', file );
         else
-            str = sfprintf( '%s: Spike estimation data found and loaded\n', [mouseid '_' expname] );
+            str = sprintf( '%s: Spike estimation data found and loaded\n', [mouseid '_' expname] );
         end
         refreshdisp(str, prevstr);
     end

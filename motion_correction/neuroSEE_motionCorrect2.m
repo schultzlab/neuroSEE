@@ -25,7 +25,7 @@
 %                   template
 %   params_mcorr: parameters for specific motion correction method
 
-function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, requireRed, mode )    
+function [ imG, params_mcorr, imR, template_g, template_r ] = neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, requireRed, mode )    
 
     if nargin<6, mcorr_method = 'normcorre'; end
     if nargin<7, reffile = []; end
@@ -129,7 +129,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect2( imG
                     end
                 end
                 % Save summary figure, tif images, motion correction/registration output matrix
-                if force || ~exist(fname_fig,'file'), makeplot(out_g,out_r); end
+                if force || ~exist(fname_fig,'file'), makeplot(out_g,out_r, template_g, template_r); end
                 saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.normcorre_r, file);
             else
                 % read motion corrected tif files for normcorre-r
@@ -180,7 +180,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect2( imG
                 fname_mat_mcorr = [filedir file '_imreg_ref' reffile '_output.mat'];
                 fname_fig = [filedir file '_imreg_ref' reffile '_summary.fig'];
             end
-            makeplot(out_g,out_r);
+            makeplot(out_g,out_r,template_g,template_r);
             saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr, file);
         
         elseif  strcmpi(mcorr_method,'normcorre-r')     
@@ -209,7 +209,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect2( imG
                 end
             end
             % Save summary figure, tif images, motion corrections/registration output matrix
-            makeplot(out_g,out_r);
+            makeplot(out_g,out_r,template_g,template_r);
             saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.normcorre_r, file);
         
         elseif  strcmpi(mcorr_method,'normcorre-nr')
@@ -238,7 +238,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect2( imG
                 end
             end
             % Save summary figure, tif images, motion corrections/registration output matrix
-            makeplot(out_g,out_r);
+            makeplot(out_g,out_r,template_g,template_r);
             saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.normcorre_nr, file);
         
         else
@@ -251,7 +251,7 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect2( imG
                                                                                 params_mcorr.fftRigid.imscale, params_mcorr.fftRigid.Nimg_ave, ...
                                                                                 refChannel, params_mcorr.fftRigid.redoT );
                 % Save summary figure, tif images, motion corrections/registration output matrix
-                makeplot(out_g,out_r);
+                makeplot(out_g,out_r,template_g,template_r);
                 saveTifOutputM(out_g, out_r, shifts, col_shift, template, imG, imR, template_g, template_r, params_mcorr.fftRigid, file);
             end
         end
@@ -307,11 +307,11 @@ function [ imG, mcorr_output, params_mcorr, imR ] = neuroSEE_motionCorrect2( imG
             end
             out_g = mcorr_output.green;
             out_r = mcorr_output.red;
-            makeplot(out_g,out_r);
+            makeplot(out_g,out_r,template_g,template_r);
         end
     end
     
-    function makeplot(out_g,out_r)
+    function makeplot(out_g,out_r,template_g,template_r)
         fh = figure;
         if isempty(reffile)
             subplot(221), 

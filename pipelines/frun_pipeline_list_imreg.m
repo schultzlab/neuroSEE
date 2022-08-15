@@ -384,7 +384,7 @@ if dostep(4)
             fprintf('%s: Number of files per run not provided. Spike estimation output was not distributed to run folders.\n', [mouseid '_' expname]);
         else
             divide = force(4) || ~check_list(3);
-            divide_expdata_into_runs( data_locn, list, reffile, numfiles, [], [1,1,1], [0,0,divide] );
+            divide_expdata_into_runs( data_locn, list, reffile, numfiles, [], [1,dofissa,1], [0,0,divide] );
         end
     end
 else

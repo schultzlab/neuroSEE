@@ -10,7 +10,7 @@ Names = [
         'mcorr_method       ' % motion correction method (default: 'normcorre')
         'segment_method     ' % ROI segmentation method: ABLE or CaImAn (default: CaImAn)
         'runpatches         ' % flag to run patches for CaImAn processing (default: false)
-        'dofissa            ' % flag to do fissa correction (default: true)
+        'dofissa            ' % flag to do fissa correction (default: false)
         'doasd              ' % flag to calculate place fields by asd estimation  (default: false)
         'groupreg_method    ' % method for concatenating file data (either imreg or roireg) (default: [])
     % dataset info
@@ -345,7 +345,7 @@ Values = [
         {'normcorre'}         % motion correction method (default: 'normcorre')
         {'CaImAn'}            % ROI segmentation method: ABLE or CaImAn (default: CaImAn)
         {false}               % flag to run patches for CaImAn processing (default: false)
-        {true}                % flag to do fissa correction (default: true)
+        {false}                % flag to do fissa correction (default: false)
         {false}               % flag to calculate place fields by asd estimation  (default: false)
         {'imreg'}             % method for concatenating file data (either imreg or roireg) (default: 'imreg')
     % dataset info

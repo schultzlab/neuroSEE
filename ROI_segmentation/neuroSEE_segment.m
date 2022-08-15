@@ -120,7 +120,7 @@ function [tsG, df_f, spikes, masks, corr_image, params] = neuroSEE_segment( imG,
             if runpatches
                 [tsG_all, df_f_all, masks_all, corr_image, F0, A] = CaImAn_patches( imG, params.ROIsegment.CaImAn );
             else
-                [tsG_all, df_f_all, spikes, masks_all, corr_image, F0, A] = CaImAn( imG, params.ROIsegment.CaImAn );
+                [tsG_all, df_f_all, spikes_all, masks_all, corr_image, F0, A] = CaImAn( imG, params.ROIsegment.CaImAn );
             end
             df_f_all = full(df_f_all);
         end
@@ -179,7 +179,8 @@ function [tsG, df_f, spikes, masks, corr_image, params] = neuroSEE_segment( imG,
             tsG = tsG_all(inc,:);           elim_tsG = tsG_all(exc,:);
             df_f = df_f_all(inc,:);         elim_df_f = df_f_all(exc,:);
             try
-                spikes = spikes(inc,:);         elim_spikes = spikes(exc,:);
+                spikes = spikes_all(inc,:);         
+                elim_spikes = spikes_all(exc,:);
             catch
             end
 
@@ -196,7 +197,8 @@ function [tsG, df_f, spikes, masks, corr_image, params] = neuroSEE_segment( imG,
             output.tsG = tsG;       output.elim_tsG = elim_tsG;
             output.df_f = df_f;     output.elim_df_f = elim_df_f;
             try
-                output.spikes = spikes; output.elim_spikes = elim_spikes;
+                output.spikes = spikes; 
+                output.elim_spikes = elim_spikes;
             catch
             end
             output.masks = masks;   output.elim_masks = elim_masks;
@@ -218,13 +220,13 @@ function [tsG, df_f, spikes, masks, corr_image, params] = neuroSEE_segment( imG,
             refreshdisp(str, prevstr);
             prevstr = str;
             
-            output.tsG = tsG;       
-            output.df_f = df_f;  
+            output.tsG = tsG_all;       
+            output.df_f = df_f_all;  
             try
-                output.spikes = spikes;
+                output.spikes = spikes_all;
             catch
             end
-            output.masks = masks;
+            output.masks = masks_all;
             output.corr_image = corr_image;
             output.F0 = F0;
             output.A = A;

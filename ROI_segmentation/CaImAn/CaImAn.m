@@ -129,17 +129,17 @@ Pm.p = 0;    % restore AR value
 
 %% do some plotting
 
-[A_or,C_or,S_or,P_or] = order_ROIs(A2,C2,S2,P2); % order components
+% [A_or,C_or,S_or,P_or] = order_ROIs(A2,C2,S2,P2); % order components
 % K_m = size(C_or,1);
-[df_f,F0] = extract_DF_F(Yr,A_or,C_or,P_or,options); % extract DF/F values (optional)
-tsG = C_or; spikes = S_or;
-% [df_f,F0] = detrend_df_f(A2,b2,C2,f2,YrA2,options);
-% tsG = C2;
+% [df_f,F0] = extract_DF_F(Yr,A_or,C_or,P_or,options); % extract DF/F values (optional)
+% tsG = C_or; spikes = S_or;
+[df_f,F0] = detrend_df_f(A2,b2,C2,f2,YrA2,options);
+tsG = C2; spikes = [];
 
 % fh4 = 
 fig = figure;
 % [Coor,json_file] = plot_contours(A_or,corr_image,options,0); % contour plot of spatial footprints
-[Coor,~] = plot_contours(A_or,corr_image,options,0); % contour plot of spatial footprints
+[Coor,~] = plot_contours(A2,corr_image,options,0); % contour plot of spatial footprints
 % savejson('jmesh',json_file,'filename');        % optional save json file with component coordinates (requires matlab json library)
 
 if ~display
@@ -148,14 +148,14 @@ end
 
 %% display components
 
-if display
-    plot_components_GUI(Yr,A_or,C_or,b2,f2,Cn,options);
-end
+% if display
+%     plot_components_GUI(Yr,A_or,C_or,b2,f2,Cn,options);
+% end
 
 %% make movie
-if (0)  
-    make_patch_video(A_or,C_or,b2,f2,Yr,Coor,options)
-end
+% if (0)  
+%     make_patch_video(A_or,C_or,b2,f2,Yr,Coor,options)
+% end
 
 %% convert contour of spatial footprints to logical masks (added by Ann Go)
 masks = zeros(d1,d2,numel(Coor));

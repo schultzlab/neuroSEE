@@ -25,7 +25,7 @@
 %                   template
 %   params_mcorr: parameters for specific motion correction method
 
-function [ imG, params_mcorr, imR, template_g, template_r ] = neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, requireRed, mode )    
+function [ imG, params_mcorr, template_g, template_r, imR ] = neuroSEE_motionCorrect2( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, requireRed, mode )    
 
     if nargin<6, mcorr_method = 'normcorre'; end
     if nargin<7, reffile = []; end
@@ -262,7 +262,7 @@ function [ imG, params_mcorr, imR, template_g, template_r ] = neuroSEE_motionCor
             fprintf( '%s: Image registration to %s done\n', file, reffile );
         end
     else
-        if nargout>3, load_imR = true; else, load_imR = false; end
+        if nargout>4, load_imR = true; else, load_imR = false; end
         if isempty(reffile)
             [imG, imR] = load_imagefile( data_locn, file, false, '_mcorr', mcorr_method, load_imR );
         else

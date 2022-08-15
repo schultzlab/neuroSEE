@@ -232,11 +232,11 @@ if dostep(1)
                 end
 
                 if strcmpi(segment_method,'CaImAn') % CaImAn does not use imR
-                    [ imG{n}, params.mcorr, ~, template_g, template_r ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
+                    [ imG{n}, params.mcorr, template_g, template_r ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
                                                             mcorr_method, params.mcorr, reffile, force(1), list, false );
                     imR = [];
-                else
-                    [ imG{n}, params.mcorr, imR{n}, template_g, template_r ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
+                else % ABLE
+                    [ imG{n}, params.mcorr, template_g, template_r, imR{n},  ] = neuroSEE_motionCorrect( fileG, fileR, data_locn, file, ...
                                                             mcorr_method, params.mcorr, reffile, force(1), list, false );
                 end
             else

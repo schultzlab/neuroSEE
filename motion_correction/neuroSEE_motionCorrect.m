@@ -25,7 +25,7 @@
 %                   template
 %   params_mcorr: parameters for specific motion correction method
 
-function [ imG, params_mcorr, imR, template_g, template_r ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, requireRed )    
+function [ imG, params_mcorr, template_g, template_r, imR ] = neuroSEE_motionCorrect( imG, imR, data_locn, file, mcorr_method, params_mcorr, reffile, force, list, requireRed )    
 
     if nargin<6, mcorr_method = 'normcorre'; end
     if nargin<7, reffile = []; end
@@ -188,7 +188,7 @@ function [ imG, params_mcorr, imR, template_g, template_r ] = neuroSEE_motionCor
             fprintf( '%s: Image registration to %s done\n', file, reffile );
         end
     else
-        if nargout>3, load_imR = true; else, load_imR = false; end
+        if nargout>4, load_imR = true; else, load_imR = false; end
         if isempty(reffile)
             [imG, imR] = load_imagefile( data_locn, file, false, '_mcorr', mcorr_method, load_imR );
         else
@@ -209,6 +209,10 @@ function [ imG, params_mcorr, imR, template_g, template_r ] = neuroSEE_motionCor
             
             if ~isempty(list)
                 newstr = sprintf('%s: Registered images loaded\n', [mouseid '_' expname '_' file]);
+                refdir = [data_locn 'Data/' reffile(1:8) '/Processed/' reffile '/mcorr_' mcorr_method '/'];
+                c = load([refdir reffile '_mcorr_output.mat']);
+                template_g = c.green.meanregframe;
+                template_r = c.red.meanregframe;
             else
                 newstr = sprintf('%s: Registered images loaded\n', [file '_ref' reffile]);
             end

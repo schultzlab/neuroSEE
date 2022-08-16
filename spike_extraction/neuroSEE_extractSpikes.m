@@ -33,7 +33,7 @@
 %   spikes      : spikes extracted from R
 %   params
 
-function [spikes, bl, neuron_sn, g, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, fileorlist, reffile, conc_runs, grp_sdir, force )
+function [spikes, df_f_deconv, bl, neuron_sn, g, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, fileorlist, reffile, conc_runs, grp_sdir, force )
     if nargin<9, force = 0; end
     if nargin<8, list = []; end
     if nargin<7, conc_runs = false; end
@@ -91,10 +91,11 @@ function [spikes, bl, neuron_sn, g, params] = neuroSEE_extractSpikes( df_f, ddf_
         refreshdisp(str, prevstr);
         prevstr = str;
 
-        [spikes, bl, neuron_sn, g] = extractSpikes( C, params.spkExtract );
+        [spikes, df_f_deconv, bl, neuron_sn, g] = extractSpikes( C, params.spkExtract );
         
         % Save output
         spike_output.spikes = spikes;
+        spike_output.df_f_deconv = df_f_deconv;
         spike_output.bl = bl;
         spike_output.neuron_sn = neuron_sn;
         spike_output.g = g;
@@ -130,6 +131,7 @@ function [spikes, bl, neuron_sn, g, params] = neuroSEE_extractSpikes( df_f, ddf_
         prevstr = str;
         spike_output = load(fname_mat);
         spikes = spike_output.spikes;
+        df_f_deconv = spike_output.df_f_deconv;
         bl = spike_output.bl;
         neuron_sn = spike_output.neuron_sn;
         g = spike_output.g;

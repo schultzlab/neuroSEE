@@ -24,7 +24,7 @@
 %               usually part of 'list' but does not have to be. This file
 %               must have already been motion corrected. If no reffile is
 %               specified, first file on the list is used.
-% conc_runs  : (optional, default: false) flag if rois were segmented from concatenated files from
+% concrunsrois  : (optional, default: false) flag if rois were segmented from concatenated files from
 %               different environments e.g. fam1fam2fam1-fam1 but rois are
 %               for fam1fam2fam1. Do not flag for fam1fam2fam1 since in
 %               this case it is understood that the rois are from the
@@ -37,9 +37,9 @@
 %               a processing step (even if output already exists)
 % tsub      : (optional, default: 5) temporal downsampling factor for CaImAn. Typically chosen so that
 %                no. of files in list x 7420
-%               -----------------------------  = 23,000
+%               -----------------------------  <= 23,000
 %                           tsub                    
-%               This reduces out-of-memory errors. Keep tsub value below 10.
+%               This reduces out-of-memory errors. Keep tsub value <=10.
 % min_SNR   : (optional, default: 3 for 330x330um FOV data, 2.5 for 490x490um FOV data) CaImAn parameter. 
 %               Minimum SNR for accepting exceptional events. 
 % bl_prctile : (optional, default: 85) Parameter for spike estimation.  Percentile to be
@@ -51,16 +51,16 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_list_imreg( list, reffile, conc_runs, numfiles, dostep, force, tsub, min_SNR, bl_prctile )
+function frun_pipeline_list_imreg( list, reffile, concrunsrois, numfiles, dostep, force, tsub, min_SNR, bl_prctile )
 
 if nargin<9, bl_prctile = 85; end
 % if nargin<8, see line 97
 if nargin<7, tsub = 5; end
 if nargin<6, force = [0; 0; 0; 0; 0; 0]; end
 if nargin<5, dostep = [1; 1; 1; 1; 1; 1]; end
-% if nargin<4, see line 156
-if nargin<3, conc_runs = false; end
-% if nargin<2, see line 121
+% if nargin<4, see line 167
+if nargin<3, concrunsrois = false; end
+% if nargin<2, see line 84
 tic
 
 % Load module folders and define data directory
@@ -164,8 +164,8 @@ MatlabVer = str2double(release(1:4));
 % check(6) checks for existing mat file pooling all processed data for list
 
 % Some security measures
-if ~contains(list,'-')                          % conc_runs = true is only an option for sub experiments
-    conc_runs = false;                              % e.g. fam1fam2-fam1, fam1novfam1-nov 
+if ~contains(list,'-')                          % conrunsrois = true is only an option for sub experiments
+    concrunsrois = false;                              % e.g. fam1fam2-fam1, fam1novfam1-nov 
     if nargin<4 || isempty(numfiles)
         fprintf('%s: Number of files per run not provided. Timeseries data will not be distributed to run folders.\n', [mouseid '_' expname]);
     end
@@ -173,7 +173,7 @@ end
 force = logicalForce(force);        % Only allow combinations of force/dostep values that make sense
 dostep = logicaldostep(dostep);     % because later steps require earlier ones
 
-check_list = checkforExistingProcData(data_locn, list, params, reffile, conc_runs);
+check_list = checkforExistingProcData(data_locn, list, params, reffile, concrunsrois);
 
 if ~any(force) && check_list(6)
     fprintf('%s: List already processed\n', list)
@@ -191,7 +191,7 @@ else
             groupreg_method '_' mcorr_method '_' segment_method '/'...
             mouseid '_' expname '_imreg_ref' reffile '/'];
 end
-if conc_runs
+if concrunsrois
     grp_sdir = [grp_sdir(1:end-1) '_conrunsrois/'];
 end
 if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); fileattrib(grp_sdir,'+w','g','s'); end
@@ -325,7 +325,7 @@ end
 
 %% 2) ROI segmentation
 if dostep(2)
-    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, list, reffile, conc_runs, force(2), mean(imR,3) );
+    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, list, reffile, concrunsrois, force(2), mean(imR,3) );
                                              
     % Copy files from grp_sdir to folders for individual runs
     if ~contains(list,'-')
@@ -359,7 +359,7 @@ if dostep(3)
             end
         end
         if force(3) || ~check_list(2)
-            [ dtsG, ddf_f, params ] = neuroSEE_neuropilDecon( masks, data_locn, params, list, reffile, conc_runs, force(3) );
+            [ dtsG, ddf_f, params ] = neuroSEE_neuropilDecon( masks, data_locn, params, list, reffile, concrunsrois, force(3) );
         end
         
         % Copy files from grp_sdir to folders for individual runs
@@ -395,7 +395,7 @@ if dostep(4)
         end
     end
     
-    [ spikes, bl, neuron_sn, g, params ] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, list, reffile, conc_runs, grp_sdir, force(4) );
+    [ spikes, df_f_deconv, bl, neuron_sn, g, params ] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, list, reffile, concrunsrois, grp_sdir, force(4) );
 
     % Copy files from grp_sdir to folders for individual runs
     if ~contains(list,'-')
@@ -487,6 +487,8 @@ end
     
 %% 6) PFmapping
 
+% YIMEI, you have to delete this IF statement or your script won't run
+% since your lists don't contain '-'
 if dostep(6) && ~contains(list,'-')                          
     fprintf('%s: Run PFmapping on individual runs, not on whole experiment. Skipping step.\n', [mouseid '_' expname]); 
     t = toc;
@@ -518,7 +520,7 @@ if dostep(6)
     params.PFmap = rmfield(params.PFmap,fields);
 
     [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] = ...
-        neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile, conc_runs);
+        neuroSEE_mapPF( spikes, downTrackdata, data_locn, [], params, force(6), list, reffile, concrunsrois);
 
     %% Saving all data
     sname_allData = [ grp_sdir mouseid '_' expname '_ref' reffile '_' mcorr_method '_' segment_method '_' str_fissa...
@@ -527,7 +529,7 @@ if dostep(6)
     fprintf('%s: Saving all data\n', [mouseid '_' expname]);
     save(sname_allData, 'list','reffile','template_g','template_r',...
                         'corr_image','masks','tsG','df_f',...
-                        'spikes','bl','neuron_sn','g',...
+                        'spikes','df_f_deconv','bl','neuron_sn','g',...
                         'downTrackdata','PFdata','hist','asd','params');
     if ~isempty(dtsG), save(sname_allData,'-append','dtsG'); end
     if ~isempty(ddf_f), save(sname_allData,'-append','ddf_f'); end

@@ -226,7 +226,12 @@ function check_finalise_callback(varargin)
 end
 
 function pbutton_save_callback(varargin)
-    % Save ROI segmentation output
+    % First make a copy of the ROI segmentation output
+    copydir = [grp_sdir 'unrefined_ROIs/'];
+    if ~exist( copydir, 'dir' ), mkdir( copydir ); fileattrib(copydir,'+w','g','s'); end
+    save([copydir mouseid '_' expname '_ref' reffile '_segment_output.mat'],'-struct','roidata')
+    
+    % Now save refined ROI segmentation output
     masks_all = masks;
     masks_all(:,:,size(masks,3)+1:size(masks,3)+size(roidata.elim_masks,3)) = roidata.elim_masks;
     tsG_all(1:size(masks,3),:) = roidata.tsG;

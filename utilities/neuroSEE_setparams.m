@@ -245,7 +245,7 @@ Names = [
         'ddf_prctile        ' % percentile to be used for estimating baseline (default: 5)
         'ddf_medfilt1       ' % degree of smoothing for ddf_f (default: 17)
     % spike extraction
-        'spk_SNR            ' % spike SNR for min spike value (default: 4)
+        'spk_SNR            ' % spike SNR for min spike value (default: 2.5)
         'lam_pr             ' % false positive probability for determing lambda penalty (default: 0.99)
     % PF mapping
         'Nepochs            ' % number of epochs into which data will be divided for analysis (default: 1)
@@ -578,7 +578,7 @@ Values = [
         {5}                   % percentile to be used for estimating baseline (default:5)
         {17}                  % degree of smoothing for ddf_f (default: 17)
     % spike extraction
-        {4}                   % spike SNR for min spike value (default: 4)
+        {2.5}                   % spike SNR for min spike value (default: 2.5)
         {0.99}                % false positive probability for determing lambda penalty (default: 0.99)
     % PF mapping
         {1}                   % number of epochs into which data will be divided for analysis (default: 1)

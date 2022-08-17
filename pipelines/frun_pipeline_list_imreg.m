@@ -53,7 +53,7 @@
 
 function frun_pipeline_list_imreg( list, reffile, concrunsrois, numfiles, dostep, force, tsub, min_SNR, spk_SNR )
 
-if nargin<9, spk_SNR = 4; end
+if nargin<9, spk_SNR = 2.5; end
 % if nargin<8, see line 97
 if nargin<7, tsub = 5; end
 if nargin<6, force = [0; 0; 0; 0; 0; 0]; end

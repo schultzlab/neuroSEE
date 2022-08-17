@@ -15,7 +15,7 @@ if nargin<3, ts{3} = []; else, ts{3} = ts3; end
 if nargin<2, ts{2} = []; else, ts{2} = ts2; end
 ts{1} = ts1;
 
-hdl_gui = figure('Name','FISSA result','NumberTitle','off','Resize','off',...
+hdl_gui = figure('Name','','NumberTitle','off','Resize','off',...
     'Position',[1087 1022 1600 550]);
 
 Numcells = size(ts{1},1);

@@ -192,7 +192,7 @@ else
             mouseid '_' expname '_imreg_ref' reffile '/'];
 end
 if concrunsrois
-    grp_sdir = [grp_sdir(1:end-1) '_conrunsrois/'];
+    grp_sdir = [grp_sdir(1:end-1) '_concrunsrois/'];
 end
 if ~exist(grp_sdir,'dir'), mkdir(grp_sdir); fileattrib(grp_sdir,'+w','g','s'); end
 

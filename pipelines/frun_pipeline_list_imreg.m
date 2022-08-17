@@ -346,7 +346,6 @@ end
     
 %% 3) FISSA
 if dostep(3)
-    dtsG = []; ddf_f = []; 
     if dofissa
         if ~force(3) && check_list(2)
             fname_mat = [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat'];
@@ -372,7 +371,9 @@ if dostep(3)
             end
         end
     end
+    dtsG = []; ddf_f = []; 
 else
+    dtsG = []; ddf_f = []; 
     if dofissa
         fprintf('%s: FISSA step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
         t = toc;

@@ -42,8 +42,8 @@
 %               This reduces out-of-memory errors. Keep tsub value <=10.
 % min_SNR   : (optional, default: 3 for 330x330um FOV data, 2.5 for 490x490um FOV data) CaImAn parameter. 
 %               Minimum SNR for accepting exceptional events. 
-% bl_prctile : (optional, default: 85) Parameter for spike estimation.  Percentile to be
-%               used for estimating baseline.
+% spk_SNR   : (optional, default: 4) Parameter for spike estimation. Spike
+%               SNR for minimum spike value.
 % 
 % Matlab version requirement for running on hpc: 
 %   normcorre only works up to Matlab R2017b.
@@ -51,9 +51,9 @@
 %   FISSA requires at least Matlab R2018
 
 
-function frun_pipeline_list_imreg( list, reffile, concrunsrois, numfiles, dostep, force, tsub, min_SNR, bl_prctile )
+function frun_pipeline_list_imreg( list, reffile, concrunsrois, numfiles, dostep, force, tsub, min_SNR, spk_SNR )
 
-if nargin<9, bl_prctile = 85; end
+if nargin<9, spk_SNR = 4; end
 % if nargin<8, see line 97
 if nargin<7, tsub = 5; end
 if nargin<6, force = [0; 0; 0; 0; 0; 0]; end
@@ -138,7 +138,7 @@ params = neuroSEE_setparams(...
             'tsub', tsub,...
             'virus', virus,...
             'min_SNR', min_SNR,...
-            'bl_prctile', bl_prctile);         
+            'spk_SNR', spk_SNR);         
 
 % For slack notifications
 slacknotify = false;
@@ -385,7 +385,7 @@ end
 %% 4) Spike estimation
 if dostep(4)
     if ~force(4) && check_list(3)
-        fname_mat = [grp_sdir '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes.mat'];
+        fname_mat = [grp_sdir '/' str_fissa '/' mouseid '_' expname '_ref' reffile '_spikes.mat'];
         s = load(fname_mat);
         spikes = s.spikes;
         if size(spikes,1) ~= size(tsG,1)
@@ -524,7 +524,7 @@ if dostep(6)
 
     %% Saving all data
     sname_allData = [ grp_sdir mouseid '_' expname '_ref' reffile '_' mcorr_method '_' segment_method '_' str_fissa...
-                      '_allData_blprctile' num2str(bl_prctile) '.mat' ];
+                      '_allData.mat' ];
 
     fprintf('%s: Saving all data\n', [mouseid '_' expname]);
     save(sname_allData, 'list','reffile','template_g','template_r',...

@@ -1,3 +1,10 @@
+% Written by Ann Go
+% GUI for refining ROIs
+% GUI shows ROI mask and timeseries extracted by CaImAn. User may scroll
+% through ROIs with slider arrows or choose ROIs using mouse pointer.
+% Before saving refined ROIs, GUI makes a copy of unrefined ROIs and the
+% figure summaries in a folder titled 'unrefined_ROIs/'.
+
 function GUI_manuallydeleteROIs(list, reffile)
 
 %% GUI structures
@@ -226,7 +233,7 @@ function check_finalise_callback(varargin)
 end
 
 function pbutton_save_callback(varargin)
-    set(check_finalise_callback,'Value',0);
+    set(check_finalise,'Value',0);
     set(pbutton_save,'Enable','Off');
     
     % First make a copy of the ROI segmentation output and ROI and elim_ROI

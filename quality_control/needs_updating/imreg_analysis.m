@@ -1,4 +1,10 @@
-clear 
+%% USER INPUTS
+list = 'list_m123_fam1fam2fam1.txt'; 
+n = 5; % SPECIFY FILE # to register
+refind = 11; % SPECIFY FILE # for reference 
+max_dev = 7; % I normally tweak this. I found that 7-13 is usually good enough.
+% ----------------------
+
 [data_locn,comp,err] = load_neuroSEEmodules;
 if ~isempty(err)
     beep
@@ -6,7 +12,6 @@ if ~isempty(err)
     return
 end
 
-list = 'list_m79_fam1fam2_s2.txt'; % SPECIFY LIST
 listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
 files = extractFilenamesFromTxtfile( listfile );
 
@@ -24,16 +29,12 @@ params = neuroSEE_setparams(...
             'max_shift_nr', 30,...
             'grid_size_nr', [g,g],...
             'iter',1,...
-            'max_dev',9,... % I normally tweak this. I found that 7-9 is usually good enough.   
+            'max_dev',max_dev,... 
             'overlap_pre', [g/4,g/4],... 
             'min_patch_size', [g/4,g/4],...      
             'min_diff', [g/8,g/8]);         
         
-%%           
-n = 1; % SPECIFY FILE # to register
 regchannel = 1; % 1:green, 2:red
-refind = 6; % SPECIFY FILE # for reference 
-%%
 
 if regchannel == 1
     Y = imG(:,:,n); X = imR(:,:,n);
@@ -49,25 +50,7 @@ end
 
 [YY, shifts_r, ~, options_r, col_shift_r] = normcorre(Y,params.mcorr.normcorre_r,ref_ch1);
 [YY, shifts_nr, ~,options_nr,col_shift_nr] = normcorre(YY,params.mcorr.normcorre_nr,ref_ch1);
-% [ YY, XX, ~, ~, col_shift_r, shifts_r, ~, ~ ] = normcorre_2ch( Y, X, params.mcorr.normcorre_r, ref_ch1 );
-% [ YY, XX, ~, ~, col_shift_nr, shifts_nr, ~, ~ ] = normcorre_2ch( YY, XX, params.mcorr.normcorre_nr, ref_ch1 );
-figure;
-fy = imfuse( YY, ref_ch1, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [2 1 0]);
-imshow(fy); title(titlestr1);
 figure;
 fy = imfuse( YY, ref_ch1, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
 imshow(fy); title(titlestr1);
-
-% figure;
-% fy = imfuse( XX, ref_ch2, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [2 1 0]);
-% imshow(fy); title(titlestr1);
-% figure;
-% fy = imfuse( XX, ref_ch2, 'falsecolor', 'Scaling', 'joint', 'ColorChannels', [1 2 0]);
-% imshow(fy); title(titlestr1);
-
-% clear params
-% params.shifts = shifts_r; params.options = options_r; params.col_shift = col_shift_r;
-% save('m133_r.mat','params')
-% params.shifts = shifts_nr; params.options = options_nr; params.col_shift = col_shift_nr;
-% save('m133_nr.mat','params')
 

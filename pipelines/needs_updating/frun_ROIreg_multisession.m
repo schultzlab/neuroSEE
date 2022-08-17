@@ -7,9 +7,6 @@ function frun_ROIreg_multisession( list, ref_array, bl_prctile_array, pfactivet_
 
 if nargin<7, figclose = true; end
 if nargin<6, force = false; end
-if nargin<5 || isempty(sessionind_array), sessionind_array = 1:length(bl_prctile_array); end
-if nargin<4, pfactivet_thr = 0.02; end
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % USER-DEFINED INPUT                         
@@ -70,13 +67,6 @@ else
 end
 fname_mat_ROIreg = [sdir mouseid '_' expname '_multisessionROIreg_output.mat'];
 
-for i = 1:length(bl_prctile_array)   
-    if i == 1
-        bl_str = num2str(bl_prctile_array(i));
-    else
-        bl_str = [bl_str '-' num2str(bl_prctile_array(i))];
-    end
-end
 fname_mat_PFdata = [sdir 'bl' bl_str '_pfTthr' num2str(pfactivet_thr) '/' mouseid '_' expname '_multisessionROIreg_PFdata.mat'];
 figdir = [sdir 'bl' bl_str '_pfTthr' num2str(pfactivet_thr) '/'];
 

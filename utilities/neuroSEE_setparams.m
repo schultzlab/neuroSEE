@@ -245,8 +245,7 @@ Names = [
         'ddf_prctile        ' % percentile to be used for estimating baseline (default: 5)
         'ddf_medfilt1       ' % degree of smoothing for ddf_f (default: 17)
     % spike extraction
-        'bl_prctile         ' % percentile to be used for estimating baseline (default: 85)
-        'spk_SNR            ' % spike SNR for min spike value (default: 1)
+        'spk_SNR            ' % spike SNR for min spike value (default: 4)
         'lam_pr             ' % false positive probability for determing lambda penalty (default: 0.99)
     % PF mapping
         'Nepochs            ' % number of epochs into which data will be divided for analysis (default: 1)
@@ -579,8 +578,7 @@ Values = [
         {5}                   % percentile to be used for estimating baseline (default:5)
         {17}                  % degree of smoothing for ddf_f (default: 17)
     % spike extraction
-        {85}                  % percentile to be used for estimating baseline (default: 85)
-        {1}                   % spike SNR for min spike value (default: 1)
+        {4}                   % spike SNR for min spike value (default: 4)
         {0.99}                % false positive probability for determing lambda penalty (default: 0.99)
     % PF mapping
         {1}                   % number of epochs into which data will be divided for analysis (default: 1)
@@ -810,7 +808,7 @@ if options.dofissa
     end
 end
 % spike extraction
-f = {'bl_prctile'; 'spk_SNR'; 'decay_time'; 'lam_pr'; 'fr'};
+f = {'spk_SNR'; 'decay_time'; 'lam_pr'; 'fr'};
 fn = fieldnames(options);
 for i = 1:length(fn)
     for j = 1:length(f)

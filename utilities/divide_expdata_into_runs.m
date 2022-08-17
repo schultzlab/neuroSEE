@@ -7,11 +7,16 @@
 %       mXX_fam1fam2fam1-fam2/group_proc/imreg_normcorre_CaImAn/mXX_fam1fam2fam1_concrunsrois
 %       mXX_fam1fam2fam1-fam1r2/group_proc/imreg_normcorre_CaImAn/mXX_fam1fam2fam1_concrunsrois
 
-function divide_expdata_into_runs( data_locn, list, reffile, numfiles, bl_prctile, dostep, force )
+function divide_expdata_into_runs( data_locn, list, reffile, numfiles, dostep, force, dofissa )
 
-if nargin<7, force = [0,0,0]; end
-if nargin<6, dostep = [1,1,1]; end
-if nargin<5, bl_prctile = 85; end
+if nargin<7, dofissa = false; end
+    if dofissa
+        str_fissa = 'FISSA';
+    else
+        str_fissa = 'noFISSA';
+    end
+if nargin<6, force = [0,0,0]; end
+if nargin<5, dostep = [1,1,1]; end
 
 % Mouseid, Experiment name, runs
 [ mouseid, expname, fov ] = find_mouseIDexpname(list);
@@ -51,10 +56,10 @@ if dostep(1)
     so = load([dir_exp mouseid '_' expname '_ref' reffile '_segment_output.mat']);
 end
 if dostep(2)
-    fissa = load([dir_exp 'FISSA/' mouseid '_' expname '_ref' reffile '_fissa_output.mat']);
+    fissa = load([dir_exp str_fissa '/' mouseid '_' expname '_ref' reffile '_fissa_output.mat']);
 end
 if dostep(3)
-    spikes = load([dir_exp 'FISSA/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '_ref' reffile '_spikes.mat']);
+    spikes = load([dir_exp str_fissa '/' mouseid '_' expname '_ref' reffile '_spikes.mat']);
 end
 
 % copy experiment files to individual run folders
@@ -139,15 +144,15 @@ for r = 1:numel(run)
     
     % copy spikes
     if dostep(3)
-        if force(3) || ~exist([dir_run 'FISSA/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '-' run{r} '_ref' reffile '_spikes.mat'],'file')            
+        if force(3) || ~exist([dir_run str_fissa '/' mouseid '_' expname '-' run{r} '_ref' reffile '_spikes.mat'],'file')            
             spikes2 = spikes;
             spikes2.spikes = spikes2.spikes(:,a3:b3);
             a3 = b3+1;
             fprintf('Dividing spikes and saving to %s.\n', [mouseid '_' expname '-' run{r} '_ref' reffile]');
-            save([dir_run 'FISSA/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '-' run{r} '_ref' reffile '_spikes.mat'],'-struct','fissa2');
+            save([dir_run str_fissa '/' mouseid '_' expname '-' run{r} '_ref' reffile '_spikes.mat'],'-struct','fissa2');
             
             % save new plot for spikes
-            plotSpikes(spikes2.spikes, [dir_run 'FISSA/bl_prctile' num2str(bl_prctile) '/' mouseid '_' expname '-' run{r} '_ref' reffile '_spikes'])
+            plotSpikes(spikes2.spikes, [dir_run str_fissa '/' mouseid '_' expname '-' run{r} '_ref' reffile '_spikes'])
         else
             fprintf('Spikes in %s already exists, skipping file copying.\n', [mouseid '_' expname '-' run{r} '_ref' reffile]');
         end

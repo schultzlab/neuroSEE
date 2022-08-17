@@ -68,11 +68,10 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
     else
         str_fissa = 'noFISSA';
     end
-    bl_prctile = params.spkExtract.bl_prctile;
     
     if isempty(list)
         fig_sdir = [data_locn,'Data/',file(1:8),'/Processed/',file,'/mcorr_',mcorr_method,'/',segment_method,'/',str_fissa,...
-                    '/bl_prctile',num2str(bl_prctile),'/PFdata/'];
+                    '/PFdata/'];
         fname_pref = file;
         fname_mat = [fig_sdir fname_pref '_PFmap_output.mat'];
     else
@@ -81,18 +80,18 @@ function [ hist, asd, PFdata, hist_epochs, asd_epochs, PFdata_epochs, params ] =
         if conc_runs
             if ~isempty(fov)
                 filedir = [ data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
-                        mouseid '_' expname '_imreg_ref' reffile '_concrunsrois/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
+                        mouseid '_' expname '_imreg_ref' reffile '_concrunsrois/' str_fissa '/'];
             else
                 filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
-                        mouseid '_' expname '_imreg_ref' reffile '_concrunsrois/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
+                        mouseid '_' expname '_imreg_ref' reffile '_concrunsrois/' str_fissa '/'];
             end
         else
             if ~isempty(fov)
                 filedir = [ data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
-                        mouseid '_' expname '_imreg_ref' reffile '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
+                        mouseid '_' expname '_imreg_ref' reffile '/' str_fissa '/'];
             else
                 filedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
-                        mouseid '_' expname '_imreg_ref' reffile '/' str_fissa '/bl_prctile' num2str(bl_prctile) '/'];
+                        mouseid '_' expname '_imreg_ref' reffile '/' str_fissa '/'];
             end
         end
         

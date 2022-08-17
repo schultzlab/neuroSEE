@@ -333,7 +333,7 @@ if dostep(2)
             fprintf('%s: Number of files per run not provided. ROI segmentation data was not distributed to run folders.\n', [mouseid '_' expname]);
         else
             divide = force(2) || ~check_list(1);
-            divide_expdata_into_runs( data_locn, list, reffile, numfiles, [], [1,0,0], [divide,0,0] );
+            divide_expdata_into_runs( data_locn, list, reffile, numfiles, [1,0,0], [divide,0,0] );
         end
     end
 else
@@ -368,7 +368,7 @@ if dostep(3)
                 fprintf('%s: Number of files per run not provided. FISSA output was not distributed to run folders.\n', [mouseid '_' expname]);
             else
                 divide = force(3) || ~check_list(2);
-                divide_expdata_into_runs( data_locn, list, reffile, numfiles, [], [1,1,0], [0,divide,0] );
+                divide_expdata_into_runs( data_locn, list, reffile, numfiles, [1,1,0], [0,divide,0] );
             end
         end
     end
@@ -403,7 +403,7 @@ if dostep(4)
             fprintf('%s: Number of files per run not provided. Spike estimation output was not distributed to run folders.\n', [mouseid '_' expname]);
         else
             divide = force(4) || ~check_list(3);
-            divide_expdata_into_runs( data_locn, list, reffile, numfiles, [], [1,dofissa,1], [0,0,divide] );
+            divide_expdata_into_runs( data_locn, list, reffile, numfiles, [1,dofissa,1], [0,0,divide] );
         end
     end
 else

@@ -35,18 +35,17 @@
 %   corr_image  : correlation image from green channel
 %   params      : parameters for specific roi segmentation method
 
-function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, fileorlist, reffile, conc_runs, force, mean_imR )
-    
+function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, fileorlist, reffile, concrunsrois, force, mean_imR )
+                                                                    
     if nargin<8, mean_imR = []; end
     if nargin<7, force = false; end
-    if nargin<6, conc_runs = false; end
+    if nargin<6, concrunsrois = false; end
     if nargin<5, reffile = []; end
     
     mcorr_method = params.methods.mcorr_method;
     segment_method = params.methods.segment_method;
     runpatches = params.methods.runpatches;
-    dofissa = params.methods.dofissa; 
-        if dofissa, str_fissa = 'FISSA'; else, str_fissa = 'noFISSA'; end
+
     roiarea_min = params.ROIsegment.roiarea_min;
     roiarea_max = params.ROIsegment.roiarea_max;
     invcirc_max = params.ROIsegment.invcirc_max;
@@ -76,8 +75,8 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
             savedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
                     mouseid '_' expname '_imreg_ref' reffile '/'];
         end
-        if conc_runs
-            savedir = [savedir(1:end-1) '_conrunrois/'];
+        if concrunsrois
+            savedir = [savedir(1:end-1) '_concrunsrois/'];
         end
         fname_mat = [savedir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
         fname_fig1 = [savedir mouseid '_' expname '_ref' reffile '_ROIs.fig'];

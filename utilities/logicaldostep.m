@@ -18,11 +18,11 @@ function dostep = logicaldostep(dostep)
 
 % Allow only combinations of values that make sense
 if dostep(6)
-    dostep(1:5) = true; 
+    dostep([1,2,4,5]) = true; 
 elseif dostep(5)
-    dostep(1:4) = true; 
+    dostep([1,2,4]) = true; 
 elseif dostep(4)
-    dostep(1:3) = true; 
+    dostep([1,2]) = true; 
 elseif dostep(3)
     dostep([1,2]) = true; 
 elseif dostep(2)

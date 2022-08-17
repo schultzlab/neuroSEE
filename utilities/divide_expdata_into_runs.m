@@ -149,7 +149,7 @@ for r = 1:numel(run)
             spikes2.spikes = spikes2.spikes(:,a3:b3);
             a3 = b3+1;
             fprintf('Dividing spikes and saving to %s.\n', [mouseid '_' expname '-' run{r} '_ref' reffile]');
-            save([dir_run str_fissa '/' mouseid '_' expname '-' run{r} '_ref' reffile '_spikes.mat'],'-struct','fissa2');
+            save([dir_run str_fissa '/' mouseid '_' expname '-' run{r} '_ref' reffile '_spikes.mat'],'-struct','spikes2');
             
             % save new plot for spikes
             plotSpikes(spikes2.spikes, [dir_run str_fissa '/' mouseid '_' expname '-' run{r} '_ref' reffile '_spikes'])

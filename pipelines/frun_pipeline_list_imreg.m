@@ -391,22 +391,11 @@ if dostep(4)
         spikes = s.spikes;
         if size(spikes,1) ~= size(tsG,1)
             force([4,6]) = true; % force spike estimation step if no. of ROIs in segmentation and spike data don't match
-%             clear dtsG
             fprintf('%s: Spike data found. Redoing spike estimation. ROIs in segmentation output and spike data do not match.\n', [mouseid '_' expname]);
         end
     end
     
     [ spikes, df_f_deconv, bl, neuron_sn, g, params ] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, list, reffile, concrunsrois, grp_sdir, force(4) );
-
-    % Copy files from grp_sdir to folders for individual runs
-    if ~contains(list,'-')
-        if nargin<4 || isempty(numfiles)
-            fprintf('%s: Number of files per run not provided. Spike estimation output was not distributed to run folders.\n', [mouseid '_' expname]);
-        else
-            divide = force(4) || ~check_list(3);
-            divide_expdata_into_runs( data_locn, list, reffile, numfiles, [1,dofissa,1], [0,0,divide] );
-        end
-    end
 else
     fprintf('%s: Spike estimation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
     t = toc;

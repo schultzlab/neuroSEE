@@ -78,7 +78,7 @@ try
     files = extractFilenamesFromTxtfile( listfile );
 catch
     beep
-    cprintf('Errors','List does not exist. Check list name.\n');    
+    cprintf('Errors','%s: List does not exist. Check list name.\n', [mouseid '_' expname '_' file]);    
     return
 end
 if nargin<2, reffile = files(1,:); end

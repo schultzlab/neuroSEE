@@ -480,7 +480,7 @@ end
 % YIMEI, you have to delete this IF statement or your script won't run
 % since your lists don't contain '-'
 if dostep(6) && ~contains(list,'-')                          
-    fprintf('%s: Running PFmapping on whole experiment. Consider running on individual runs.\n', [mouseid '_' expname]); 
+    fprintf('%s: Running PFmapping on whole experiment. Consider running step.\n', [mouseid '_' expname]); 
 end
 
 if dostep(6)

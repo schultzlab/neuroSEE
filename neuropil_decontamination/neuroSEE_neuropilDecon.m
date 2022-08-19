@@ -17,11 +17,6 @@
 %   reffile     : (optional) file to be used as registration template. Required if 
 %               fileorlist above is a list.This file is usually part of 'list'
 %               but does not have to be. 
-%   conc_runs    : (optional, default: false) flag if rois were segmented from concatenated files from
-%               different environments e.g. fam1fam2fam1-fam1 but rois are
-%               for fam1fam2fam1. DO NOT flag for fam1fam2fam1 files since in
-%               this case it is understood that the rois are from the
-%               concatenated environments.
 %   force       : (optional, default: false) if true, FISSA will be done even
 %               though FISSA segmentation output already exists
 %
@@ -32,11 +27,10 @@
 
 
 
-function [dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, params, fileorlist, reffile, conc_runs, grp_sdir, force )
+function [dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, params, fileorlist, reffile, grp_sdir, force )
 
-    if nargin<8, force = 0; end
-    if nargin<7, list = []; end
-    if nargin<6, conc_runs = false; end
+    if nargin<7, force = 0; end
+    if nargin<6, list = []; end
     if nargin<5, reffile = []; end
 
     mcorr_method = params.methods.mcorr_method;
@@ -59,10 +53,8 @@ function [dtsG, ddf_f, params] = neuroSEE_neuropilDecon( masks, data_locn, param
         fname_fig2 = [fissadir file '_fissa_df_f.fig'];
     else % list
         [ mouseid, expname ] = find_mouseIDexpname(list);
-        if conc_runs
-            concrunsname = find_concrunsname( list );
-            expname = concrunsname;
-        end
+        % concatenate filenames of tiff images on list, separated only by a
+        % comma (no spaces). This is required as input to FISSA.
         listfile = [data_locn 'Digital_Logbook/lists_imaging/' list];
         files = extractFilenamesFromTxtfile( listfile );
         Nfiles = size(files,1);

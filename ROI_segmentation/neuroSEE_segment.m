@@ -35,11 +35,11 @@
 %   corr_image  : correlation image from green channel
 %   params      : parameters for specific roi segmentation method
 
-function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, fileorlist, reffile, concrunsrois, force, mean_imR )
+function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, fileorlist, reffile, savedir, force, mean_imR )
                                                                     
     if nargin<8, mean_imR = []; end
     if nargin<7, force = false; end
-    if nargin<6, concrunsrois = false; end
+    if nargin<6, list = []; end
     if nargin<5, reffile = []; end
     
     mcorr_method = params.methods.mcorr_method;
@@ -65,19 +65,7 @@ function [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_lo
         fname_fig3 = [savedir file '_df_f.fig'];
         fname_pref = [savedir file];
     else
-        [ mouseid, expname, fov ] = find_mouseIDexpname(list);
-        groupreg_method = params.methods.groupreg_method;
-        mcorr_method = params.methods.mcorr_method;
-        if ~isempty(fov)
-            savedir = [ data_locn 'Analysis/' mouseid '/' fov '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
-                    mouseid '_' expname '_imreg_ref' reffile '/'];
-        else
-            savedir = [ data_locn 'Analysis/' mouseid '/' mouseid '_' expname '/group_proc/' groupreg_method '_' mcorr_method '_' segment_method '/'...
-                    mouseid '_' expname '_imreg_ref' reffile '/'];
-        end
-        if concrunsrois
-            savedir = [savedir(1:end-1) '_concrunsrois/'];
-        end
+        [ mouseid, expname ] = find_mouseIDexpname(list);
         fname_mat = [savedir mouseid '_' expname '_ref' reffile '_segment_output.mat'];
         fname_fig1 = [savedir mouseid '_' expname '_ref' reffile '_ROIs.fig'];
         fname_fig2 = [savedir mouseid '_' expname '_ref' reffile '_raw_timeseries.fig'];

@@ -22,21 +22,15 @@
 %   reffile     : (optional) file to be used as registration template. Required if 
 %               fileorlist above is a list.This file is usually part of 'list'
 %               but does not have to be. 
-%   conc_runs    : (optional, default: false) flag if rois were segmented from concatenated files from
-%               different environments e.g. fam1fam2fam1-fam1 but rois are
-%               for fam1fam2fam1. DO NOT flag for fam1fam2fam1 files since in
-%               this case it is understood that the rois are from the
-%               concatenated environments.
 %   force       : (optional, default: false) if true, existing R and spike data is overwritten
 %
 % OUTPUS
 %   spikes      : spikes extracted from R
 %   params
 
-function [spikes, df_f_deconv, bl, neuron_sn, g, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, fileorlist, reffile, conc_runs, grp_sdir, force )
-    if nargin<9, force = 0; end
-    if nargin<8, list = []; end
-    if nargin<7, conc_runs = false; end
+function [spikes, df_f_deconv, bl, neuron_sn, g, params] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, fileorlist, reffile, grp_sdir, force )
+    if nargin<8, force = 0; end
+    if nargin<7, list = []; end
     if nargin<6, reffile = []; end
 
     mcorr_method = params.methods.mcorr_method;
@@ -65,10 +59,6 @@ function [spikes, df_f_deconv, bl, neuron_sn, g, params] = neuroSEE_extractSpike
         fname_fig = [savedir file '_spikes.fig'];
     else
         [ mouseid, expname ] = find_mouseIDexpname(list);
-        if conc_runs
-            concrunsname = find_concrunsname( list );
-            expname = concrunsname;
-        end
         savedir = [grp_sdir '/' str_fissa '/'];
         fname_mat = [savedir mouseid '_' expname '_ref' reffile '_spikes.mat'];
         fname_fig = [savedir mouseid '_' expname '_ref' reffile '_spikes.fig'];

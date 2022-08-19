@@ -325,8 +325,8 @@ end
 
 %% 2) ROI segmentation
 if dostep(2)
-    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, list, reffile, concrunsrois, force(2), mean(imR,3) );
-                                             
+    [tsG, df_f, masks, corr_image, params] = neuroSEE_segment( imG, data_locn, params, list, reffile, grp_sdir, force(2), mean(imR,3) );
+                                                                
     % Copy files from grp_sdir to folders for individual runs
     if ~contains(list,'-')
         if nargin<4 || isempty(numfiles)
@@ -358,9 +358,9 @@ if dostep(3)
             end
         end
         if force(3) || ~check_list(2)
-            [ dtsG, ddf_f, params ] = neuroSEE_neuropilDecon( masks, data_locn, params, list, reffile, concrunsrois, force(3) );
+            [ dtsG, ddf_f, params ] = neuroSEE_neuropilDecon( masks, data_locn, params, list, reffile, grp_sdir, force(3) );
         end
-        
+                                                             
         % Copy files from grp_sdir to folders for individual runs
         if ~contains(list,'-')
             if nargin<4 || isempty(numfiles)
@@ -395,7 +395,8 @@ if dostep(4)
         end
     end
     
-    [ spikes, df_f_deconv, bl, neuron_sn, g, params ] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, list, reffile, concrunsrois, grp_sdir, force(4) );
+    [ spikes, df_f_deconv, bl, neuron_sn, g, params ] = neuroSEE_extractSpikes( df_f, ddf_f, data_locn, params, list, reffile, grp_sdir, force(4) );
+                                                                               
 else
     fprintf('%s: Spike estimation step not ticked. Skipping this and later steps.\n', [mouseid '_' expname]);
     t = toc;
